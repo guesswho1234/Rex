@@ -1,0 +1,13 @@
+Package: iuftools
+Type: Package
+Title: Helper tools for Investition und Finanzierung Uni Innsbruck
+Version: 1.0.0
+Author: Florian Hauser
+Maintainer: <florian.hauser@uibk.ac.at>
+Description: Provides a couple of helper functions to run exams generation for Investition und Finanzierung.
+License: GPL (>= 3)
+RoxygenNote: 7.2.3
+Encoding: UTF-8
+Depends:
+    xtable,
+    exams
