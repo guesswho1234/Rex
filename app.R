@@ -10,7 +10,9 @@ library(shiny) # shiny_1.4.0
 library(shinyjs) # shinyjs_2.1.0
 library(shinyWidgets) # shinyWidgets_0.5.1
 library(shinycssloaders) #shinycssloaders_0.3
-library(iuftools)
+library(exams) #exams_2.4
+library(xtable) #xtable_1.8
+library(iuftools) #iuftools_1.0.0
 
 # FUNCTIONS ----------------------------------------------------------------
 parseExercise = function(task, seed, output, session) {
