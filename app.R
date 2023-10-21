@@ -135,7 +135,7 @@ parseExam = function(exam, seed, input, output, session) {
       pages = NULL
       points = NULL
       
-      if(input$examDate != "") date = input$examDate
+      if(length(input$examDate) == 1) date = input$examDate
       if(length(additionalPDF) > 0) pages = additionalPDF
       if(is.na(input$numberOfFixedPoints)) points = input$numberOfFixedPoints
       

@@ -1,0 +1,82 @@
+<<echo=FALSE, results=hide>>=
+
+## 
+
+## ESSENTIALS!!! MUST ALWAYS BE PRESENT AND COMPLETE! DO NOT FORGET TO CHECK AND MODIFY!!!
+prec <- 4 # PRECISION
+diff <- 2 # DIFFICULTY (0-3)
+
+@
+%% \exextra[examHistory,character]{}
+%% \exextra[authoredBy,character]{Rene Schaiger,Florian Hauser}
+%% \exextra[checkedBy,character]{Christian König}
+%% \exextra[topic,character]{Zinsstruktur}
+%% \exextra[tags,character]{}
+%% \exextra[difficulty,numeric]{\Sexpr{(diff)}}
+%% \exextra[precision,numeric]{\Sexpr{(prec)}}
+
+<<echo=FALSE, results=tex>>=
+if (MAKEBSP) set.seed(1) # FIXES SCRAMBLING FOR EXAMPLES
+## ESSENTIALS!!! MUST ALWAYS BE PRESENT AND COMPLETE! DO NOT FORGET TO CHECK AND MODIFY!!!
+
+repeat {
+  ## Calculations
+  r <- sample(26:31, 2) / 1000
+  n <- sample(6:9, 2)
+  n1 <- n[1]
+  n2 <- n1 + n[2]
+
+  correct_result <- (((1 + r[2])^n2 / (1 + r[1])^n1)^(1 / (n2 - n1)) - 1)
+  distractor <- (r[2] * n2 - r[1] * n1) / (n2 - n1)
+  if (round(distractor, 6) == round(distractor, 4)) next
+  dev <- 3 * (correct_result - distractor) / correct_result
+  random_distractors <- correct_result + sample(2:30, 3) / 1000000 * sample(c(-1, 1), 3, replace = TRUE)
+  all_results <- c(correct_result, distractor, random_distractors)
+  if (min(dist(all_results)) > 0.0000015 & min(all_results) > 0) break
+}
+
+choices <- paste(eform(all_results * 100, prec), "Prozent")
+solutions <- c(TRUE, FALSE, FALSE, FALSE, FALSE)
+
+# Fuegt keine der anderen Antworten... hinzu
+sel <- sample(1:length(choices), 4)
+choices[length(choices) + 1] <- "Keine der anderen Antworten ist korrekt"
+solutions[length(solutions) + 1] <- sum(solutions[sel]) == 0
+sel <- sample(c(sel, length(choices)), 5)
+
+choices <- choices[sel]
+solutions <- solutions[sel]
+
+zins1 <- eform(r[1] * 100)
+zins2 <- eform(r[2] * 100)
+@
+\begin{question}
+Sie haben vor genau \Sexpr{n1} Jahren (t=-\Sexpr{n1}) eine \Sexpr{n1}
+jährige Veranlagung zu \Sexpr{zins1} Prozent p.a. bei Ihrer Hausbank abgeschlossen.
+Das zeitgleiche Angebot einer zweiten Bank, die Ihnen in t=-\Sexpr{n1} für eine
+\Sexpr{n2}-jährige Veranlagung \Sexpr{zins2} Prozent p.a. angeboten hat, haben Sie ausgeschlagen.
+Nachdem Sie heute über das angelegte Geld verfügen können, und es
+derzeit nicht benötigen, legen Sie es erneut bei Ihrer Hausbank für weitere
+\Sexpr{n2-n1} Jahre an.
+Welche jährliche Verzinsung muss Ihnen Ihre Hausbank für die Veranlagung
+zwischen t=0 und t=\Sexpr{n2-n1} bieten, so dass Sie in t=\Sexpr{n2-n1}
+über das gleiche Endvermögen verfügen, das Sie mit dem Angebot der
+zweiten Bank erzielt hätten?
+\Sexpr{sig(c("num", "sc"), prec)}
+
+<<echo=FALSE, results=tex>>=
+answerlist(choices)
+@
+\end{question}
+
+\begin{solution}
+<<echo=FALSE, results=tex>>=
+answerlist(ifelse(solutions, "Richtig", "Falsch"))
+@
+\end{solution}
+
+
+%% META-INFORMATION
+%% \extype{mchoice}
+%% \exsolution{\Sexpr{mchoice2string(solutions)}}
+%% \expoints{\Sexpr{getDifficulty(diff)}}

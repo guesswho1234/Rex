@@ -1,0 +1,64 @@
+<<echo=FALSE, results=hide>>=
+
+## Author: FH
+## Check by:
+## NewPool: FH
+
+## ESSENTIALS!!! MUST ALWAYS BE PRESENT AND COMPLETE! DO NOT FORGET TO CHECK AND MODIFY!!!
+prec <- 2				# PRECISION
+prec_i <- 1     # PRECISION INTEREST RATES
+diff <- 2				# DIFFICULTY (0-3)
+if (MAKEBSP) set.seed(1)	# FIXES SCRAMBLING FOR EXAMPLES
+## ESSENTIALS!!! MUST ALWAYS BE PRESENT AND COMPLETE! DO NOT FORGET TO CHECK AND MODIFY!!!
+
+## DATA GENERATION
+i <- sort(sample(10:35, 3)/1000)
+t <- sort(sample(1:7, 3))
+
+k0 <- sample(15:30, 1)*100
+z <- round(sample((k0*0.22):(k0*0.45), 2), -1)
+result <- round((k0 - z[1]/(1+i[1])^t[1] - z[2]/(1+i[2])^t[2]) * (1+i[3])^t[3], prec)
+
+
+## TEXT GENERATION
+zins <- eform(i * 100)
+stuff <- sample(c("ein Fahrrad", "einen Fernseher", "einen Computer", "eine Couch"), 2)
+verm <- eform(k0)
+
+@
+\begin{question}
+		Sie verfügen aktuell über einen Betrag von \Sexpr{verm} Euro.
+		Es gilt folgende Zinsstruktur bei diskreter, jährlicher Verzinsung:
+        \\
+		\begin{table}
+		\begin{center}
+		\setlength{\tabcolsep}{10mm}
+		\begin{tabular}{|l|c|c|c|c|}
+		\hline
+		\ Fristigkeit \  & \quad t=\Sexpr{t[1]}  \quad &
+		\quad  t=\Sexpr{t[2]} \quad &  \quad t=\Sexpr{t[3]}  \quad 
+        \\ \hline \ Spot Rate \  &
+		\Sexpr{eform(i[1]*100, digits = prec_i)}\% & \Sexpr{eform(i[2]*100, digits = prec_i)}\% & \Sexpr{eform(i[3]*100, digits = prec_i)}\%\\ \hline
+		\end{tabular}
+		\end{center}
+		\end{table}
+		\\
+        
+        Sie möchten sich in t=\Sexpr{t[1]} \Sexpr{stuff[1]} für \Sexpr{z[1]}
+        Euro kaufen. Weiters möchten Sie sich dann in t=\Sexpr{t[2]}
+        \Sexpr{stuff[2]} um \Sexpr{z[2]} Euro kaufen. In t=\Sexpr{t[3]}
+        planen Sie einen Urlaub, um Ihr restliches Vermögen aufzubrauchen.
+        Welcher Betrag steht Ihnen in t=\Sexpr{t[3]} dafür zur Verfügung?
+        \Sexpr{sig("num", prec, diff)}
+\end{question}
+
+\begin{solution}
+\Sexpr{eform(result, digits=prec)}
+\end{solution}
+
+
+%% META-INFORMATION
+%% \extype{num}
+%% \exsolution{\Sexpr{result}}
+%% \expoints{\Sexpr{getDifficulty(diff)}}
+%% \extol{\Sexpr{5/10^prec}}

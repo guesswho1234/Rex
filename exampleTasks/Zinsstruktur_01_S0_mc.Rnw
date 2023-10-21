@@ -1,0 +1,109 @@
+<<echo=FALSE, results=hide>>=
+
+## 
+
+## ESSENTIALS!!! MUST ALWAYS BE PRESENT AND COMPLETE! DO NOT FORGET TO CHECK AND MODIFY!!!
+prec <- 2				        # PRECISION
+diff <- 0				        # DIFFICULTY (0-3)
+
+@
+%% \exextra[examHistory,character]{}
+%% \exextra[authoredBy,character]{Florian Hauser}
+%% \exextra[checkedBy,character]{Michael Razen}
+%% \exextra[topic,character]{Zinsstruktur}
+%% \exextra[tags,character]{}
+%% \exextra[difficulty,numeric]{\Sexpr{(diff)}}
+%% \exextra[precision,numeric]{\Sexpr{(prec)}}
+
+<<echo=FALSE, results=tex>>=
+if (MAKEBSP) set.seed(1)	# FIXES SCRAMBLING FOR EXAMPLES
+## ESSENTIALS!!! MUST ALWAYS BE PRESENT AND COMPLETE! DO NOT FORGET TO CHECK AND MODIFY!!!
+
+## Definitions
+zinsartList <- c("stetige Verzinsung", "diskrete Verzinsung")
+
+
+## Calculations
+rand <- sample(1:3, 3)
+rand <- c(sample(c(1,3), 2), 2)
+i <- sort(sample(5:30, 3)/1000)[rand]
+n1 <- sample(1:3, 1)
+n2 <- sample(n1+1:5, 1)
+na <- c(0, n1, 0)[rand]
+nb <- c(n1, n2, n2)[rand]
+f <- c(-1, -1, 1)[rand]
+if (rand[3] == 3) f <- c(1, 1, 1)
+case <- sample(1:length(zinsartList), 1)
+
+res_c1 = round(((i[1]*((nb[1]-na[1])*f[1]) + i[2]*((nb[2]-na[2])*f[2])) / (nb[3]-na[3]))*100, digits = prec)
+res_c2 = round((((1+i[1])^((nb[1]-na[1])*f[1]) * (1+i[2])^((nb[2]-na[2])*f[2]))^(1/(nb[3]-na[3])) - 1)*100, digits = prec)
+
+distractors = c()
+if (case == 1) {
+	correct_result = res_c1
+	distractors[1] = res_c2
+} else {
+	correct_result = res_c2
+	distractors[1] = res_c1
+}
+
+# res_c1 and res_c2 can be equal after rounding!
+if (correct_result == distractors[1]) {
+	  distractors[1] = distractors[1] + 0.02
+} 
+
+
+## Question
+zins1 <- fwform(i[1],nb[1],na[1])
+zins2 <- fwform(i[2],nb[2],na[2])
+zins3 <- fwname(nb[3],na[3])
+
+context = "Gegeben ist %{zins1}s sowie %{zins2}s (%{zinsart}s). Wie hoch ist %{zins3}s?"
+quest = formatString(context, zins1=zins1, zins2=zins2, zins3=zins3, zinsart=zinsartList[case])
+
+
+## Distractors
+# one distractor is calculated above, we add 3 random distractors
+dev = 0.2
+random_distractors = getRandomDistractors(3, range=c(correct_result*(1-dev), correct_result*(1+dev)), digits=prec, exclude=c(correct_result, distractors))
+
+
+## Choices
+choices = formatChoices(c(correct_result, distractors, random_distractors), suffix=" Prozent", digits=prec, sep="")
+
+
+## Solution
+solutions = c(TRUE, FALSE, FALSE, FALSE, FALSE)
+
+# shufflt 4 Antworten aus dem pool
+sel <- sample(1:length(choices), 4)
+
+# Fuegt keine der anderen Antworten... hinzu
+choices[length(choices)+1] <- "Keine der anderen Antworten ist korrekt"
+solutions[length(solutions)+1] <- sum(solutions[sel]) == 0
+sel <- sample(c(sel, length(choices)), 5)
+
+choices <- choices[sel]
+solutions <- solutions[sel]
+
+@
+\begin{question}
+\Sexpr{quest}
+\Sexpr{sig(c("num", "sc"), prec, diff)}
+
+<<echo=FALSE, results=tex>>=
+answerlist(choices)
+@
+\end{question}
+
+\begin{solution}
+<<echo=FALSE, results=tex>>=
+answerlist(ifelse(solutions, "Richtig", "Falsch"))
+@
+\end{solution}
+
+
+%% META-INFORMATION
+%% \extype{mchoice}
+%% \exsolution{\Sexpr{mchoice2string(solutions)}}
+%% \expoints{\Sexpr{getDifficulty(diff)}}

@@ -1,0 +1,54 @@
+<<echo=FALSE, results=hide>>=
+## ExamHistory: 2022_WS_Onlinetest1
+
+## Author: RS, FH
+## Check by:
+## NewPool: FH
+
+## ESSENTIALS!!! MUST ALWAYS BE PRESENT AND COMPLETE! DO NOT FORGET TO CHECK AND MODIFY!!!
+prec <- 2				        # PRECISION
+diff <- 2				        # DIFFICULTY (0-3)
+if (MAKEBSP) set.seed(1)	# FIXES SCRAMBLING FOR EXAMPLES
+## ESSENTIALS!!! MUST ALWAYS BE PRESENT AND COMPLETE! DO NOT FORGET TO CHECK AND MODIFY!!!
+
+## DATA GENERATION
+i <- sample(16:21, 2)/1000
+n <- sample(4:8, 2)
+n1 <- n[1]
+n2 <- n1 + n[2]
+
+## TEXT GENERATION
+zins1 <- eform(i[1]*100)
+zins2 <- eform(i[2]*100)
+zeitpunkt1 <- n1
+zeitpunkt2 <- n2-n1
+
+## Calculate result here!
+result <- round((((1+i[2])^n2/(1+i[1])^n1)^(1/(n2-n1))-1)*100, 2)
+checkIfGreater(0, result, 2)
+
+@
+\begin{question}
+Sie haben vor genau \Sexpr{n1} Jahren (t=-\Sexpr{n1}) eine \Sexpr{n1}
+jährige Veranlagung zu \Sexpr{zins1} Prozent p.a. bei Ihrer Hausbank abgeschlossen.
+Das zeitgleiche Angebot (vor genau \Sexpr{n1} Jahren) einer zweiten Bank, die Ihnen für eine
+\Sexpr{n2}-jährige Veranlagung \Sexpr{zins2} Prozent p.a. angeboten hat, haben Sie ausgeschlagen.
+Nachdem Sie heute über das angelegte Geld verfügen können, und es
+derzeit nicht benötigen, legen Sie es erneut bei Ihrer Hausbank für weitere
+\Sexpr{n2-n1} Jahre an.
+Welche jährliche Verzinsung muss Ihnen Ihre Hausbank für die Veranlagung
+zwischen t=0 und t=\Sexpr{n2-n1} bieten, so dass Sie in t=\Sexpr{n2-n1}
+über das gleiche Endvermögen verfügen, das Sie mit dem Angebot der
+zweiten Bank erzielt hätten?
+\Sexpr{sig("per", prec, diff)}
+\end{question}
+
+\begin{solution}
+\Sexpr{eform(result, digits=prec)}
+\end{solution}
+
+%% META-INFORMATION
+%% \extype{num}
+%% \exsolution{\Sexpr{result}}
+%% \expoints{\Sexpr{getDifficulty(diff)}}
+%% \extol{\Sexpr{1/10^prec}}
