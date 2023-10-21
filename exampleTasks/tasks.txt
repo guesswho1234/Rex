@@ -1,0 +1,56 @@
+<questions>
+	<question>
+		<questionText>
+			This is question 1.
+		</questionText>
+		<questionAnswers>
+			<questionAnswer>	
+				<questionAnswerText>	
+					This is answer 1 for question 1.
+				</questionAnswerText>
+				<questionAnswerResult>	
+					0
+				</questionAnswerResult>					
+			</questionAnswer>	
+			<questionAnswer>	
+				<questionAnswerText>	
+					This is answer 2 for question 1.
+				</questionAnswerText>
+				<questionAnswerResult>	
+					1
+				</questionAnswerResult>					
+			</questionAnswer>	
+		</questionAnswers>
+	</question>
+	<question>
+		<questionText>
+			This is question 2.
+		</questionText>
+		<questionAnswers>
+			<questionAnswer>	
+				<questionAnswerText>	
+					This is answer 1 for question 2.
+				</questionAnswerText>
+				<questionAnswerResult>	
+					0
+				</questionAnswerResult>					
+			</questionAnswer>	
+			<questionAnswer>	
+				<questionAnswerText>	
+					This is answer 2 for question 2.
+				</questionAnswerText>
+				<questionAnswerResult>	
+					1
+				</questionAnswerResult>					
+			</questionAnswer>
+			<questionAnswer>	
+				<questionAnswerText>	
+					This is answer 3 for question 2.
+				</questionAnswerText>
+				<questionAnswerResult>	
+					1
+				</questionAnswerResult>					
+			</questionAnswer>
+		</questionAnswers>
+	</question>
+</questions>

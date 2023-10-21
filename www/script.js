@@ -22,31 +22,6 @@ $(document).on({
 			console.log($('#examLanguage').parent().find('.selectize-dropdown-content div')); 
 		}
 	}
-    // 'shiny:updateinput': function(event) { 
-		// if (event.target.id === 'examLanguage') {
-			// console.log($('#examLanguage').parent().find('.selectize-dropdown-content div')); 
-		// }
-	// }
-    // 'shiny:value': function(event) { 
-		// if (event.target.id === 'examLanguage') {
-			// console.log($('#examLanguage').parent().find('.selectize-dropdown-content div')); 
-		// }
-	// }
-    // 'shiny:bound': function(event) { 
-		// if (event.target.id === 'examLanguage') {
-			// console.log($('#examLanguage').parent().find('.selectize-dropdown-content div')); 
-		// }
-	// }
-	
-	// 'shiny:bound': function(event) { 
-		// if (event.target.id === 'examLanguage') {
-			// defer to next tick to add sparklines
-			// setTimeout(function() {
-			// console.log($('.spkln').length);
-			// $('.spkln').sparkline('html', {type: 'bar', barColor: 'red'});
-			// }, 0)
-		// }
-    // }
 });
 
 /* --------------------------------------------------------------
@@ -430,7 +405,7 @@ function itemTable(arr) {
 	
 	let out = "";
 	
-	out = Object.entries(counts).map(entry => {
+	out = Object.entries(counts).map(end => {
 		const [key, value] = entry;
 		return '<span class="s_label"><span class="s_key">' + key + '</span><span class="s_value">' + value + '</span></span>';
 	}).join('');
@@ -741,31 +716,82 @@ function loadTasksFileDialog(items) {
 	});
 }
 
-function loadTask(file) {	
-	if ( file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase() == 'rnw') {
-		const taskID = tasks + 1
-		addTask();
+async function loadTask(file) {
+	const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
+	
+	switch(fileExt) {
+		case 'rnw':
+			const taskID = tasks + 1
+			addTask();
 
-		iuf['tasks'][taskID]['file'] = file;
-		iuf['tasks'][taskID]['seed'] = null;
-		iuf['tasks'][taskID]['exam'] = false;
-		iuf['tasks'][taskID]['question'] = null;
-		iuf['tasks'][taskID]['choices'] = null;
-		iuf['tasks'][taskID]['result'] = null;
-		iuf['tasks'][taskID]['examHistory'] = null;
-		iuf['tasks'][taskID]['authoredBy'] = null;
-		iuf['tasks'][taskID]['checkedBy'] = null;
-		iuf['tasks'][taskID]['precision'] = null;
-		iuf['tasks'][taskID]['difficulty'] = null;
-		iuf['tasks'][taskID]['points'] = null;
-		iuf['tasks'][taskID]['topic'] = null;
-		iuf['tasks'][taskID]['tags'] = null;
-		iuf['tasks'][taskID]['type'] = null;
-		iuf['tasks'][taskID]['e'] = null;
+			iuf['tasks'][taskID]['file'] = file;
+			iuf['tasks'][taskID]['seed'] = null;
+			iuf['tasks'][taskID]['exam'] = false;
+			iuf['tasks'][taskID]['question'] = null;
+			iuf['tasks'][taskID]['choices'] = null;
+			iuf['tasks'][taskID]['result'] = null;
+			iuf['tasks'][taskID]['examHistory'] = null;
+			iuf['tasks'][taskID]['authoredBy'] = null;
+			iuf['tasks'][taskID]['checkedBy'] = null;
+			iuf['tasks'][taskID]['precision'] = null;
+			iuf['tasks'][taskID]['difficulty'] = null;
+			iuf['tasks'][taskID]['points'] = null;
+			iuf['tasks'][taskID]['topic'] = null;
+			iuf['tasks'][taskID]['tags'] = null;
+			iuf['tasks'][taskID]['type'] = null;
+			iuf['tasks'][taskID]['e'] = null;
+			
+			$('#task_list_items').append('<div class="taskItem sidebarListItem"><span class="taskTryCatch"><i class="fa-solid fa-triangle-exclamation"></i><span class="taskTryCatchText"></span></span><span class="taskName">' + file.name + '</span></span><span class="taskButtons"><span class="taskParse taskButton"><i class="fa-solid fa-rotate"></i></span><span class="examTask taskButton"><i class="fa-solid fa-circle-check"></i></span><span class="taskRemove taskButton"><i class="fa-solid fa-trash"></i></span></span></div>');
+			
+			viewTask(taskID, true);
 		
-		$('#task_list_items').append('<div class="taskItem sidebarListItem"><span class="taskTryCatch"><i class="fa-solid fa-triangle-exclamation"></i><span class="taskTryCatchText"></span></span><span class="taskName">' + file.name + '</span></span><span class="taskButtons"><span class="taskParse taskButton"><i class="fa-solid fa-rotate"></i></span><span class="examTask taskButton"><i class="fa-solid fa-circle-check"></i></span><span class="taskRemove taskButton"><i class="fa-solid fa-trash"></i></span></span></div>');
-		
-		viewTask(taskID, true);
+			break;
+		case 'txt':				
+			const parser = new DOMParser();
+			const fileText = await file.text();
+			const xmlDoc = parser.parseFromString(fileText,"text/xml");
+			
+			const questions = xmlDoc.getElementsByTagName("question");
+			
+			for (i = 0; i < questions.length; i++) {
+				const question = questions[i];
+				const questionText = question.getElementsByTagName("questionText")[0].textContent.trim();
+				const questionAnswers = question.getElementsByTagName("questionAnswer");
+				
+				let questionAnswerChoices = new Array();
+				let questionAnswerResults = new Array();
+				
+				for (j = 0; j < questionAnswers.length; j++) {
+					const questionAnswer = questionAnswers[j];
+					questionAnswerChoices.push(questionAnswer.getElementsByTagName("questionAnswerText")[0].textContent.trim()); 
+					questionAnswerResults.push(questionAnswer.getElementsByTagName("questionAnswerResult")[0].textContent.trim() === "1"); 
+				}
+
+				const taskID = tasks + 1
+				addTask();
+
+				iuf['tasks'][taskID]['file'] = file;
+				iuf['tasks'][taskID]['seed'] = null;
+				iuf['tasks'][taskID]['exam'] = false;
+				iuf['tasks'][taskID]['question'] = questionText;
+				iuf['tasks'][taskID]['choices'] = questionAnswerChoices;
+				iuf['tasks'][taskID]['result'] = questionAnswerResults;
+				iuf['tasks'][taskID]['examHistory'] = null;
+				iuf['tasks'][taskID]['authoredBy'] = null;
+				iuf['tasks'][taskID]['checkedBy'] = null;
+				iuf['tasks'][taskID]['precision'] = null;
+				iuf['tasks'][taskID]['difficulty'] = null;
+				iuf['tasks'][taskID]['points'] = null;
+				iuf['tasks'][taskID]['topic'] = null;
+				iuf['tasks'][taskID]['tags'] = null;
+				iuf['tasks'][taskID]['type'] = null;
+				iuf['tasks'][taskID]['e'] = 'XML:' + (i+1);	
+				
+				$('#task_list_items').append('<div class="taskItem sidebarListItem"><span class="taskTryCatch"><i class="fa-solid fa-triangle-exclamation"></i><span class="taskTryCatchText"></span></span><span class="taskName">' + file.name + "_" + (i+1) + '</span></span><span class="taskButtons"><span class="taskParse taskButton disabled"><i class="fa-solid fa-rotate"></i></span><span class="examTask taskButton"><i class="fa-solid fa-circle-check"></i></span><span class="taskRemove taskButton"><i class="fa-solid fa-trash"></i></span></span></div>');
+				
+				viewTask(taskID);
+			}
+			break;
 	}
 }
 
@@ -783,18 +809,16 @@ function numberOfExamTasks() {
 
 function viewTask(taskID, forceParse = false) {
 	resetOutputFields();
-		
-	const parse = forceParse || iuf['tasks'][taskID]['seed'] == "" || iuf['tasks'][taskID]['seed'] != $("#seedValue").val() || ! iuf.tasks[taskID].e.includes("Success: ");
+	
+	const isFromXml = iuf['tasks'][taskID]['e'] != null ? iuf['tasks'][taskID]['e'].includes("XML") : false;
+	const parse = !isFromXml && (forceParse || iuf['tasks'][taskID]['seed'] == "" || iuf['tasks'][taskID]['seed'] != $("#seedValue").val() || ! iuf.tasks[taskID].e.includes("Success: "));
 	
 	if(parse) {
 		parseTask(taskID);	
 	} else {
 		loadTaskFromObject(taskID);
-	}
-	
-	// set task active
-	if($('.taskItem.active').length == 0) {
-		$('.taskItem:nth-child(' + $('.taskItem').length + ')').addClass('active');
+		$('.taskItem.active').removeClass('active');
+		$('.taskItem:nth-child(' + (taskID + 1) + ')').addClass('active');
 	}
 	
 	f_langDeEn();
@@ -815,11 +839,15 @@ function resetOutputFields() {
 }
 
 function loadTaskFromObject(taskID) {
-	if(iuf['tasks'][taskID]['question'] !== null) document.getElementById('question').innerHTML = '<span>' + iuf['tasks'][taskID]['question'].join('') + '</span>';
+	if(iuf['tasks'][taskID]['question'] !== null && Array.isArray(iuf['tasks'][taskID]['question'])) {
+		document.getElementById('question').innerHTML = '<span>' + iuf['tasks'][taskID]['question'].join('') + '</span>';
+	} else {
+		document.getElementById('question').innerHTML = '<span>' + iuf['tasks'][taskID]['question'] + '</span>';
+	}
 	document.getElementById('points').innerHTML = '<span>' + iuf['tasks'][taskID]['points'] + '</span>';
 	document.getElementById('type').innerHTML = '<span>' + iuf['tasks'][taskID]['type'] + '</span>';
 	
-	if(iuf['tasks'][taskID]['type'] === "mchoice") {
+	if(iuf['tasks'][taskID]['type'] === "mchoice" || iuf['tasks'][taskID].e.includes("XML")) {
 		const zip = iuf['tasks'][taskID]['result'].map((x, i) => [x, iuf['tasks'][taskID]['choices'][i]]);
 		const results = '<div>' + zip.map(i => '<p><span class=\"result mchoiceResult\">' + ( + i[0]) + '</span><span class="choice"><input type=\"checkbox\" name=\"\" value=\"\"><span class="choiceText">' + i[1] + '</span></span></p>').join('') + '</div>';
 		
@@ -1023,8 +1051,6 @@ Shiny.addCustomMessageHandler('setTaskE', function(jsonData) {
 	$('.taskItem:nth-child(' + (taskID + 1) + ') .taskTryCatch').removeClass('Error');
 	$('.taskItem:nth-child(' + (taskID + 1) + ') .examTask').removeClass('disabled');
 	$('.taskItem:nth-child(' + (taskID + 1) + ') .taskTryCatchText').text('');
-	
-	console.log(e.key);
 	
 	switch(e.key) {
 		case "Success": 
