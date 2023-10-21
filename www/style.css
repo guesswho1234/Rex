@@ -1,0 +1,638 @@
+/* --------------------------------------------------------------
+ GENERAL 
+-------------------------------------------------------------- */
+.color-theme {
+	---background: rgba(248, 248, 248, 1);
+	---background2: rgba(0, 0, 0, 0.2);
+	---background3: rgba(238, 238, 238, 1);
+	---main: rgba(64, 64, 64, 1);
+	---highlight_values: rgba(85, 87, 211, 1);
+	---highlight_correct: rgba(49, 181, 150, 1);
+	---highlight_incorrect: rgba(211, 85, 85, 1);
+	---highlight_removePDF: rgba(255, 172, 172, 1);
+	---transparent: rgba(255, 255, 255, 0);
+	---label_yellow: rgba(251, 238, 200, 1);
+	---label_gray: rgba(238, 238, 238, 1);
+	---label_green: rgba(88, 208, 180, 1);
+	---tryCatch_success: rgb(150, 215, 148);
+	---tryCatch_warning: rgb(255, 211, 128);
+	---tryCatch_error: rgb(255, 128, 128);
+}
+
+html {
+	font-family: Helvetica, sans-serif;
+	font-style: normal;
+	font-weight: normal;
+	font-size: 16px;
+	overflow: -moz-scrollbars-none;
+}
+
+html {
+    -ms-overflow-style: none;  /* Internet Explorer 10+ */
+    scrollbar-width: none;  /* Firefox */
+}
+html::-webkit-scrollbar { 
+    display: none;  /* Safari and Chrome */
+}
+
+body {
+	height: auto;
+	color: var(---main);
+}
+
+#disableOverlay {
+	width: 100%;
+	height: 100%;
+	filter: opacity(0.7);
+	display: none;
+	position: fixed;
+	z-index: 999;
+	background: black;
+}
+
+#disableOverlay.active {
+	display: block !important;
+}
+
+#disableOverlay div {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	background: var(---background2);
+	z-index: 999;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+#disableOverlay div span {
+	display: flex;
+	width: fit-content;
+	height: fit-content;
+	background: var(---background);
+	font-weight: bold;
+	padding: 10px;
+	border-radius: 3px;
+}
+
+.container-fluid {
+	padding: 0px;
+}
+
+#languageSwitchContainer {
+	margin: 1rem;
+	position: absolute;
+	top: 0;
+	right: 0;
+}
+
+#languageSwitchContainer span {
+	cursor: pointer;
+}
+
+#responseMessage,
+.taskTryCatch .taskTryCatchText {
+	font-family: Consolas;
+	color: #000000cf;
+	border-radius: 3px;
+	padding: 5px;
+	font-weight: bold;
+}
+
+/* --------------------------------------------------------------
+ SECTIONS 
+-------------------------------------------------------------- */
+main > * {
+	margin: 1rem;
+}
+
+.mainSection {
+	display: none;
+}
+
+.mainSection.active {
+	display: block;
+}
+
+.contentWrapper {
+	display: flex;
+}
+
+.contentWrapper > div {
+	margin: 1rem;
+}
+
+.sidebar {
+	width: 400px;
+	min-width: 400px;
+	background: var(---background);
+}
+
+.content {
+	background: var(---background);
+	padding: 1rem;
+	height: fit-content;
+}
+
+.sectionHeader {
+	display: flex;
+}
+
+/* --------------------------------------------------------------
+ SETTINGS
+-------------------------------------------------------------- */
+.settings {
+	margin-left: 0;
+	margin-right: 2rem;
+	max-width: 30vw;
+}
+
+.settings > div {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.settings div > * {
+	width: fit-content;
+}
+
+.settings > div div {
+	margin-right: 1rem;
+}
+
+.settings input {
+	width: 130px;
+}
+
+/* --------------------------------------------------------------
+ SUMMARY
+-------------------------------------------------------------- */
+.summary {
+	margin-left: auto;
+	margin-right: 1rem;
+	max-width: 70vw;
+}
+
+.summary tr > * {
+	padding: 5px;
+	text-align: center;
+}
+
+.summary th {
+	border-bottom: 1px solid;
+}
+
+.summary th:not(:last-of-type),
+.summary td:not(:last-of-type) {
+	border-right: 1px solid;
+}
+
+.summary .s_labelSingle{
+	margin: 5px;
+	padding: 3px;
+	border-radius: 3px;
+}
+
+.summary .s_labelContainer {
+	display: flex;
+	flex-wrap: wrap;
+	flex-direction: row;
+}
+
+.summary .s_label {
+	margin: 5px;
+}
+
+.summary .s_label span {
+	padding: 3px;	
+}
+
+.summary .s_label .s_key {
+	padding-right: 3px;
+	border-bottom-left-radius: 3px;
+	border-top-left-radius: 3px;
+	background: #fbeec8;
+}
+
+.summary .s_label .s_value {
+	padding-left: 3px;
+	border-bottom-right-radius: 3px;
+	border-top-right-radius: 3px;
+	background: #f0d68a;
+	font-weight: bold;
+}
+
+.greenLabel {
+	background: var(---label_green);
+}
+
+.grayLabel {
+	background: var(---label_gray);
+}
+
+.yellowLabel {
+	background: var(---label_yellow);
+}
+
+.redLabel {
+	background: var(---label_yellow);
+}
+
+#createExam {
+	margin-top: 25px;
+}
+	
+
+/* --------------------------------------------------------------
+ DRAG AND DROP 
+-------------------------------------------------------------- */
+.dnd {
+	position: fixed;
+	top: 0;
+	left: 0;
+	background: var(---transparent);
+	height: 100vh;
+	width: 100vw;
+	z-index: -1;
+}
+
+.dnd.drag {
+	z-index: 998;
+}
+
+.dndInfo {
+	display: none;
+}
+
+.dnd.drag .dndInfo {
+	display: grid;
+	margin: auto;
+	text-align: center;
+    justify-content: center;
+    align-items: center;
+	height: 100%;
+	background: var(---background2);
+}
+
+.dndInfo, 
+.dndInfo * {
+	pointer-events: none;
+}
+
+.dndInfo .title {
+	height: 50%;
+    font-size: 62px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: end;
+    text-align: center;
+}
+
+.dndInfo .dndIcon {
+	height: 50%;
+    font-size: 62px;
+    font-weight: bold;
+    justify-content: center;
+    align-items: start;
+    text-align: center;
+	padding-top: 10px;
+}
+
+/* --------------------------------------------------------------
+ SIDEBAR
+-------------------------------------------------------------- */
+.itemList {
+	height: auto;
+}
+
+.listButton {
+	margin: 0.5rem;
+	padding: 0.5rem;
+	cursor: pointer;
+}
+
+#searchTasks input {
+	width: 100%;
+}
+
+.listButton:hover {
+	background: var(---background);
+	border-radius: 5px;
+}
+
+.listButtons {
+	display: flex;	
+	background: var(---background3);
+}
+
+.list_butttonIcon {
+	height: 26px;
+	display: table-cell;
+	vertical-align: middle;
+}
+
+.sidebarListItem {
+	margin: 0.25rem;
+	padding: 0.25rem;
+	display: flex;
+	justify-content: space-between;
+}
+
+.sidebarListItem > span {
+	padding: 0.25rem;
+}
+
+.sidebarListItem:hover {
+	background: var(---background3);
+	cursor: pointer;
+}
+
+.sidebarListItem.active {
+	background: var(---background3);
+}
+
+.sidebarListItem.filtered {
+	display: none;
+}
+
+.sidebarListSubItem {
+	margin-left: 1.5rem;
+}
+
+/* --------------------------------------------------------------
+ TASKS LIST
+-------------------------------------------------------------- */
+#file-input input[type="file"] {
+    display: none;
+}
+
+#task_list_items {
+	display: block;
+}
+
+.taskTryCatch {
+	display: none;
+}
+
+.taskTryCatch.Warning {
+	color: var(---tryCatch_warning);
+	display: block;
+}
+
+.taskTryCatch.Error {
+	color: var(---tryCatch_error);
+	display: block;
+}
+
+.sidebarListItem.exam .examTask {
+	color: var(---label_green);
+}
+
+.taskName {
+	max-width: 350px;
+	overflow-wrap: anywhere;
+}
+
+.taskButtons {
+	width: 75px;
+	display: flex;
+	margin-right: 0px;
+	margin-left: auto;
+}
+
+.taskButton.disabled { 
+	pointer-events: none; 
+	filter: opacity(0.2);
+}
+
+.taskParse,
+.examTask,
+.taskRemove {
+	padding: 0.25rem;
+}
+
+.taskButton:hover {
+	background: var(---background);
+	border-radius: 5px;
+}
+
+.taskTryCatch {
+	position: relative;
+}
+
+.taskTryCatch .taskTryCatchText {
+	visibility: hidden;
+	width: max-content;
+	text-align: center;
+	position: absolute;
+	z-index: 1;
+	margin-left: 0.2rem;
+	margin-top: -1.7rem;
+}
+
+.taskTryCatch.Warning .taskTryCatchText {
+	background-color: var(---tryCatch_warning);
+}
+	
+.taskTryCatch.Error .taskTryCatchText {
+	background-color: var(---tryCatch_error);
+}
+
+.taskTryCatch:hover .taskTryCatchText {
+	visibility: visible;
+}
+
+/* --------------------------------------------------------------
+ TASKS INFO
+-------------------------------------------------------------- */
+#task_info {
+	display: grid;
+}
+
+#task_info label {
+	font-weight: bold;
+}
+
+#task_info > * {
+	margin-bottom: 0px;
+	margin-left: 1rem;
+}
+
+#examHistory span,
+#authoredBy span,
+#checkedBy span {
+	margin: 5px;
+	padding: 3px;
+	background: var(---label_gray);
+	border-radius: 3px;
+}
+
+#precision span,
+#difficulty span,
+#points span,
+#topic span,
+#tags span,
+#type span {
+	margin: 5px;
+	padding: 3px;
+	background: #fbeec8;
+	border-radius: 3px;
+}
+
+#task_info .val {
+	color: var(---highlight_values);
+	font-weight: bold;
+}
+
+#question img,
+#question table {
+	margin: 1rem;
+	border: 1px solid black;
+}
+
+#result {
+	display: flex;
+}
+
+#result .result {
+	color: var(---highlight_correct);
+	background:  var(---highlight_correct);
+	font-weight: bold;
+	width: max-content;
+	border-radius: 3px;
+	margin-right: 0.5rem;
+	padding-left: 0.25rem;
+	padding-right: 0.25rem;
+}
+
+#result .result.numericResult {
+	display: flex;
+	align-items: center;
+}
+
+#result .result.spoiler{
+	background: unset;
+}
+
+#result > * {
+	font-weight: bold;
+}
+
+#result div > p {
+	display: flex;
+}
+
+#result > span {
+	margin-left: 1rem;
+}
+
+#result input[type=text] {
+	max-width: 150px;
+}
+
+#result .choiceText {
+	margin-left: 0.25rem;
+}
+
+#result .correct {
+	background: var(---highlight_correct);
+}
+
+#result .incorrect {
+	background: var(---highlight_incorrect);
+}
+
+/* --------------------------------------------------------------
+ EXAMS 
+-------------------------------------------------------------- */
+#exam .content {
+	width: 100%;
+}
+
+#exam .contentTab {
+	display:none;
+}
+
+#exam .contentTab.active {
+	display:block;
+}
+
+.autofillField,
+.infoField {
+	font-size: 12px;
+	color: #aaa;
+}
+
+.autofillField{
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+#additionalPDFFiles {
+	width: 300px;
+	min-height: 34px;
+	background: var(---background3);
+}
+
+#additionalPDF_list_items {
+	display: block;
+	padding: 0.25rem;
+}
+
+.additionalPDFItem {
+	display: flex;
+	margin: 0.25rem;
+	padding: 0.25rem;
+	justify-content: space-between;
+}
+
+.additionalPDFItem .removeText {
+	display: none;
+}
+
+.additionalPDFItem:hover {
+	background: var(---highlight_removePDF);
+	cursor: pointer;
+}
+
+.additionalPDFItem:hover .removeText {
+	display: block;
+}
+
+#responseMessage.Success {
+	background: var(---tryCatch_success);
+}
+
+#responseMessage.Warning {
+	background: var(---tryCatch_warning);
+}
+
+#responseMessage.Error {
+	background: var(---tryCatch_error);
+}
+
+/* --------------------------------------------------------------
+ HELP 
+-------------------------------------------------------------- */
+#help .content {
+	width: 100%;
+}
+
+#help .contentTab {
+	display:none;
+}
+
+#help .contentTab.active {
+	display:block;
+}
+
+/* --------------------------------------------------------------
+ FOOTER 
+-------------------------------------------------------------- */
+.footer-container {
+	padding: 1rem;
+	background: var(---background);
+}

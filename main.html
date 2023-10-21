@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<!-- main.html -->
+<html xmlns="http://www.w3.org/1999/xhtml" lang="de" xml:lang="de">
+	<head>
+		<meta charset="utf-8">
+		<title>I&F</title>	
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="stylesheet" href="style.css">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+		<script src="script.js" defer></script>	
+	</head>
+	<body class="color-theme">
+		<div id="disableOverlay">
+			<div id="disableOverlay">
+				<span lang="de">BITTE WARTEN...</span>
+				<span lang="en">PLEASE Wait...</span>
+			</div>
+		</div>
+		<nav class="navbar navbar-default navbar-static-top" role="navigation">
+			<ul class="nav navbar-nav" data-tabsetid="9289">
+				<li class="active">
+					<a href="#tab-9289-1" data-toggle="tab" data-bs-toggle="tab" data-value="tasks">
+						<div id="tasksNav">
+							<span lang="de">AUFGABEN</span>
+							<span lang="en">TASKS</span>
+						</div>
+					</a>
+				</li>
+				<li>
+					<a href="#tab-9289-2" data-toggle="tab" data-bs-toggle="tab" data-value="exam">
+						<div id="examNav">
+							<span lang="de">PRÜFUNG</span>
+							<span lang="en">EXAM</span>
+						</div>
+					</a>
+				</li>
+				<li>
+					<a href="#tab-9289-3" data-toggle="tab" data-bs-toggle="tab" data-value="exam">
+						<div id="helpNav">
+							<span lang="de">HILFE</span>
+							<span lang="en">HELP</span>
+						</div>
+					</a>
+				</li>
+			</ul>
+			<div id="languageSwitchContainer">
+				<span id="deLang" class="active">DE</span>
+				<span id="enLang">EN</span>
+			</div>
+		</nav>
+		<main>
+			<div id="tasks" class="mainSection active">
+				<div class="sectionHeader">
+					<div class="settings">
+						<h1><span lang="de">Einstellungen</span><span lang="en">Settings</span></h1>
+						<div>
+							<div>
+								<label for="seedValue"><span lang="de">Seed</span><span lang="en">Seed</span></label>
+								{{ numericInput_seedValue }}
+							</div>
+						</div>
+					</div>
+					<div class="summary">
+						<h1><span lang="de">Zusammenfassung</span><span lang="en">Summary</span></h1>
+						<table>
+							<tr>
+								<th><span lang="de">Seed</span><span lang="en">Seed</span></th>
+								<th><span lang="de">Aufgaben</span><span lang="en">Tasks</span></th>
+								<th><span lang="de">Schwierigkeit</span><span lang="en">Difficulty</span></th>
+								<th><span lang="de">Punkte</span><span lang="en">Points</span></th>
+								<th><span lang="de">Themen</span><span lang="en">Topics</span></th>
+								<th><span lang="de">Tags</span><span lang="en">Tags</span></th>
+								<th><span lang="de">Typen</span><span lang="en">Types</span></th>
+								<th><span lang="de">Geprüft</span><span lang="en">Checked</span></th>
+							</tr>
+							<tr>
+								<td id="s_initialSeed"></td>					
+								<td id="s_numberOfTasks"></td>			
+								<td id="s_averageDifficulty"></td>		
+								<td id="s_totalPoints"></td>		
+								<td id="s_topicsTable"></td>			
+								<td id="s_tagsTable"></td>				
+								<td id="s_typeTable"></td>				
+								<td id="s_tasksChecked"></td>			
+							</tr>
+						</table>
+					</div>
+				</div>
+				<h1><span lang="de">Aufgaben</span><span lang="en">Tasks</span></h1>
+				<div class="contentWrapper">
+					<div class="sidebar">
+						<div id="task_list" class="itemList">
+							<div id="taskListButtons" class="listButtons">
+								<div id="createTask" class="listButton">
+									<div class="list_butttonIcon">
+										<i class="fa-solid fa-plus"></i>
+									</div>
+								</div>
+								<div id="taskUpload" class="listButton">		
+									<div id="file-input">
+										<input type="file" id="file-upload" onchange='loadTasksFileDialog(this.files);' multiple>
+										<label for="file-upload">
+											<div class="list_butttonIcon">
+												<i class="fa-solid fa-upload"></i>
+											</div>
+										</label>
+									</div>
+								</div>	
+								<div id="examTaskAll" class="listButton">
+									<div class="list_butttonIcon">
+										<i class="fa-solid fa-circle-check"></i>
+									</div>
+								</div>								
+								<div id="taskRemoveAll" class="listButton">
+									<div class="list_butttonIcon">
+										<i class="fa-solid fa-trash"></i>
+									</div>
+								</div>
+								<div id="taskParseAll" class="listButton">
+									<div class="list_butttonIcon">
+										<i class="fa-solid fa-rotate"></i>
+									</div>
+								</div>
+								<div id="searchTasks" class="listButton">
+									<div class="list_butttonIcon">
+										<input type="text"/>
+									</div>
+								</div>
+							</div>
+							<div id="task_list_items">
+							</div>
+						</div>
+					</div>
+					<div id="task_info" class="content">
+						<h2><span lang="de">Info</span><span lang="en">Info</span></h2>
+						<label for="examHistory"><span lang="de">Prüfungshistorie</span><span lang="en">Exam history</span></label>
+						<div id="examHistory"></div>
+						
+						<label for="authoredBy"><span lang="de">Autor</span><span lang="en">Author</span></label>
+						<div id="authoredBy"></div>
+
+						<label for="checkedBy"><span lang="de">Geprüft von</span><span lang="en">Checked by</span></label>
+						<div id="checkedBy"></div>
+						
+						<label for="precision"><span lang="de">Nachkommastellen</span><span lang="en">Decimal places</span></label>
+						<div id="precision"></div>
+						
+						<label for="difficulty"><span lang="de">Schwierigkeit</span><span lang="en">Difficulty</span></label>
+						<div id="difficulty"></div>
+						
+						<label for="points"><span lang="de">Punkte</span><span lang="en">Points</span></label>
+						<div id="points"></div>
+						
+						<label for="topic"><span lang="de">Thema</span><span lang="en">Topic</span></label>
+						<div id="topic"></div>
+						
+						<label for="tags"><span lang="de">Tags</span><span lang="en">Tags</span></label>
+						<div id="tags"></div>
+						
+						<label for="type"><span lang="de">Typ</span><span lang="en">Type</span></label>
+						<div id="type"></div>
+						
+						<label for="question"><span lang="de">Frage</span><span lang="en">Question</span></label>
+						<div id="question"></div>
+						
+						<label for="result"><span lang="de">Ergebnis</span><span lang="en">Result</span></label>
+						<div id="result"></div>
+						<button id="validateAnswer_preview" type="button" class="btn btn-default action-button shiny-bound-input"><span lang="de">Überprüfen</span><span lang="en">Validate</span></button>
+					</div>	
+				</div>	
+				<div id="createTaskForm">
+					<h2><span lang="de">Aufgabe Erstellen</span><span lang="en">Create task</span></h2>
+				</div>
+				<div id="dnd_tasks" class="dnd">
+					<div class="dndInfo">
+						<div class="title"><span lang="de">DRAG & DROP</br></br>AUFGABEN (*.rnw)</span><span lang="en">DRAG & DROP</br></br>TASKS (*.rnw)</span></div>
+						<div class="dndIcon"><i class="fas fa-file-upload"></i></div>
+					</div>
+				</div>
+			</div>	
+			<div id="exam" class="mainSection">
+				<h1><span lang="de">Prüfung</span><span lang="en">Exam</span></h1>
+				<div class="contentWrapper">
+					<div class="sidebar">
+						<div id="examFunctions_list" class="itemList">
+							<div id="examFunctions_list_items">
+								<div class="examFunctionsItem sidebarListItem active"><span lang="de">Prüfung Erstellen</span><span lang="en">Create exam</span></div>
+								<div class="examFunctionsItem sidebarListItem"><span lang="de">Prüfung Importieren</span><span lang="en">Import exam</span></div>
+								<div class="examFunctionsItem sidebarListItem"><span lang="de">Prüfung Auswerten</span><span lang="en">Evaluate exam</span></div>
+							</div>
+						</div>
+					</div>
+					<div class="content">
+						<div id="exam_create" class="contentTab active">
+							<h2><span lang="de">Prüfung Erstellen</span><span lang="en">Create exam</span></h2>
+							<div>
+								<div>
+									<label for="seedValueExam"><span lang="de">Seed</span><span lang="en">Seed</span></label>
+									</br>
+									<span id="autofillSeed" class="autofillField"><span lang="de">Seed aus Aufgaben-Bereich kopieren</span><span lang="en">Copy seed from task section</span></span>
+									{{ numericInput_seedValueExam }}
+								</div>
+								<div>
+									<label for="numberOfExams"><span lang="de">Anzahl Prüfungen</span><span lang="en">Number of exams</span></label>
+									{{ numericInput_numberOfExams }}
+								</div>
+								<div>
+									<label for="numberOfTasks"><span lang="de">Anzahl Aufgaben</span><span lang="en">Number of tasks</span></label>
+									</br>
+									<span id="autofillNumberOfTasks" class="autofillField"><span lang="de">Alle markierten Aufgaben</span><span lang="en">All marked tasks</span></span>
+									{{ numericInput_numberOfTasks }}
+								</div>
+								<div>
+									<label for="numberOfFixedPoints"><span lang="de">Fixe Punkte pro Aufgabe</span><span lang="en">Fixed points per exercise</span></label>
+									</br>
+									<span id="infoTotalPoints" class="infoField"><span lang="de">Fixierte Gesamtpunkte: </span><span lang="en">Fixed total points:</span><span id="totalPointsValue"></span></span>
+									{{ numericInput_numberOfFixedPoints }}
+								</div>
+								<div>
+									<label for="showPoints"><span lang="de">Punkte anzeigen</span><span lang="en">Show points</span></label>
+									{{ checkboxInput_showPoints }}
+								</div>
+								<div>
+									<label for="duplex"><span lang="de">Doppelseitiger Druck</span><span lang="en">Duplex printing</span></label>
+									{{ checkboxInput_duplex }}
+								</div>
+								<div>
+									<label for="examLanguage"><span lang="de">Sprache</span><span lang="en">Language</span></label>
+									{{ selectInput_examLanguage }}
+								</div>
+								<div>
+									<label for="examTitle"><span lang="de">Titel</span><span lang="en">Title</span></label>
+									{{ textInput_examTitle }}
+								</div>
+								<div>
+									<label for="examCourse"><span lang="de">Kurs</span><span lang="en">Course</span></label>
+									{{ textInput_examCourse }}
+								</div>
+								<div>
+									<label for="examInstitution"><span lang="de">Institut</span><span lang="en">Department</span></label>
+									{{ textInput_examInstitution }}
+								</div>
+								<div>
+									<label for="examDate"><span lang="de">Prüfungsdatum (yyyy-mm-dd)</span><span lang="en">Exam date (yyyy-mm-dd)</span></label>
+									{{ dateInput_examDate }}
+								</div>
+								<div>
+									<label for="numberOfBlanks"><span lang="de">Anzahl leeren Seiten</span><span lang="en">Number of blank pages</span></label>
+									{{ numericInput_numberOfBlanks }}
+								</div>
+								<div>
+									<label for="additionalPDF"><span lang="de">Zusatz PDF-Seiten</span><span lang="en">Additional PDF pages</span></label>
+									<div id="additionalPDFFiles">
+										<div id="additionalPDF_list" class="itemList">
+											<div id="additionalPDF_list_items">
+											</div>
+										</div>
+										<div id="dnd_additionalPDF" class="dnd">
+											<div class="dndInfo">
+												<div class="title"><span lang="de">DRAG & DROP</br></br>ZUSÄTZLICHE PDF-DATEIEN (*.pdf)</span><span lang="en">DRAG & DROP</br></br>ADDITIONAL PDF FILES (*.pdf)</span></div>
+												<div class="dndIcon"><i class="fas fa-file-upload"></i></div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div>
+									<button id="createExam" type="button" class="btn btn-default action-button shiny-bound-input" onclick='createExam();'><span lang="de">Prüfung erstellen</span><span lang="en">Create exam</span></button>
+								</div>
+							</div>
+						</div>
+						<div id="exam_import" class="contentTab">
+							<h2><span lang="de">Prüfung Importieren</span><span lang="en">Import exam</span></h2>
+						</div>
+						<div id="exam_evaluate" class="contentTab">
+							<h2><span lang="de">Prüfung Auswerten</span><span lang="en">Evaluate exam</span></h2>
+						</div>
+					</div>
+				</div>
+			</div>		
+			<div id="help" class="mainSection">
+				<h1><span lang="de">Hilfe</span><span lang="en">Help</span></h1>
+				<div class="contentWrapper">
+					<div class="sidebar">
+						<div id="help_list" class="itemList">
+							<div id="help_list_items">
+								<div class="helpItem sidebarListItem active"><span lang="de">Aufgaben</span><span lang="en">Tasks</span></div>
+								<div class="helpItem sidebarListItem"><span lang="de">Prüfung</span><span lang="en">Exam</span></div>
+							</div>
+						</div>
+					</div>
+					<div class="content">
+						<div id="help_tasks" class="contentTab active">
+							<h2><span lang="de">Aufgaben</span><span lang="en">Tasks</span></h2>
+						</div>
+						<div id="help_exam" class="contentTab">
+							<h2><span lang="de">Prüfung</span><span lang="en">Prüfung</span></h2>
+							<div id="help_examCreate" class="contentSubTab">
+								<h3><span lang="de">Erstellen</span><span lang="en">Create</span></h3>
+							</div>
+							<div id="help_examImport" class="contentSubTab">
+								<h3><span lang="de">Importieren</span><span lang="en">Import</span></h3>
+							</div>
+							<div id="help_examEvaluate" class="contentSubTab">
+								<h3><span lang="de">Auswerten</span><span lang="en">Evaluate</span></h3>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>	
+		</main>
+		<div class="fullHLine"></div>
+		<div class="footer-container">
+			<footer id="footer" class="wrapper">	
+				<footer>
+					<div id="copyright">
+						<small>
+							<div>&copy; Copyright <script>document.write(new Date().getFullYear())</script>, Sebastian Bachler</div>
+						</small> 
+					</div>
+				</footer>
+			</footer>
+		</div>
+	</body>	
+</html>
