@@ -1147,6 +1147,14 @@ function loadAdditionalPDFDnD(items) {
 	});
 }
 
+function loadAdditionalPDFFileDialog(items) {
+	console.log(items);
+	
+	items.forEach(function(file) {
+		addAdditionalPDF(file);
+	});
+}
+
 function addAdditionalPDF(file) {
 	if ( file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase() == 'pdf') {
 		let fileReader = new FileReader();
@@ -1210,7 +1218,7 @@ function calcTotalFixedPoints(){
 
 async function createExam() {
 	const examTaskCodes = iuf['tasks'].filter((task) => task.exam).map((task) => task.file.text());
-	
+		
 	Promise.all(examTaskCodes).then((values) => {
 		Shiny.onInputChange("parseExam", {numberOfExams: $("#numberOfExams").val(), numberOfTasks: $("#numberOfTasks").val(), tasks: values, additionalPDF: iuf['examAdditionalPDF']}, {priority: 'event'});
 	});

@@ -365,7 +365,7 @@ main > * {
 /* --------------------------------------------------------------
  TASKS LIST
 -------------------------------------------------------------- */
-#file-input input[type="file"] {
+#file-upload_tasks {
     display: none;
 }
 
@@ -548,6 +548,27 @@ main > * {
 /* --------------------------------------------------------------
  EXAMS 
 -------------------------------------------------------------- */
+#additionalPDFContainer {
+	display: flex;
+	width: 300px;
+}
+
+#file-upload_addAdditionalPDF {
+    display: none;
+}
+
+#pdfUpload {
+	padding: 0.5rem;
+	cursor: pointer;
+	display: table;
+	margin
+}
+
+#pdfUpload:hover {
+	color: var(---background2);
+	border-radius: 5px;
+}
+
 #exam .content {
 	width: 100%;
 }
@@ -572,7 +593,7 @@ main > * {
 }
 
 #additionalPDFFiles {
-	width: 300px;
+	width: 270px;
 	min-height: 34px;
 	background: var(---background3);
 }
@@ -587,6 +608,12 @@ main > * {
 	margin: 0.25rem;
 	padding: 0.25rem;
 	justify-content: space-between;
+}
+
+.additionalPDFName {
+	width: 90%;
+	overflow: hidden;
+	white-space: nowrap;
 }
 
 .additionalPDFItem .removeText {

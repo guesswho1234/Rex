@@ -91,14 +91,12 @@
 					<div class="sidebar">
 						<div id="task_list" class="itemList">
 							<div id="taskListButtons" class="listButtons">
-								<div id="taskUpload" class="listButton">		
-									<div id="file-input">
-										<input type="file" id="file-upload" onchange='loadTasksFileDialog(this.files);' multiple>
-										<div class="list_butttonIcon">
-											<i class="fa-solid fa-upload"></i>
-										</div>
+								<label id="taskUpload" class="listButton" for="file-upload_tasks">
+									<div class="list_butttonIcon">
+										<i class="fa-solid fa-upload"></i>
 									</div>
-								</div>	
+									<input type="file" id="file-upload_tasks" onchange='loadTasksFileDialog(this.files);' multiple>
+								</label>
 								<div id="examTaskAll" class="listButton">
 									<div class="list_butttonIcon">
 										<i class="fa-solid fa-circle-check"></i>
@@ -166,7 +164,7 @@
 				</div>
 				<div id="dnd_tasks" class="dnd">
 					<div class="dndInfo">
-						<div class="title"><span lang="de">DRAG & DROP</br></br>AUFGABEN (*.rnw)</span><span lang="en">DRAG & DROP</br></br>TASKS (*.rnw)</span></div>
+						<div class="title"><span lang="de">DRAG & DROP</br></br>AUFGABEN (*.rnw oder *.txt)</span><span lang="en">DRAG & DROP</br></br>TASKS (*.rnw or *.txt)</span></div>
 						<div class="dndIcon"><i class="fas fa-file-upload"></i></div>
 					</div>
 				</div>
@@ -243,15 +241,23 @@
 								</div>
 								<div>
 									<label for="additionalPDF"><span lang="de">Zusatz PDF-Seiten</span><span lang="en">Additional PDF pages</span></label>
-									<div id="additionalPDFFiles">
-										<div id="additionalPDF_list" class="itemList">
-											<div id="additionalPDF_list_items">
+									<div id="additionalPDFContainer">
+										<label id="pdfUpload" for="file-upload_addAdditionalPDF">
+											<div class="list_butttonIcon">
+												<i class="fa-solid fa-upload"></i>
 											</div>
-										</div>
-										<div id="dnd_additionalPDF" class="dnd">
-											<div class="dndInfo">
-												<div class="title"><span lang="de">DRAG & DROP</br></br>ZUSÄTZLICHE PDF-DATEIEN (*.pdf)</span><span lang="en">DRAG & DROP</br></br>ADDITIONAL PDF FILES (*.pdf)</span></div>
-												<div class="dndIcon"><i class="fas fa-file-upload"></i></div>
+											<input type="file" id="file-upload_addAdditionalPDF" onchange='loadAdditionalPDFFileDialog(this.files);' multiple>
+										</label>
+										<div id="additionalPDFFiles">
+											<div id="additionalPDF_list" class="itemList">
+												<div id="additionalPDF_list_items">
+												</div>
+											</div>
+											<div id="dnd_additionalPDF" class="dnd">
+												<div class="dndInfo">
+													<div class="title"><span lang="de">DRAG & DROP</br></br>ZUSÄTZLICHE PDF-DATEIEN (*.pdf)</span><span lang="en">DRAG & DROP</br></br>ADDITIONAL PDF FILES (*.pdf)</span></div>
+													<div class="dndIcon"><i class="fas fa-file-upload"></i></div>
+												</div>
 											</div>
 										</div>
 									</div>
