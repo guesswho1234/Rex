@@ -110,6 +110,7 @@ parseExam = function(exam, seed, input, output, session) {
       tasks = lapply(exam$tasks, function(i){
         file = tempfile(fileext = ".rnw") # tempfile name
         writeLines(text = i, con = file) # write contents to file
+        print(i)
         
         return(file)
       })

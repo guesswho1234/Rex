@@ -84,7 +84,6 @@ title(ylab="Spot Rate")
 @
 
 Sie wollen Ihr Erspartes am Kapitalmarkt anlegen, während Ihre Eltern dem Kapitalmarkt nicht trauen und die gleiche Geldmenge stattdessen für 10 Jahre in einem Schuhkarton lagern und somit ohne Zinsen anlegen werden. Markieren Sie jene Strategien, mit welchen Ihre Anlage in t=10 zumindest den gleichen oder einen höheren Wert als jene Ihrer Eltern haben würde.
-
 <<echo=FALSE, results=tex>>=
 answerlist(choices)
 @

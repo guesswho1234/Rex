@@ -405,7 +405,7 @@ function itemTable(arr) {
 	
 	let out = "";
 	
-	out = Object.entries(counts).map(end => {
+	out = Object.entries(counts).map(entry => {
 		const [key, value] = entry;
 		return '<span class="s_label"><span class="s_key">' + key + '</span><span class="s_value">' + value + '</span></span>';
 	}).join('');
@@ -769,8 +769,14 @@ async function loadTask(file) {
 
 				const taskID = tasks + 1
 				addTask();
+				
+				let fileText = xmlToRnw;
+				fileText = fileText.replace("?q", '"' + questionText + '"');
+				fileText = fileText.replace("?c", 'c(' + questionAnswerChoices.map(c=>'"' + c + '"').join(',') + ')');
+				fileText = fileText.replace("?s", 'c(' + questionAnswerResults.map(s=>s?"T":"F").join(',') + ')');
+				fileText = fileText.replaceAll("\n", "\r\n");
 
-				iuf['tasks'][taskID]['file'] = file;
+				iuf['tasks'][taskID]['file'] = fileText;
 				iuf['tasks'][taskID]['seed'] = null;
 				iuf['tasks'][taskID]['exam'] = false;
 				iuf['tasks'][taskID]['question'] = questionText;
@@ -1217,7 +1223,7 @@ function calcTotalFixedPoints(){
 }
 
 async function createExam() {
-	const examTaskCodes = iuf['tasks'].filter((task) => task.exam).map((task) => task.file.text());
+	const examTaskCodes = iuf['tasks'].filter((task) => task.exam).map((task) => task.e.includes("XML") ? task.file : task.file.text());
 		
 	Promise.all(examTaskCodes).then((values) => {
 		Shiny.onInputChange("parseExam", {numberOfExams: $("#numberOfExams").val(), numberOfTasks: $("#numberOfTasks").val(), tasks: values, additionalPDF: iuf['examAdditionalPDF']}, {priority: 'event'});
