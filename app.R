@@ -104,18 +104,26 @@ parseExam = function(exam, seed, input, output, session) {
     startWait(session)
     
     for(examId in 1:exam$numberOfExams){
-      examSeed = as.numeric(paste0(if(is.na(seed)) NULL else seed, examId))
+      examSeed = as.numeric(paste0(if(is.na(exam$examSeed)) NULL else exam$examSeed, examId))
       set.seed(examSeed)
       
-      tasks = lapply(exam$tasks, function(i){
+      blocks = as.numeric(exam$blocks)
+      numberOfTasks = as.numeric(exam$numberOfTasks)
+
+      tasksPerBlock = numberOfTasks / length(unique(blocks))
+      taskBlocks = lapply(unique(exam$blocks), function(x) exam$tasks[exam$blocks==x])
+      
+      tasks = Reduce(c, lapply(taskBlocks, sample, tasksPerBlock))
+
+      tasks = lapply(tasks, function(i){
         file = tempfile(fileext = ".rnw") # tempfile name
         writeLines(text = i, con = file) # write contents to file
         print(i)
-        
+
         return(file)
       })
       
-      tasks = sample(tasks, as.numeric(exam$numberOfTasks))
+      tasks = sample(tasks, numberOfTasks)
       seedList = rep(examSeed, length(tasks))
       
       additionalPDF = lapply(exam$additionalPDF, function(i){
@@ -261,15 +269,21 @@ checkSeed = function(seed) {
 
 checkNumberOfExamTasks = function(numberOfExamTasks){
   if(!(is.numeric(numberOfExamTasks)) || is.null(numberOfExamTasks) || is.na(numberOfExamTasks)) {
+    print("wrong format")
     return(0)
   } 
   
   if(numberOfExamTasks < 0) {
+    print("< 0")
     return(0)
   } 
   
   if(numberOfExamTasks > maxNumberOfExamTasks){
     return(maxNumberOfExamTasks)
+  } 
+  
+  if(numberOfExamTasks %% numberOfTaskBlocks != 0){
+    return(numberOfTaskBlocks)
   } 
   
   return(isolate(numberOfExamTasks))
@@ -291,6 +305,7 @@ checkPosNumber = function(numberField){
 seedMin = 1
 seedMax = 99999999
 initSeed = as.numeric(gsub("-", "", Sys.Date()))
+numberOfTaskBlocks = 1
 maxNumberOfExamTasks = 0
 assign("MAKEBSP", F, envir = .GlobalEnv)
 languages = c("en",
@@ -380,6 +395,11 @@ server = function(input, output, session) {
   # set max number of exam tasks
   observeEvent(input$setNumberOfExamTasks, {
     maxNumberOfExamTasks <<- input$setNumberOfExamTasks
+  })
+  
+  # set number of task blocks
+  observeEvent(input$setNumberOfTaskBlocks, {
+    numberOfTaskBlocks <<- input$setNumberOfTaskBlocks
   })
 }
 

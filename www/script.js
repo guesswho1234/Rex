@@ -349,6 +349,7 @@ $("#seedValue").change(function(){
 -------------------------------------------------------------- */
 function examTasksSummary() {
 	numberOfExamTasks();
+	numberOfTaskBlocks();
 	 
 	$('#s_initialSeed').html(itemSingle($('#seedValue').val(), 'greenLabel'));
 	
@@ -703,27 +704,36 @@ let dndTasks = {
 window.addEventListener('DOMContentLoaded', dndTasks.init);
 
 function loadTasksDnD(items) {	
+	let blockNum = getBlockNum();
+	
 	getFilesDataTransferItems(items).then(async (files) => {
 		Array.from(files).forEach(file => {	
-			loadTask(file);
+			loadTask(file, blockNum);
 		});
 	});
 }
 
-function loadTasksFileDialog(items) {
+function loadTasksFileDialog(items) {	
+	let blockNum = getBlockNum();
+	
 	items.forEach(function(file) {
-		loadTask(file);
+		loadTask(file, blockNum);
 	});
 }
 
-async function loadTask(file) {
+function getBlockNum() {
+	const blockNum = Math.max(...iuf['tasks'].map(x => x.block))+1;
+	return String(blockNum > 0 ? blockNum : 1);
+}
+
+async function loadTask(file, block = "1") {
 	const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
 	
 	switch(fileExt) {
 		case 'rnw':
 			const taskID = tasks + 1
 			addTask();
-
+			
 			iuf['tasks'][taskID]['file'] = file;
 			iuf['tasks'][taskID]['seed'] = null;
 			iuf['tasks'][taskID]['exam'] = false;
@@ -740,8 +750,9 @@ async function loadTask(file) {
 			iuf['tasks'][taskID]['tags'] = null;
 			iuf['tasks'][taskID]['type'] = null;
 			iuf['tasks'][taskID]['e'] = null;
+			iuf['tasks'][taskID]['block'] = block;
 			
-			$('#task_list_items').append('<div class="taskItem sidebarListItem"><span class="taskTryCatch"><i class="fa-solid fa-triangle-exclamation"></i><span class="taskTryCatchText"></span></span><span class="taskName">' + file.name + '</span></span><span class="taskButtons"><span class="taskParse taskButton"><i class="fa-solid fa-rotate"></i></span><span class="examTask taskButton"><i class="fa-solid fa-circle-check"></i></span><span class="taskRemove taskButton"><i class="fa-solid fa-trash"></i></span></span></div>');
+			$('#task_list_items').append('<div class="taskItem sidebarListItem"><span class="taskTryCatch"><i class="fa-solid fa-triangle-exclamation"></i><span class="taskTryCatchText"></span></span><span class="taskName">' + file.name + '</span></span><span class="taskBlock disabled"><input type="number" value="' + block + '"/></span><span class="taskButtons"><span class="taskParse taskButton"><i class="fa-solid fa-rotate"></i></span><span class="examTask taskButton"><i class="fa-solid fa-circle-check"></i></span><span class="taskRemove taskButton"><i class="fa-solid fa-trash"></i></span></span></div>');
 			
 			viewTask(taskID, true);
 		
@@ -792,8 +803,9 @@ async function loadTask(file) {
 				iuf['tasks'][taskID]['tags'] = null;
 				iuf['tasks'][taskID]['type'] = null;
 				iuf['tasks'][taskID]['e'] = 'XML:' + (i+1);	
+				iuf['tasks'][taskID]['block'] = block;
 				
-				$('#task_list_items').append('<div class="taskItem sidebarListItem"><span class="taskTryCatch"><i class="fa-solid fa-triangle-exclamation"></i><span class="taskTryCatchText"></span></span><span class="taskName">' + file.name + "_" + (i+1) + '</span></span><span class="taskButtons"><span class="taskParse taskButton disabled"><i class="fa-solid fa-rotate"></i></span><span class="examTask taskButton"><i class="fa-solid fa-circle-check"></i></span><span class="taskRemove taskButton"><i class="fa-solid fa-trash"></i></span></span></div>');
+				$('#task_list_items').append('<div class="taskItem sidebarListItem"><span class="taskTryCatch"><i class="fa-solid fa-triangle-exclamation"></i><span class="taskTryCatchText"></span></span><span class="taskName">' + file.name + "_" + (i+1) + '</span></span><span class="taskBlock disabled"><input type="number" value="' + block + '"/></span><span class="taskButtons"><span class="taskParse taskButton disabled"><i class="fa-solid fa-rotate"></i></span><span class="examTask taskButton"><i class="fa-solid fa-circle-check"></i></span><span class="taskRemove taskButton"><i class="fa-solid fa-trash"></i></span></span></div>');
 				
 				viewTask(taskID);
 			}
@@ -808,9 +820,27 @@ async function parseTask(taskID) {
 }
 
 function numberOfExamTasks() {
+	Shiny.onInputChange("setNumberOfExamTasks", getNumberOfExamTasks(), {priority: 'event'});
+}
+
+function numberOfTaskBlocks() {
+	Shiny.onInputChange("setNumberOfTaskBlocks", getNumberOfTaskBlocks(), {priority: 'event'});
+}
+
+function getNumberOfTaskBlocks() {
+	return new Set(iuf['tasks'].map(x => x.block)).size;
+}
+
+function getNumberOfExamTasks() {
 	let setNumberOfExamTasks = 0;
-	iuf['tasks'].map(t => setNumberOfExamTasks += t.exam); 
-	Shiny.onInputChange("setNumberOfExamTasks", setNumberOfExamTasks, {priority: 'event'});
+	iuf['tasks'].map(t => setNumberOfExamTasks += t.exam);
+	
+	let numberOfTaskBlocks = getNumberOfTaskBlocks();
+	
+	setNumberOfExamTasks = setNumberOfExamTasks - setNumberOfExamTasks % numberOfTaskBlocks;
+
+	const tasksPerBlock = iuf.tasks.reduce( (acc, t) => (acc[t.block] = (acc[t.block] || 0) + 1, acc), {} );
+	return Math.min(setNumberOfExamTasks, Math.min(...Object.values(tasksPerBlock))) * numberOfTaskBlocks;
 }
 
 function viewTask(taskID, forceParse = false) {
@@ -887,11 +917,23 @@ function removeTask(taskID) {
 	examTasksSummary();
 }
 
+function changeTaskBlock(taskID, b) {
+	iuf['tasks'][taskID]['block'] = b;
+	numberOfTaskBlocks();
+}
+
 function toggleExamTask(taskID, b) {
 	iuf['tasks'][taskID]['exam'] = b;
 	
 	examTasksSummary();
 }
+
+$('#task_list_items').on('change', '.taskBlock input', function(e) {
+	e.preventDefault();
+	e.stopPropagation();
+	
+	changeTaskBlock($(this).closest('.taskItem').index('.taskItem'), $(this).closest('.taskItem .taskBlock input').val());
+});
 
 $('#task_list_items').on('click', '.taskParse', function(e) {
 	e.preventDefault();
@@ -1206,9 +1248,7 @@ $("#numberOfTasks").change(function(){
 });
 
 $("#autofillNumberOfTasks").click(function(){
-	let setNumberOfExamTasks = 0;
-	iuf['tasks'].map(t => setNumberOfExamTasks += t.exam);
-	$('#numberOfTasks').val(setNumberOfExamTasks);
+	$('#numberOfTasks').val(getNumberOfExamTasks());
 	calcTotalFixedPoints();
 }); 
 
@@ -1224,9 +1264,11 @@ function calcTotalFixedPoints(){
 
 async function createExam() {
 	const examTaskCodes = iuf['tasks'].filter((task) => task.exam).map((task) => task.e.includes("XML") ? task.file : task.file.text());
+	
+	let blocks = iuf['tasks'].map(x => x.block)
 		
 	Promise.all(examTaskCodes).then((values) => {
-		Shiny.onInputChange("parseExam", {numberOfExams: $("#numberOfExams").val(), numberOfTasks: $("#numberOfTasks").val(), tasks: values, additionalPDF: iuf['examAdditionalPDF']}, {priority: 'event'});
+		Shiny.onInputChange("parseExam", {examSeed: $('#seedValueExam').val(), numberOfExams: $("#numberOfExams").val(), numberOfTasks: $("#numberOfTasks").val(), tasks: values, blocks: blocks, additionalPDF: iuf['examAdditionalPDF']}, {priority: 'event'});
 	});
 }
 

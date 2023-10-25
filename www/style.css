@@ -28,11 +28,11 @@ html {
 }
 
 html {
-    -ms-overflow-style: none;  /* Internet Explorer 10+ */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 html::-webkit-scrollbar { 
-    display: none;  /* Safari and Chrome */
+    display: none;
 }
 
 body {
@@ -244,7 +244,6 @@ main > * {
 	margin-top: 25px;
 }
 	
-
 /* --------------------------------------------------------------
  DRAG AND DROP 
 -------------------------------------------------------------- */
@@ -338,7 +337,6 @@ main > * {
 	margin: 0.25rem;
 	padding: 0.25rem;
 	display: flex;
-	justify-content: space-between;
 }
 
 .sidebarListItem > span {
@@ -396,13 +394,27 @@ main > * {
 	overflow-wrap: anywhere;
 }
 
+.taskBlock  {
+	margin-right: 0px;
+	margin-left: auto;
+	width: auto;
+}
+
+.taskBlock input {
+	width: 50px;
+	margin-right: 0px;
+	margin-left: auto;
+	text-align: center;
+	font-weight: bold;
+}
+
 .taskButtons {
 	width: 75px;
 	display: flex;
 	margin-right: 0px;
-	margin-left: auto;
 }
 
+.taskItem:not(.exam) .taskBlock.disabled,
 .taskButton.disabled { 
 	pointer-events: none; 
 	filter: opacity(0.2);
