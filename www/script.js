@@ -828,7 +828,7 @@ function numberOfTaskBlocks() {
 }
 
 function getNumberOfTaskBlocks() {
-	return new Set(iuf['tasks'].map(x => x.block)).size;
+	return new Set(iuf['tasks'].filter((task) => task.exam).map(x => x.block)).size;
 }
 
 function getNumberOfExamTasks() {
@@ -839,7 +839,7 @@ function getNumberOfExamTasks() {
 	
 	setNumberOfExamTasks = setNumberOfExamTasks - setNumberOfExamTasks % numberOfTaskBlocks;
 
-	const tasksPerBlock = iuf.tasks.reduce( (acc, t) => (acc[t.block] = (acc[t.block] || 0) + 1, acc), {} );
+	const tasksPerBlock = iuf['tasks'].filter((task) => task.exam).reduce( (acc, t) => (acc[t.block] = (acc[t.block] || 0) + 1, acc), {} );
 	return Math.min(setNumberOfExamTasks, Math.min(...Object.values(tasksPerBlock))) * numberOfTaskBlocks;
 }
 
