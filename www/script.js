@@ -53,8 +53,12 @@ document.onkeydown = function(evt) {
 			$('#searchTasks input').val("");
 			$('.taskItem').removeClass("filtered");
 		}
+		
+		const targetInput = $(evtobj.target).is('input');
+		const targetEditable = $(evtobj.target).is('.taskName') || $(evtobj.target).is('.questionText') || $(evtobj.target).is('.choiceText');
+		const itemsExist = $('.taskItem').length > 0;
 			
-		if (!$(evtobj.target).is('input') && !$(evtobj.target).is('.questionText') && !$(evtobj.target).is('.choiceText') && $('.taskItem').length > 0) {
+		if (!targetInput && !targetEditable && itemsExist) {
 			let updateView = false;
 			
 			if (evtobj.shiftKey) {
@@ -463,6 +467,10 @@ function taskParseAll(){
 	});	
 }
 
+$('#newTask').click(function () {
+	newSimpleTask();
+});
+
 $('#examTaskAll').click(function () {
 	examTaskAll();
 });
@@ -644,6 +652,18 @@ $('#searchTasks input').change(function () {
 			
 			filterTasks(fieldsToFilter, filterBy);
 		}
+		
+		if (input.includes("editable:")) {
+			const fieldsToFilter = iuf.tasks.map(task => {
+				if( !task.editable ) {
+					return "0";
+				} 
+				
+				return "1";
+			})
+			
+			filterTasks(fieldsToFilter, filterBy);
+		}
 	});  
 	
 	matches = Array.from(matches);
@@ -725,93 +745,163 @@ function getBlockNum() {
 	return String(blockNum > 0 ? blockNum : 1);
 }
 
-async function loadTask(file, block = "1") {
+function loadTask(file, block = "1") {
 	const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
 	
 	switch(fileExt) {
 		case 'rnw':
+			newComplexTask(file, block);
+			break;
+		case 'txt':				
+			newSimpleTask(file, block);
+			break;
+	}
+}
+
+async function newSimpleTask(file = '', block = '1') {
+	if(file != '') {
+		const parser = new DOMParser();
+		const fileText = await file.text();
+		const xmlDoc = parser.parseFromString(fileText,"text/xml");
+		const questions = xmlDoc.getElementsByTagName("question");
+	
+		for (i = 0; i < questions.length; i++) {
+			const question = questions[i];
+			const questionText = question.getElementsByTagName("questionText")[0].textContent.trim();
+			const questionAnswers = question.getElementsByTagName("questionAnswer");
+			
+			let questionAnswerChoices = new Array();
+			let questionAnswerResults = new Array();
+			
+			for (j = 0; j < questionAnswers.length; j++) {
+				const questionAnswer = questionAnswers[j];
+				questionAnswerChoices.push(questionAnswer.getElementsByTagName("questionAnswerText")[0].textContent.trim()); 
+				questionAnswerResults.push(questionAnswer.getElementsByTagName("questionAnswerResult")[0].textContent.trim() === "1"); 
+			}
+
 			const taskID = tasks + 1
 			addTask();
 			
-			iuf['tasks'][taskID]['file'] = file;
-			iuf['tasks'][taskID]['seed'] = null;
-			iuf['tasks'][taskID]['exam'] = false;
-			iuf['tasks'][taskID]['question'] = null;
-			iuf['tasks'][taskID]['choices'] = null;
-			iuf['tasks'][taskID]['result'] = null;
-			iuf['tasks'][taskID]['examHistory'] = null;
-			iuf['tasks'][taskID]['authoredBy'] = null;
-			iuf['tasks'][taskID]['checkedBy'] = null;
-			iuf['tasks'][taskID]['precision'] = null;
-			iuf['tasks'][taskID]['difficulty'] = null;
-			iuf['tasks'][taskID]['points'] = null;
-			iuf['tasks'][taskID]['topic'] = null;
-			iuf['tasks'][taskID]['tags'] = null;
-			iuf['tasks'][taskID]['type'] = null;
-			iuf['tasks'][taskID]['e'] = null;
-			iuf['tasks'][taskID]['editable'] = false;
-			iuf['tasks'][taskID]['block'] = block;
-			
-			$('#task_list_items').append('<div class="taskItem sidebarListItem"><span class="taskTryCatch"><i class="fa-solid fa-triangle-exclamation"></i><span class="taskTryCatchText"></span></span><span class="taskName">' + file.name + '</span></span><span class="taskBlock disabled"><input type="number" value="' + block + '"/></span><span class="taskButtons"><span class="taskParse taskButton"><i class="fa-solid fa-rotate"></i></span><span class="examTask taskButton"><i class="fa-solid fa-circle-check"></i></span><span class="taskRemove taskButton"><i class="fa-solid fa-trash"></i></span></span></div>');
-			
-			viewTask(taskID, true);
-		
-			break;
-		case 'txt':				
-			const parser = new DOMParser();
-			const fileText = await file.text();
-			const xmlDoc = parser.parseFromString(fileText,"text/xml");
-			
-			const questions = xmlDoc.getElementsByTagName("question");
-			
-			for (i = 0; i < questions.length; i++) {
-				const question = questions[i];
-				const questionText = question.getElementsByTagName("questionText")[0].textContent.trim();
-				const questionAnswers = question.getElementsByTagName("questionAnswer");
-				
-				let questionAnswerChoices = new Array();
-				let questionAnswerResults = new Array();
-				
-				for (j = 0; j < questionAnswers.length; j++) {
-					const questionAnswer = questionAnswers[j];
-					questionAnswerChoices.push(questionAnswer.getElementsByTagName("questionAnswerText")[0].textContent.trim()); 
-					questionAnswerResults.push(questionAnswer.getElementsByTagName("questionAnswerResult")[0].textContent.trim() === "1"); 
-				}
+			let fileText = xmlToRnw;
+			fileText = fileText.replace("?q", '"' + questionText + '"');
+			fileText = fileText.replace("?c", 'c(' + questionAnswerChoices.map(c=>'"' + c + '"').join(',') + ')');
+			fileText = fileText.replace("?s", 'c(' + questionAnswerResults.map(s=>s?"T":"F").join(',') + ')');
+			fileText = fileText.replaceAll("\n", "\r\n");
 
-				const taskID = tasks + 1
-				addTask();
-				
-				let fileText = xmlToRnw;
-				fileText = fileText.replace("?q", '"' + questionText + '"');
-				fileText = fileText.replace("?c", 'c(' + questionAnswerChoices.map(c=>'"' + c + '"').join(',') + ')');
-				fileText = fileText.replace("?s", 'c(' + questionAnswerResults.map(s=>s?"T":"F").join(',') + ')');
-				fileText = fileText.replaceAll("\n", "\r\n");
-
-				iuf['tasks'][taskID]['file'] = fileText;
-				iuf['tasks'][taskID]['seed'] = null;
-				iuf['tasks'][taskID]['exam'] = false;
-				iuf['tasks'][taskID]['question'] = questionText;
-				iuf['tasks'][taskID]['choices'] = questionAnswerChoices;
-				iuf['tasks'][taskID]['result'] = questionAnswerResults;
-				iuf['tasks'][taskID]['examHistory'] = null;
-				iuf['tasks'][taskID]['authoredBy'] = null;
-				iuf['tasks'][taskID]['checkedBy'] = null;
-				iuf['tasks'][taskID]['precision'] = null;
-				iuf['tasks'][taskID]['difficulty'] = null;
-				iuf['tasks'][taskID]['points'] = null;
-				iuf['tasks'][taskID]['topic'] = null;
-				iuf['tasks'][taskID]['tags'] = null;
-				iuf['tasks'][taskID]['type'] = null;
-				iuf['tasks'][taskID]['e'] = 'XML:' + (i+1);	
-				iuf['tasks'][taskID]['editable'] = true;
-				iuf['tasks'][taskID]['block'] = block;
-				
-				$('#task_list_items').append('<div class="taskItem sidebarListItem editable"><span class="taskTryCatch"><i class="fa-solid fa-triangle-exclamation"></i><span class="taskTryCatchText"></span></span><span class="taskName">' + file.name + "_" + (i+1) + '</span></span><span class="taskBlock disabled"><input type="number" value="' + block + '"/></span><span class="taskButtons"><span class="taskParse taskButton disabled"><i class="fa-solid fa-rotate"></i></span><span class="examTask taskButton"><i class="fa-solid fa-circle-check"></i></span><span class="taskRemove taskButton"><i class="fa-solid fa-trash"></i></span></span></div>');
-				
-				viewTask(taskID);
-			}
-			break;
+			createTask(taskID, file.name + "_" + (i+1), 
+							   fileText, 
+							   questionText,
+							   questionAnswerChoices,
+							   questionAnswerResults,
+							   'XML:' + (i+1),
+							   true);
+			
+			// iuf['tasks'][taskID]['file'] = fileText;
+			// iuf['tasks'][taskID]['seed'] = null;
+			// iuf['tasks'][taskID]['exam'] = false;
+			// iuf['tasks'][taskID]['question'] = questionText;
+			// iuf['tasks'][taskID]['choices'] = questionAnswerChoices;
+			// iuf['tasks'][taskID]['result'] = questionAnswerResults;
+			// iuf['tasks'][taskID]['examHistory'] = null;
+			// iuf['tasks'][taskID]['authoredBy'] = null;
+			// iuf['tasks'][taskID]['checkedBy'] = null;
+			// iuf['tasks'][taskID]['precision'] = null;
+			// iuf['tasks'][taskID]['difficulty'] = null;
+			// iuf['tasks'][taskID]['points'] = null;
+			// iuf['tasks'][taskID]['topic'] = null;
+			// iuf['tasks'][taskID]['tags'] = null;
+			// iuf['tasks'][taskID]['type'] = null;
+			// iuf['tasks'][taskID]['e'] = 'XML:' + (i+1);	
+			// iuf['tasks'][taskID]['editable'] = true;
+			// iuf['tasks'][taskID]['block'] = block;
+			
+			// $('#task_list_items').append('<div class="taskItem sidebarListItem editable"><span class="taskTryCatch"><i class="fa-solid fa-triangle-exclamation"></i><span class="taskTryCatchText"></span></span><span class="taskName">' + file.name + "_" + (i+1) + '</span></span><span class="taskBlock disabled"><input type="number" value="' + block + '"/></span><span class="taskButtons"><span class="taskParse taskButton disabled"><i class="fa-solid fa-rotate"></i></span><span class="examTask taskButton"><i class="fa-solid fa-circle-check"></i></span><span class="taskRemove taskButton"><i class="fa-solid fa-trash"></i></span></span></div>');
+			
+			viewTask(taskID);
+		}
+	} else {
+		const taskID = tasks + 1
+		addTask();
+		createTask(taskID, 'newTask', 
+					   '', 
+					   'Question text',
+					   ['Answer 1', 'Answer 2', 'Answer 3', 'Answer 4', 'Answer 5'],
+					   [false, false, false, false, false],
+					   'XML:',
+					   true);
+		viewTask(taskID);
 	}
+}
+
+function newComplexTask(file = '', block) {
+	const taskID = tasks + 1
+	addTask();
+	
+	createTask(taskID, file.name, file);
+	
+	// iuf['tasks'][taskID]['file'] = file;
+	// iuf['tasks'][taskID]['seed'] = null;
+	// iuf['tasks'][taskID]['exam'] = false;
+	// iuf['tasks'][taskID]['question'] = null;
+	// iuf['tasks'][taskID]['choices'] = null;
+	// iuf['tasks'][taskID]['result'] = null;
+	// iuf['tasks'][taskID]['examHistory'] = null;
+	// iuf['tasks'][taskID]['authoredBy'] = null;
+	// iuf['tasks'][taskID]['checkedBy'] = null;
+	// iuf['tasks'][taskID]['precision'] = null;
+	// iuf['tasks'][taskID]['difficulty'] = null;
+	// iuf['tasks'][taskID]['points'] = null;
+	// iuf['tasks'][taskID]['topic'] = null;
+	// iuf['tasks'][taskID]['tags'] = null;
+	// iuf['tasks'][taskID]['type'] = null;
+	// iuf['tasks'][taskID]['e'] = null;
+	// iuf['tasks'][taskID]['editable'] = false;
+	// iuf['tasks'][taskID]['block'] = block;
+	
+	// $('#task_list_items').append('<div class="taskItem sidebarListItem"><span class="taskTryCatch"><i class="fa-solid fa-triangle-exclamation"></i><span class="taskTryCatchText"></span></span><span class="taskName">' + file.name + '</span></span><span class="taskBlock disabled"><input type="number" value="' + block + '"/></span><span class="taskButtons"><span class="taskParse taskButton"><i class="fa-solid fa-rotate"></i></span><span class="examTask taskButton"><i class="fa-solid fa-circle-check"></i></span><span class="taskRemove taskButton"><i class="fa-solid fa-trash"></i></span></span></div>');
+	
+	viewTask(taskID, true);
+}
+
+function createTask(taskID, name='task', 
+							file='', 
+						    question='',
+						    choices=[],
+							result=[],
+							e=null,
+							editable=false,
+							seed=null, 
+						    exam=false, 
+							examHistory=null,
+							authoredBy=null,
+							checkedBy=null,
+							precision=null,
+							difficulty=null,
+							points=null,
+							topic=null,
+							tags=null,
+							type=null,
+							block='1'){
+	iuf['tasks'][taskID]['file'] = file;
+	iuf['tasks'][taskID]['seed'] = seed;
+	iuf['tasks'][taskID]['exam'] = exam;
+	iuf['tasks'][taskID]['question'] = question;
+	iuf['tasks'][taskID]['choices'] = choices;
+	iuf['tasks'][taskID]['result'] = result;
+	iuf['tasks'][taskID]['examHistory'] = examHistory;
+	iuf['tasks'][taskID]['authoredBy'] = authoredBy;
+	iuf['tasks'][taskID]['checkedBy'] = checkedBy;
+	iuf['tasks'][taskID]['precision'] = precision;
+	iuf['tasks'][taskID]['difficulty'] = difficulty;
+	iuf['tasks'][taskID]['points'] = points;
+	iuf['tasks'][taskID]['topic'] = topic;
+	iuf['tasks'][taskID]['tags'] = tags;
+	iuf['tasks'][taskID]['type'] = type;
+	iuf['tasks'][taskID]['e'] = e;	
+	iuf['tasks'][taskID]['editable'] = editable;
+	iuf['tasks'][taskID]['block'] = block;
+	
+	$('#task_list_items').append('<div class="taskItem sidebarListItem ' + (editable ? 'editableTask' : '') + '"><span class="taskTryCatch"><i class="fa-solid fa-triangle-exclamation"></i><span class="taskTryCatchText"></span></span><span class="taskName" contenteditable="' + editable + '" spellcheck="false">' + name + '</span></span><span class="taskBlock disabled"><input type="number" value="' + block + '"/></span><span class="taskButtons"><span class="taskParse taskButton disabled"><i class="fa-solid fa-rotate"></i></span><span class="examTask taskButton"><i class="fa-solid fa-circle-check"></i></span><span class="taskRemove taskButton"><i class="fa-solid fa-trash"></i></span></span></div>');
 }
 
 async function parseTask(taskID) {	

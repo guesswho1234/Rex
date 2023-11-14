@@ -352,7 +352,7 @@ main > * {
 	background: var(---background3);
 }
 
-.sidebarListItem.editable {
+.sidebarListItem.editableTask {
 	border-left: 3px solid var(---highlight_values);
 }
 
@@ -396,6 +396,11 @@ main > * {
 .taskName {
 	max-width: 350px;
 	overflow-wrap: anywhere;
+	height: 100%;
+	line-height: 100%;
+	display: flex;
+	margin: auto;
+	margin-left: 0px;
 }
 
 .taskBlock  {
@@ -568,6 +573,11 @@ main > * {
 
 .editTrueFalse {
 	cursor: pointer;
+}
+
+span[contenteditable="true"]:not(.taskName),
+.editTrueFalse {
+	padding: 2px;
 }
 
 span[contenteditable="true"],

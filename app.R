@@ -4,8 +4,6 @@
 
 #TODO: opening the dashboard, loading tasks, deleting all of them and refreshing the pages causes the app to break and throw a warning in R: "Warnung: Error in if: Fehlender Wert, wo TRUE/FALSE nötig ist"
 
-#TODO: implement "add task" functionality to create simple editable tasks
-
 #TODO: expand edit functions: allow to add / remove choices
 
 #TODO: after each edit to a task, check if it is valid for an exam (e.g. minimum of 5 answers)
