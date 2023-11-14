@@ -6,7 +6,7 @@
 	---background2: rgba(0, 0, 0, 0.2);
 	---background3: rgba(238, 238, 238, 1);
 	---main: rgba(64, 64, 64, 1);
-	---highlight_values: rgba(85, 87, 211, 1);
+	---highlight_values: rgba(85, 87, 211, 0.6);
 	---highlight_correct: rgba(49, 181, 150, 1);
 	---highlight_incorrect: rgba(211, 85, 85, 1);
 	---highlight_removePDF: rgba(255, 172, 172, 1);
@@ -352,6 +352,10 @@ main > * {
 	background: var(---background3);
 }
 
+.sidebarListItem.editable {
+	border-left: 3px solid var(---highlight_values);
+}
+
 .sidebarListItem.filtered {
 	display: none;
 }
@@ -516,8 +520,8 @@ main > * {
 	width: max-content;
 	border-radius: 3px;
 	margin-right: 0.5rem;
-	padding-left: 0.25rem;
-	padding-right: 0.25rem;
+	padding-left: 0.5rem;
+	padding-right: 0.5rem;
 }
 
 #result .result.numericResult {
@@ -527,6 +531,11 @@ main > * {
 
 #result .result.spoiler{
 	background: unset;
+}
+
+#result .choice {
+	height: 100%;
+	display:flex;
 }
 
 #result > * {
@@ -555,6 +564,23 @@ main > * {
 
 #result .incorrect {
 	background: var(---highlight_incorrect);
+}
+
+.editTrueFalse {
+	cursor: pointer;
+}
+
+span[contenteditable="true"],
+.editTrueFalse {
+	padding: 2px;
+	border: 2px solid var(---highlight_values);
+	border-radius: 3px;
+}
+
+span[contenteditable="true"]:focus {
+	padding: 2px;
+	border-color: var(---transparent);
+	background-color: var(---highlight_values);
 }
 
 /* --------------------------------------------------------------

@@ -1,4 +1,6 @@
-var xmlToRnw = `<<echo=FALSE, results=tex>>=
+var xmlToRnw = `@
+%% \exextra[editable,numeric]{1}
+<<echo=FALSE, results=tex>>=
 question=?q
 choices=?c
 solutions=?s

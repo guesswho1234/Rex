@@ -25,49 +25,62 @@ parseExercise = function(task, seed, output, session) {
     
     htmlTask = exams2html(file, dir = tempdir(), seed = if(is.na(seed)) NULL else seed)
 
-    session$sendCustomMessage("setTaskQuestion", htmlTask$exam1$exercise1$question)
-  
-    session$sendCustomMessage("setTaskPoints", htmlTask$exam1$exercise1$metainfo$points)
-    session$sendCustomMessage("setTaskType", htmlTask$exam1$exercise1$metainfo$type)
-    
-    if(htmlTask$exam1$exercise1$metainfo$type %in% c("mchoice")) {
-      session$sendCustomMessage("setTaskChoices", rjs_vectorToJsonStringArray(htmlTask$exam1$exercise1$questionlist))
-      session$sendCustomMessage("setTaskResultMchoice", rjs_vectorToJsonArray(tolower(as.character(htmlTask$exam1$exercise1$metainfo$solution))))
-    }
-    
-    if(htmlTask$exam1$exercise1$metainfo$type == "num") {
-      session$sendCustomMessage("setTaskResultNumeric", result)
-    }
-    
     examHistory = c() 
     authoredBy = c()
     checkedBy = c()
     tags = c()
-
+    type = c()
+    question = c()
+    
     if(length(htmlTask$exam1$exercise1$metainfo$examHistory) > 0) {
       examHistory = trimws(strsplit(htmlTask$exam1$exercise1$metainfo$examHistory, ",")[[1]], "both")
+      examHistory = rjs_vectorToJsonStringArray(examHistory)
     }
     
     if(length(htmlTask$exam1$exercise1$metainfo$authoredBy) > 0) {
       authoredBy = trimws(strsplit(htmlTask$exam1$exercise1$metainfo$authoredBy, ",")[[1]], "both") 
+      authoredBy = rjs_vectorToJsonStringArray(authoredBy) 
     }
       
     if(length(htmlTask$exam1$exercise1$metainfo$checkedBy) > 0) { 
       checkedBy = trimws(strsplit(htmlTask$exam1$exercise1$metainfo$checkedBy, ",")[[1]], "both")
+      checkedBy = rjs_vectorToJsonStringArray(checkedBy)
     }
       
     if(length(htmlTask$exam1$exercise1$metainfo$tags) > 0) { 
       tags = trimws(strsplit(htmlTask$exam1$exercise1$metainfo$tags, ",")[[1]], "both")
+      tags = rjs_vectorToJsonStringArray(tags)
     }
-
-    session$sendCustomMessage("setTaskExamHistory", rjs_vectorToJsonStringArray(examHistory))
-    session$sendCustomMessage("setTaskAuthoredBy", rjs_vectorToJsonStringArray(authoredBy))
-    session$sendCustomMessage("setTaskCheckedBy", rjs_vectorToJsonStringArray(checkedBy))
-    session$sendCustomMessage("setTaskPrecision", htmlTask$exam1$exercise1$metainfo$precision)
-    session$sendCustomMessage("setTaskDifficulty", htmlTask$exam1$exercise1$metainfo$difficulty)
-    session$sendCustomMessage("setTaskTopic", htmlTask$exam1$exercise1$metainfo$topic)
-    session$sendCustomMessage("setTaskTags", rjs_vectorToJsonStringArray(tags))
+    
+    precision = htmlTask$exam1$exercise1$metainfo$precision
+    difficulty = htmlTask$exam1$exercise1$metainfo$difficulty  
+    points = htmlTask$exam1$exercise1$points
+    topic = htmlTask$exam1$exercise1$metainfo$topic
+    type = htmlTask$exam1$exercise1$metainfo$type
+    question = htmlTask$exam1$exercise1$question
+    editable = ifelse(htmlTask$exam1$exercise1$metainfo$editable == 1, 1, 0)
+    
+    session$sendCustomMessage("setTaskExamHistory", examHistory)
+    session$sendCustomMessage("setTaskAuthoredBy", authoredBy)
+    session$sendCustomMessage("setTaskCheckedBy", checkedBy)
+    session$sendCustomMessage("setTaskPrecision", precision)
+    session$sendCustomMessage("setTaskDifficulty", difficulty)
+    session$sendCustomMessage("setTaskPoints", points)
+    session$sendCustomMessage("setTaskTopic", topic)
+    session$sendCustomMessage("setTaskType", type)
+    session$sendCustomMessage("setTaskTags", tags)
     session$sendCustomMessage("setTaskSeed", seed)
+    session$sendCustomMessage("setTaskQuestion", question)
+    session$sendCustomMessage("setTaskEditable", editable)
+    
+    if(type == c("mchoice")) {
+      session$sendCustomMessage("setTaskChoices", rjs_vectorToJsonStringArray(htmlTask$exam1$exercise1$questionlist))
+      session$sendCustomMessage("setTaskResultMchoice", rjs_vectorToJsonArray(tolower(as.character(htmlTask$exam1$exercise1$metainfo$solution))))
+    } 
+    
+    if(type == "num") {
+      session$sendCustomMessage("setTaskResultNumeric", result)
+    }
 
     unlink(file)
     

@@ -16,6 +16,7 @@ $(document).ready(function () {
 	f_langDeEn();
 });
 
+// ??? probably used for debugging some time - not sure anymore
 $(document).on({
     'shiny:inputchanged': function(event) { 
 		if (event.target.id === 'examLanguage') {
@@ -53,7 +54,7 @@ document.onkeydown = function(evt) {
 			$('.taskItem').removeClass("filtered");
 		}
 			
-		if (!$(evtobj.target).is('input') && $('.taskItem').length > 0) {
+		if (!$(evtobj.target).is('input') && !$(evtobj.target).is('.questionText') && !$(evtobj.target).is('.choiceText') && $('.taskItem').length > 0) {
 			let updateView = false;
 			
 			if (evtobj.shiftKey) {
@@ -85,9 +86,7 @@ document.onkeydown = function(evt) {
 						updateView = true;
 						break;
 					case 68: // d
-						if($('.taskItem.active:not(.filtered)').closest('.taskItem:not(.filtered)').hasClass('active')) {
-							Shiny.onInputChange("resetTaskOutputFields", 1);
-						}
+						resetOutputFields();	
 						
 						const taskID = $('.taskItem.active:not(.filtered)').closest('.taskItem:not(.filtered)').index('.taskItem:not(.filtered)')
 						removeTask(taskID);
@@ -378,10 +377,10 @@ function examTasksSummary() {
 			numberOfExamTasksCounter++;
 			totalDifficulty += Number(item.difficulty);
 			totalPoints += Number(item.points);
-			topics.push(item.topic);
-			if (! item.tags === null) item.tags.forEach(i => tags.push(i));
+			if (item.topic !== null) topics.push(item.topic);
+			if (item.tags !== null) item.tags.forEach(i => tags.push(i));
 			Array.isArray(item.result) ? types.push("mc") : types.push("num");
-			checkedBy += (item.checkedBy != "");
+			checkedBy += (item.checkedBy != "" && item.checkedBy !== null);
 		}
 	})
 	
@@ -750,6 +749,7 @@ async function loadTask(file, block = "1") {
 			iuf['tasks'][taskID]['tags'] = null;
 			iuf['tasks'][taskID]['type'] = null;
 			iuf['tasks'][taskID]['e'] = null;
+			iuf['tasks'][taskID]['editable'] = false;
 			iuf['tasks'][taskID]['block'] = block;
 			
 			$('#task_list_items').append('<div class="taskItem sidebarListItem"><span class="taskTryCatch"><i class="fa-solid fa-triangle-exclamation"></i><span class="taskTryCatchText"></span></span><span class="taskName">' + file.name + '</span></span><span class="taskBlock disabled"><input type="number" value="' + block + '"/></span><span class="taskButtons"><span class="taskParse taskButton"><i class="fa-solid fa-rotate"></i></span><span class="examTask taskButton"><i class="fa-solid fa-circle-check"></i></span><span class="taskRemove taskButton"><i class="fa-solid fa-trash"></i></span></span></div>');
@@ -803,9 +803,10 @@ async function loadTask(file, block = "1") {
 				iuf['tasks'][taskID]['tags'] = null;
 				iuf['tasks'][taskID]['type'] = null;
 				iuf['tasks'][taskID]['e'] = 'XML:' + (i+1);	
+				iuf['tasks'][taskID]['editable'] = true;
 				iuf['tasks'][taskID]['block'] = block;
 				
-				$('#task_list_items').append('<div class="taskItem sidebarListItem"><span class="taskTryCatch"><i class="fa-solid fa-triangle-exclamation"></i><span class="taskTryCatchText"></span></span><span class="taskName">' + file.name + "_" + (i+1) + '</span></span><span class="taskBlock disabled"><input type="number" value="' + block + '"/></span><span class="taskButtons"><span class="taskParse taskButton disabled"><i class="fa-solid fa-rotate"></i></span><span class="examTask taskButton"><i class="fa-solid fa-circle-check"></i></span><span class="taskRemove taskButton"><i class="fa-solid fa-trash"></i></span></span></div>');
+				$('#task_list_items').append('<div class="taskItem sidebarListItem editable"><span class="taskTryCatch"><i class="fa-solid fa-triangle-exclamation"></i><span class="taskTryCatchText"></span></span><span class="taskName">' + file.name + "_" + (i+1) + '</span></span><span class="taskBlock disabled"><input type="number" value="' + block + '"/></span><span class="taskButtons"><span class="taskParse taskButton disabled"><i class="fa-solid fa-rotate"></i></span><span class="examTask taskButton"><i class="fa-solid fa-circle-check"></i></span><span class="taskRemove taskButton"><i class="fa-solid fa-trash"></i></span></span></div>');
 				
 				viewTask(taskID);
 			}
@@ -856,53 +857,156 @@ function viewTask(taskID, forceParse = false) {
 		$('.taskItem.active').removeClass('active');
 		$('.taskItem:nth-child(' + (taskID + 1) + ')').addClass('active');
 	}
-	
+		
 	f_langDeEn();
 }
 
 function resetOutputFields() {
-	document.getElementById('question').innerHTML = '';
-	document.getElementById('points').innerHTML = '';
-	document.getElementById('type').innerHTML = '';
-	document.getElementById('result').innerHTML = '';
-	document.getElementById('examHistory').innerHTML = '';
-	document.getElementById('authoredBy').innerHTML = '';
-	document.getElementById('checkedBy').innerHTML = '';
-	document.getElementById('precision').innerHTML = '';
-	document.getElementById('difficulty').innerHTML = '';
-	document.getElementById('topic').innerHTML = '';
-	document.getElementById('tags').innerHTML = '';
+	let fields = ['question',
+			  'points',
+			  'type',
+			  'result',
+			  'examHistory',
+			  'authoredBy',
+			  'checkedBy',
+			  'precision',
+			  'difficulty',
+			  'topic',
+			  'tags'];
+			  
+	fields.forEach(field => {	
+		$('#' + field).html('');
+		$('#' + field).hide();
+		$('label[for="'+ field +'"]').hide();
+	});	
 }
 
+$('#task_info').on('click', '.editTrueFalse', function(e) {
+	$(this).text(+ !(($(this).text() === '1')));
+	
+	const taskID = getTID();
+	
+	iuf['tasks'][taskID]['result'][$(this).index('.mchoiceResult')] = $(this).text() === '1';
+});
+
+$('body').on('focus', '[contenteditable]', function() {
+    const $this = $(this);
+    $this.data('before', $this.html());
+// }).on('blur keyup cut paste input', '[contenteditable]', function() { // might double trigger
+}).on('blur', '[contenteditable]', function() { // only triggers when losing focus
+    const $this = $(this);
+    if ($this.data('before') !== $this.html()) {
+		const taskID = getTID();
+		
+		if ($this.hasClass('questionText')) {
+			iuf['tasks'][taskID]['question'] = $this.text();
+		}
+		
+		if ($this.hasClass('choiceText')) {
+			iuf['tasks'][taskID]['choices'][$this.index('.choiceText')] = $this.text();
+		}
+    }
+});
+
 function loadTaskFromObject(taskID) {
-	if(iuf['tasks'][taskID]['question'] !== null && Array.isArray(iuf['tasks'][taskID]['question'])) {
-		document.getElementById('question').innerHTML = '<span>' + iuf['tasks'][taskID]['question'].join('') + '</span>';
-	} else {
-		document.getElementById('question').innerHTML = '<span>' + iuf['tasks'][taskID]['question'] + '</span>';
+	if(iuf['tasks'][taskID]['question'] !== null) {
+		const field = 'question'
+		const editable = iuf['tasks'][taskID]['editable']; 
+		let content = ''
+		
+		if(Array.isArray(iuf['tasks'][taskID]['question'])) {
+			content = '<span class="questionText" contenteditable="' + editable + '" spellcheck="false"> ' + iuf['tasks'][taskID]['question'].join('') + '</span>';
+		} else {
+			content = '<span class="questionText" contenteditable="' + editable + '" spellcheck="false">' + iuf['tasks'][taskID]['question'] + '</span>';
+		}
+		
+		setTaskFieldFromObject(field, content);
 	}
-	document.getElementById('points').innerHTML = '<span>' + iuf['tasks'][taskID]['points'] + '</span>';
-	document.getElementById('type').innerHTML = '<span>' + iuf['tasks'][taskID]['type'] + '</span>';
+	
+	if(iuf['tasks'][taskID]['points'] !== null) {	
+		const field = 'points'
+		const content = '<span>' + iuf['tasks'][taskID]['points'] + '</span>';
+		
+		setTaskFieldFromObject(field, content);
+	}
+	
+	if(iuf['tasks'][taskID]['type'] !== null) {
+		const field = 'type'
+		const content = '<span>' + iuf['tasks'][taskID]['type'] + '</span>';
+		
+		setTaskFieldFromObject(field, content);
+	}
 	
 	if(iuf['tasks'][taskID]['type'] === "mchoice" || iuf['tasks'][taskID].e.includes("XML")) {
+		const field = 'result'
+		const editable = iuf['tasks'][taskID]['editable']; 
 		const zip = iuf['tasks'][taskID]['result'].map((x, i) => [x, iuf['tasks'][taskID]['choices'][i]]);
-		const results = '<div>' + zip.map(i => '<p><span class=\"result mchoiceResult\">' + ( + i[0]) + '</span><span class="choice"><input type=\"checkbox\" name=\"\" value=\"\"><span class="choiceText">' + i[1] + '</span></span></p>').join('') + '</div>';
+		const content = '<div>' + zip.map(i => '<p><span class=\"result mchoiceResult ' + (editable ? 'editTrueFalse' : '') + '\">' + ( + i[0]) + '</span><span class="choice"><input type=\"checkbox\" name=\"\" value=\"\"><span class="choiceText" contenteditable="' + editable + '" spellcheck="false">' + i[1] + '</span></span></p>').join('') + '</div>';
 		
-		document.getElementById('result').innerHTML = results;
+		setTaskFieldFromObject(field, content);
 	}
 	
 	if(iuf['tasks'][taskID]['type'] === "num") {
-		const result = '<div><p><span class=\"result numericResult\">' + iuf['tasks'][taskID]['result'] + '</span><span class="solution"><input type=\"text\" class=\"form-control shinyjs-resettable shiny-bound-input\"></span></p></div>';
+		const field = 'result'
+		const content = '<div><p><span class=\"result numericResult\">' + iuf['tasks'][taskID]['result'] + '</span><span class="solution"><input type=\"text\" class=\"form-control shinyjs-resettable shiny-bound-input\"></span></p></div>';
 		
-		document.getElementById('result').innerHTML = result;
+		setTaskFieldFromObject(field, content);
 	}
 	
-	if(iuf['tasks'][taskID]['examHistory'] !== null) document.getElementById('examHistory').innerHTML = iuf['tasks'][taskID]['examHistory'].map(i => '<span>' + i + '</span>').join('');
-	if(iuf['tasks'][taskID]['authoredBy'] !== null) document.getElementById('authoredBy').innerHTML = iuf['tasks'][taskID]['authoredBy'].map(i => '<span>' + i + '</span>').join('');
-	if(iuf['tasks'][taskID]['checkedBy'] !== null) document.getElementById('checkedBy').innerHTML = iuf['tasks'][taskID]['checkedBy'].map(i => '<span>' + i + '</span>').join('');
-	document.getElementById('precision').innerHTML = '<span>' + iuf['tasks'][taskID]['precision'] + '</span>';
-	document.getElementById('difficulty').innerHTML = '<span>' + iuf['tasks'][taskID]['difficulty'] + '</span>';
-	document.getElementById('topic').innerHTML = '<span>' + iuf['tasks'][taskID]['topic'] + '</span>';
-	if(iuf['tasks'][taskID]['tags'] !== null) document.getElementById('tags').innerHTML = iuf['tasks'][taskID]['tags'].map(i => '<span>' + i + '</span>').join('');
+	if(iuf['tasks'][taskID]['examHistory'] !== null) {
+		const field = 'examHistory'
+		const content = iuf['tasks'][taskID]['examHistory'].map(i => '<span>' + i + '</span>').join('');
+		
+		setTaskFieldFromObject(field, content);
+	}
+	
+	if(iuf['tasks'][taskID]['authoredBy'] !== null) {
+		const field = 'authoredBy'
+		const content = iuf['tasks'][taskID]['authoredBy'].map(i => '<span>' + i + '</span>').join('');
+		
+		setTaskFieldFromObject(field, content);
+	}
+	
+	if(iuf['tasks'][taskID]['checkedBy'] !== null) {
+		const field = 'checkedBy'
+		const content = iuf['tasks'][taskID]['checkedBy'].map(i => '<span>' + i + '</span>').join('');
+		
+		setTaskFieldFromObject(field, content);
+	}
+	
+	if(iuf['tasks'][taskID]['precision'] !== null) {
+		const field = 'precision'
+		const content = '<span>' + iuf['tasks'][taskID]['precision'] + '</span>';
+		
+		setTaskFieldFromObject(field, content);
+	}
+	
+	if(iuf['tasks'][taskID]['difficulty'] !== null) {
+		const field = 'difficulty'
+		const content = '<span>' + iuf['tasks'][taskID]['difficulty'] + '</span>';
+		
+		setTaskFieldFromObject(field, content);
+	}
+	
+	if(iuf['tasks'][taskID]['topic'] !== null) {
+		const field = 'topic'
+		const content = '<span>' + iuf['tasks'][taskID]['topic'] + '</span>';
+		
+		setTaskFieldFromObject(field, content);
+	}
+	
+	if(iuf['tasks'][taskID]['tags'] !== null) {
+		const field = 'tags'
+		const content = iuf['tasks'][taskID]['tags'].map(i => '<span>' + i + '</span>').join('');
+		
+		setTaskFieldFromObject(field, content);
+	}
+}
+
+function setTaskFieldFromObject(field, content) {
+	$('#' + field).html(content);
+	$('#' + field).show();
+	$('label[for="'+ field +'"]').show();
 }
 
 function addTask() {
@@ -1090,6 +1194,18 @@ Shiny.addCustomMessageHandler('setTaskResultNumeric', function(taskResult) {
 	iuf['tasks'][getTID()]['result'] = taskResult;
 });
 
+Shiny.addCustomMessageHandler('setTaskEditable', function(editable) {
+	const taskID = getTID();
+	
+	iuf['tasks'][taskID]['editable'] = editable === 1;
+	
+	if(iuf['tasks'][taskID]['editable']) {
+		$('.taskItem.active').addClass('editable');
+	} else {
+		$('.taskItem.active').removeClass('editable');
+	}
+});
+
 Shiny.addCustomMessageHandler('setTaskE', function(jsonData) {
 	e = JSON.parse(jsonData)
 		
@@ -1196,8 +1312,6 @@ function loadAdditionalPDFDnD(items) {
 }
 
 function loadAdditionalPDFFileDialog(items) {
-	console.log(items);
-	
 	items.forEach(function(file) {
 		addAdditionalPDF(file);
 	});

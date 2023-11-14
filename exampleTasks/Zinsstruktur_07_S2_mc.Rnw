@@ -13,7 +13,7 @@ diff <- 2				# DIFFICULTY (0-3)
 %% \exextra[topic,character]{Zinsstruktur}
 %% \exextra[tags,character]{}
 %% \exextra[difficulty,numeric]{\Sexpr{(diff)}}
-%% \exextra[precision,numeric]{\Sexpr{(prec)}}
+%% \exextra[precision,numeric]{\Sexpr{(prec)}}+
 
 <<echo=FALSE, results=tex>>=
 if (MAKEBSP) set.seed(1)	# FIXES SCRAMBLING FOR EXAMPLES
