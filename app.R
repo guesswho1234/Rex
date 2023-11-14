@@ -1,5 +1,25 @@
 # developed in r version 4.2.2
 
+#TODO: some connections are not properly closed and warnings can be thrown in R: "Warnung in list(...) ungenutzte Verbindung 4 () geschlossen"
+
+#TODO: opening the dashboard, loading tasks, deleting all of them and refreshing the pages causes the app to break and throw a warning in R: "Warnung: Error in if: Fehlender Wert, wo TRUE/FALSE nötig ist"
+
+#TODO: implement "add task" functionality to create simple editable tasks
+
+#TODO: expand edit functions: allow to add / remove choices
+
+#TODO: after each edit to a task, check if it is valid for an exam (e.g. minimum of 5 answers)
+
+#TODO: to "scramble" simple tasks, one has to provide enough choices for there to be enough to cause sufficient variation: 
+# its probably would be best to show all these answers in the task viewer and make
+# such tasks independent of seeds (at least for the viewer). otherweise, creating and 
+# editing such tasks gets messy. however, to be still able to use them in an exam, these 
+# tasks somehow need to be modified, such that when an exam is created, seeds and scramblings 
+# do matter again. tl;dr; show all choices in taks viewer for simple task. when creating an exam, 
+# for simple tasks, sample 5 choices out of all choices based on the exam seed. 
+# it might be necessary to restructure the source file (*.rnw) of such simple tasks in the 
+# background to achieve all of this.
+
 # STARTUP -----------------------------------------------------------------
 rm(list = ls())
 cat("\f")
@@ -161,12 +181,13 @@ parseExam = function(exam, seed, input, output, session) {
       if(length(additionalPDF) > 0) pages = additionalPDF
       if(is.na(input$numberOfFixedPoints)) points = input$numberOfFixedPoints
       
+      #debug prints
       print(input$examTitle)
       print(input$examCourse)
       print(input$examInstitution)
       print(input$examDate)
       print(input$numberOfBlanks)
-      print(additionalPDF) #funktioniert nur mit einer datei?
+      print(additionalPDF) # only works with one pdf file?
       print(input$numberOfFixedPoints)
       print(input$showPoints)
       
@@ -174,8 +195,8 @@ parseExam = function(exam, seed, input, output, session) {
                             name = paste0(examSeed, "_"),
                             dir = tempdir(),
                             seed = seedList,
-                            #language = language,
-                            #duplex = duplex,
+                            #language = language, # disabled for now
+                            #duplex = duplex, # disabled for now
                             title = title,
                             course = course,
                             institution = institution,
