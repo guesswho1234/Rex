@@ -1,5 +1,7 @@
 # developed in r version 4.2.2
 
+#TODO: implement tinytex such that a tex live installation is not needed anymore (tinytex.install should sovbe this somehow)
+
 #TODO: some connections are not properly closed and warnings can be thrown in R: "Warnung in list(...) ungenutzte Verbindung 4 () geschlossen"
 
 #TODO: opening the dashboard, loading tasks, deleting all of them and refreshing the pages causes the app to break and throw a warning in R: "Warnung: Error in if: Fehlender Wert, wo TRUE/FALSE nötig ist"
