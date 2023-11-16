@@ -1,5 +1,5 @@
 var xmlToRnw = `@
-%% \exextra[editable,numeric]{1}
+%% \\exextra[editable,numeric]{1}
 <<echo=FALSE, results=tex>>=
 question=?q
 choices=?c

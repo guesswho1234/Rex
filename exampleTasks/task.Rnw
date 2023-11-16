@@ -1,0 +1,51 @@
+@
+
+%% \exextra[editable,numeric]{1}
+
+<<echo=FALSE, results=tex>>=
+
+question="This is question 1."
+
+choices=c("This is answer 1 for question 1.","This is answer 2 for question 1.","This is answer 3 for question 1.","This is answer 4 for question 1.","This is answer 5 for question 1.","This is answer 6 for question 1.","This is answer 7 for question 1.")
+
+solutions=c(F,T,T,T,T,T,T)
+
+limit=min(length(choices), 5)
+
+sel=sample(1:length(choices), limit)
+
+choices=choices[sel]
+
+solutions=solutions[sel]
+
+@
+
+\begin{question}
+
+\Sexpr{question}
+
+
+
+<<echo=FALSE, results=tex>>=
+
+answerlist(choices)
+
+@
+
+\end{question}
+
+\begin{solution}
+
+<<echo=FALSE, results=tex>>=
+
+answerlist(ifelse(solutions, "Richtig", "Falsch"))
+
+@
+
+\end{solution}
+
+%% META-INFORMATION
+
+%% \extype{mchoice}
+
+%% \exsolution{\Sexpr{mchoice2string(solutions)}}
