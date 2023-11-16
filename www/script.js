@@ -666,7 +666,7 @@ $('#searchTasks input').change(function () {
 				
 				return task.name;
 			})
-			filterTasks(fieldsToFilter, filterBy);
+			filterTasks(fieldsToFilter, input);
 		}
 	});  
 	
@@ -767,7 +767,7 @@ function newSimpleTask(file = '', block = 1) {
 					       'Question text',
 					       ['Answer 1', 'Answer 2', 'Answer 3', 'Answer 4', 'Answer 5'],
 					       [false, false, false, false, false],
-					       'XML:',
+					       null,
 					       true);
 		viewTask(taskID);
 }
@@ -962,7 +962,7 @@ function loadTaskFromObject(taskID) {
 		setTaskFieldFromObject(field, content);
 	}
 	
-	if(iuf['tasks'][taskID]['type'] === "mchoice" || iuf['tasks'][taskID].e.includes("XML")) {
+	if(iuf['tasks'][taskID]['type'] === "mchoice" || iuf['tasks'][taskID]['editable']) {
 		const field = 'result'
 		const zip = iuf['tasks'][taskID]['result'].map((x, i) => [x, iuf['tasks'][taskID]['choices'][i]]);
 		const content = '<div>' + zip.map(i => '<p><span class=\"result mchoiceResult ' + (editable ? 'editTrueFalse' : '') + '\">' + ( + i[0]) + '</span><span class="choice"><input type=\"checkbox\" name=\"\" value=\"\"><span class="choiceText" contenteditable="' + editable + '" spellcheck="false">' + i[1] + '</span></span></p>').join('') + '</div>';

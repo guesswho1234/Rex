@@ -12,15 +12,7 @@
 
 #TODO: switch from temp folder to downloadable files (zip) files. relevant for tasks, exams, ...
 
-#TODO: to "scramble" simple tasks, one has to provide enough choices for there to be enough to cause sufficient variation: 
-# its probably would be best to show all these answers in the task viewer and make
-# such tasks independent of seeds (at least for the viewer). otherweise, creating and 
-# editing such tasks gets messy. however, to be still able to use them in an exam, these 
-# tasks somehow need to be modified, such that when an exam is created, seeds and scramblings 
-# do matter again. tl;dr; show all choices in taks viewer for simple task. when creating an exam, 
-# for simple tasks, sample 5 choices out of all choices based on the exam seed. 
-# it might be necessary to restructure the source file (*.rnw) of such simple tasks in the 
-# background to achieve all of this.
+#TODO: add hover labels for buttons
 
 # STARTUP -----------------------------------------------------------------
 rm(list = ls())
