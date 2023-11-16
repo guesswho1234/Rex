@@ -54,6 +54,10 @@ document.onkeydown = function(evt) {
 			$('.taskItem').removeClass("filtered");
 		}
 		
+		if (evtobj.keyCode == 67) { // c
+			newSimpleTask();
+		}
+		
 		const targetInput = $(evtobj.target).is('input');
 		const targetEditable = $(evtobj.target).attr('contenteditable');
 		const itemsExist = $('.taskItem').length > 0;
@@ -745,7 +749,7 @@ function getBlockNum() {
 	return String(blockNum > 0 ? blockNum : 1);
 }
 
-function loadTask(file, block = "1") {
+function loadTask(file, block = 1) {
 	const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
 	
 	switch(fileExt) {
@@ -758,7 +762,7 @@ function loadTask(file, block = "1") {
 	}
 }
 
-async function newSimpleTask(file = '', block = '1') {
+async function newSimpleTask(file = '', block = 1) {
 	if(file != '') {
 		const parser = new DOMParser();
 		const fileText = await file.text();
@@ -839,7 +843,7 @@ function createTask(taskID, name='task',
 							topic=null,
 							tags=null,
 							type=null,
-							block='1'){
+							block=1){
 	iuf['tasks'][taskID]['file'] = file;
 	iuf['tasks'][taskID]['name'] = name;
 	iuf['tasks'][taskID]['seed'] = seed;
@@ -1095,8 +1099,15 @@ function removeTask(taskID) {
 }
 
 function changeTaskBlock(taskID, b) {
-	iuf['tasks'][taskID]['block'] = b;
-	numberOfTaskBlocks();
+	b_value = 1;
+	
+	if(Number(b) != NaN) {
+		b_value = Math.max(1, Number(b));
+		iuf['tasks'][taskID]['block'] = b_value;
+		numberOfTaskBlocks();
+	} 
+	
+	return b_value;
 }
 
 function toggleExamTask(taskID, b) {
@@ -1109,7 +1120,7 @@ $('#task_list_items').on('change', '.taskBlock input', function(e) {
 	e.preventDefault();
 	e.stopPropagation();
 	
-	changeTaskBlock($(this).closest('.taskItem').index('.taskItem'), $(this).closest('.taskItem .taskBlock input').val());
+	$(this).closest('.taskItem .taskBlock input').val(changeTaskBlock($(this).closest('.taskItem').index('.taskItem'), $(this).closest('.taskItem .taskBlock input').val()));
 });
 
 $('#task_list_items').on('click', '.taskParse', function(e) {

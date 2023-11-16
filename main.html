@@ -7,6 +7,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<link rel="stylesheet" href="style.css">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+		<script src="zip.min.js" defer></script>	
 		<script src="script.js" defer></script>	
 		<script src="xmlToRnwTemplate.js" defer></script>	
 	</head>
@@ -103,6 +104,11 @@
 									</div>
 									<input type="file" id="file-upload_tasks" onchange='loadTasksFileDialog(this.files);' multiple>
 								</label>
+								<div id="taskDownload" class="listButton">
+									<div class="list_butttonIcon">
+										<i class="fa-solid fa-download"></i>
+									</div>
+								</div>	
 								<div id="examTaskAll" class="listButton">
 									<div class="list_butttonIcon">
 										<i class="fa-solid fa-circle-check"></i>
@@ -162,7 +168,11 @@
 						
 						<label for="result"><span lang="de">Ergebnis</span><span lang="en">Result</span></label>
 						<div id="result"></div>
-						<button id="validateAnswer_preview" type="button" class="btn btn-default action-button shiny-bound-input"><span lang="de">Überprüfen</span><span lang="en">Validate</span></button>
+						
+						<div id="task_info_buttons">
+							<button id="validateAnswer_preview" type="button" class="btn btn-default action-button shiny-bound-input"><span lang="de">Überprüfen</span><span lang="en">Validate</span></button>
+							<button id="saveTask" type="button" class="btn btn-default action-button shiny-bound-input"><span lang="de">Speichern</span><span lang="en">Save</span></button>
+						</div>
 					</div>	
 				</div>	
 				<div id="createTaskForm">
