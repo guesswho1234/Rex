@@ -1,7 +1,5 @@
 # developed in r version 4.2.2
 
-#TODO: implement tinytex such that a tex live installation is not needed anymore (tinytex.install should sovbe this somehow)
-
 #TODO: some connections are not properly closed and warnings can be thrown in R: "Warnung in list(...) ungenutzte Verbindung 4 () geschlossen"
 
 #TODO: opening the dashboard, loading tasks, deleting all of them and refreshing the pages causes the app to break and throw a warning in R: "Warnung: Error in if: Fehlender Wert, wo TRUE/FALSE nötig ist"
@@ -9,6 +7,10 @@
 #TODO: expand edit functions: allow to add / remove choices
 
 #TODO: after each edit to a task, check if it is valid for an exam (e.g. minimum of 5 answers)
+
+#TODO: add "save" / "download" button to task list header and to each task view (not the task list item)
+
+#TODO: switch from temp folder to downloadable files (zip) files. relevant for tasks, exams, ...
 
 #TODO: to "scramble" simple tasks, one has to provide enough choices for there to be enough to cause sufficient variation: 
 # its probably would be best to show all these answers in the task viewer and make
@@ -124,7 +126,6 @@ parseExercise = function(task, seed, output, session) {
     return(NULL)
   },
   finally = {
-    session$sendCustomMessage("setTaskActive", 1)
     session$sendCustomMessage("setTaskId", -1)
     stopWait(session)
   })

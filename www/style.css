@@ -473,6 +473,10 @@ main > * {
 	display: grid;
 }
 
+#task_info.hidden {
+	display: none !important;
+}
+
 #task_info label {
 	font-weight: bold;
 }
@@ -575,19 +579,19 @@ main > * {
 	cursor: pointer;
 }
 
-span[contenteditable="true"]:not(.taskName),
+*[contenteditable="true"]:not(.taskName),
 .editTrueFalse {
 	padding: 2px;
 }
 
-span[contenteditable="true"],
+*[contenteditable="true"],
 .editTrueFalse {
 	padding: 2px;
 	border: 2px solid var(---highlight_values);
 	border-radius: 3px;
 }
 
-span[contenteditable="true"]:focus {
+*[contenteditable="true"]:focus {
 	padding: 2px;
 	border-color: var(---transparent);
 	background-color: var(---highlight_values);

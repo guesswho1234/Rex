@@ -55,7 +55,7 @@ document.onkeydown = function(evt) {
 		}
 		
 		const targetInput = $(evtobj.target).is('input');
-		const targetEditable = $(evtobj.target).is('.taskName') || $(evtobj.target).is('.questionText') || $(evtobj.target).is('.choiceText');
+		const targetEditable = $(evtobj.target).attr('contenteditable');
 		const itemsExist = $('.taskItem').length > 0;
 			
 		if (!targetInput && !targetEditable && itemsExist) {
@@ -630,17 +630,6 @@ $('#searchTasks input').change(function () {
 			filterTasks(fieldsToFilter, filterBy);
 		}
 		
-		if (input.includes("filename:")) {
-			const fieldsToFilter = iuf.tasks.map(task => {
-				if( task.file.name === null) {
-					return "";
-				} 
-				
-				return task.file.name;
-			})
-			filterTasks(fieldsToFilter, filterBy);
-		}
-		
 		if (input.includes("exam:")) {
 			const fieldsToFilter = iuf.tasks.map(task => {
 				if( !task.exam ) {
@@ -662,6 +651,17 @@ $('#searchTasks input').change(function () {
 				return "1";
 			})
 			
+			filterTasks(fieldsToFilter, filterBy);
+		}
+		
+		if (!input.includes(":")) {
+			const fieldsToFilter = iuf.tasks.map(task => {
+				if( task.name === null) {
+					return "";
+				} 
+				
+				return task.name;
+			})
 			filterTasks(fieldsToFilter, filterBy);
 		}
 	});  
@@ -796,27 +796,6 @@ async function newSimpleTask(file = '', block = '1') {
 							   'XML:' + (i+1),
 							   true);
 			
-			// iuf['tasks'][taskID]['file'] = fileText;
-			// iuf['tasks'][taskID]['seed'] = null;
-			// iuf['tasks'][taskID]['exam'] = false;
-			// iuf['tasks'][taskID]['question'] = questionText;
-			// iuf['tasks'][taskID]['choices'] = questionAnswerChoices;
-			// iuf['tasks'][taskID]['result'] = questionAnswerResults;
-			// iuf['tasks'][taskID]['examHistory'] = null;
-			// iuf['tasks'][taskID]['authoredBy'] = null;
-			// iuf['tasks'][taskID]['checkedBy'] = null;
-			// iuf['tasks'][taskID]['precision'] = null;
-			// iuf['tasks'][taskID]['difficulty'] = null;
-			// iuf['tasks'][taskID]['points'] = null;
-			// iuf['tasks'][taskID]['topic'] = null;
-			// iuf['tasks'][taskID]['tags'] = null;
-			// iuf['tasks'][taskID]['type'] = null;
-			// iuf['tasks'][taskID]['e'] = 'XML:' + (i+1);	
-			// iuf['tasks'][taskID]['editable'] = true;
-			// iuf['tasks'][taskID]['block'] = block;
-			
-			// $('#task_list_items').append('<div class="taskItem sidebarListItem editable"><span class="taskTryCatch"><i class="fa-solid fa-triangle-exclamation"></i><span class="taskTryCatchText"></span></span><span class="taskName">' + file.name + "_" + (i+1) + '</span></span><span class="taskBlock disabled"><input type="number" value="' + block + '"/></span><span class="taskButtons"><span class="taskParse taskButton disabled"><i class="fa-solid fa-rotate"></i></span><span class="examTask taskButton"><i class="fa-solid fa-circle-check"></i></span><span class="taskRemove taskButton"><i class="fa-solid fa-trash"></i></span></span></div>');
-			
 			viewTask(taskID);
 		}
 	} else {
@@ -837,34 +816,13 @@ function newComplexTask(file = '', block) {
 	const taskID = tasks + 1
 	addTask();
 	
-	createTask(taskID, file.name, file);
-	
-	// iuf['tasks'][taskID]['file'] = file;
-	// iuf['tasks'][taskID]['seed'] = null;
-	// iuf['tasks'][taskID]['exam'] = false;
-	// iuf['tasks'][taskID]['question'] = null;
-	// iuf['tasks'][taskID]['choices'] = null;
-	// iuf['tasks'][taskID]['result'] = null;
-	// iuf['tasks'][taskID]['examHistory'] = null;
-	// iuf['tasks'][taskID]['authoredBy'] = null;
-	// iuf['tasks'][taskID]['checkedBy'] = null;
-	// iuf['tasks'][taskID]['precision'] = null;
-	// iuf['tasks'][taskID]['difficulty'] = null;
-	// iuf['tasks'][taskID]['points'] = null;
-	// iuf['tasks'][taskID]['topic'] = null;
-	// iuf['tasks'][taskID]['tags'] = null;
-	// iuf['tasks'][taskID]['type'] = null;
-	// iuf['tasks'][taskID]['e'] = null;
-	// iuf['tasks'][taskID]['editable'] = false;
-	// iuf['tasks'][taskID]['block'] = block;
-	
-	// $('#task_list_items').append('<div class="taskItem sidebarListItem"><span class="taskTryCatch"><i class="fa-solid fa-triangle-exclamation"></i><span class="taskTryCatchText"></span></span><span class="taskName">' + file.name + '</span></span><span class="taskBlock disabled"><input type="number" value="' + block + '"/></span><span class="taskButtons"><span class="taskParse taskButton"><i class="fa-solid fa-rotate"></i></span><span class="examTask taskButton"><i class="fa-solid fa-circle-check"></i></span><span class="taskRemove taskButton"><i class="fa-solid fa-trash"></i></span></span></div>');
+	createTask(taskID, file.name.split('.')[0], file);
 	
 	viewTask(taskID, true);
 }
 
 function createTask(taskID, name='task', 
-							file='', 
+							file='',
 						    question='',
 						    choices=[],
 							result=[],
@@ -883,6 +841,7 @@ function createTask(taskID, name='task',
 							type=null,
 							block='1'){
 	iuf['tasks'][taskID]['file'] = file;
+	iuf['tasks'][taskID]['name'] = name;
 	iuf['tasks'][taskID]['seed'] = seed;
 	iuf['tasks'][taskID]['exam'] = exam;
 	iuf['tasks'][taskID]['question'] = question;
@@ -901,7 +860,7 @@ function createTask(taskID, name='task',
 	iuf['tasks'][taskID]['editable'] = editable;
 	iuf['tasks'][taskID]['block'] = block;
 	
-	$('#task_list_items').append('<div class="taskItem sidebarListItem ' + (editable ? 'editableTask' : '') + '"><span class="taskTryCatch"><i class="fa-solid fa-triangle-exclamation"></i><span class="taskTryCatchText"></span></span><span class="taskName" contenteditable="' + editable + '" spellcheck="false">' + name + '</span></span><span class="taskBlock disabled"><input type="number" value="' + block + '"/></span><span class="taskButtons"><span class="taskParse taskButton disabled"><i class="fa-solid fa-rotate"></i></span><span class="examTask taskButton"><i class="fa-solid fa-circle-check"></i></span><span class="taskRemove taskButton"><i class="fa-solid fa-trash"></i></span></span></div>');
+	$('#task_list_items').append('<div class="taskItem sidebarListItem"><span class="taskTryCatch"><i class="fa-solid fa-triangle-exclamation"></i><span class="taskTryCatchText"></span></span><span class="taskName">' + name + '</span></span><span class="taskBlock disabled"><input type="number" value="' + block + '"/></span><span class="taskButtons"><span class="taskParse taskButton"><i class="fa-solid fa-rotate"></i></span><span class="examTask taskButton"><i class="fa-solid fa-circle-check"></i></span><span class="taskRemove taskButton"><i class="fa-solid fa-trash"></i></span></span></div>');
 }
 
 async function parseTask(taskID) {	
@@ -944,25 +903,26 @@ function viewTask(taskID, forceParse = false) {
 		parseTask(taskID);	
 	} else {
 		loadTaskFromObject(taskID);
-		$('.taskItem.active').removeClass('active');
-		$('.taskItem:nth-child(' + (taskID + 1) + ')').addClass('active');
 	}
 		
 	f_langDeEn();
 }
 
 function resetOutputFields() {
-	let fields = ['question',
-			  'points',
-			  'type',
-			  'result',
-			  'examHistory',
-			  'authoredBy',
-			  'checkedBy',
-			  'precision',
-			  'difficulty',
-			  'topic',
-			  'tags'];
+	$('#task_info').addClass('hidden');
+	
+	let fields = ['taskName',
+				  'question',
+			      'points',
+			      'type',
+			      'result',
+			      'examHistory',
+			      'authoredBy',
+			      'checkedBy',
+			      'precision',
+			      'difficulty',
+			      'topic',
+			      'tags'];
 			  
 	fields.forEach(field => {	
 		$('#' + field).html('');
@@ -982,11 +942,15 @@ $('#task_info').on('click', '.editTrueFalse', function(e) {
 $('body').on('focus', '[contenteditable]', function() {
     const $this = $(this);
     $this.data('before', $this.html());
-// }).on('blur keyup cut paste input', '[contenteditable]', function() { // might double trigger
-}).on('blur', '[contenteditable]', function() { // only triggers when losing focus
+}).on('blur', '[contenteditable]', function() {
     const $this = $(this);
     if ($this.data('before') !== $this.html()) {
 		const taskID = getTID();
+		
+		if ($this.hasClass('taskNameText')) {
+			$('.taskItem:nth-child(' + (taskID + 1) + ') .taskName').text($this.text());
+			iuf['tasks'][taskID]['name'] = $this.text();
+		}
 		
 		if ($this.hasClass('questionText')) {
 			iuf['tasks'][taskID]['question'] = $this.text();
@@ -999,9 +963,17 @@ $('body').on('focus', '[contenteditable]', function() {
 });
 
 function loadTaskFromObject(taskID) {
+	const editable = iuf['tasks'][taskID]['editable']; 
+	
+	if(iuf['tasks'][taskID]['name'] !== null) {	
+		const field = 'taskName'
+		const content = '<span class="taskNameText" contenteditable="' + editable + '" spellcheck="false">' + iuf['tasks'][taskID]['name'] + '</span>';
+		
+		setTaskFieldFromObject(field, content);
+	}
+	
 	if(iuf['tasks'][taskID]['question'] !== null) {
 		const field = 'question'
-		const editable = iuf['tasks'][taskID]['editable']; 
 		let content = ''
 		
 		if(Array.isArray(iuf['tasks'][taskID]['question'])) {
@@ -1029,7 +1001,6 @@ function loadTaskFromObject(taskID) {
 	
 	if(iuf['tasks'][taskID]['type'] === "mchoice" || iuf['tasks'][taskID].e.includes("XML")) {
 		const field = 'result'
-		const editable = iuf['tasks'][taskID]['editable']; 
 		const zip = iuf['tasks'][taskID]['result'].map((x, i) => [x, iuf['tasks'][taskID]['choices'][i]]);
 		const content = '<div>' + zip.map(i => '<p><span class=\"result mchoiceResult ' + (editable ? 'editTrueFalse' : '') + '\">' + ( + i[0]) + '</span><span class="choice"><input type=\"checkbox\" name=\"\" value=\"\"><span class="choiceText" contenteditable="' + editable + '" spellcheck="false">' + i[1] + '</span></span></p>').join('') + '</div>';
 		
@@ -1091,12 +1062,24 @@ function loadTaskFromObject(taskID) {
 		
 		setTaskFieldFromObject(field, content);
 	}
+	
+	$('.taskItem:nth-child(' + (taskID + 1) + ')').removeClass("editableTask");
+	$('.taskItem:nth-child(' + (taskID + 1) + ') .taskParse').removeClass("disabled");
+	
+	if(editable) {
+		$('.taskItem:nth-child(' + (taskID + 1) + ')').addClass("editableTask");
+		$('.taskItem:nth-child(' + (taskID + 1) + ') .taskParse').addClass("disabled");
+	} 
+	
+	$('.taskItem.active').removeClass('active');
+	$('.taskItem:nth-child(' + (taskID + 1) + ')').addClass('active');
+	$('#task_info').removeClass('hidden');
 }
 
 function setTaskFieldFromObject(field, content) {
 	$('#' + field).html(content);
 	$('#' + field).show();
-	$('label[for="'+ field +'"]').show();
+	if($('label[for="'+ field +'"]').length > 0) $('label[for="'+ field +'"]').show();
 }
 
 function addTask() {
@@ -1313,7 +1296,6 @@ Shiny.addCustomMessageHandler('setTaskE', function(jsonData) {
 			break;
 		case "Warning": 
 			iuf['tasks'][taskID]['e'] = e.key + ': ' + e.value;
-			loadTaskFromObject(taskID);
 			$('.taskItem:nth-child(' + (taskID + 1) + ') .taskTryCatch').addClass('Warning');
 			$('.taskItem:nth-child(' + (taskID + 1) + ') .examTask').addClass('disabled');
 			$('.taskItem:nth-child(' + (taskID + 1) + ') .taskTryCatchText').text(iuf['tasks'][taskID]['e']);
@@ -1324,14 +1306,6 @@ Shiny.addCustomMessageHandler('setTaskE', function(jsonData) {
 			$('.taskItem:nth-child(' + (taskID + 1) + ') .examTask').addClass('disabled');
 			$('.taskItem:nth-child(' + (taskID + 1) + ') .taskTryCatchText').text(iuf['tasks'][taskID]['e']);
 			break;
-	}
-});
-
-Shiny.addCustomMessageHandler('setTaskActive', function(active) {
-	$('.taskItem.active').removeClass('active');
-	
-	if(active == 1) {
-		$('.taskItem:nth-child(' + (getTID() + 1) + ')').addClass('active');
 	}
 });
 
