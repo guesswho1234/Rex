@@ -756,77 +756,34 @@ function loadTask(file, block = 1) {
 		case 'rnw':
 			newComplexTask(file, block);
 			break;
-		case 'txt':				
-			newSimpleTask(file, block);
-			break;
 	}
 }
 
-async function newSimpleTask(file = '', block = 1) {
-	if(file != '') {
-		const parser = new DOMParser();
-		const fileText = await file.text();
-		const xmlDoc = parser.parseFromString(fileText,"text/xml");
-		const questions = xmlDoc.getElementsByTagName("question");
-	
-		for (i = 0; i < questions.length; i++) {
-			const question = questions[i];
-			const questionText = question.getElementsByTagName("questionText")[0].textContent.trim();
-			const questionAnswers = question.getElementsByTagName("questionAnswer");
-			
-			let questionAnswerChoices = new Array();
-			let questionAnswerResults = new Array();
-			
-			for (j = 0; j < questionAnswers.length; j++) {
-				const questionAnswer = questionAnswers[j];
-				questionAnswerChoices.push(questionAnswer.getElementsByTagName("questionAnswerText")[0].textContent.trim()); 
-				questionAnswerResults.push(questionAnswer.getElementsByTagName("questionAnswerResult")[0].textContent.trim() === "1"); 
-			}
-
-			const taskID = tasks + 1
-			addTask();
-			
-			let fileText = xmlToRnw;
-			fileText = fileText.replace("?q", '"' + questionText + '"');
-			fileText = fileText.replace("?c", 'c(' + questionAnswerChoices.map(c=>'"' + c + '"').join(',') + ')');
-			fileText = fileText.replace("?s", 'c(' + questionAnswerResults.map(s=>s?"T":"F").join(',') + ')');
-			fileText = fileText.replaceAll("\n", "\r\n");
-
-			createTask(taskID, file.name + "_" + (i+1), 
-							   fileText, 
-							   questionText,
-							   questionAnswerChoices,
-							   questionAnswerResults,
-							   'XML:' + (i+1),
-							   true);
-			
-			viewTask(taskID);
-		}
-	} else {
-		const taskID = tasks + 1
+function newSimpleTask(file = '', block = 1) {
+	const taskID = tasks + 1
 		addTask();
 		createTask(taskID, 'newTask', 
-					   '', 
-					   'Question text',
-					   ['Answer 1', 'Answer 2', 'Answer 3', 'Answer 4', 'Answer 5'],
-					   [false, false, false, false, false],
-					   'XML:',
-					   true);
+					       null, 
+					       'Question text',
+					       ['Answer 1', 'Answer 2', 'Answer 3', 'Answer 4', 'Answer 5'],
+					       [false, false, false, false, false],
+					       'XML:',
+					       true);
 		viewTask(taskID);
-	}
 }
 
-function newComplexTask(file = '', block) {
+async function newComplexTask(file = '', block) {
 	const taskID = tasks + 1
 	addTask();
 	
-	createTask(taskID, file.name.split('.')[0], file);
+	const fileText = await file.text();
+	createTask(taskID, file.name.split('.')[0], fileText);
 	
 	viewTask(taskID, true);
 }
 
 function createTask(taskID, name='task', 
-							file='',
+							file=null,
 						    question='',
 						    choices=[],
 							result=[],
@@ -867,8 +824,8 @@ function createTask(taskID, name='task',
 	$('#task_list_items').append('<div class="taskItem sidebarListItem"><span class="taskTryCatch"><i class="fa-solid fa-triangle-exclamation"></i><span class="taskTryCatchText"></span></span><span class="taskName">' + name + '</span></span><span class="taskBlock disabled"><input type="number" value="' + block + '"/></span><span class="taskButtons"><span class="taskParse taskButton"><i class="fa-solid fa-rotate"></i></span><span class="examTask taskButton"><i class="fa-solid fa-circle-check"></i></span><span class="taskRemove taskButton"><i class="fa-solid fa-trash"></i></span></span></div>');
 }
 
-async function parseTask(taskID) {	
-	const taskCode = await iuf['tasks'][taskID].file.text();
+function parseTask(taskID) {	
+	const taskCode = iuf['tasks'][taskID].file;
 	
 	Shiny.onInputChange("parseExercise", {taskCode: taskCode, taskID: taskID}, {priority: 'event'});	
 }
@@ -900,9 +857,11 @@ function getNumberOfExamTasks() {
 function viewTask(taskID, forceParse = false) {
 	resetOutputFields();
 	
-	const isFromXml = iuf['tasks'][taskID]['e'] != null ? iuf['tasks'][taskID]['e'].includes("XML") : false;
-	const parse = !isFromXml && (forceParse || iuf['tasks'][taskID]['seed'] == "" || iuf['tasks'][taskID]['seed'] != $("#seedValue").val() || ! iuf.tasks[taskID].e.includes("Success: "));
-	
+	const fileExists = iuf['tasks'][taskID]['file'] !== null;
+	const seedChanged = iuf['tasks'][taskID]['seed'] == "" || iuf['tasks'][taskID]['seed'] != $("#seedValue").val();
+	const previousParseFailed = iuf.tasks[taskID].e !== null && !iuf.tasks[taskID].e.includes("Success: ");
+	const parse = fileExists && (forceParse || seedChanged || previousParseFailed);
+
 	if(parse) {
 		parseTask(taskID);	
 	} else {
@@ -1078,6 +1037,17 @@ function loadTaskFromObject(taskID) {
 	$('.taskItem.active').removeClass('active');
 	$('.taskItem:nth-child(' + (taskID + 1) + ')').addClass('active');
 	$('#task_info').removeClass('hidden');
+}
+
+//TODO: use later to create rnw files from simple tasks
+function setSimpleTaskFileContents(taskID){
+	let fileText = rnwTemplate;
+	fileText = fileText.replace("?q", '"' + iuf['tasks'][taskID]['question'] + '"');
+	fileText = fileText.replace("?c", 'c(' + iuf['tasks'][taskID]['choices'].map(c=>'"' + c + '"').join(',') + ')');
+	fileText = fileText.replace("?s", 'c(' + iuf['tasks'][taskID]['result'].map(s=>s?"T":"F").join(',') + ')');
+	fileText = fileText.replaceAll("\n", "\r\n");
+
+	iuf['tasks'][taskID]['file'] = fileText;
 }
 
 function setTaskFieldFromObject(field, content) {
@@ -1284,6 +1254,7 @@ Shiny.addCustomMessageHandler('setTaskEditable', function(editable) {
 	iuf['tasks'][taskID]['editable'] = editable === 1;
 	
 	if(iuf['tasks'][taskID]['editable']) {
+		iuf['tasks'][taskID]['file'] = null;
 		$('.taskItem.active').addClass('editable');
 	} else {
 		$('.taskItem.active').removeClass('editable');
@@ -1452,7 +1423,7 @@ function calcTotalFixedPoints(){
 }
 
 async function createExam() {
-	const examTaskCodes = iuf['tasks'].filter((task) => task.exam).map((task) => task.e.includes("XML") ? task.file : task.file.text());
+	const examTaskCodes = iuf['tasks'].filter((task) => task.exam & task.file !== null).map((task) => task.file);
 	
 	let blocks = iuf['tasks'].map(x => x.block)
 		

@@ -43,6 +43,9 @@ parseExercise = function(task, seed, output, session) {
     session$sendCustomMessage("setTaskId", task$taskID)
     
     file = tempfile(fileext = ".Rnw") # tempfile name
+    
+    task$taskCode = gsub("maxChoices = 5", "maxChoices = NULL", task$taskCode)
+    
     writeLines(text = task$taskCode, con = file) # write contents to file
     
     htmlTask = exams2html(file, dir = tempdir(), seed = if(is.na(seed)) NULL else seed)
@@ -81,6 +84,8 @@ parseExercise = function(task, seed, output, session) {
     type = htmlTask$exam1$exercise1$metainfo$type
     question = htmlTask$exam1$exercise1$question
     editable = ifelse(htmlTask$exam1$exercise1$metainfo$editable == 1, 1, 0)
+    
+    print(question)
     
     session$sendCustomMessage("setTaskExamHistory", examHistory)
     session$sendCustomMessage("setTaskAuthoredBy", authoredBy)

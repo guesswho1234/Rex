@@ -1,13 +1,16 @@
-var xmlToRnw = `@
+var rnwTemplate = `@
 %% \\exextra[editable,numeric]{1}
 <<echo=FALSE, results=tex>>=
 question=?q
 choices=?c
 solutions=?s
-limit=min(length(choices), 5)
-sel=sample(1:length(choices), limit)
-choices=choices[sel]
-solutions=solutions[sel]
+maxChoices = 5
+if(!is.null(maxChoices)){
+	limit=min(length(choices), maxChoices)
+	sel=sample(1:length(choices), limit)
+	choices=choices[sel]
+	solutions=solutions[sel]
+}
 @
 \\begin{question}
 \\Sexpr{question}
