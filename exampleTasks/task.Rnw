@@ -1,3 +1,5 @@
+<<echo=FALSE, results=hide>>=
+
 @
 
 %% \exextra[editable,numeric]{1}

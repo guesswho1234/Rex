@@ -1,6 +1,8 @@
 # developed in r version 4.2.2
 
-#TODO: some connections are not properly closed and warnings can be thrown in R: "Warnung in list(...) ungenutzte Verbindung 4 () geschlossen"
+#TODO: some connections are not properly closed and warnings can be thrown in R: "Warnung in list(...) ungenutzte Verbindung 4 () geschlossen"; maybe this happens when tasks with errors are sent to the backend to be parsed
+
+#TODO: error when trying to create an exam with "simple" task(s): exams2nops: "<simpleError in writeLines(text = i, con = file): kann nur Zeichenketten-Objekte schreiben>"
 
 #TODO: opening the dashboard, loading tasks, deleting all of them and refreshing the pages causes the app to break and throw a warning in R: "Warnung: Error in if: Fehlender Wert, wo TRUE/FALSE nötig ist"
 
@@ -29,7 +31,7 @@ library(xtable) #xtable_1.8
 library(iuftools) #iuftools_1.0.0
 
 # TINYTEX SETUP
-tinytex::install_tinytex()
+# tinytex::install_tinytex()
 
 # FUNCTIONS ----------------------------------------------------------------
 parseExercise = function(task, seed, output, session) {
@@ -79,8 +81,6 @@ parseExercise = function(task, seed, output, session) {
     type = htmlTask$exam1$exercise1$metainfo$type
     question = htmlTask$exam1$exercise1$question
     editable = ifelse(htmlTask$exam1$exercise1$metainfo$editable == 1, 1, 0)
-    
-    print(question)
     
     session$sendCustomMessage("setTaskExamHistory", examHistory)
     session$sendCustomMessage("setTaskAuthoredBy", authoredBy)
@@ -152,7 +152,6 @@ parseExam = function(exam, seed, input, output, session) {
       tasks = lapply(tasks, function(i){
         file = tempfile(fileext = ".rnw") # tempfile name
         writeLines(text = i, con = file) # write contents to file
-        print(i)
 
         return(file)
       })
@@ -304,12 +303,10 @@ checkSeed = function(seed) {
 
 checkNumberOfExamTasks = function(numberOfExamTasks){
   if(!(is.numeric(numberOfExamTasks)) || is.null(numberOfExamTasks) || is.na(numberOfExamTasks)) {
-    print("wrong format")
     return(0)
   } 
   
   if(numberOfExamTasks < 0) {
-    print("< 0")
     return(0)
   } 
   

@@ -1,4 +1,5 @@
-var rnwTemplate = `@
+var rnwTemplate = `<<echo=FALSE, results=hide>>=
+@
 %% \\exextra[editable,numeric]{1}
 <<echo=FALSE, results=tex>>=
 question=?q
