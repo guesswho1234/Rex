@@ -30,9 +30,6 @@ library(exams) #exams_2.4
 library(xtable) #xtable_1.8
 library(iuftools) #iuftools_1.0.0
 
-# TINYTEX SETUP
-# tinytex::install_tinytex()
-
 # FUNCTIONS ----------------------------------------------------------------
 parseExercise = function(task, seed, output, session) {
   out <- tryCatch({

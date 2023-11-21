@@ -8,3 +8,6 @@ helpers.installPackages(
 
 # special case of installing iuftools from source
 install.packages("./iuftools", repos = NULL, type="source")
+
+# tinytex setup
+# tinytex::install_tinytex()
