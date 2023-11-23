@@ -1246,11 +1246,11 @@ $('#validateAnswer_preview').click(function () {
 	validateAnswer();
 });
 
-$('#resultContent').on('mouseenter', '.result', function() {
+$('#result').on('mouseenter', '.result', function() {
     $('#resultContent .result').addClass( "spoiler");
 });
 
-$('#resultContent').on('mouseleave', '.result', function() {
+$('#result').on('mouseleave', '.result', function() {
     $('#resultContent .result').removeClass( "spoiler");
 });
 
