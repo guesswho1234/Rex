@@ -82,14 +82,18 @@ body {
 	padding: 0px;
 }
 
-#languageSwitchContainer {
+#navMisc {
 	margin: 1rem;
 	position: absolute;
 	top: 0;
 	right: 0;
+	display: flex;
+	gap: 25px;
+	font-weight: bold;
 }
 
-#languageSwitchContainer span {
+#navMisc .buttonModeSelector, 
+#navMisc .langSelector {
 	cursor: pointer;
 }
 
@@ -100,6 +104,93 @@ body {
 	border-radius: 3px;
 	padding: 5px;
 	font-weight: bold;
+}
+
+.buttonText > * {
+	font-weight: normal;
+}
+
+.listButtons .listButton i {
+	display: none;
+}
+
+.listButtons .listButton .buttonText {
+	display: none;
+}
+
+.listButtons.iconButtonMode .listButton i {
+	display: block !important;
+}
+
+.listButtons.textButtonMode .listButton .buttonText {
+	display: block !important;
+}
+
+#heartbeatContainer { 
+	position: relative;
+	margin-right: 20px;
+}
+#heart { 
+	position: absolute;
+	top:50%;
+	left:50%;
+	width: 12px;
+	height: 12px;
+	margin-top: -6px;
+	opacity: 0.3;
+	transform: scale(0.8);
+} 
+#heart:before, #heart:after { 
+  position: absolute; 
+  content: ""; 
+  left: 8px;
+  top: 0; 
+  width: 8px; 
+  height: 12px; 
+  background: hsl(0,50%,50%); 
+  border-radius: 50px 50px 0 0; 
+  -webkit-transform: rotate(-45deg); 
+  -moz-transform: rotate(-45deg); 
+  -ms-transform: rotate(-45deg); 
+  -o-transform: rotate(-45deg); 
+  transform: rotate(-45deg); 
+  -webkit-transform-origin: 0 100%; 
+  -moz-transform-origin: 0 100%; 
+  -ms-transform-origin: 0 100%; 
+  -o-transform-origin: 0 100%; 
+  transform-origin: 0 100%; 
+} 
+#heart:after { 
+  left: 0; 
+  -webkit-transform: rotate(45deg); 
+  -moz-transform: rotate(45deg); 
+  -ms-transform: rotate(45deg); 
+  -o-transform: rotate(45deg); 
+  transform: rotate(45deg); 
+  -webkit-transform-origin: 100% 100%; 
+  -moz-transform-origin: 100% 100%; 
+  -ms-transform-origin: 100% 100%; 
+  -o-transform-origin: 100% 100%; 
+  transform-origin :100% 100%; 
+} 
+
+#heart.ping {
+    animation: ping 0.15s;
+}
+
+#heart.pong {
+    animation: pong 0.15s;
+}
+
+@keyframes ping{
+    from{
+        transform: scale(0.8);
+		opacity: 0.3;
+    }
+    to{
+        transform: scale(1);
+		opacity: 1;
+    }
 }
 
 /* --------------------------------------------------------------
@@ -126,8 +217,6 @@ main > * {
 }
 
 .sidebar {
-	width: 450px;
-	min-width: 450px;
 	background: var(---background);
 }
 
@@ -312,6 +401,9 @@ main > * {
 	margin: 0.5rem;
 	padding: 0.5rem;
 	cursor: pointer;
+	background: var(---background);
+	border: 2px solid var(---background);
+	border-radius: 5px;
 }
 
 #searchTasks input {
@@ -319,8 +411,7 @@ main > * {
 }
 
 .listButton:hover {
-	background: var(---background);
-	border-radius: 5px;
+	border: 2px solid var(---main);
 }
 
 .listButtons {
@@ -365,6 +456,10 @@ main > * {
 	margin-left: 1.5rem;
 }
 
+#searchTasks {
+	min-width: 150px;
+}
+
 /* --------------------------------------------------------------
  TASKS LIST
 -------------------------------------------------------------- */
@@ -380,14 +475,18 @@ main > * {
 	display: none;
 }
 
+.taskTryCatch.Warning,
+.taskTryCatch.Error {
+	display: flex;
+	align-items: center;
+}
+
 .taskTryCatch.Warning {
 	color: var(---tryCatch_warning);
-	display: block;
 }
 
 .taskTryCatch.Error {
 	color: var(---tryCatch_error);
-	display: block;
 }
 
 .sidebarListItem.exam .examTask {
@@ -451,8 +550,8 @@ main > * {
 	text-align: center;
 	position: absolute;
 	z-index: 1;
-	margin-left: 0.2rem;
-	margin-top: -1.7rem;
+	margin-top: -50px;
+	margin-left: 15px
 }
 
 .taskTryCatch.Warning .taskTryCatchText {
@@ -520,10 +619,15 @@ main > * {
 }
 
 #result {
-	display: flex;
+	display: block;
 }
 
-#result .result {
+#addNewAnswer {
+	margin: 10px;
+	margin-left: 0px;
+}
+
+#resultContent .result {
 	color: var(---highlight_correct);
 	background:  var(---highlight_correct);
 	font-weight: bold;
@@ -534,46 +638,56 @@ main > * {
 	padding-right: 0.5rem;
 }
 
-#result .result.numericResult {
+#resultContent .result.numericResult {
 	display: flex;
 	align-items: center;
 }
 
-#result .result.spoiler{
+#resultContent .result.spoiler{
 	background: unset;
 }
 
-#result .choice {
+#resultContent .choice {
 	height: 100%;
 	display:flex;
 }
 
-#result > * {
+#resultContent .choice input {
+	margin: 0px;
+}
+
+
+#resultContent > * {
 	font-weight: bold;
 }
 
-#result div > p {
+#resultContent div > p {
 	display: flex;
+	align-items: center;
 }
 
-#result > span {
+#resultContent > span {
 	margin-left: 1rem;
 }
 
-#result input[type=text] {
+#resultContent input[type=text] {
 	max-width: 150px;
 }
 
-#result .choiceText {
+#resultContent .choiceText {
 	margin-left: 0.25rem;
 }
 
-#result .correct {
+#resultContent .correct {
 	background: var(---highlight_correct);
 }
 
-#result .incorrect {
+#resultContent .incorrect {
 	background: var(---highlight_incorrect);
+}
+
+#resultContent .removeAnswer {
+	margin-right: 0.5rem;
 }
 
 .editTrueFalse {
@@ -603,13 +717,14 @@ main > * {
 	gap: 10px;
 }
 
-#saveTask {
-	color: var(---main);
-	background: var(---highlight_values_fade);
+#addNewAnswer,
+.removeAnswer {
+	display: none;
 }
 
-#saveTask:hover {
-	background: var(---highlight_values);
+#addNewAnswer.editable,
+.removeAnswer.editable {
+	display: block;
 }
 
 /* --------------------------------------------------------------

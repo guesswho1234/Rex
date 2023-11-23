@@ -45,9 +45,20 @@
 					</a>
 				</li>
 			</ul>
-			<div id="languageSwitchContainer">
-				<span id="deLang" class="active">DE</span>
-				<span id="enLang">EN</span>
+			<div id="navMisc">
+				<div id="buttonModeSwitchContainer">
+					<span id="textButtons" class="buttonModeSelector active"><i class="fa-solid fa-font"></i></span>
+					<span> | </span>
+					<span id="iconButtons" class="buttonModeSelector"><i class="fa-solid fa-icons"></i></span>
+				</div>
+				<div id="languageSwitchContainer">
+					<span id="deLang" class="langSelector active">DE</span>
+					<span> | </span>
+					<span id="enLang" class="langSelector">EN</span>
+				</div>
+				<div id="heartbeatContainer">
+					<div id="heart"></div>
+				</div>
 			</div>
 		</nav>
 		<main>
@@ -92,36 +103,42 @@
 				<div class="contentWrapper">
 					<div class="sidebar">
 						<div id="task_list" class="itemList">
-							<div id="taskListButtons" class="listButtons">
+							<div id="taskListButtons" class="listButtons iconButtonMode">
 								<div id="newTask" class="listButton">
 									<div class="list_butttonIcon">
 										<i class="fa-solid fa-plus"></i>
+										<span class="buttonText"><span lang="de">Neu</span><span lang="en">New</span></span>
 									</div>
 								</div>	
 								<label id="taskUpload" class="listButton" for="file-upload_tasks">
 									<div class="list_butttonIcon">
 										<i class="fa-solid fa-upload"></i>
+										<span class="buttonText"><span lang="de">Importieren</span><span lang="en">Import</span></span>
 									</div>
 									<input type="file" id="file-upload_tasks" onchange='loadTasksFileDialog(this.files);' multiple>
 								</label>
 								<div id="taskDownload" class="listButton">
 									<div class="list_butttonIcon">
 										<i class="fa-solid fa-download"></i>
+										<span class="buttonText"><span lang="de">Exportieren</span><span lang="en">Export</span></span>
 									</div>
 								</div>	
 								<div id="examTaskAll" class="listButton">
 									<div class="list_butttonIcon">
 										<i class="fa-solid fa-circle-check"></i>
+										<span class="buttonText"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span>
 									</div>
 								</div>								
 								<div id="taskRemoveAll" class="listButton">
 									<div class="list_butttonIcon">
 										<i class="fa-solid fa-trash"></i>
+										<span class="buttonText"><span lang="de">Entfernen</span><span lang="en">Remove</span></span>
 									</div>
 								</div>
 								<div id="taskParseAll" class="listButton">
 									<div class="list_butttonIcon">
 										<i class="fa-solid fa-rotate"></i>
+										<span class="buttonText"><span lang="de">Berechnen</span><span lang="en">Parse</span></span>
 									</div>
 								</div>
 								<div id="searchTasks" class="listButton">
@@ -167,11 +184,15 @@
 						<div id="question"></div>
 						
 						<label for="result"><span lang="de">Ergebnis</span><span lang="en">Result</span></label>
-						<div id="result"></div>
+						<div id="result">
+							<button id="addNewAnswer" type="button" class="btn btn-default action-button shiny-bound-input"><span lang="de">Neue Antwortmöglichkeit</span><span lang="en">New Answer</span></button>
+							<div id="resultContent">
+							</div>
+						</div>
 						
 						<div id="task_info_buttons">
 							<button id="validateAnswer_preview" type="button" class="btn btn-default action-button shiny-bound-input"><span lang="de">Überprüfen</span><span lang="en">Validate</span></button>
-							<button id="saveTask" type="button" class="btn btn-default action-button shiny-bound-input"><span lang="de">Speichern</span><span lang="en">Save</span></button>
+							<button id="exportTask" type="button" class="btn btn-default action-button shiny-bound-input"><span lang="de">Exportieren</span><span lang="en">Export</span></button>
 						</div>
 					</div>	
 				</div>	
