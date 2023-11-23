@@ -11,7 +11,7 @@
 		<script src="script.js" defer></script>	
 		<script src="rnwTemplate.js" defer></script>	
 	</head>
-	<body class="color-theme">
+	<body class="color-theme iconButtonMode">
 		<div id="disableOverlay">
 			<div id="disableOverlay">
 				<span lang="de">BITTE WARTEN...</span>
@@ -103,42 +103,42 @@
 				<div class="contentWrapper">
 					<div class="sidebar">
 						<div id="task_list" class="itemList">
-							<div id="taskListButtons" class="listButtons iconButtonMode">
+							<div id="taskListButtons" class="listButtons">
 								<div id="newTask" class="listButton">
 									<div class="list_butttonIcon">
-										<i class="fa-solid fa-plus"></i>
-										<span class="buttonText"><span lang="de">Neu</span><span lang="en">New</span></span>
+										<span class="iconButton"><i class="fa-solid fa-plus"></i></span>
+										<span class="textButton"><span lang="de">Neu</span><span lang="en">New</span></span>
 									</div>
 								</div>	
 								<label id="taskUpload" class="listButton" for="file-upload_tasks">
 									<div class="list_butttonIcon">
-										<i class="fa-solid fa-upload"></i>
-										<span class="buttonText"><span lang="de">Importieren</span><span lang="en">Import</span></span>
+										<span class="iconButton"><i class="fa-solid fa-upload"></i></span>
+										<span class="textButton"><span lang="de">Importieren</span><span lang="en">Import</span></span>
 									</div>
 									<input type="file" id="file-upload_tasks" onchange='loadTasksFileDialog(this.files);' multiple>
 								</label>
 								<div id="taskDownload" class="listButton">
 									<div class="list_butttonIcon">
-										<i class="fa-solid fa-download"></i>
-										<span class="buttonText"><span lang="de">Exportieren</span><span lang="en">Export</span></span>
+										<span class="iconButton"><i class="fa-solid fa-download"></i></span>
+										<span class="textButton"><span lang="de">Exportieren</span><span lang="en">Export</span></span>
 									</div>
 								</div>	
 								<div id="examTaskAll" class="listButton">
 									<div class="list_butttonIcon">
-										<i class="fa-solid fa-circle-check"></i>
-										<span class="buttonText"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span>
+										<span class="iconButton"><i class="fa-solid fa-circle-check"></i></span>
+										<span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span>
 									</div>
 								</div>								
 								<div id="taskRemoveAll" class="listButton">
 									<div class="list_butttonIcon">
-										<i class="fa-solid fa-trash"></i>
-										<span class="buttonText"><span lang="de">Entfernen</span><span lang="en">Remove</span></span>
+										<span class="iconButton"><i class="fa-solid fa-trash"></i></span>
+										<span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span>
 									</div>
 								</div>
 								<div id="taskParseAll" class="listButton">
 									<div class="list_butttonIcon">
-										<i class="fa-solid fa-rotate"></i>
-										<span class="buttonText"><span lang="de">Berechnen</span><span lang="en">Parse</span></span>
+										<span class="iconButton"><i class="fa-solid fa-rotate"></i></span>
+										<span class="textButton"><span lang="de">Berechnen</span><span lang="en">Parse</span></span>
 									</div>
 								</div>
 								<div id="searchTasks" class="listButton">
@@ -185,14 +185,17 @@
 						
 						<label for="result"><span lang="de">Ergebnis</span><span lang="en">Result</span></label>
 						<div id="result">
-							<button id="addNewAnswer" type="button" class="btn btn-default action-button shiny-bound-input"><span lang="de">Neue Antwortmöglichkeit</span><span lang="en">New Answer</span></button>
-							<div id="resultContent">
-							</div>
 						</div>
 						
 						<div id="task_info_buttons">
-							<button id="validateAnswer_preview" type="button" class="btn btn-default action-button shiny-bound-input"><span lang="de">Überprüfen</span><span lang="en">Validate</span></button>
-							<button id="exportTask" type="button" class="btn btn-default action-button shiny-bound-input"><span lang="de">Exportieren</span><span lang="en">Export</span></button>
+							<button id="validateAnswer_preview" type="button" class="btn btn-default action-button shiny-bound-input">
+								<span class="iconButton"><i class="fa-solid fa-check-double"></i></span>
+								<span class="textButton"><span lang="de">Überprüfen</span><span lang="en">Validate</span></span>
+							</button>
+							<button id="exportTask" type="button" class="btn btn-default action-button shiny-bound-input">
+								<span class="iconButton"><i class="fa-solid fa-download"></i></span>
+								<span class="textButton"><span lang="de">Exportieren</span><span lang="en">Export</span></span>
+							</button>
 						</div>
 					</div>	
 				</div>	

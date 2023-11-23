@@ -6,19 +6,9 @@
 
 #TODO: opening the dashboard, loading tasks, deleting all of them and refreshing the pages causes the app to break and throw a warning in R: "Warnung: Error in if: Fehlender Wert, wo TRUE/FALSE nötig ist"
 
-#TODO: expand edit functions: allow to add / remove answers
-
-#TODO: after each edit to a task, check if it is valid for an exam (e.g. minimum of 5 answers)
-
-#TODO: add "export" buttons to task list header and to each task view (not the task list item) -> downloads all tasks as zip or specific task as rnw
+#TODO: "export" buttons downloads all tasks as zip or specific task as rnw
 
 #TODO: switch from temp folder to downloadable files (zip) files. relevant for tasks, exams, ...
-
-#TODO: add hover labels for buttons
-
-#TODO: make all button switchable between icons and texts
-
-#TODO: go through todo comments and clean them up
 
 # STARTUP -----------------------------------------------------------------
 rm(list = ls())

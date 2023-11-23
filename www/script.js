@@ -211,15 +211,15 @@ $('#buttonModeSwitchContainer span').click(function () {
 	$('#buttonModeSwitchContainer').find('.active').removeClass('active');
 	$(this).addClass('active');
 	
-	$('#taskListButtons').removeClass("iconButtonMode");
-	$('#taskListButtons').removeClass("textButtonMode");
+	$('body').removeClass("iconButtonMode");
+	$('body').removeClass("textButtonMode");
 	
 	switch( $(this).attr('id') ) {
 		case "iconButtons": 
-			$('#taskListButtons').addClass("iconButtonMode");
+			$('body').addClass("iconButtonMode");
 			break;
 		case "textButtons": 
-			$('#taskListButtons').addClass("textButtonMode");
+			$('body').addClass("textButtonMode");
 			break;
 	}
 
@@ -871,7 +871,7 @@ function createTask(taskID, name='task',
 		setSimpleTaskFileContents(taskID);
 	}
 	
-	$('#task_list_items').append('<div class="taskItem sidebarListItem"><span class="taskTryCatch"><i class="fa-solid fa-triangle-exclamation"></i><span class="taskTryCatchText"></span></span><span class="taskName">' + name + '</span></span><span class="taskBlock disabled"><input type="number" value="' + block + '"/></span><span class="taskButtons"><span class="taskParse taskButton"><i class="fa-solid fa-rotate"></i></span><span class="examTask taskButton"><i class="fa-solid fa-circle-check"></i></span><span class="taskRemove taskButton"><i class="fa-solid fa-trash"></i></span></span></div>');
+	$('#task_list_items').append('<div class="taskItem sidebarListItem"><span class="taskTryCatch"><i class="fa-solid fa-triangle-exclamation"></i><span class="taskTryCatchText"></span></span><span class="taskName">' + name + '</span></span><span class="taskBlock disabled"><input type="number" value="' + block + '"/></span><span class="taskButtons"><span class="taskParse taskButton"><span class="iconButton"><i class="fa-solid fa-rotate"></i></span><span class="textButton"><span lang="de">Berechnen</span><span lang="en">Prase</span></span></span><span class="examTask taskButton"><span class="iconButton"><i class="fa-solid fa-circle-check"></i></span><span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span></span><span class="taskRemove taskButton"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></span></span></div>');
 }
 
 function parseTask(taskID) {	
@@ -922,13 +922,13 @@ function viewTask(taskID, forceParse = false) {
 }
 
 function resetOutputFields() {
-	$('#task_info').addClass('hidden');
+	$('#task_info').addClass('hidden');	
 	
 	let fields = ['taskName',
 				  'question',
 			      'points',
 			      'type',
-			      'resultContent',
+			      'result',
 			      'examHistory',
 			      'authoredBy',
 			      'checkedBy',
@@ -980,8 +980,7 @@ $('body').on('focus', '[contenteditable]', function() {
 function loadTaskFromObject(taskID) {
 	const editable = iuf['tasks'][taskID]['editable']; 
 	
-	$('#addNewAnswer').removeClass("active");
-	$('.taskItem:nth-child(' + (taskID + 1) + ')').removeClass("editableTask");
+	$('.taskItem:nth-child(' + (taskID + 1) + ')').removeClass("editable");
 	$('.taskItem:nth-child(' + (taskID + 1) + ') .taskParse').removeClass("disabled");
 	
 	if(iuf['tasks'][taskID]['name'] !== null) {	
@@ -1017,11 +1016,15 @@ function loadTaskFromObject(taskID) {
 		
 		setTaskFieldFromObject(field, content);
 	}
-	
+		
 	if(iuf['tasks'][taskID]['type'] === "mchoice" || iuf['tasks'][taskID]['editable']) {
-		const field = 'resultContent'
+		const field = 'result'
 		const zip = iuf['tasks'][taskID]['result'].map((x, i) => [x, iuf['tasks'][taskID]['choices'][i]]);
-		const content = '<div>' + zip.map(i => '<p><button type="button" class="removeAnswer ' + (editable ? 'editable' : '') + ' btn btn-default action-button shiny-bound-input"><i class="fa-solid fa-trash"></i></button><span class=\"result mchoiceResult ' + (editable ? 'editTrueFalse' : '') + '\">' + ( + i[0]) + '</span><span class="choice"><input type=\"checkbox\" name=\"\" value=\"\"><span class="choiceText" contenteditable="' + editable + '" spellcheck="false">' + i[1] + '</span></span></p>').join('') + '</div>';
+		let content = '<div id="resultContent">' + zip.map(i => '<p>' + (editable ? '<button type="button" class="removeAnswer btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></button>' : '') + '<span class=\"result mchoiceResult ' + (editable ? 'editTrueFalse' : '') + '\">' + ( + i[0]) + '</span><span class="choice"><input type=\"checkbox\" name=\"\" value=\"\"><span class="choiceText" contenteditable="' + editable + '" spellcheck="false">' + i[1] + '</span></span></p>').join('') + '</div>';
+		
+		if( iuf['tasks'][taskID]['editable'] ) {
+			content = '<button id="addNewAnswer" type="button" class="btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-plus"></i></span><span class="textButton"><span lang="de">Neue Antwortmöglichkeit</span><span lang="en">New Answer</span></span></button>' + content;
+		}
 		
 		setTaskFieldFromObject(field, content);
 	}
@@ -1083,11 +1086,10 @@ function loadTaskFromObject(taskID) {
 	}
 	
 	if(editable) {
-		$('#addNewAnswer').addClass("editable");
-		$('.taskItem:nth-child(' + (taskID + 1) + ')').addClass("editableTask");
+		$('.taskItem:nth-child(' + (taskID + 1) + ')').addClass("editable");
 		$('.taskItem:nth-child(' + (taskID + 1) + ') .taskParse').addClass("disabled");
 	} 
-	
+		
 	$('.taskItem.active').removeClass('active');
 	$('.taskItem:nth-child(' + (taskID + 1) + ')').addClass('active');
 	$('#task_info').removeClass('hidden');
@@ -1219,7 +1221,7 @@ function validateAnswer() {
 	} 
 }
 
-$('#addNewAnswer').click(function () {
+$('#task_info').on('click', '#addNewAnswer', function() {
 	const taskID = getID();
 	
 	iuf['tasks'][taskID]['choices'].push(d_answerText);
@@ -1228,11 +1230,11 @@ $('#addNewAnswer').click(function () {
 	loadTaskFromObject(taskID);
 });
 
-$('#task_info').on('click', '.removeAnswer.editable', function() {
+$('#task_info').on('click', '.removeAnswer', function() {
 	const taskID = getID();
-	const choicesID = $('.removeAnswer.editable').index('.removeAnswer');
+	const choicesID = $('.removeAnswer').index('.removeAnswer');
 	
-	if( iuf['tasks'][taskID]['choices'].length > 5 ) {	
+	if( iuf['tasks'][taskID]['choices'].length > 0 ) {	
 		iuf['tasks'][taskID]['choices'].splice(choicesID, 1);
 		iuf['tasks'][taskID]['result'].splice(choicesID, 1);
 	} 
