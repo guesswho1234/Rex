@@ -6,11 +6,13 @@
 
 #TODO: opening the dashboard, loading tasks, deleting all of them and refreshing the pages causes the app to break and throw a warning in R: "Warnung: Error in if: Fehlender Wert, wo TRUE/FALSE nötig ist"
 
-#TODO: "export" buttons downloads all tasks as zip or specific task as rnw
+#TODO: "export" buttons downloads all tasks as zip
 
 #TODO: switch from temp folder to downloadable files (zip) files. relevant for tasks, exams, ...
 
 #TODO: if all tasks are removes one by one, the view of the last task ist not removed
+
+#TODO: when loading non editable and editable tasks, the blueish colored-ribbon for editable task is sometimes added to non editable tasks, or missing for editable tasks
 
 # STARTUP -----------------------------------------------------------------
 rm(list = ls())

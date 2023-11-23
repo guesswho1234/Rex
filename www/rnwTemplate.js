@@ -15,7 +15,6 @@ if(!is.null(maxChoices)){
 @
 \\begin{question}
 \\Sexpr{question}
-
 <<echo=FALSE, results=tex>>=
 answerlist(choices)
 @

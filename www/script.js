@@ -972,7 +972,7 @@ $('body').on('focus', '[contenteditable]', function() {
 		if ($this.hasClass('choiceText')) {
 			iuf['tasks'][taskID]['choices'][$this.index('.choiceText')] = $this.text();
 		}
-		
+
 		setSimpleTaskFileContents(taskID);
     }
 });
@@ -1241,6 +1241,55 @@ $('#task_info').on('click', '.removeAnswer', function() {
 	
 	loadTaskFromObject(taskID);
 });
+
+$("#exportTask").click(function(){
+	const taskID = getID();
+	
+	if( iuf['tasks'][taskID]['editable'] ) {
+		handleDuplicateAnswers(taskID);
+		setSimpleTaskFileContents(taskID);
+	}
+	
+	const fileContent = iuf['tasks'][taskID]['file'];
+	let fileName = iuf['tasks'][taskID]['name'];
+	fileName = convertToValidFilename(fileName);
+	
+	download(fileContent, fileName + '.rnw', 'text/plain;charset=utf-8;');
+}); 
+
+function handleDuplicateAnswers(taskID) {
+	let choices = iuf['tasks'][taskID]['choices'];
+	let result = iuf['tasks'][taskID]['result'];
+	const duplicates = choices.flatMap((item, index) => choices.indexOf(item) !== index ? index : [] );
+		
+	if( duplicates.length > 0 ) {
+		for (let i = duplicates.length -1; i >= 0; i--) {
+			choices.splice(duplicates[i], 1);
+			result.splice(duplicates[i], 1);
+		}
+		
+		if( choices.length <= 0 ) {
+			choices = ["AnswerText"];
+			result = [false];
+		}
+		
+		iuf['tasks'][taskID]['choices'] = choices;
+		iuf['tasks'][taskID]['result'] = result;
+	}
+}
+
+function convertToValidFilename(string) {
+    return (string.replace(/[\/|\\:*?"<>]/g, " "));
+}
+
+function download(content, fileName, contentType) {
+	let a = document.createElement("a");
+	let file = new Blob([content], {type: contentType});
+	a.href = URL.createObjectURL(file);
+	a.download = fileName;
+	a.click();
+	a.remove();
+}
 
 $('#validateAnswer_preview').click(function () {
 	validateAnswer();
