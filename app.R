@@ -10,6 +10,8 @@
 
 #TODO: switch from temp folder to downloadable files (zip) files. relevant for tasks, exams, ...
 
+#TODO: if all tasks are removes one by one, the view of the last task ist not removed
+
 # STARTUP -----------------------------------------------------------------
 rm(list = ls())
 cat("\f")
