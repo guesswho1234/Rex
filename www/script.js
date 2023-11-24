@@ -505,6 +505,29 @@ $('#newTask').click(function () {
 	newSimpleTask();
 });
 
+// $('#taskDownload').click(function () {
+	// if( iuf['tasks'].length > 0 ) {
+		// let zip = new JSZip();
+		
+		// iuf['tasks'].forEach(task => {
+			// const taskID = getID();
+			
+			// if( iuf['tasks'][taskID]['editable'] ) {
+				// handleDuplicateAnswers(taskID);
+				// setSimpleTaskFileContents(taskID);
+			// }
+			
+			// const fileContent = iuf['tasks'][taskID]['file'];
+			// let fileName = iuf['tasks'][taskID]['name'];
+			// fileName = convertToValidFilename(fileName);
+			
+			
+		// }
+		
+		// download(fileContent, fileName + '.rnw', 'text/plain;charset=utf-8;');
+	// }
+// });
+
 $('#examTaskAll').click(function () {
 	examTaskAll();
 });
@@ -770,7 +793,7 @@ window.addEventListener('DOMContentLoaded', dndTasks.init);
 function loadTasksDnD(items) {	
 	let blockNum = getBlockNum();
 	
-	getFilesDataTransferItems(items).then(async (files) => {
+	getFilesDataTransferItems(items).then((files) => {
 		Array.from(files).forEach(file => {	
 			loadTask(file, blockNum);
 		});
@@ -886,7 +909,7 @@ function numberOfExamTasks() {
 }
 
 function numberOfTaskBlocks() {
-	Shiny.onInputChange("setNumberOfTaskBlocks", getNumberOfTaskBlocks(), {priority: 'event'});
+	Shiny.onInputChange("setNumberOfTaskBlocks", Math.max(1, getNumberOfTaskBlocks()), {priority: 'event'});
 }
 
 function getNumberOfTaskBlocks() {
@@ -908,18 +931,23 @@ function getNumberOfExamTasks() {
 function viewTask(taskID, forceParse = false) {
 	resetOutputFields();
 	
-	const editable = iuf['tasks'][taskID]['editable'] 
-	const seedChanged = iuf['tasks'][taskID]['seed'] == "" || iuf['tasks'][taskID]['seed'] != $("#seedValue").val();
-	const previousParseFailed = iuf.tasks[taskID].e !== null && !iuf.tasks[taskID].e.includes("Success: ");
-	const parse = !editable && (forceParse || seedChanged || previousParseFailed);
-
-	if(parse) {
+	if(taskNeedsToBeParsed(taskID, forceParse)) {
 		parseTask(taskID);	
 	} else {
 		loadTaskFromObject(taskID);
 	}
 		
 	f_langDeEn();
+}
+
+function taskNeedsToBeParsed(taskID, forceParse = false){
+	const editable = iuf['tasks'][taskID]['editable'] 
+	const seedChanged = iuf['tasks'][taskID]['seed'] == "" || iuf['tasks'][taskID]['seed'] != $("#seedValue").val();
+	const previousParseFailed = iuf.tasks[taskID].e !== null && !iuf.tasks[taskID].e.includes("Success: ");
+	// const parse = !editable && (forceParse || seedChanged || previousParseFailed);
+	const parse = forceParse || seedChanged || previousParseFailed;
+	
+	return parse;
 }
 
 function resetOutputFields() {
@@ -1381,15 +1409,7 @@ Shiny.addCustomMessageHandler('setTaskResultNumeric', function(taskResult) {
 });
 
 Shiny.addCustomMessageHandler('setTaskEditable', function(editable) {
-	const taskID = getID();
-	
-	iuf['tasks'][taskID]['editable'] = editable === 1;
-	
-	if(iuf['tasks'][taskID]['editable']) {
-		$('.taskItem.active').addClass('editable');
-	} else {
-		$('.taskItem.active').removeClass('editable');
-	}
+	iuf['tasks'][getID()]['editable'] = (editable === 1);
 });
 
 Shiny.addCustomMessageHandler('setTaskE', function(jsonData) {
@@ -1432,9 +1452,6 @@ $("#examFunctions_list_items .sidebarListItem").click(function(){
 	selectListItem($('.mainSection.active .sidebarListItem.active').index());
 }); 
 
-/* --------------------------------------------------------------
- EXAM CREATE 
--------------------------------------------------------------- */
 let dndAdditionalPDF = {
 	hzone: null,
 	dzone: null,
