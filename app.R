@@ -2,15 +2,11 @@
 
 #TODO: some connections are not properly closed and warnings can be thrown in R: "Warnung in list(...) ungenutzte Verbindung 4 () geschlossen"; maybe this happens when tasks with errors are sent to the backend to be parsed
 
-#TODO: error when trying to create an exam with "simple" task(s): exams2nops: "<simpleError in writeLines(text = i, con = file): kann nur Zeichenketten-Objekte schreiben>"
-
 #TODO: opening the dashboard, loading tasks, deleting all of them and refreshing the pages causes the app to break and throw a warning in R: "Warnung: Error in if: Fehlender Wert, wo TRUE/FALSE nötig ist"
 
 #TODO: "export" buttons downloads all tasks as zip
 
 #TODO: switch from temp folder to downloadable files (zip) files. relevant for tasks, exams, ...
-
-#TODO: if all tasks are removes one by one, the view of the last task ist not removed
 
 #TODO: when loading non editable and editable tasks, the blueish colored-ribbon for editable task is sometimes added to non editable tasks, or missing for editable tasks
 

@@ -814,7 +814,8 @@ function newSimpleTask(file = '', block = 1) {
 					       [d_answerText, d_answerText, d_answerText, d_answerText, d_answerText],
 					       [d_result, d_result, d_result, d_result, d_result],
 					       null,
-					       true);
+					       true,
+						   "mchoice");
 		viewTask(taskID);
 }
 
@@ -835,6 +836,7 @@ function createTask(taskID, name='task',
 							result=[],
 							e=null,
 							editable=false,
+							type=null,
 							seed=null, 
 						    exam=false, 
 							examHistory=null,
@@ -845,7 +847,6 @@ function createTask(taskID, name='task',
 							points=null,
 							topic=null,
 							tags=null,
-							type=null,
 							block=1){
 	iuf['tasks'][taskID]['file'] = file;
 	iuf['tasks'][taskID]['name'] = name;
@@ -953,7 +954,7 @@ $('#task_info').on('click', '.editTrueFalse', function(e) {
 });
 
 $('body').on('focus', '[contenteditable]', function() {
-    const $this = $(this);
+    const $this = $(this);	
     $this.data('before', $this.html());
 }).on('blur', '[contenteditable]', function() {
     const $this = $(this);
@@ -976,6 +977,10 @@ $('body').on('focus', '[contenteditable]', function() {
 		setSimpleTaskFileContents(taskID);
     }
 });
+
+document.addEventListener('dblclick', (event) => {
+  window.getSelection().selectAllChildren(event.target)
+})
 
 function loadTaskFromObject(taskID) {
 	const editable = iuf['tasks'][taskID]['editable']; 
@@ -1166,6 +1171,8 @@ $('#task_list_items').on('click', '.examTask', function(e) {
 $('#task_list_items').on('click', '.taskRemove', function(e) {
 	e.preventDefault();
 	e.stopPropagation();
+	
+	resetOutputFields();
 	
 	if($(this).closest('.taskItem').hasClass('active')) {
 		Shiny.onInputChange("resetTaskOutputFields", 1);
