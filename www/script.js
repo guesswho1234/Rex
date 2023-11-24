@@ -834,8 +834,8 @@ function newSimpleTask(file = '', block = 1) {
 		createTask(taskID, d_taskName, 
 					       null, 
 					       d_questionText,
-					       [d_answerText, d_answerText, d_answerText, d_answerText, d_answerText],
-					       [d_result, d_result, d_result, d_result, d_result],
+					       [d_answerText],
+					       [d_result],
 					       null,
 					       true,
 						   "mchoice");
@@ -944,8 +944,7 @@ function taskNeedsToBeParsed(taskID, forceParse = false){
 	const editable = iuf['tasks'][taskID]['editable'] 
 	const seedChanged = iuf['tasks'][taskID]['seed'] == "" || iuf['tasks'][taskID]['seed'] != $("#seedValue").val();
 	const previousParseFailed = iuf.tasks[taskID].e !== null && !iuf.tasks[taskID].e.includes("Success: ");
-	// const parse = !editable && (forceParse || seedChanged || previousParseFailed);
-	const parse = forceParse || seedChanged || previousParseFailed;
+	const parse = !editable && (forceParse || seedChanged || previousParseFailed);
 	
 	return parse;
 }

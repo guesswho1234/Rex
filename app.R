@@ -6,6 +6,10 @@
 
 #TODO: switch from temp folder to downloadable files (zip) files. relevant for tasks, exams, ...
 
+#TODO: exam fields - validation
+
+#TODO: exam fields - expand on aids to fill form  
+
 # STARTUP -----------------------------------------------------------------
 rm(list = ls())
 cat("\f")
