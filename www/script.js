@@ -62,13 +62,15 @@ document.onkeydown = function(evt) {
 			$('.taskItem').removeClass("filtered");
 		}
 		
-		if (evtobj.keyCode == 67) { // c
-			newSimpleTask();
-		}
+		
 		
 		const targetInput = $(evtobj.target).is('input');
 		const targetEditable = $(evtobj.target).attr('contenteditable');
 		const itemsExist = $('.taskItem').length > 0;
+		
+		if (!targetInput && !targetEditable && evtobj.keyCode == 67) { // c
+			newSimpleTask();
+		}
 			
 		if (!targetInput && !targetEditable && itemsExist) {
 			let updateView = false;
