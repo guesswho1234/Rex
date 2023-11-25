@@ -1262,6 +1262,8 @@ $('#task_info').on('click', '#addNewAnswer', function() {
 	iuf['tasks'][taskID]['result'].push(d_result);
 	
 	loadTaskFromObject(taskID);
+	
+	f_langDeEn();
 });
 
 $('#task_info').on('click', '.removeAnswer', function() {
