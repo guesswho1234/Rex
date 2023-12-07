@@ -128,16 +128,19 @@ parseExam = function(exam, seed, input, output, session) {
   out <- tryCatch({
     startWait(session)
     
+    examPdfFiles = c()
+    examRdsFiles = c()
+    
     for(examId in 1:exam$numberOfExams){
       examSeed = as.numeric(paste0(if(is.na(exam$examSeed)) NULL else exam$examSeed, examId))
       set.seed(examSeed)
-      
+
       blocks = as.numeric(exam$blocks)
       numberOfTasks = as.numeric(exam$numberOfTasks)
 
       tasksPerBlock = numberOfTasks / length(unique(blocks))
       taskBlocks = lapply(unique(exam$blocks), function(x) exam$tasks[exam$blocks==x])
-      
+
       tasks = Reduce(c, lapply(taskBlocks, sample, tasksPerBlock))
 
       tasks = lapply(tasks, function(i){
@@ -146,45 +149,47 @@ parseExam = function(exam, seed, input, output, session) {
 
         return(file)
       })
-      
+
       tasks = sample(tasks, numberOfTasks)
       seedList = rep(examSeed, length(tasks))
-      
+      name = paste0(examSeed, "_")
+      dir = tempdir()
+
       additionalPDF = lapply(exam$additionalPDF, function(i){
         file = tempfile(fileext = ".pdf") # tempfile name
         raw = openssl::base64_decode(i)
         writeBin(raw, con = file)
-        
+
         return(file)
       })
-      
+
       title = input$examTitle
       course = input$examCourse
       institution = input$examInstitution
       blank = input$numberOfBlanks
       showpoints = input$showPoints
-      
+
       date = Sys.Date()
       pages = NULL
       points = NULL
-      
+
       if(length(input$examDate) == 1) date = input$examDate
       if(length(additionalPDF) > 0) pages = additionalPDF
       if(is.na(input$numberOfFixedPoints)) points = input$numberOfFixedPoints
-      
+
       #debug prints
-      print(input$examTitle)
-      print(input$examCourse)
-      print(input$examInstitution)
-      print(input$examDate)
-      print(input$numberOfBlanks)
-      print(additionalPDF) # only works with one pdf file?
-      print(input$numberOfFixedPoints)
-      print(input$showPoints)
-      
+      # print(input$examTitle)
+      # print(input$examCourse)
+      # print(input$examInstitution)
+      # print(input$examDate)
+      # print(input$numberOfBlanks)
+      # print(additionalPDF) # only works with one pdf file?
+      # print(input$numberOfFixedPoints)
+      # print(input$showPoints)
+
       nopsExam = exams2nops(tasks,
-                            name = paste0(examSeed, "_"),
-                            dir = tempdir(),
+                            name = name,
+                            dir = dir,
                             seed = seedList,
                             #language = language, # disabled for now
                             #duplex = duplex, # disabled for now
@@ -198,13 +203,17 @@ parseExam = function(exam, seed, input, output, session) {
                             showpoints = showpoints
                             )
 
-      lapply(tasks, unlink)  
-      lapply(additionalPDF, unlink)  
-    }
+      lapply(tasks, unlink)
+      lapply(additionalPDF, unlink)
 
-    examParseResponse(list(key="Success", value=""))
+      examPdfFiles = c(examPdfFiles, paste0(dir, "\\", name, "1.pdf"))
+      examRdsFiles = c(examRdsFiles, paste0(dir, "\\", name, ".rds"))
+    }
+    
+    # examParseResponse(list(key="Success", value=""))
     session$sendCustomMessage("examParseResponse", rjs_keyValuePairsToJsonObject(c("key", "value"), c("Success", "")))
-    return(NULL)
+    # return(list(examPdfFiles=examPdfFiles, examRdsFiles=examRdsFiles))
+    return(list(message=list(key="Success", value=""), files=list(examPdfFiles=examPdfFiles, examRdsFiles=examRdsFiles)))
   },
   error = function(e){
     print(e)
@@ -212,9 +221,10 @@ parseExam = function(exam, seed, input, output, session) {
     message = gsub("\"", "'", message)
     message = gsub("[\r\n]", "", message)
 
-    examParseResponse(list(key="Error", value=message))
+    # examParseResponse(list(key="Error", value=message))
     session$sendCustomMessage("examParseResponse", rjs_keyValuePairsToJsonObject(c("key", "value"), c("Error", message)))
-    return(NA)
+    # return(NA)
+    return(list(message=list(key="Error", value=message), files=list()))
   },
   warning = function(w){
     print(w)
@@ -222,22 +232,33 @@ parseExam = function(exam, seed, input, output, session) {
     message = gsub("\"", "'", message)
     message = gsub("[\r\n]", "",message)
 
-    examParseResponse(list(key="Warning", value=message))
+    # examParseResponse(list(key="Warning", value=message))
     session$sendCustomMessage("examParseResponse", rjs_keyValuePairsToJsonObject(c("key", "value"), c("Warning", message)))
-    return(NULL)
+    # return(NULL)
+    return(list(message=list(key="Warning", value=message), files=list()))
   },
   finally = {
-    print(tempfile())
+    print(tempdir())
     stopWait(session)
   })
   
   return(out)
 }
 
+# examParseResponse = function(message, files){
+#   showModal(modalDialog(
+#     title = "exams2nops",
+#     tags$span(id = 'responseMessage', class=message$key, paste0(message$key, ": ", message$value)),
+#     downloadLink('downloadData', 'Download'),
+#     easyClose = TRUE
+#   ))
+# }
+
 examParseResponse = function(message){
   showModal(modalDialog(
     title = "exams2nops",
     tags$span(id = 'responseMessage', class=message$key, paste0(message$key, ": ", message$value)),
+    downloadLink('downloadData', 'Download'),
     easyClose = TRUE
   ))
 }
@@ -361,7 +382,6 @@ ui = fluidPage(
 
     # TASKS -------------------------------------------------------------------
     numericInput_seedValue = numericInput("seedValue", label = NULL, value = initSeed, min = seedMin, max = seedMax),
-    
 
     # EXAM --------------------------------------------------------------------
     numericInput_seedValueExam = numericInput("seedValueExam", label = NULL, value = initSeed, min = seedMin, max = seedMax),
@@ -382,7 +402,8 @@ ui = fluidPage(
 # SERVER -----------------------------------------------------------------
 server = function(input, output, session) {
   initialState = TRUE
-  
+  files = reactiveVal()
+
   # heartbeat
   observe({
     invalidateLater(1000 * 5, session)
@@ -423,7 +444,9 @@ server = function(input, output, session) {
   
   # parse exam
   observeEvent(input$parseExam, {
-    parseExam(input$parseExam, input$seedValue, input, output, session)
+    response = parseExam(input$parseExam, input$seedValue, input, output, session)
+    files(unlist(response$files))
+    examParseResponse(response$message)
   })
   
   # set max number of exam tasks
@@ -435,6 +458,18 @@ server = function(input, output, session) {
   observeEvent(input$setNumberOfTaskBlocks, {
     numberOfTaskBlocks <<- input$setNumberOfTaskBlocks
   })
+  
+  # download exam files
+  output$downloadData <- downloadHandler(
+    filename = function() {
+      paste("exam", "zip", sep=".")
+    },
+    content = function(fname) {
+      print(files)
+      zip(zipfile=fname, files=files())
+    },
+    contentType = "application/zip"
+  )
 }
 
 # RUN APP -----------------------------------------------------------------
