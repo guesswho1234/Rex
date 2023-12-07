@@ -177,16 +177,6 @@ parseExam = function(exam, seed, input, output, session) {
       if(length(additionalPDF) > 0) pages = additionalPDF
       if(is.na(input$numberOfFixedPoints)) points = input$numberOfFixedPoints
 
-      #debug prints
-      # print(input$examTitle)
-      # print(input$examCourse)
-      # print(input$examInstitution)
-      # print(input$examDate)
-      # print(input$numberOfBlanks)
-      # print(additionalPDF) # only works with one pdf file?
-      # print(input$numberOfFixedPoints)
-      # print(input$showPoints)
-
       nopsExam = exams2nops(tasks,
                             name = name,
                             dir = dir,
@@ -210,9 +200,6 @@ parseExam = function(exam, seed, input, output, session) {
       examRdsFiles = c(examRdsFiles, paste0(dir, "\\", name, ".rds"))
     }
     
-    # examParseResponse(list(key="Success", value=""))
-    session$sendCustomMessage("examParseResponse", rjs_keyValuePairsToJsonObject(c("key", "value"), c("Success", "")))
-    # return(list(examPdfFiles=examPdfFiles, examRdsFiles=examRdsFiles))
     return(list(message=list(key="Success", value=""), files=list(examPdfFiles=examPdfFiles, examRdsFiles=examRdsFiles)))
   },
   error = function(e){
@@ -221,9 +208,6 @@ parseExam = function(exam, seed, input, output, session) {
     message = gsub("\"", "'", message)
     message = gsub("[\r\n]", "", message)
 
-    # examParseResponse(list(key="Error", value=message))
-    session$sendCustomMessage("examParseResponse", rjs_keyValuePairsToJsonObject(c("key", "value"), c("Error", message)))
-    # return(NA)
     return(list(message=list(key="Error", value=message), files=list()))
   },
   warning = function(w){
@@ -232,35 +216,23 @@ parseExam = function(exam, seed, input, output, session) {
     message = gsub("\"", "'", message)
     message = gsub("[\r\n]", "",message)
 
-    # examParseResponse(list(key="Warning", value=message))
-    session$sendCustomMessage("examParseResponse", rjs_keyValuePairsToJsonObject(c("key", "value"), c("Warning", message)))
-    # return(NULL)
     return(list(message=list(key="Warning", value=message), files=list()))
   },
   finally = {
-    print(tempdir())
     stopWait(session)
   })
   
   return(out)
 }
 
-# examParseResponse = function(message, files){
-#   showModal(modalDialog(
-#     title = "exams2nops",
-#     tags$span(id = 'responseMessage', class=message$key, paste0(message$key, ": ", message$value)),
-#     downloadLink('downloadData', 'Download'),
-#     easyClose = TRUE
-#   ))
-# }
-
-examParseResponse = function(message){
+examParseResponse = function(session, message, success){
   showModal(modalDialog(
     title = "exams2nops",
-    tags$span(id = 'responseMessage', class=message$key, paste0(message$key, ": ", message$value)),
-    downloadLink('downloadData', 'Download'),
-    easyClose = TRUE
+    tags$span(id='responseMessage', class=message$key, paste0(message$key, ": ", message$value)),
+     downloadLink('downloadExamFiles', 'Download')
   ))
+  
+  session$sendCustomMessage("examParseResponse", rjs_keyValuePairsToJsonObject(c("key", "value"), c(message$key, message$value)))
 }
 
 startWait = function(session){
@@ -402,8 +374,10 @@ ui = fluidPage(
 # SERVER -----------------------------------------------------------------
 server = function(input, output, session) {
   initialState = TRUE
+  
+  # exam files to download
   files = reactiveVal()
-
+  
   # heartbeat
   observe({
     invalidateLater(1000 * 5, session)
@@ -446,7 +420,7 @@ server = function(input, output, session) {
   observeEvent(input$parseExam, {
     response = parseExam(input$parseExam, input$seedValue, input, output, session)
     files(unlist(response$files))
-    examParseResponse(response$message)
+    examParseResponse(session, response$message, length(response$files) > 0)
   })
   
   # set max number of exam tasks
@@ -460,7 +434,7 @@ server = function(input, output, session) {
   })
   
   # download exam files
-  output$downloadData <- downloadHandler(
+  output$downloadExamFiles <- downloadHandler(
     filename = function() {
       paste("exam", "zip", sep=".")
     },

@@ -1588,13 +1588,13 @@ Shiny.addCustomMessageHandler('examParseResponse', function(jsonData) {
 	
 	switch(e.key) {
 		case "Success": 
-			console.log(e.value); 
+			$('#downloadExamFiles').show(); 
 			break;
 		case "Warning": 
-			console.log(e.value);
+			$('#downloadExamFiles').hide();
 			break;
 		case "Error": 
-			console.log(e.value);
+			$('#downloadExamFiles').hide();
 			break;
 	}
 });
