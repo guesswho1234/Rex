@@ -2,6 +2,10 @@
 
 #TODO: some connections are not properly closed and warnings can be thrown in R: "Warnung in list(...) ungenutzte Verbindung 4 () geschlossen"; maybe this happens when tasks with errors are sent to the backend to be parsed
 
+#TODO: unlink all files properly and at the right time
+
+#TODO: allow to turn off hotkeys and have a hot key modal to show what does what
+
 #TODO: "export" buttons downloads all tasks as zip
 
 #TODO: switch from temp folder to downloadable files (zip) files. relevant for tasks, exams, ...
@@ -130,6 +134,8 @@ parseExam = function(exam, seed, input, output, session) {
     
     examPdfFiles = c()
     examRdsFiles = c()
+    taskFiles = c()
+    additionalPdfFiles = c()
     
     for(examId in 1:exam$numberOfExams){
       examSeed = as.numeric(paste0(if(is.na(exam$examSeed)) NULL else exam$examSeed, examId))
@@ -143,19 +149,15 @@ parseExam = function(exam, seed, input, output, session) {
 
       tasks = Reduce(c, lapply(taskBlocks, sample, tasksPerBlock))
 
-      tasks = lapply(tasks, function(i){
-        file = tempfile(fileext = ".rnw") # tempfile name
-        writeLines(text = i, con = file) # write contents to file
-
-        return(file)
-      })
-
+      tasks = getTaskFiles(tasks) 
+      taskFiles = unlist(tasks)
+      
       tasks = sample(tasks, numberOfTasks)
       seedList = rep(examSeed, length(tasks))
       name = paste0(examSeed, "_")
       dir = tempdir()
 
-      additionalPDF = lapply(exam$additionalPDF, function(i){
+      additionalPdf = lapply(exam$additionalPdf, function(i){
         file = tempfile(fileext = ".pdf") # tempfile name
         raw = openssl::base64_decode(i)
         writeBin(raw, con = file)
@@ -174,7 +176,10 @@ parseExam = function(exam, seed, input, output, session) {
       points = NULL
 
       if(length(input$examDate) == 1) date = input$examDate
-      if(length(additionalPDF) > 0) pages = additionalPDF
+      if(length(additionalPdf) > 0) {
+        pages = additionalPdf
+        additionalPdfFiles = c(additionalPdfFiles, additionalPdf)
+      } 
       if(is.na(input$numberOfFixedPoints)) points = input$numberOfFixedPoints
 
       nopsExam = exams2nops(tasks,
@@ -193,17 +198,13 @@ parseExam = function(exam, seed, input, output, session) {
                             showpoints = showpoints
                             )
 
-      lapply(tasks, unlink)
-      lapply(additionalPDF, unlink)
-
       examPdfFiles = c(examPdfFiles, paste0(dir, "\\", name, "1.pdf"))
       examRdsFiles = c(examRdsFiles, paste0(dir, "\\", name, ".rds"))
     }
     
-    return(list(message=list(key="Success", value=""), files=list(examPdfFiles=examPdfFiles, examRdsFiles=examRdsFiles)))
+    return(list(message=list(key="Success", value=""), files=list(examPdfFiles=examPdfFiles, examRdsFiles=examRdsFiles, taskFiles=taskFiles, additionalPdfFiles=additionalPdfFiles)))
   },
   error = function(e){
-    print(e)
     message = e$message
     message = gsub("\"", "'", message)
     message = gsub("[\r\n]", "", message)
@@ -211,7 +212,6 @@ parseExam = function(exam, seed, input, output, session) {
     return(list(message=list(key="Error", value=message), files=list()))
   },
   warning = function(w){
-    print(w)
     message = w$message
     message = gsub("\"", "'", message)
     message = gsub("[\r\n]", "",message)
@@ -225,11 +225,35 @@ parseExam = function(exam, seed, input, output, session) {
   return(out)
 }
 
+getTaskFiles = function(tasks) {
+  out <- tryCatch({
+
+    tasks = lapply(tasks, function(i){
+      file = tempfile(fileext = ".rnw") # tempfile name
+      writeLines(text = i, con = file) # write contents to file
+      
+      return(file)
+    })
+    
+    return(tasks)
+  },
+  error = function(e){
+    return(NULL)
+  },
+  warning = function(w){
+    return(NULL)
+  },
+  finally = {
+  })
+  
+  return(out)
+}
+
 examParseResponse = function(session, message, success){
   showModal(modalDialog(
     title = "exams2nops",
     tags$span(id='responseMessage', class=message$key, paste0(message$key, ": ", message$value)),
-     downloadLink('downloadExamFiles', 'Download')
+    downloadButton('downloadExamFiles', 'Download')
   ))
   
   session$sendCustomMessage("examParseResponse", rjs_keyValuePairsToJsonObject(c("key", "value"), c(message$key, message$value)))
@@ -373,19 +397,13 @@ ui = fluidPage(
 
 # SERVER -----------------------------------------------------------------
 server = function(input, output, session) {
-  initialState = TRUE
+  # heartbeat
+  observeEvent(input$heartbeat, {
+    session$sendCustomMessage("heartbeat", 1)
+  })
   
   # exam files to download
   files = reactiveVal()
-  
-  # heartbeat
-  observe({
-    invalidateLater(1000 * 5, session)
-    if(!initialState) {
-      session$sendCustomMessage("heartbeat", 1)
-    }
-    initialState <<- FALSE
-  })
   
   # seed change
   observeEvent(input$seedValue, {

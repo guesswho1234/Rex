@@ -8,7 +8,7 @@
 -------------------------------------------------------------- */
 $(document).ready(function () {
 	iuf['tasks'] = new Array();
-	iuf['examAdditionalPDF'] = new Array();
+	iuf['examAdditionalPdf'] = new Array();
 	
 	$('#s_initialSeed').html(itemSingle($('#seedValue').val(), 'greenLabel'));
 	$('#s_numberOfExams').html(itemSingle($('#numberOfExams').val(), 'grayLabel'));
@@ -19,6 +19,19 @@ $(document).ready(function () {
 /* --------------------------------------------------------------
  HEARTBEAT 
 -------------------------------------------------------------- */
+var socket_timeout_interval;
+var n = 0;
+
+$(document).on('shiny:connected', function(event) {
+  socket_timeout_interval = setInterval(function() { 
+    Shiny.onInputChange('heartbeat', 1, {priority: 'event'})
+  }, 1000 * 5);
+});
+
+$(document).on('shiny:disconnected', function(event) {
+  clearInterval(socket_timeout_interval)
+});
+
 Shiny.addCustomMessageHandler('heartbeat', function(heartbeat) {
 	ping();
 });
@@ -506,29 +519,6 @@ function taskParseAll(){
 $('#newTask').click(function () {
 	newSimpleTask();
 });
-
-// $('#taskDownload').click(function () {
-	// if( iuf['tasks'].length > 0 ) {
-		// let zip = new JSZip();
-		
-		// iuf['tasks'].forEach(task => {
-			// const taskID = getID();
-			
-			// if( iuf['tasks'][taskID]['editable'] ) {
-				// handleDuplicateAnswers(taskID);
-				// setSimpleTaskFileContents(taskID);
-			// }
-			
-			// const fileContent = iuf['tasks'][taskID]['file'];
-			// let fileName = iuf['tasks'][taskID]['name'];
-			// fileName = convertToValidFilename(fileName);
-			
-			
-		// }
-		
-		// download(fileContent, fileName + '.rnw', 'text/plain;charset=utf-8;');
-	// }
-// });
 
 $('#examTaskAll').click(function () {
 	examTaskAll();
@@ -1455,89 +1445,89 @@ $("#examFunctions_list_items .sidebarListItem").click(function(){
 	selectListItem($('.mainSection.active .sidebarListItem.active').index());
 }); 
 
-let dndAdditionalPDF = {
+let dndAdditionalPdf = {
 	hzone: null,
 	dzone: null,
 
 	init : function () {
-		dndAdditionalPDF.hzone = document.querySelector("body");
-		dndAdditionalPDF.dzone = document.getElementById('dnd_additionalPDF');
+		dndAdditionalPdf.hzone = document.querySelector("body");
+		dndAdditionalPdf.dzone = document.getElementById('dnd_additionalPdf');
 
 		if ( window.File && window.FileReader && window.FileList && window.Blob ) {
 			// hover zone
-			dndAdditionalPDF.hzone.addEventListener('dragenter', function (e) {
+			dndAdditionalPdf.hzone.addEventListener('dragenter', function (e) {
 				e.preventDefault();
 				e.stopPropagation();
 				if( $('#exam').hasClass('active') ) {
-					dndAdditionalPDF.dzone.classList.add('drag');
+					dndAdditionalPdf.dzone.classList.add('drag');
 				}
 			});
-			dndAdditionalPDF.hzone.addEventListener('dragleave', function (e) {
+			dndAdditionalPdf.hzone.addEventListener('dragleave', function (e) {
 				e.preventDefault();
 				e.stopPropagation();
 			});
-			dndAdditionalPDF.hzone.addEventListener('dragover', function (e) {
+			dndAdditionalPdf.hzone.addEventListener('dragover', function (e) {
 				e.preventDefault();
 				e.stopPropagation();
 			});
 			
 			// drop zone
-			dndAdditionalPDF.dzone.addEventListener('dragleave', function (e) {
+			dndAdditionalPdf.dzone.addEventListener('dragleave', function (e) {
 				e.preventDefault();
 				e.stopPropagation();
-				dndAdditionalPDF.dzone.classList.remove('drag');
+				dndAdditionalPdf.dzone.classList.remove('drag');
 			});
-			dndAdditionalPDF.dzone.addEventListener('drop', async function (e) {
+			dndAdditionalPdf.dzone.addEventListener('drop', async function (e) {
 				e.preventDefault();
 				e.stopPropagation();
-				dndAdditionalPDF.dzone.classList.remove('drag');
+				dndAdditionalPdf.dzone.classList.remove('drag');
 				
-				loadAdditionalPDFDnD(e.dataTransfer.items);
+				loadAdditionalPdfDnD(e.dataTransfer.items);
 			});
 		}
 	},
 };
 
-window.addEventListener('DOMContentLoaded', dndAdditionalPDF.init);
+window.addEventListener('DOMContentLoaded', dndAdditionalPdf.init);
 
-function loadAdditionalPDFDnD(items) {	
+function loadAdditionalPdfDnD(items) {	
 	getFilesDataTransferItems(items).then(async (files) => {
 		Array.from(files).forEach(file => {	
-			addAdditionalPDF(file);
+			addAdditionalPdf(file);
 		});
 	});
 }
 
-function loadAdditionalPDFFileDialog(items) {
+function loadAdditionalPdfFileDialog(items) {
 	items.forEach(function(file) {
-		addAdditionalPDF(file);
+		addAdditionalPdf(file);
 	});
 }
 
-function addAdditionalPDF(file) {
+function addAdditionalPdf(file) {
 	if ( file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase() == 'pdf') {
 		let fileReader = new FileReader();
 		let base64;
 
 		fileReader.onload = function(fileLoadedEvent) {
 			base64 = fileLoadedEvent.target.result;
-			iuf['examAdditionalPDF'].push(base64.split(',')[1]);
+			iuf['examAdditionalPdf'].push(base64.split(',')[1]);
 		};
 
 		fileReader.readAsDataURL(file);
 		
-		$('#additionalPDF_list_items').append('<div class="additionalPDFItem"><span class="additionalPDFName">' + file.name + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
+		$('#additionalPdf_list_items').append('<div class="additionalPdfItem"><span class="additionalPdfName">' + file.name + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
 	}
 }
 
-function removeAdditionalPDF(element) {
-	const additionalPDFID = element.index('.additionalPDFItem');
-	iuf['examAdditionalPDF'].splice(additionalPDFID, 1);
+function removeAdditionalPdf(element) {
+	const additionalPdfID = element.index('.additionalPdfItem');
+	iuf['examAdditionalPdf'].splice(additionalPdfID, 1);
 	element.remove();
 }
 
-$('#additionalPDF_list_items').on('click', '.additionalPDFItem', function() {
-	removeAdditionalPDF($(this));
+$('#additionalPdf_list_items').on('click', '.additionalPdfItem', function() {
+	removeAdditionalPdf($(this));
 });
 
 $("#numberOfExams").change(function(){
@@ -1579,7 +1569,7 @@ async function createExam() {
 	let blocks = iuf['tasks'].map(x => x.block)
 		
 	Promise.all(examTaskCodes).then((values) => {
-		Shiny.onInputChange("parseExam", {examSeed: $('#seedValueExam').val(), numberOfExams: $("#numberOfExams").val(), numberOfTasks: $("#numberOfTasks").val(), tasks: values, blocks: blocks, additionalPDF: iuf['examAdditionalPDF']}, {priority: 'event'});
+		Shiny.onInputChange("parseExam", {examSeed: $('#seedValueExam').val(), numberOfExams: $("#numberOfExams").val(), numberOfTasks: $("#numberOfTasks").val(), tasks: values, blocks: blocks, additionalPdf: iuf['examAdditionalPdf']}, {priority: 'event'});
 	});
 }
 

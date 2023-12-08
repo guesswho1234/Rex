@@ -9,7 +9,7 @@
 	---highlight_values: rgba(85, 87, 211, 0.6);
 	---highlight_correct: rgba(49, 181, 150, 1);
 	---highlight_incorrect: rgba(211, 85, 85, 1);
-	---highlight_removePDF: rgba(255, 172, 172, 1);
+	---highlight_removePdf: rgba(255, 172, 172, 1);
 	---transparent: rgba(255, 255, 255, 0);
 	---label_yellow: rgba(251, 238, 200, 1);
 	---label_gray: rgba(238, 238, 238, 1);
@@ -738,12 +738,12 @@ main > * {
 /* --------------------------------------------------------------
  EXAMS 
 -------------------------------------------------------------- */
-#additionalPDFContainer {
+#additionalPdfContainer {
 	display: flex;
 	width: 300px;
 }
 
-#file-upload_addAdditionalPDF {
+#file-upload_addAdditionalPdf {
     display: none;
 }
 
@@ -782,40 +782,40 @@ main > * {
 	cursor: pointer;
 }
 
-#additionalPDFFiles {
+#additionalPdfFiles {
 	width: 270px;
 	min-height: 34px;
 	background: var(---background3);
 }
 
-#additionalPDF_list_items {
+#additionalPdf_list_items {
 	display: block;
 	padding: 0.25rem;
 }
 
-.additionalPDFItem {
+.additionalPdfItem {
 	display: flex;
 	margin: 0.25rem;
 	padding: 0.25rem;
 	justify-content: space-between;
 }
 
-.additionalPDFName {
+.additionalPdfName {
 	width: 90%;
 	overflow: hidden;
 	white-space: nowrap;
 }
 
-.additionalPDFItem .removeText {
+.additionalPdfItem .removeText {
 	display: none;
 }
 
-.additionalPDFItem:hover {
-	background: var(---highlight_removePDF);
+.additionalPdfItem:hover {
+	background: var(---highlight_removePdf);
 	cursor: pointer;
 }
 
-.additionalPDFItem:hover .removeText {
+.additionalPdfItem:hover .removeText {
 	display: block;
 }
 
@@ -833,6 +833,7 @@ main > * {
 
 #downloadExamFiles {
 	display: none;
+	margin-left: 1rem;
 }
 
 /* --------------------------------------------------------------

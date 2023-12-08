@@ -6,8 +6,7 @@
 		<title>I&F</title>	
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<link rel="stylesheet" href="style.css">
-		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-		<script src="zip.min.js" defer></script>	
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">	
 		<script src="script.js" defer></script>	
 		<script src="rnwTemplate.js" defer></script>	
 	</head>
@@ -277,22 +276,22 @@
 									{{ numericInput_numberOfBlanks }}
 								</div>
 								<div>
-									<label for="additionalPDF"><span lang="de">Zusatz PDF-Seiten</span><span lang="en">Additional PDF pages</span></label>
-									<div id="additionalPDFContainer">
-										<label id="pdfUpload" for="file-upload_addAdditionalPDF">
+									<label for="additionalPdf"><span lang="de">Zusatz Pdf-Seiten</span><span lang="en">Additional Pdf pages</span></label>
+									<div id="additionalPdfContainer">
+										<label id="pdfUpload" for="file-upload_addAdditionalPdf">
 											<div class="list_butttonIcon">
 												<i class="fa-solid fa-upload"></i>
 											</div>
-											<input type="file" id="file-upload_addAdditionalPDF" onchange='loadAdditionalPDFFileDialog(this.files);' multiple>
+											<input type="file" id="file-upload_addAdditionalPdf" onchange='loadAdditionalPdfFileDialog(this.files);' multiple>
 										</label>
-										<div id="additionalPDFFiles">
-											<div id="additionalPDF_list" class="itemList">
-												<div id="additionalPDF_list_items">
+										<div id="additionalPdfFiles">
+											<div id="additionalPdf_list" class="itemList">
+												<div id="additionalPdf_list_items">
 												</div>
 											</div>
-											<div id="dnd_additionalPDF" class="dnd">
+											<div id="dnd_additionalPdf" class="dnd">
 												<div class="dndInfo">
-													<div class="title"><span lang="de">DRAG & DROP</br></br>ZUSÄTZLICHE PDF-DATEIEN (*.pdf)</span><span lang="en">DRAG & DROP</br></br>ADDITIONAL PDF FILES (*.pdf)</span></div>
+													<div class="title"><span lang="de">DRAG & DROP</br></br>ZUSÄTZLICHE Pdf-DATEIEN (*.pdf)</span><span lang="en">DRAG & DROP</br></br>ADDITIONAL Pdf FILES (*.pdf)</span></div>
 													<div class="dndIcon"><i class="fas fa-file-upload"></i></div>
 												</div>
 											</div>
