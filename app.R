@@ -198,8 +198,8 @@ parseExam = function(exam, seed, input, output, session) {
                             showpoints = showpoints
                             )
 
-      examPdfFiles = c(examPdfFiles, paste0(dir, "\\", name, "1.pdf"))
-      examRdsFiles = c(examRdsFiles, paste0(dir, "\\", name, ".rds"))
+      examPdfFiles = c(examPdfFiles, paste0(dir, "/", name, "1.pdf"))
+      examRdsFiles = c(examRdsFiles, paste0(dir, "/", name, ".rds"))
     }
     
     return(list(message=list(key="Success", value=""), files=list(examPdfFiles=examPdfFiles, examRdsFiles=examRdsFiles, taskFiles=taskFiles, additionalPdfFiles=additionalPdfFiles)))
