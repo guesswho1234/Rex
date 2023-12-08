@@ -437,9 +437,10 @@ server = function(input, output, session) {
   # parse exam
   observeEvent(input$parseExam, {
     response = parseExam(input$parseExam, input$seedValue, input, output, session)
-    print(responste) #debug
     files(unlist(response$files))
     examParseResponse(session, response$message, length(response$files) > 0)
+    
+    session$sendCustomMessage("debugMessage", unlist(response$files))
   })
   
   # set max number of exam tasks

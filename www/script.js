@@ -17,6 +17,15 @@ $(document).ready(function () {
 });
 
 /* --------------------------------------------------------------
+DEBUG 
+-------------------------------------------------------------- */
+Shiny.addCustomMessageHandler('debugMessage', function(message) {
+	console.log("DEBUG MESSAGE:\n")
+	console.log(message)
+	console.log("\n\n")
+});
+
+/* --------------------------------------------------------------
  HEARTBEAT 
 -------------------------------------------------------------- */
 var socket_timeout_interval;
