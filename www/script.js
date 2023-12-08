@@ -24,6 +24,7 @@ var n = 0;
 
 $(document).on('shiny:connected', function(event) {
   socket_timeout_interval = setInterval(function() { 
+	ping();
     Shiny.onInputChange('heartbeat', 1, {priority: 'event'})
   }, 1000 * 5);
 });

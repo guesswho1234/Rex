@@ -399,7 +399,7 @@ ui = fluidPage(
 server = function(input, output, session) {
   # heartbeat
   observeEvent(input$heartbeat, {
-    session$sendCustomMessage("heartbeat", 1)
+    delay(300, session$sendCustomMessage("heartbeat", 1))
   })
   
   # exam files to download
@@ -437,6 +437,7 @@ server = function(input, output, session) {
   # parse exam
   observeEvent(input$parseExam, {
     response = parseExam(input$parseExam, input$seedValue, input, output, session)
+    print(responste) #debug
     files(unlist(response$files))
     examParseResponse(session, response$message, length(response$files) > 0)
   })
