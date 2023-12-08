@@ -435,12 +435,9 @@ server = function(input, output, session) {
   
   # download exam files
   output$downloadExamFiles <- downloadHandler(
-    filename = function() {
-      paste("exam", "zip", sep=".")
-    },
+    filename = paste0("exam_", isolate(input$seedValue), ".zip"),
     content = function(fname) {
-      print(files)
-      zip(zipfile=fname, files=files())
+      zip(zipfile=fname, files=files(), flags='-r9Xj')
     },
     contentType = "application/zip"
   )
