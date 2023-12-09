@@ -28,19 +28,18 @@ Shiny.addCustomMessageHandler('debugMessage', function(message) {
 /* --------------------------------------------------------------
  HEARTBEAT 
 -------------------------------------------------------------- */
-var socket_timeout_interval;
-var n = 0;
+// var socket_timeout_interval;
 
-$(document).on('shiny:connected', function(event) {
-  socket_timeout_interval = setInterval(function() { 
-	ping();
-    Shiny.onInputChange('heartbeat', 1, {priority: 'event'})
-  }, 1000 * 5);
-});
+// $(document).on('shiny:connected', function(event) {
+  // socket_timeout_interval = setInterval(function() { 
+	// ping();
+    // Shiny.onInputChange('heartbeat', 1, {priority: 'event'})
+  // }, 1000 * 5);
+// });
 
-$(document).on('shiny:disconnected', function(event) {
-  clearInterval(socket_timeout_interval)
-});
+// $(document).on('shiny:disconnected', function(event) {
+  // clearInterval(socket_timeout_interval)
+// });
 
 Shiny.addCustomMessageHandler('heartbeat', function(heartbeat) {
 	ping();

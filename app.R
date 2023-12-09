@@ -26,10 +26,15 @@ library(shinyWidgets) # shinyWidgets_0.5.1
 library(shinycssloaders) #shinycssloaders_0.3
 library(exams) #exams_2.4
 library(xtable) #xtable_1.8
+library(openssl) # ?
 library(iuftools) #iuftools_1.0.0
+# library(promises) # ?
+# library(future) # ?
+# 
+# plan(multisession)
 
 # FUNCTIONS ----------------------------------------------------------------
-parseExercise = function(task, seed, output, session) {
+parseExercise = function(task, seed, session) {
   out <- tryCatch({
     startWait(session)
     session$sendCustomMessage("setTaskId", task$taskID)
@@ -40,6 +45,9 @@ parseExercise = function(task, seed, output, session) {
     
     writeLines(text = task$taskCode, con = file) # write contents to file
     
+    print("exams2html")
+    print(task)
+    print(seed)
     htmlTask = exams2html(file, dir = tempdir(), seed = if(is.na(seed)) NULL else seed)
 
     examHistory = c() 
@@ -128,7 +136,7 @@ parseExercise = function(task, seed, output, session) {
   return(out)
 }
 
-parseExam = function(exam, seed, input, output, session) {
+parseExam = function(exam, seed, input, session) {
   out <- tryCatch({
     startWait(session)
     
@@ -372,7 +380,7 @@ languages = c("en",
 # UI -----------------------------------------------------------------
 ui = fluidPage(
   shinyjs::useShinyjs(),
-
+  textOutput("debug"),
   htmlTemplate(
     filename = "main.html",
 
@@ -398,12 +406,44 @@ ui = fluidPage(
 # SERVER -----------------------------------------------------------------
 server = function(input, output, session) {
   # heartbeat
-  observeEvent(input$heartbeat, {
-    delay(300, session$sendCustomMessage("heartbeat", 1))
+  initialState = TRUE
+  
+  # heartbeat
+  observe({
+    invalidateLater(1000 * 5, session)
+    if(!initialState) {
+      session$sendCustomMessage("heartbeat", 1)
+      print("heartbeat")
+    }
+    initialState <<- FALSE
   })
   
-  # exam files to download
-  files = reactiveVal()
+  # # async test
+  # long_run <- eventReactive(input$parseExercise, {
+  #   x <- callr::r_bg(
+  #     func = test_job,
+  #     # func = parseExercise1,
+  #     # args = list(input$parseExercise, input$seedValue),
+  #     package = TRUE,
+  #     supervise = TRUE
+  #   )
+  #   print(x)
+  #   return(x)
+  # })
+  # check <- reactive({
+  #   invalidateLater(millis = 1000, session = session)
+  #   
+  #   if (long_run()$is_alive()) {
+  #     x <- "Job running in background"
+  #   } else {
+  #     x <- "Async job in background completed"
+  #   }
+  #   return(x)
+  # })
+  # 
+  # output$debug <- renderText({
+  #   check()
+  # })
   
   # seed change
   observeEvent(input$seedValue, {
@@ -431,16 +471,22 @@ server = function(input, output, session) {
   
   # parse exercise
   observeEvent(input$parseExercise, {
-    parseExercise(input$parseExercise, input$seedValue, output, session)
+    parseExercise(input$parseExercise, input$seedValue, session)
   })
   
   # parse exam
+  examFiles = reactiveVal()
+  
   observeEvent(input$parseExam, {
-    response = parseExam(input$parseExam, input$seedValue, input, output, session)
-    files(unlist(response$files))
+    response = parseExam(input$parseExam, input$seedValue, input, session)
+    examFiles(unlist(response$files))
     examParseResponse(session, response$message, length(response$files) > 0)
-    
+
     session$sendCustomMessage("debugMessage", unlist(response$files))
+  })
+  
+  observeEvent(input$setNumberOfExamTasks, {
+    maxNumberOfExamTasks <<- input$setNumberOfExamTasks
   })
   
   # set max number of exam tasks
@@ -457,7 +503,7 @@ server = function(input, output, session) {
   output$downloadExamFiles <- downloadHandler(
     filename = paste0("exam_", isolate(input$seedValue), ".zip"),
     content = function(fname) {
-      zip(zipfile=fname, files=files(), flags='-r9Xj')
+      zip(zipfile=fname, files=isolate(examFiles()), flags='-r9Xj')
     },
     contentType = "application/zip"
   )
