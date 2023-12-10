@@ -1,0 +1,104 @@
+<<echo=FALSE, results=hide>>=
+
+## todo: check code
+
+## ESSENTIALS!!! MUST ALWAYS BE PRESENT AND COMPLETE! DO NOT FORGET TO CHECK AND MODIFY!!!
+prec <- 1
+diff <- 2				# DIFFICULTY (0-3)
+
+@
+%% \exextra[examHistory,character]{}
+%% \exextra[authoredBy,character]{Christoph Huber, Sebastian Bachler}
+%% \exextra[checkedBy,character]{}
+%% \exextra[topic,character]{Zinsstruktur}
+%% \exextra[tags,character]{}
+%% \exextra[difficulty,numeric]{\Sexpr{(diff)}}
+%% \exextra[precision,numeric]{\Sexpr{(prec)}}
+
+<<echo=FALSE, results=tex>>=
+if (MAKEBSP) set.seed(1)	# FIXES SCRAMBLING FOR EXAMPLES
+## ESSENTIALS!!! MUST ALWAYS BE PRESENT AND COMPLETE! DO NOT FORGET TO CHECK AND MODIFY!!!
+
+
+## DATA GENERATION
+choices <- solutions <- list() # rep(list(""), 1)
+termStructIncr <- sample(c(-1, 1), 1)
+asdf <- sample(c(TRUE, FALSE), 1)
+i1 <- sort(sample(-15:-25, 4)/1000, decreasing = asdf)
+i2 <- sort(sample(-9:-15, 4)/1000)
+i3 <- sort(sample(-7:7, 2)/1000)
+i <- c(i1, i2, i3) * termStructIncr
+if(sample(c(TRUE, FALSE), 1)) i <- rev(i)
+
+t <- 1:length(i)
+
+tSwitch <- sample(2:5, 2)
+
+choices[[1]] <- "Keine der anderen Antworten ist korrekt."
+choices[[2]] <- paste0("Sie verwahren Ihr Erspartes ", tSwitch[1], " Jahre lang selbst und legen es dann in t=", tSwitch[1], " für eine Laufzeit von ", 10-tSwitch[1], " Jahren an.")
+choices[[3]] <- paste0("Sie legen Ihr Erspartes heute für eine Laufzeit von ", tSwitch[1], " Jahren an und verwahren es ab t=", tSwitch[1], " für die restlichen ", 10-tSwitch[1], " Jahre selbst.")
+choices[[4]] <- paste0("Sie verwahren Ihr Erspartes ", tSwitch[2], " Jahre lang selbst und legen es dann in t=", tSwitch[2], " für eine Laufzeit von ", 10-tSwitch[2], " Jahren an.")
+choices[[5]] <- paste0("Sie legen Ihr Erspartes heute für eine Laufzeit von ", tSwitch[2], " Jahren an und verwahren es ab t=", tSwitch[2], " für die restlichen ", 10-tSwitch[2], " Jahre selbst.")
+
+f_tSwitch1 <- ((1+i[10])^10/(1+i[tSwitch[1]])^tSwitch[1])^(1/(10-tSwitch[1]))-1
+f_tSwitch2 <- ((1+i[10])^10/(1+i[tSwitch[2]])^tSwitch[2])^(1/(10-tSwitch[2]))-1
+
+strats <- c((1+f_tSwitch1)^(10-tSwitch[1]),
+            (1+i[tSwitch[1]])^tSwitch[1],
+            (1+f_tSwitch2)^(10-tSwitch[2]),
+            (1+i[tSwitch[2]])^tSwitch[2])
+
+stratsCorrect <- Reduce(c, strats)>=1
+
+solutions = c(!any(stratsCorrect), stratsCorrect)
+
+@
+\begin{question}
+		Es gilt folgende Zinsstruktur bei diskreter, jährlicher Verzinsung:
+        \\
+		\setlength{\tabcolsep}{10mm}
+		\begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|}
+		\hline
+		\ Fristigkeit \  & \quad t=\Sexpr{t[1]}  \quad &
+		\quad  t=\Sexpr{t[2]} \quad &  \quad t=\Sexpr{t[3]} &  \quad t=\Sexpr{t[4]} &  \quad t=\Sexpr{t[5]} &  \quad t=\Sexpr{t[6]} &  \quad t=\Sexpr{t[7]} &  \quad t=\Sexpr{t[8]} &  \quad t=\Sexpr{t[9]} &  \quad t=\Sexpr{t[10]} \quad 
+        \\ \hline \ Spot Rate \  &
+		\Sexpr{eform(i[1]*100, digits = prec)}\% & \Sexpr{eform(i[2]*100, digits = prec)}\% & \Sexpr{eform(i[3]*100, digits = prec)}\% & \Sexpr{eform(i[4]*100, digits = prec)}\% & \Sexpr{eform(i[5]*100, digits = prec)}\% & \Sexpr{eform(i[6]*100, digits = prec)}\% & \Sexpr{eform(i[7]*100, digits = prec)}\% & \Sexpr{eform(i[8]*100, digits = prec)}\% & \Sexpr{eform(i[9]*100, digits = prec)}\% & \Sexpr{eform(i[10]*100, digits = prec)}\%\\ \hline
+		\end{tabular}
+
+<<fig=TRUE, height=4, width=5, echo=FALSE, eps=FALSE, results=hide>>=
+par(mar = c(4,4,4,4))
+plot(0,0, type="l", col="blue", xlim=c(1,10), ylim=c(-4, 4),
+		axes=FALSE, ann=FALSE)
+grid(NA, NULL, lwd = 2) # grid only in y-direction
+abline(v=(seq(1,10,1)), col="lightgray", lty="dotted")
+abline(h=0, col="black")
+axis(1, at=c(1:10), lab=c(1:10))
+axis(2, at=c(-4:4), lab=paste0(-4:4, "%"))
+box()
+lines(i*100, type="l", pch=22, col="blue", lty=1)
+title(xlab="Fristigkeit in Jahren")
+title(ylab="Spot Rate")
+#legend(21, g_range[2], c("Projekt 1","Projekt 2"), cex=0.8,
+#		col=c("blue","red"), pch=c(-1,-1), lty=1:2, xjust=1)
+
+@
+
+Sie wollen Ihr Erspartes am Kapitalmarkt anlegen, während Ihre Eltern dem Kapitalmarkt nicht trauen und die gleiche Geldmenge stattdessen für 10 Jahre in einem Schuhkarton lagern und somit ohne Zinsen anlegen werden. Markieren Sie jene Strategien, mit welchen Ihre Anlage in t=10 zumindest den gleichen oder einen höheren Wert als jene Ihrer Eltern haben würde.
+<<echo=FALSE, results=tex>>=
+answerlist(choices)
+@
+
+\end{question}
+
+\begin{solution}
+<<echo=FALSE, results=tex>>=
+answerlist(ifelse(solutions, "Richtig", "Falsch"))
+@
+\end{solution}
+
+
+%% META-INFORMATION
+%% \extype{mchoice}
+%% \exsolution{\Sexpr{mchoice2string(solutions)}}
+%% \expoints{\Sexpr{getDifficulty(diff)}}
+

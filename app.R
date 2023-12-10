@@ -2,17 +2,27 @@
 
 #TODO: some connections are not properly closed and warnings can be thrown in R: "Warnung in list(...) ungenutzte Verbindung 4 () geschlossen"; maybe this happens when tasks with errors are sent to the backend to be parsed
 
-#TODO: unlink all files properly and at the right time
+#TODO: unlink all files properly and at the right time (f.e. unlik all exam files after download)
 
 #TODO: allow to turn off hotkeys and have a hot key modal to show what does what
 
 #TODO: "export" buttons downloads all tasks as zip
 
-#TODO: switch from temp folder to downloadable files (zip) files. relevant for tasks, exams, ...
-
 #TODO: exam fields - validation
 
 #TODO: exam fields - expand on aids to fill form  
+
+#TODO: only mchoice for nops exam (what about open text questions)
+
+#TODO: disable nav and keys on "wait"
+
+#TODO: put parsing of exercises and exam into background tasks such that the heartbeat keeps on working (parsing exercises works alread)
+
+#TODO: task files need explicit namespaces for function calls (f.e. exams::answerlist or iuftools::eform)
+
+#TODO: parsing multiple tasks sequentially does not work with new background task (only last exercise is parsed)
+
+#TODO: sometimes task names do not match the contents of the task (javascript issue, probably fixed by putting the task counter after the await for the file contents)
 
 # STARTUP -----------------------------------------------------------------
 rm(list = ls())
@@ -28,28 +38,45 @@ library(exams) #exams_2.4
 library(xtable) #xtable_1.8
 library(openssl) # ?
 library(iuftools) #iuftools_1.0.0
-# library(promises) # ?
-# library(future) # ?
-# 
-# plan(multisession)
+library(future) # ?
 
 # FUNCTIONS ----------------------------------------------------------------
-parseExercise = function(task, seed, session) {
+parseExercise = function(task, seed){
   out <- tryCatch({
-    startWait(session)
-    session$sendCustomMessage("setTaskId", task$taskID)
-    
-    file = tempfile(fileext = ".Rnw") # tempfile name
-    
+    # show all possible choices in view mode
     task$taskCode = gsub("maxChoices = 5", "maxChoices = NULL", task$taskCode)
+  
+    seed = if(is.na(seed)) NULL else seed
+    file = tempfile(fileext = ".Rnw")
+    writeLines(text = task$taskCode, con = file)
     
-    writeLines(text = task$taskCode, con = file) # write contents to file
-    
-    print("exams2html")
-    print(task)
-    print(seed)
-    htmlTask = exams2html(file, dir = tempdir(), seed = if(is.na(seed)) NULL else seed)
+    htmlTask = exams::exams2html(file, dir = tempdir(), seed = seed)
+    Sys.sleep(10)
 
+    return(list(id=task$taskID, seed=seed, html=htmlTask, e=c("Success", "")))
+  },
+  error = function(e){
+    message = e$message
+    message = gsub("\"", "'", message)
+    message = gsub("[\r\n]", "", message)
+    
+    return(list(id=task$taskID, seed=NULL, html=NULL, e=c("Error", message)))
+  },
+  warning = function(w){ 
+    message = w$message
+    message = gsub("\"", "'", message)
+    message = gsub("[\r\n]", "",message)
+
+    return(list(id=task$taskID, seed=NULL, html=NULL, e=c("Warning", message)))
+  })
+  
+  return(out)
+}
+
+loadExercise = function(id, seed, html, e, session) {
+  session$sendCustomMessage("setTaskId", id)
+  
+  if(!is.null(html)) {
     examHistory = c() 
     authoredBy = c()
     checkedBy = c()
@@ -57,33 +84,33 @@ parseExercise = function(task, seed, session) {
     type = c()
     question = c()
     
-    if(length(htmlTask$exam1$exercise1$metainfo$examHistory) > 0) {
-      examHistory = trimws(strsplit(htmlTask$exam1$exercise1$metainfo$examHistory, ",")[[1]], "both")
+    if(length(html$exam1$exercise1$metainfo$examHistory) > 0) {
+      examHistory = trimws(strsplit(html$exam1$exercise1$metainfo$examHistory, ",")[[1]], "both")
       examHistory = rjs_vectorToJsonStringArray(examHistory)
     }
     
-    if(length(htmlTask$exam1$exercise1$metainfo$authoredBy) > 0) {
-      authoredBy = trimws(strsplit(htmlTask$exam1$exercise1$metainfo$authoredBy, ",")[[1]], "both") 
+    if(length(html$exam1$exercise1$metainfo$authoredBy) > 0) {
+      authoredBy = trimws(strsplit(html$exam1$exercise1$metainfo$authoredBy, ",")[[1]], "both") 
       authoredBy = rjs_vectorToJsonStringArray(authoredBy) 
     }
-      
-    if(length(htmlTask$exam1$exercise1$metainfo$checkedBy) > 0) { 
-      checkedBy = trimws(strsplit(htmlTask$exam1$exercise1$metainfo$checkedBy, ",")[[1]], "both")
+    
+    if(length(html$exam1$exercise1$metainfo$checkedBy) > 0) { 
+      checkedBy = trimws(strsplit(html$exam1$exercise1$metainfo$checkedBy, ",")[[1]], "both")
       checkedBy = rjs_vectorToJsonStringArray(checkedBy)
     }
-      
-    if(length(htmlTask$exam1$exercise1$metainfo$tags) > 0) { 
-      tags = trimws(strsplit(htmlTask$exam1$exercise1$metainfo$tags, ",")[[1]], "both")
+    
+    if(length(html$exam1$exercise1$metainfo$tags) > 0) { 
+      tags = trimws(strsplit(html$exam1$exercise1$metainfo$tags, ",")[[1]], "both")
       tags = rjs_vectorToJsonStringArray(tags)
     }
     
-    precision = htmlTask$exam1$exercise1$metainfo$precision
-    difficulty = htmlTask$exam1$exercise1$metainfo$difficulty  
-    points = htmlTask$exam1$exercise1$points
-    topic = htmlTask$exam1$exercise1$metainfo$topic
-    type = htmlTask$exam1$exercise1$metainfo$type
-    question = htmlTask$exam1$exercise1$question
-    editable = ifelse(htmlTask$exam1$exercise1$metainfo$editable == 1, 1, 0)
+    precision = html$exam1$exercise1$metainfo$precision
+    difficulty = html$exam1$exercise1$metainfo$difficulty  
+    points = html$exam1$exercise1$points
+    topic = html$exam1$exercise1$metainfo$topic
+    type = html$exam1$exercise1$metainfo$type
+    question = html$exam1$exercise1$question
+    editable = ifelse(html$exam1$exercise1$metainfo$editable == 1, 1, 0)
     
     session$sendCustomMessage("setTaskExamHistory", examHistory)
     session$sendCustomMessage("setTaskAuthoredBy", authoredBy)
@@ -99,41 +126,17 @@ parseExercise = function(task, seed, session) {
     session$sendCustomMessage("setTaskEditable", editable)
     
     if(type == c("mchoice")) {
-      session$sendCustomMessage("setTaskChoices", rjs_vectorToJsonStringArray(htmlTask$exam1$exercise1$questionlist))
-      session$sendCustomMessage("setTaskResultMchoice", rjs_vectorToJsonArray(tolower(as.character(htmlTask$exam1$exercise1$metainfo$solution))))
+      session$sendCustomMessage("setTaskChoices", rjs_vectorToJsonStringArray(html$exam1$exercise1$questionlist))
+      session$sendCustomMessage("setTaskResultMchoice", rjs_vectorToJsonArray(tolower(as.character(html$exam1$exercise1$metainfo$solution))))
     } 
     
     if(type == "num") {
       session$sendCustomMessage("setTaskResultNumeric", result)
     }
+  }
 
-    unlink(file)
-    
-    session$sendCustomMessage("setTaskE", rjs_keyValuePairsToJsonObject(c("key", "value"), c("Success", "")))
-    return(NULL)
-  },
-  error = function(e){
-    message = e$message
-    message = gsub("\"", "'", message)
-    message = gsub("[\r\n]", "", message)
-
-    session$sendCustomMessage("setTaskE", rjs_keyValuePairsToJsonObject(c("key", "value"), c("Error", message)))
-    return(NA)
-  },
-  warning = function(w){ 
-    message = w$message
-    message = gsub("\"", "'", message)
-    message = gsub("[\r\n]", "",message)
-
-    session$sendCustomMessage("setTaskE", rjs_keyValuePairsToJsonObject(c("key", "value"), c("Warning", message)))
-    return(NULL)
-  },
-  finally = {
-    session$sendCustomMessage("setTaskId", -1)
-    stopWait(session)
-  })
-  
-  return(out)
+  session$sendCustomMessage("setTaskE", rjs_keyValuePairsToJsonObject(c("key", "value"), e))
+  session$sendCustomMessage("setTaskId", -1)
 }
 
 parseExam = function(exam, seed, input, session) {
@@ -350,6 +353,12 @@ checkPosNumber = function(numberField){
 }
 
 # PARAMETERS --------------------------------------------------------------
+plan(multisession)
+# options(future.rng.onMisue = "ignore")
+# future.seed = NULL
+
+exerciseParseBgTask = list()
+
 seedMin = 1
 seedMax = 99999999
 initSeed = as.numeric(gsub("-", "", Sys.Date()))
@@ -380,7 +389,7 @@ languages = c("en",
 # UI -----------------------------------------------------------------
 ui = fluidPage(
   shinyjs::useShinyjs(),
-  textOutput("debug"),
+  textOutput("SilenceIsGolden"),
   htmlTemplate(
     filename = "main.html",
 
@@ -407,7 +416,7 @@ ui = fluidPage(
 server = function(input, output, session) {
   # heartbeat
   initialState = TRUE
-  
+
   # heartbeat
   observe({
     invalidateLater(1000 * 5, session)
@@ -417,33 +426,6 @@ server = function(input, output, session) {
     }
     initialState <<- FALSE
   })
-  
-  # # async test
-  # long_run <- eventReactive(input$parseExercise, {
-  #   x <- callr::r_bg(
-  #     func = test_job,
-  #     # func = parseExercise1,
-  #     # args = list(input$parseExercise, input$seedValue),
-  #     package = TRUE,
-  #     supervise = TRUE
-  #   )
-  #   print(x)
-  #   return(x)
-  # })
-  # check <- reactive({
-  #   invalidateLater(millis = 1000, session = session)
-  #   
-  #   if (long_run()$is_alive()) {
-  #     x <- "Job running in background"
-  #   } else {
-  #     x <- "Async job in background completed"
-  #   }
-  #   return(x)
-  # })
-  # 
-  # output$debug <- renderText({
-  #   check()
-  # })
   
   # seed change
   observeEvent(input$seedValue, {
@@ -470,8 +452,34 @@ server = function(input, output, session) {
   })
   
   # parse exercise
-  observeEvent(input$parseExercise, {
-    parseExercise(input$parseExercise, input$seedValue, session)
+  exerciseParsing <- eventReactive(input$parseExercise, {
+    x <- callr::r_bg(
+      func = parseExercise,
+      args = list(input$parseExercise, input$seedValue),
+      supervise = TRUE
+    )
+
+    # x$wait() #makes it a sync task again - not what we want
+    # somehow work with lists?
+
+    return(x)
+  })
+
+  checkExerciseParsed <- reactive({
+    if (exerciseParsing()$is_alive()) {
+      startWait(session)
+      invalidateLater(millis = 100, session = session)
+    } else {
+      task = exerciseParsing()$get_result()
+      loadExercise(task$id, task$seed, task$html, task$e, session)
+      stopWait(session)
+    }
+
+    return("")
+  })
+
+  output$SilenceIsGolden <- renderText({
+    checkExerciseParsed()
   })
   
   # parse exam
@@ -482,7 +490,7 @@ server = function(input, output, session) {
     examFiles(unlist(response$files))
     examParseResponse(session, response$message, length(response$files) > 0)
 
-    session$sendCustomMessage("debugMessage", unlist(response$files))
+    session$sendCustomMessage("debugMessage", unlist(response$files)) #debug
   })
   
   observeEvent(input$setNumberOfExamTasks, {

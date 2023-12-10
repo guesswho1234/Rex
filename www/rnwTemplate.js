@@ -16,14 +16,14 @@ if(!is.null(maxChoices)){
 \\begin{question}
 \\Sexpr{question}
 <<echo=FALSE, results=tex>>=
-answerlist(choices)
+exams::answerlist(choices)
 @
 \\end{question}
 \\begin{solution}
 <<echo=FALSE, results=tex>>=
-answerlist(ifelse(solutions, "Richtig", "Falsch"))
+exams::answerlist(ifelse(solutions, "Richtig", "Falsch"))
 @
 \\end{solution}
 %% META-INFORMATION
 %% \\extype{mchoice}
-%% \\exsolution{\\Sexpr{mchoice2string(solutions)}}`
+%% \\exsolution{\\Sexpr{exams::mchoice2string(solutions)}}`

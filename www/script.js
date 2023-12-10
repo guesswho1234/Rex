@@ -28,19 +28,6 @@ Shiny.addCustomMessageHandler('debugMessage', function(message) {
 /* --------------------------------------------------------------
  HEARTBEAT 
 -------------------------------------------------------------- */
-// var socket_timeout_interval;
-
-// $(document).on('shiny:connected', function(event) {
-  // socket_timeout_interval = setInterval(function() { 
-	// ping();
-    // Shiny.onInputChange('heartbeat', 1, {priority: 'event'})
-  // }, 1000 * 5);
-// });
-
-// $(document).on('shiny:disconnected', function(event) {
-  // clearInterval(socket_timeout_interval)
-// });
-
 Shiny.addCustomMessageHandler('heartbeat', function(heartbeat) {
 	ping();
 });
@@ -844,10 +831,11 @@ function newSimpleTask(file = '', block = 1) {
 }
 
 async function newComplexTask(file, block) {
+	const fileText = await file.text();
 	const taskID = tasks + 1
+	
 	addTask();
 	
-	const fileText = await file.text();
 	createTask(taskID, file.name.split('.')[0], fileText);
 	
 	viewTask(taskID, true);
@@ -896,7 +884,7 @@ function createTask(taskID, name='task',
 		setSimpleTaskFileContents(taskID);
 	}
 	
-	$('#task_list_items').append('<div class="taskItem sidebarListItem"><span class="taskTryCatch"><i class="fa-solid fa-triangle-exclamation"></i><span class="taskTryCatchText"></span></span><span class="taskName">' + name + '</span></span><span class="taskBlock disabled"><input type="number" value="' + block + '"/></span><span class="taskButtons"><span class="taskParse taskButton"><span class="iconButton"><i class="fa-solid fa-rotate"></i></span><span class="textButton"><span lang="de">Berechnen</span><span lang="en">Prase</span></span></span><span class="examTask taskButton"><span class="iconButton"><i class="fa-solid fa-circle-check"></i></span><span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span></span><span class="taskRemove taskButton"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></span></span></div>');
+	$('#task_list_items').append('<div class="taskItem sidebarListItem"><span class="taskTryCatch"><i class="fa-solid fa-triangle-exclamation"></i><span class="taskTryCatchText"></span></span><span class="taskName">' + name + '</span></span><span class="taskBlock disabled"><input type="number" value="' + block + '"/></span><span class="taskButtons"><span class="taskParse taskButton disabled"><span class="iconButton"><i class="fa-solid fa-rotate"></i></span><span class="textButton"><span lang="de">Berechnen</span><span lang="en">Prase</span></span></span><span class="examTask taskButton disabled"><span class="iconButton"><i class="fa-solid fa-circle-check"></i></span><span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span></span><span class="taskRemove taskButton"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></span></span></div>');
 }
 
 function parseTask(taskID) {	
