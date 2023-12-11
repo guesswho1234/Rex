@@ -3,7 +3,9 @@
 helpers.installPackages(
   "exams",
   "xtable",
-  "tth"
+  "tth",
+  "openssl",
+  "future"
 )
 
 # special case of installing iuftools from source
