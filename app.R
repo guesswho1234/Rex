@@ -139,10 +139,8 @@ loadExercise = function(id, seed, html, e, session) {
   session$sendCustomMessage("setTaskId", -1)
 }
 
-parseExam = function(exam, seed, input, session) {
+parseExam = function(exam, seed, examFields) {
   out <- tryCatch({
-    startWait(session)
-    
     examPdfFiles = c()
     examRdsFiles = c()
     taskFiles = c()
@@ -160,7 +158,12 @@ parseExam = function(exam, seed, input, session) {
 
       tasks = Reduce(c, lapply(taskBlocks, sample, tasksPerBlock))
 
-      tasks = getTaskFiles(tasks) 
+      tasks = lapply(tasks, function(i){
+        file = tempfile(fileext = ".rnw") # tempfile name
+        writeLines(text = i, con = file) # write contents to file
+        
+        return(file)
+      }) 
       taskFiles = unlist(tasks)
       
       tasks = sample(tasks, numberOfTasks)
@@ -176,37 +179,27 @@ parseExam = function(exam, seed, input, session) {
         return(file)
       })
 
-      title = input$examTitle
-      course = input$examCourse
-      institution = input$examInstitution
-      blank = input$numberOfBlanks
-      showpoints = input$showPoints
-
-      date = Sys.Date()
       pages = NULL
-      points = NULL
 
-      if(length(input$examDate) == 1) date = input$examDate
       if(length(additionalPdf) > 0) {
         pages = additionalPdf
         additionalPdfFiles = c(additionalPdfFiles, additionalPdf)
       } 
-      if(is.na(input$numberOfFixedPoints)) points = input$numberOfFixedPoints
-
-      nopsExam = exams2nops(tasks,
+      
+      nopsExam = exams::exams2nops(tasks,
                             name = name,
                             dir = dir,
                             seed = seedList,
                             #language = language, # disabled for now
                             #duplex = duplex, # disabled for now
-                            title = title,
-                            course = course,
-                            institution = institution,
-                            date = date,
-                            blank = blank,
                             pages = pages,
-                            points = points,
-                            showpoints = showpoints
+                            title = examFields$title,
+                            course = examFields$course,
+                            institution = examFields$institution,
+                            date = examFields$date,
+                            blank = examFields$blank,
+                            points = examFields$points,
+                            showpoints = examFields$showpoints
                             )
 
       examPdfFiles = c(examPdfFiles, paste0(dir, "/", name, "1.pdf"))
@@ -228,37 +221,131 @@ parseExam = function(exam, seed, input, session) {
     message = gsub("[\r\n]", "",message)
 
     return(list(message=list(key="Warning", value=message), files=list()))
-  },
-  finally = {
-    stopWait(session)
   })
   
   return(out)
 }
 
-getTaskFiles = function(tasks) {
-  out <- tryCatch({
+# parseExam = function(exam, seed, input, session) {
+#   out <- tryCatch({
+#     startWait(session)
+#     
+#     examPdfFiles = c()
+#     examRdsFiles = c()
+#     taskFiles = c()
+#     additionalPdfFiles = c()
+#     
+#     for(examId in 1:exam$numberOfExams){
+#       examSeed = as.numeric(paste0(if(is.na(exam$examSeed)) NULL else exam$examSeed, examId))
+#       set.seed(examSeed)
+#       
+#       blocks = as.numeric(exam$blocks)
+#       numberOfTasks = as.numeric(exam$numberOfTasks)
+#       
+#       tasksPerBlock = numberOfTasks / length(unique(blocks))
+#       taskBlocks = lapply(unique(exam$blocks), function(x) exam$tasks[exam$blocks==x])
+#       
+#       tasks = Reduce(c, lapply(taskBlocks, sample, tasksPerBlock))
+#       
+#       tasks = getTaskFiles(tasks) 
+#       taskFiles = unlist(tasks)
+#       
+#       tasks = sample(tasks, numberOfTasks)
+#       seedList = rep(examSeed, length(tasks))
+#       name = paste0(examSeed, "_")
+#       dir = tempdir()
+#       
+#       additionalPdf = lapply(exam$additionalPdf, function(i){
+#         file = tempfile(fileext = ".pdf") # tempfile name
+#         raw = openssl::base64_decode(i)
+#         writeBin(raw, con = file)
+#         
+#         return(file)
+#       })
+#       
+#       title = input$examTitle
+#       course = input$examCourse
+#       institution = input$examInstitution
+#       blank = input$numberOfBlanks
+#       showpoints = input$showPoints
+#       
+#       date = Sys.Date()
+#       pages = NULL
+#       points = NULL
+#       
+#       if(length(input$examDate) == 1) date = input$examDate
+#       if(length(additionalPdf) > 0) {
+#         pages = additionalPdf
+#         additionalPdfFiles = c(additionalPdfFiles, additionalPdf)
+#       } 
+#       if(is.na(input$numberOfFixedPoints)) points = input$numberOfFixedPoints
+#       
+#       nopsExam = exams2nops(tasks,
+#                             name = name,
+#                             dir = dir,
+#                             seed = seedList,
+#                             #language = language, # disabled for now
+#                             #duplex = duplex, # disabled for now
+#                             title = title,
+#                             course = course,
+#                             institution = institution,
+#                             date = date,
+#                             blank = blank,
+#                             pages = pages,
+#                             points = points,
+#                             showpoints = showpoints
+#       )
+#       
+#       examPdfFiles = c(examPdfFiles, paste0(dir, "/", name, "1.pdf"))
+#       examRdsFiles = c(examRdsFiles, paste0(dir, "/", name, ".rds"))
+#     }
+#     
+#     return(list(message=list(key="Success", value=""), files=list(examPdfFiles=examPdfFiles, examRdsFiles=examRdsFiles, taskFiles=taskFiles, additionalPdfFiles=additionalPdfFiles)))
+#   },
+#   error = function(e){
+#     message = e$message
+#     message = gsub("\"", "'", message)
+#     message = gsub("[\r\n]", "", message)
+#     
+#     return(list(message=list(key="Error", value=message), files=list()))
+#   },
+#   warning = function(w){
+#     message = w$message
+#     message = gsub("\"", "'", message)
+#     message = gsub("[\r\n]", "",message)
+#     
+#     return(list(message=list(key="Warning", value=message), files=list()))
+#   },
+#   finally = {
+#     stopWait(session)
+#   })
+#   
+#   return(out)
+# }
 
-    tasks = lapply(tasks, function(i){
-      file = tempfile(fileext = ".rnw") # tempfile name
-      writeLines(text = i, con = file) # write contents to file
-      
-      return(file)
-    })
-    
-    return(tasks)
-  },
-  error = function(e){
-    return(NULL)
-  },
-  warning = function(w){
-    return(NULL)
-  },
-  finally = {
-  })
-  
-  return(out)
-}
+# getTaskFiles = function(tasks) {
+#   out <- tryCatch({
+# 
+#     tasks = lapply(tasks, function(i){
+#       file = tempfile(fileext = ".rnw") # tempfile name
+#       writeLines(text = i, con = file) # write contents to file
+#       
+#       return(file)
+#     })
+#     
+#     return(tasks)
+#   },
+#   error = function(e){
+#     return(NULL)
+#   },
+#   warning = function(w){
+#     return(NULL)
+#   },
+#   finally = {
+#   })
+#   
+#   return(out)
+# }
 
 examParseResponse = function(session, message, success){
   showModal(modalDialog(
@@ -470,8 +557,8 @@ server = function(input, output, session) {
       startWait(session)
       invalidateLater(millis = 100, session = session)
     } else {
-      task = exerciseParsing()$get_result()
-      loadExercise(task$id, task$seed, task$html, task$e, session)
+      result = exerciseParsing()$get_result()
+      loadExercise(result$id, result$seed, result$html, result$e, session)
       stopWait(session)
     }
 
@@ -485,17 +572,61 @@ server = function(input, output, session) {
   # parse exam
   examFiles = reactiveVal()
   
-  observeEvent(input$parseExam, {
-    response = parseExam(input$parseExam, input$seedValue, input, session)
-    examFiles(unlist(response$files))
-    examParseResponse(session, response$message, length(response$files) > 0)
-
-    session$sendCustomMessage("debugMessage", unlist(response$files)) #debug
+  examParsing <- eventReactive(input$parseExam, {
+    tilte = isolate(input$examTitle)
+    course = isolate(input$examCourse)
+    institution = isolate(input$examInstitution)
+    blank = isolate(input$numberOfBlanks)
+    showpoints = isolate(input$showPoints)
+    
+    date = Sys.Date()
+    points = NULL
+    
+    if(length(input$examDate) == 1) date = isolate(input$examDate)
+    if(is.na(input$numberOfFixedPoints)) points = isolate(input$numberOfFixedPoints)
+    
+    examFields = list(title=title, 
+                      course=course, 
+                      institution=institution, 
+                      blank=blank, 
+                      showpoints=showpoints,
+                      date=date,
+                      points=points)
+    
+    x <- callr::r_bg(
+      func = parseExam,
+      args = list(isolate(input$parseExam), isolate(input$seedValue), examFields),
+      supervise = TRUE
+    )
+    
+    return(x)
   })
   
-  observeEvent(input$setNumberOfExamTasks, {
-    maxNumberOfExamTasks <<- input$setNumberOfExamTasks
+  checkExamParsed <- reactive({
+    if (examParsing()$is_alive()) {
+      startWait(session)
+      invalidateLater(millis = 100, session = session)
+    } else {
+      result = examParsing()$get_result()
+      examFiles(unlist(result$files))
+      examParseResponse(session, result$message, length(result$files) > 0)
+      stopWait(session)
+    }
+    
+    return("")
   })
+  
+  output$SilenceIsGolden <- renderText({
+    checkExamParsed()
+  })
+  
+  # observeEvent(input$parseExam, {
+  #   response = parseExam(input$parseExam, input$seedValue, input, session)
+  #   examFiles(unlist(response$files))
+  #   examParseResponse(session, response$message, length(response$files) > 0)
+  # 
+  #   session$sendCustomMessage("debugMessage", unlist(response$files)) #debug
+  # })
   
   # set max number of exam tasks
   observeEvent(input$setNumberOfExamTasks, {
