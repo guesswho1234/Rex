@@ -24,6 +24,8 @@
 
 #TODO: sometimes task names do not match the contents of the task (javascript issue, probably fixed by putting the task counter after the await for the file contents)
 
+#TODO: MAKEBSP is not found when parsing tasks; does work when parsing exam
+
 # STARTUP -----------------------------------------------------------------
 rm(list = ls())
 cat("\f")
@@ -50,7 +52,6 @@ parseExercise = function(task, seed){
     writeLines(text = task$taskCode, con = file)
     
     htmlTask = exams::exams2html(file, dir = tempdir(), seed = seed)
-    Sys.sleep(10)
 
     return(list(id=task$taskID, seed=seed, html=htmlTask, e=c("Success", "")))
   },
@@ -59,16 +60,14 @@ parseExercise = function(task, seed){
     message = gsub("\"", "'", message)
     message = gsub("[\r\n]", "", message)
     
-    # return(list(id=task$taskID, seed=NULL, html=NULL, e=c("Error", message)))
-    return(list(id=task$taskID, seed=NULL, html=NULL, e=c("Error", e)))
+    return(list(id=task$taskID, seed=NULL, html=NULL, e=c("Error", message)))
   },
   warning = function(w){ 
     message = w$message
     message = gsub("\"", "'", message)
     message = gsub("[\r\n]", "",message)
 
-    # return(list(id=task$taskID, seed=NULL, html=NULL, e=c("Warning", message)))
-    return(list(id=task$taskID, seed=NULL, html=NULL, e=c("Warning", w)))
+    return(list(id=task$taskID, seed=NULL, html=NULL, e=c("Warning", message)))
   })
   
   return(out)
@@ -255,16 +254,14 @@ parseExam = function(preparedExam) {
     message = gsub("\"", "'", message)
     message = gsub("[\r\n]", "", message)
 
-    # return(list(message=list(key="Error", value=message), files=list()))
-    return(list(message=list(key="Error", value=e), files=list()))
+    return(list(message=list(key="Error", value=message), files=list()))
   },
   warning = function(w){
     message = w$message
     message = gsub("\"", "'", message)
     message = gsub("[\r\n]", "",message)
 
-    # return(list(message=list(key="Warning", value=message), files=list()))
-    return(list(message=list(key="Warning", value=w), files=list()))
+    return(list(message=list(key="Warning", value=message), files=list()))
   })
 
   return(out)
@@ -368,7 +365,8 @@ seedMax = 99999999
 initSeed = as.numeric(gsub("-", "", Sys.Date()))
 numberOfTaskBlocks = 1
 maxNumberOfExamTasks = 0
-assign("MAKEBSP", F, envir = .GlobalEnv)
+MAKEBSP = FALSE
+# assign("MAKEBSP", FALSE, envir = .GlobalEnv)
 languages = c("en",
               "hr",
               "da",
@@ -430,6 +428,12 @@ server = function(input, output, session) {
     initialState <<- FALSE
   })
   
+  # background task output placeholder
+  output$SilenceIsGolden <- renderText({
+    checkExerciseParsed()
+    checkExamParsed()
+  })
+  
   # seed change
   observeEvent(input$seedValue, {
     updateNumericInput(session, "seedValue", value = checkSeed(input$seedValue))
@@ -458,18 +462,19 @@ server = function(input, output, session) {
   # parse exercise
   exerciseParsing <- eventReactive(input$parseExercise, {
     startWait(session)
-    
+
     x <- callr::r_bg(
       func = parseExercise,
-      args = list(input$parseExercise, input$seedValue),
+      args = list(isolate(input$parseExercise), isolate(input$seedValue)),
       supervise = TRUE
+      # env = c(callr::rcmd_safe_env(), MAKEBSP = FALSE)
     )
 
     # x$wait() makes it a sync task again - not what we want, but for now lets do this
     # in the future maybe send tasks to parse as batch from javascript
     # then async parse all tasks with one "long" wait screen
     # fill fields sync by looping through reponses (list of reponses, one for each task parsed)
-    x$wait() 
+    x$wait()
 
     return(x)
   })
@@ -486,10 +491,6 @@ server = function(input, output, session) {
     return("")
   })
 
-  output$SilenceIsGolden <- renderText({
-    checkExerciseParsed()
-  })
-  
   # parse exam
   examFiles = reactiveVal()
   
@@ -521,10 +522,6 @@ server = function(input, output, session) {
     return("")
   })
 
-  output$SilenceIsGolden <- renderText({
-    checkExamParsed()
-  })
-  
   # set max number of exam tasks
   observeEvent(input$setNumberOfExamTasks, {
     maxNumberOfExamTasks <<- input$setNumberOfExamTasks
