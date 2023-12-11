@@ -36,9 +36,8 @@ library(shinyWidgets) # shinyWidgets_0.5.1
 library(shinycssloaders) #shinycssloaders_0.3
 library(exams) #exams_2.4
 library(xtable) #xtable_1.8
-library(openssl) # openssl_2.1.0 
 library(iuftools) #iuftools_1.0.0
-library(future) # future_1.33.0
+library(callr) # callr_3.7.3
 
 # FUNCTIONS ----------------------------------------------------------------
 parseExercise = function(task, seed){
@@ -364,8 +363,6 @@ checkPosNumber = function(numberField){
 }
 
 # PARAMETERS --------------------------------------------------------------
-plan(multisession)
-
 seedMin = 1
 seedMax = 99999999
 initSeed = as.numeric(gsub("-", "", Sys.Date()))
