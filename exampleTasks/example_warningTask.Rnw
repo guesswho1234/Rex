@@ -2,6 +2,7 @@
 
 library(iuftools)
 library(exams)
+warning("This is a warning")
 
 ## todo: check code
 

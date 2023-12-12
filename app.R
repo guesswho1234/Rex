@@ -4,23 +4,27 @@
 
 #TODO: unlink all files properly and at the right time (f.e. unlik all exam files after download)
 
-#TODO: allow to turn off hotkeys and have a hot key modal to show what does what
+#TODO: turn off hotkeys per default, allow to turn on hotkeys in nav bar and have a hot key modal to show what does what
 
-#TODO: "export" buttons downloads all tasks as zip
+#TODO: "export" button to download all tasks as zip (need to implement this in javascript)
 
-#TODO: exam fields - validation
+#TODO: exam fields - expand on validation and helpers to fill in the form
 
-#TODO: exam fields - expand on aids to fill form  
+#TODO: only mchoice questions for nops exam
 
-#TODO: only mchoice for nops exam (what about open text questions)
+#TODO: add possibility to create pdf exam with open questions (can then be appended to nops)
 
 #TODO: disable nav and keys on "wait"
 
-#TODO: parsing multiple tasks sequentially does not work with new background task (only last exercise is parsed)
+#TODO: parsing multiple tasks sequentially does not work properly with new background processing (only last exercise is parsed)
 
-#TODO: MAKEBSP is not found when parsing tasks; does work when parsing exam, circumvent by adding "library(exams)" and "library(iuftools)"
+#TODO: change all iuf tasks by adding "library(exams)" and "library(iuftools)" and replacing "if(MAKEBSP) set.seed(1)" to "if(exists(MAKEBSP) && MAKEBSP) set.seed(1)"
 
-#TODO: add additionalPDF files including names -> needed to export files with proper names after exam creation
+#TODO: add additionalPDF files including names, needed to export files with proper names after exam creation
+
+#TODO: remove task validation and spoiler free answers
+
+#TODO: check if tasks can be "reproduced exactly" with exam seed as task seed
 
 # STARTUP -----------------------------------------------------------------
 rm(list = ls())
