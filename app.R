@@ -16,15 +16,11 @@
 
 #TODO: disable nav and keys on "wait"
 
-#TODO: put parsing of exercises and exam into background tasks such that the heartbeat keeps on working (parsing exercises works alread)
-
-#TODO: task files need explicit namespaces for function calls (f.e. exams::answerlist or iuftools::eform)
-
 #TODO: parsing multiple tasks sequentially does not work with new background task (only last exercise is parsed)
 
-#TODO: sometimes task names do not match the contents of the task (javascript issue, probably fixed by putting the task counter after the await for the file contents)
+#TODO: MAKEBSP is not found when parsing tasks; does work when parsing exam, circumvent by adding "library(exams)" and "library(iuftools)"
 
-#TODO: MAKEBSP is not found when parsing tasks; does work when parsing exam
+#TODO: add additionalPDF files including names -> needed to export files with proper names after exam creation
 
 # STARTUP -----------------------------------------------------------------
 rm(list = ls())
@@ -42,32 +38,44 @@ library(iuftools) #iuftools_1.0.0
 library(callr) # callr_3.7.3
 
 # FUNCTIONS ----------------------------------------------------------------
-parseExercise = function(task, seed){
-  out = tryCatch({
-    # show all possible choices in view mode
-    task$taskCode = gsub("maxChoices = 5", "maxChoices = NULL", task$taskCode)
+collectWarnings = function(expr) {
+  warnings = NULL
+  wHandler = function(w) {
+    warnings <<- c(warnings, list(w))
+    invokeRestart("muffleWarning")
+  }
+  # origin = withCallingHandlers(expr, warning = wHandler)
+  withCallingHandlers(expr, warning = wHandler)
   
-    seed = if(is.na(seed)) NULL else seed
-    file = tempfile(fileext = ".Rnw")
-    writeLines(text = task$taskCode, con = file)
-    
-    htmlTask = exams::exams2html(file, dir = tempdir(), seed = seed)
+  return(warnings)
+}
 
-    return(list(id=task$taskID, seed=seed, html=htmlTask, e=c("Success", "")))
+parseExercise = function(task, seed, collectWarnings){
+  out = tryCatch({
+    warnings = collectWarnings({
+      # show all possible choices in view mode
+      task$taskCode = gsub("maxChoices = 5", "maxChoices = NULL", task$taskCode)
+
+      seed = if(is.na(seed)) NULL else seed
+      file = tempfile(fileext = ".Rnw")
+      writeLines(text = task$taskCode, con = file)
+
+      htmlTask = exams::exams2html(file, dir = tempdir(), seed = seed)
+      
+      NULL
+    })
+    key = "Success"
+    value = paste(unlist(warnings), collapse="%;%")
+    if(value != "") key = "Warning"
+
+    return(list(id=task$taskID, seed=seed, html=htmlTask, e=c(key, value)))
   },
   error = function(e){
     message = e$message
     message = gsub("\"", "'", message)
-    message = gsub("[\r\n]", "", message)
+    message = gsub("[\r\n]", "%;%", message)
     
     return(list(id=task$taskID, seed=NULL, html=NULL, e=c("Error", message)))
-  },
-  warning = function(w){ 
-    message = w$message
-    message = gsub("\"", "'", message)
-    message = gsub("[\r\n]", "",message)
-
-    return(list(id=task$taskID, seed=NULL, html=NULL, e=c("Warning", message)))
   })
   
   return(out)
@@ -150,7 +158,7 @@ getExamFields = function(input) {
   points = NULL
 
   if(length(input$examDate) == 1) date = input$examDate
-  if(is.na(input$numberOfFixedPoints)) points = input$numberOfFixedPoints
+  if(!is.na(input$numberOfFixedPoints)) points = input$numberOfFixedPoints
 
   examFields = list(title=title,
                     course=course,
@@ -164,15 +172,17 @@ getExamFields = function(input) {
 }
 
 prepareExam = function(exam, seed, examFields) {
-  taskFiles = unlist(lapply(exam$tasks, function(i){
-    file = tempfile(fileext = ".rnw") # tempfile name
-    writeLines(text = i, con = file) # write contents to file
+  dir = tempdir()
+  
+  taskFiles = unlist(lapply(seq_along(exam$names), function(i){
+    file = tempfile(pattern = paste0(exam$names[[i]], "_"), tmpdir = dir, fileext = ".rnw") # tempfile name
+    writeLines(text = exam$codes[[i]], con = file) # write contents to file
     
     return(file)
   }))
-  
+
   additionalPdfFiles = unlist(lapply(exam$additionalPdf, function(i){
-    file = tempfile(fileext = ".pdf") # tempfile name
+    file = tempfile(pattern = "additionalPDF_", tmpdir = dir, fileext = ".pdf") # tempfile name
     raw = openssl::base64_decode(i)
     writeBin(raw, con = file)
     
@@ -184,17 +194,18 @@ prepareExam = function(exam, seed, examFields) {
     set.seed(examSeed)
 
     blocks = as.numeric(exam$blocks)
+
     numberOfTasks = as.numeric(exam$numberOfTasks)
 
     tasksPerBlock = numberOfTasks / length(unique(blocks))
-    taskBlocks = lapply(unique(exam$blocks), function(x) taskFiles[exam$blocks==x])
+    taskBlocks = lapply(unique(blocks), function(x) taskFiles[blocks==x])
     
     tasks = Reduce(c, lapply(taskBlocks, sample, tasksPerBlock))
     tasks = sample(tasks, numberOfTasks)
     
     seedList = rep(examSeed, length(tasks))
-    name = paste0(examSeed, "_")
-    dir = tempdir()
+    name = paste0("scrambling_", examSeed, "_")
+    # dir = tempdir()
 
     pages = NULL
 
@@ -206,6 +217,7 @@ prepareExam = function(exam, seed, examFields) {
     scramblingRdsFile = paste0(dir, "/", name, ".rds")
 
     return(list(
+      taskNames = exam$names,
       tasks = tasks,
       name = name,
       dir = dir,
@@ -227,51 +239,55 @@ prepareExam = function(exam, seed, examFields) {
   return(list(scramblings=scramblingPreparations, sourceFiles=list(taskFiles=taskFiles, additionalPdfFiles=additionalPdfFiles)))
 }
 
-parseExam = function(preparedExam) {
+parseExam = function(preparedExam, collectWarnings) {
   out = tryCatch({
-    scramblingFiles = lapply(preparedExam$scramblings, function(scrambling){
-      nopsExam = exams::exams2nops(file = scrambling$tasks,
-                                   name = scrambling$name,
-                                   dir = scrambling$dir,
-                                   seed = scrambling$seedList,
-                                   #language = scrambling$language, # disabled for now
-                                   #duplex = scrambling$duplex, # disabled for now
-                                   pages = scrambling$pages,
-                                   title = scrambling$title,
-                                   course = scrambling$course,
-                                   institution = scrambling$institution,
-                                   date = scrambling$date,
-                                   blank = scrambling$blank,
-                                   points = scrambling$points,
-                                   showpoints = scrambling$showpoints)
-      return(scrambling$scramblingFiles)
+    warnings = collectWarnings({
+      scramblingFiles = lapply(preparedExam$scramblings, function(scrambling){
+        nopsExam = exams::exams2nops(file = scrambling$tasks,
+                                     name = scrambling$name,
+                                     dir = scrambling$dir,
+                                     seed = scrambling$seedList,
+                                     #language = scrambling$language, # disabled for now
+                                     #duplex = scrambling$duplex, # disabled for now
+                                     pages = scrambling$pages,
+                                     title = scrambling$title,
+                                     course = scrambling$course,
+                                     institution = scrambling$institution,
+                                     date = scrambling$date,
+                                     blank = scrambling$blank,
+                                     points = scrambling$points,
+                                     showpoints = scrambling$showpoints)
+        return(scrambling$scramblingFiles)
+      })
+      
+      NULL
     })
+    key = "Success"
+    value = paste(unlist(warnings), collapse="%;%")
+    if(value != "") key = "Warning"
     
-    return(list(message=list(key="Success", value=""), files=list(sourceFiles=preparedExam$sourceFiles, scramblingFiles=scramblingFiles)))
+    return(list(message=list(key=key, value=value), files=list(sourceFiles=preparedExam$sourceFiles, scramblingFiles=scramblingFiles)))
   },
   error = function(e){
     message = e$message
     message = gsub("\"", "'", message)
-    message = gsub("[\r\n]", "", message)
-
+    message = gsub("[\r\n]", "%;%", message)
+    
     return(list(message=list(key="Error", value=message), files=list()))
-  },
-  warning = function(w){
-    message = w$message
-    message = gsub("\"", "'", message)
-    message = gsub("[\r\n]", "",message)
-
-    return(list(message=list(key="Warning", value=message), files=list()))
   })
-
+  
   return(out)
 }
 
-examParseResponse = function(session, message, success){
+examParseResponse = function(session, message, downloadable) {
   showModal(modalDialog(
     title = "exams2nops",
-    tags$span(id='responseMessage', class=message$key, paste0(message$key, ": ", message$value)),
-    downloadButton('downloadExamFiles', 'Download')
+    tags$span(id='responseMessage', class=message$key, paste0(message$key, ": ", gsub("%;%", "\n\r", message$value))),
+    footer = tagList(
+      if (downloadable)
+        downloadButton('downloadExamFiles', 'Download'),
+      modalButton("OK")
+    )
   ))
   
   session$sendCustomMessage("examParseResponse", rjs_keyValuePairsToJsonObject(c("key", "value"), c(message$key, message$value)))
@@ -390,7 +406,7 @@ languages = c("en",
 # UI -----------------------------------------------------------------
 ui = fluidPage(
   shinyjs::useShinyjs(),
-  textOutput("SilenceIsGolden"),
+  # textOutput("debug"),
   htmlTemplate(
     filename = "main.html",
 
@@ -427,11 +443,6 @@ server = function(input, output, session) {
     initialState <<- FALSE
   })
   
-  # background task output placeholder
-  output$SilenceIsGolden = renderText({
-    paste(checkExerciseParsed(),checkExamParsed())
-  })
-  
   # seed change
   observeEvent(input$seedValue, {
     updateNumericInput(session, "seedValue", value = checkSeed(input$seedValue))
@@ -463,7 +474,7 @@ server = function(input, output, session) {
 
     x = callr::r_bg(
       func = parseExercise,
-      args = list(isolate(input$parseExercise), isolate(input$seedValue)),
+      args = list(isolate(input$parseExercise), isolate(input$seedValue), collectWarnings),
       supervise = TRUE
       # env = c(callr::rcmd_safe_env(), MAKEBSP = FALSE)
     )
@@ -477,7 +488,7 @@ server = function(input, output, session) {
     return(x)
   })
 
-  checkExerciseParsed = reactive({
+  observe({
     if (exerciseParsing()$is_alive()) {
       invalidateLater(millis = 100, session = session)
     } else {
@@ -485,8 +496,6 @@ server = function(input, output, session) {
       loadExercise(result$id, result$seed, result$html, result$e, session)
       stopWait(session)
     }
-
-    return("")
   })
 
   # parse exam
@@ -494,32 +503,30 @@ server = function(input, output, session) {
   
   examParsing = eventReactive(input$parseExam, {
     startWait(session)
-    
+
     examFields = getExamFields(isolate(input))
     preparedExam = prepareExam(isolate(input$parseExam), isolate(input$seedValue), examFields)
 
     x = callr::r_bg(
       func = parseExam,
-      args = list(preparedExam),
+      args = list(preparedExam, collectWarnings),
       supervise = TRUE
     )
 
     return(x)
   })
 
-  checkExamParsed = reactive({
+  observe({
     if (examParsing()$is_alive()) {
       invalidateLater(millis = 100, session = session)
     } else {
       result = examParsing()$get_result()
-      examFiles(unlist(result$files))
-      examParseResponse(session, result$message, length(result$files) > 0)
+      examFiles(unlist(result$files, recursive = TRUE))
+      examParseResponse(session, result$message, length(examFiles()) > 0)
       stopWait(session)
     }
-
-    return("")
   })
-
+  
   # set max number of exam tasks
   observeEvent(input$setNumberOfExamTasks, {
     maxNumberOfExamTasks <<- input$setNumberOfExamTasks

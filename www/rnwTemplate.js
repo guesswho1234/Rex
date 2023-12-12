@@ -5,6 +5,7 @@ var rnwTemplate = `<<echo=FALSE, results=hide>>=
 question=?q
 choices=?c
 solutions=?s
+points=?p
 maxChoices = 5
 if(!is.null(maxChoices)){
 	limit=min(length(choices), maxChoices)
@@ -26,4 +27,5 @@ exams::answerlist(ifelse(solutions, "Richtig", "Falsch"))
 \\end{solution}
 %% META-INFORMATION
 %% \\extype{mchoice}
-%% \\exsolution{\\Sexpr{exams::mchoice2string(solutions)}}`
+%% \\exsolution{\\Sexpr{exams::mchoice2string(solutions)}}
+%% \\expoints{\\Sexpr{points}}`

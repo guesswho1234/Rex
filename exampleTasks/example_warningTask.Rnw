@@ -1,5 +1,8 @@
 <<echo=FALSE, results=hide>>=
 
+library(iuftools)
+library(exams)
+
 ## todo: check code
 
 ## ESSENTIALS!!! MUST ALWAYS BE PRESENT AND COMPLETE! DO NOT FORGET TO CHECK AND MODIFY!!!
@@ -16,7 +19,7 @@ diff <- 2				# DIFFICULTY (0-3)
 %% \exextra[precision,numeric]{\Sexpr{(prec)}}
 
 <<echo=FALSE, results=tex>>=
-##if (MAKEBSP) set.seed(1)	# FIXES SCRAMBLING FOR EXAMPLES
+##if (exists(MAKEBSP) && MAKEBSP) set.seed(1)	# FIXES SCRAMBLING FOR EXAMPLES
 ## ESSENTIALS!!! MUST ALWAYS BE PRESENT AND COMPLETE! DO NOT FORGET TO CHECK AND MODIFY!!!
 
 
@@ -26,7 +29,7 @@ termStructIncr <- sample(c(-1, 1), 1)
 asdf <- sample(c(TRUE, FALSE), 1)
 i1 <- sort(sample(-15:-25, 4)/1000, decreasing = asdf)
 i2 <- sort(sample(-9:-15, 4)/1000)
-i3 <- sort(sample(-7:7, 2)/1000)d
+i3 <- sort(sample(-7:7, 2)/1000)
 i <- c(i1, i2, i3) * termStructIncr
 if(sample(c(TRUE, FALSE), 1)) i <- rev(i)
 

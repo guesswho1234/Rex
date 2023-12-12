@@ -103,6 +103,7 @@ body {
 	border-radius: 3px;
 	padding: 5px;
 	font-weight: bold;
+	text-align: left;
 }
 
 #taskUpload {
@@ -564,7 +565,6 @@ main > * {
 .taskTryCatch .taskTryCatchText {
 	visibility: hidden;
 	width: max-content;
-	text-align: center;
 	position: absolute;
 	z-index: 1;
 	margin-top: -50px;
@@ -831,10 +831,10 @@ main > * {
 	background: var(---tryCatch_error);
 }
 
-#downloadExamFiles {
-	display: none;
-	margin-left: 1rem;
-}
+/* #downloadExamFiles { */
+	/* display: none; */
+	/* margin-left: 1rem; */
+/* } */
 
 /* --------------------------------------------------------------
  HELP 

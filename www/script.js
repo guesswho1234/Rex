@@ -856,7 +856,7 @@ function createTask(taskID, name='task',
 							checkedBy=null,
 							precision=null,
 							difficulty=null,
-							points=null,
+							points=1,
 							topic=null,
 							tags=null,
 							block=1){
@@ -976,7 +976,7 @@ $('body').on('focus', '[contenteditable]', function() {
     const $this = $(this);
     if ($this.data('before') !== $this.html()) {
 		const taskID = getID();
-		
+				
 		if ($this.hasClass('taskNameText')) {
 			$('.taskItem:nth-child(' + (taskID + 1) + ') .taskName').text($this.text());
 			iuf['tasks'][taskID]['name'] = $this.text();
@@ -988,6 +988,10 @@ $('body').on('focus', '[contenteditable]', function() {
 		
 		if ($this.hasClass('choiceText')) {
 			iuf['tasks'][taskID]['choices'][$this.index('.choiceText')] = $this.text();
+		}
+		
+		if ($this.hasClass('points')) {
+			iuf['tasks'][taskID]['points'] = parseInt($this.text());
 		}
 
 		setSimpleTaskFileContents(taskID);
@@ -1016,7 +1020,7 @@ function loadTaskFromObject(taskID) {
 		let content = ''
 		
 		if(Array.isArray(iuf['tasks'][taskID]['question'])) {
-			content = '<span class="questionText" contenteditable="' + editable + '" spellcheck="false"> ' + iuf['tasks'][taskID]['question'].join('') + '</span>';
+			content = '<span class="questionText" contenteditable="' + editable + '" spellcheck="false">' + iuf['tasks'][taskID]['question'].join('') + '</span>';
 		} else {
 			content = '<span class="questionText" contenteditable="' + editable + '" spellcheck="false">' + iuf['tasks'][taskID]['question'] + '</span>';
 		}
@@ -1026,7 +1030,8 @@ function loadTaskFromObject(taskID) {
 	
 	if(iuf['tasks'][taskID]['points'] !== null) {	
 		const field = 'points'
-		const content = '<span>' + iuf['tasks'][taskID]['points'] + '</span>';
+				
+		const content = '<span class="points" contenteditable="' + editable + '" spellcheck="false">' + iuf['tasks'][taskID]['points'] + '</span>';
 		
 		setTaskFieldFromObject(field, content);
 	}
@@ -1121,6 +1126,7 @@ function setSimpleTaskFileContents(taskID){
 	fileText = fileText.replace("?q", '"' + iuf['tasks'][taskID]['question'] + '"');
 	fileText = fileText.replace("?c", 'c(' + iuf['tasks'][taskID]['choices'].map(c=>'"' + c + '"').join(',') + ')');
 	fileText = fileText.replace("?s", 'c(' + iuf['tasks'][taskID]['result'].map(s=>s?"T":"F").join(',') + ')');
+	fileText = fileText.replace("?p", iuf['tasks'][taskID]['points']);
 	fileText = fileText.replaceAll("\n", "\r\n");
 
 	iuf['tasks'][taskID]['file'] = fileText;
@@ -1403,7 +1409,7 @@ Shiny.addCustomMessageHandler('setTaskEditable', function(editable) {
 });
 
 Shiny.addCustomMessageHandler('setTaskE', function(jsonData) {
-	e = JSON.parse(jsonData)
+	e = JSON.parse(jsonData);
 		
 	const taskID = getID();
 	
@@ -1412,22 +1418,24 @@ Shiny.addCustomMessageHandler('setTaskE', function(jsonData) {
 	$('.taskItem:nth-child(' + (taskID + 1) + ') .examTask').removeClass('disabled');
 	$('.taskItem:nth-child(' + (taskID + 1) + ') .taskTryCatchText').text('');
 	
+	const message = e.value.replace('%;%', '\n\r');
+	
 	switch(e.key) {
 		case "Success": 
-			iuf['tasks'][taskID]['e'] = e.key + ': ' + e.value;
+			iuf['tasks'][taskID]['e'] = e.key;
 			loadTaskFromObject(taskID); 
 			break;
 		case "Warning": 
-			iuf['tasks'][taskID]['e'] = e.key + ': ' + e.value;
+			iuf['tasks'][taskID]['e'] = e.key + ':<br>' + message;
 			$('.taskItem:nth-child(' + (taskID + 1) + ') .taskTryCatch').addClass('Warning');
-			$('.taskItem:nth-child(' + (taskID + 1) + ') .examTask').addClass('disabled');
-			$('.taskItem:nth-child(' + (taskID + 1) + ') .taskTryCatchText').text(iuf['tasks'][taskID]['e']);
+			$('.taskItem:nth-child(' + (taskID + 1) + ') .taskTryCatchText').html(iuf['tasks'][taskID]['e'].replace('\n\r', '<br>'));
+			loadTaskFromObject(taskID); 
 			break;
 		case "Error": 
-			iuf['tasks'][taskID]['e'] = e.key + ': ' + e.value;
+			iuf['tasks'][taskID]['e'] = e.key + ':<br>' + message;
 			$('.taskItem:nth-child(' + (taskID + 1) + ') .taskTryCatch').addClass('Error');
 			$('.taskItem:nth-child(' + (taskID + 1) + ') .examTask').addClass('disabled');
-			$('.taskItem:nth-child(' + (taskID + 1) + ') .taskTryCatchText').text(iuf['tasks'][taskID]['e']);
+			$('.taskItem:nth-child(' + (taskID + 1) + ') .taskTryCatchText').html(iuf['tasks'][taskID]['e']);
 			break;
 	}
 });
@@ -1561,29 +1569,30 @@ function calcTotalFixedPoints(){
 }
 
 async function createExam() {
-	const examTaskCodes = iuf['tasks'].filter((task) => task.exam & task.file !== null).map((task) => task.file);
-	
-	let blocks = iuf['tasks'].map(x => x.block)
+	const examTasks = iuf['tasks'].filter((task) => task.exam & task.file !== null);
+	const names = examTasks.map((task) => task.name);
+	const codes = examTasks.map((task) => task.file);
+	const blocks = examTasks.map((task) => task.block);
 		
-	Promise.all(examTaskCodes).then((values) => {
-		Shiny.onInputChange("parseExam", {examSeed: $('#seedValueExam').val(), numberOfExams: $("#numberOfExams").val(), numberOfTasks: $("#numberOfTasks").val(), tasks: values, blocks: blocks, additionalPdf: iuf['examAdditionalPdf']}, {priority: 'event'});
+	Promise.all(codes).then((codes) => {
+		Shiny.onInputChange("parseExam", {examSeed: $('#seedValueExam').val(), numberOfExams: $("#numberOfExams").val(), numberOfTasks: $("#numberOfTasks").val(), names: names, codes:codes, blocks: blocks, additionalPdf: iuf['examAdditionalPdf']}, {priority: 'event'});
 	});
 }
 
 Shiny.addCustomMessageHandler('examParseResponse', function(jsonData) {
-	e = JSON.parse(jsonData)
+	// e = JSON.parse(jsonData)
 	
-	switch(e.key) {
-		case "Success": 
-			$('#downloadExamFiles').show(); 
-			break;
-		case "Warning": 
-			$('#downloadExamFiles').hide();
-			break;
-		case "Error": 
-			$('#downloadExamFiles').hide();
-			break;
-	}
+	// switch(e.key) {
+		// case "Success": 
+			// $('#downloadExamFiles').show(); 
+			// break;
+		// case "Warning": 
+			// $('#downloadExamFiles').show();
+			// break;
+		// case "Error": 
+			// $('#downloadExamFiles').hide();
+			// break;
+	// }
 });
 
 /* --------------------------------------------------------------
