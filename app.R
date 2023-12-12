@@ -43,7 +43,7 @@ library(callr) # callr_3.7.3
 
 # FUNCTIONS ----------------------------------------------------------------
 parseExercise = function(task, seed){
-  out <- tryCatch({
+  out = tryCatch({
     # show all possible choices in view mode
     task$taskCode = gsub("maxChoices = 5", "maxChoices = NULL", task$taskCode)
   
@@ -228,7 +228,7 @@ prepareExam = function(exam, seed, examFields) {
 }
 
 parseExam = function(preparedExam) {
-  out <- tryCatch({
+  out = tryCatch({
     scramblingFiles = lapply(preparedExam$scramblings, function(scrambling){
       nopsExam = exams::exams2nops(file = scrambling$tasks,
                                    name = scrambling$name,
@@ -366,7 +366,6 @@ initSeed = as.numeric(gsub("-", "", Sys.Date()))
 numberOfTaskBlocks = 1
 maxNumberOfExamTasks = 0
 MAKEBSP = FALSE
-# assign("MAKEBSP", FALSE, envir = .GlobalEnv)
 languages = c("en",
               "hr",
               "da",
@@ -429,9 +428,8 @@ server = function(input, output, session) {
   })
   
   # background task output placeholder
-  output$SilenceIsGolden <- renderText({
-    checkExerciseParsed()
-    checkExamParsed()
+  output$SilenceIsGolden = renderText({
+    paste(checkExerciseParsed(),checkExamParsed())
   })
   
   # seed change
@@ -460,10 +458,10 @@ server = function(input, output, session) {
   })
   
   # parse exercise
-  exerciseParsing <- eventReactive(input$parseExercise, {
+  exerciseParsing = eventReactive(input$parseExercise, {
     startWait(session)
 
-    x <- callr::r_bg(
+    x = callr::r_bg(
       func = parseExercise,
       args = list(isolate(input$parseExercise), isolate(input$seedValue)),
       supervise = TRUE
@@ -479,7 +477,7 @@ server = function(input, output, session) {
     return(x)
   })
 
-  checkExerciseParsed <- reactive({
+  checkExerciseParsed = reactive({
     if (exerciseParsing()$is_alive()) {
       invalidateLater(millis = 100, session = session)
     } else {
@@ -494,13 +492,13 @@ server = function(input, output, session) {
   # parse exam
   examFiles = reactiveVal()
   
-  examParsing <- eventReactive(input$parseExam, {
+  examParsing = eventReactive(input$parseExam, {
     startWait(session)
     
     examFields = getExamFields(isolate(input))
     preparedExam = prepareExam(isolate(input$parseExam), isolate(input$seedValue), examFields)
 
-    x <- callr::r_bg(
+    x = callr::r_bg(
       func = parseExam,
       args = list(preparedExam),
       supervise = TRUE
@@ -509,7 +507,7 @@ server = function(input, output, session) {
     return(x)
   })
 
-  checkExamParsed <- reactive({
+  checkExamParsed = reactive({
     if (examParsing()$is_alive()) {
       invalidateLater(millis = 100, session = session)
     } else {
