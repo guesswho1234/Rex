@@ -42,6 +42,7 @@ library(exams) #exams_2.4
 library(xtable) #xtable_1.8
 library(iuftools) #iuftools_1.0.0
 library(callr) # callr_3.7.3
+library(pdftools) # pdftools_3.4.0
 
 # FUNCTIONS ----------------------------------------------------------------
 collectWarnings = function(expr) {
@@ -546,6 +547,11 @@ server = function(input, output, session) {
   # EVALUATE EXAM -------------------------------------------------------------
   # examEvaluation = eventReactive(input$evaluateExam, {
   #   startWait(session)
+  #
+  # examSolutionsName: examSolutionsName, examSolutionsFile: examSolutionsFile, 
+  # examRegisteredParticipantsnName: examRegisteredParticipantsnName, examRegisteredParticipantsnFile: examRegisteredParticipantsnFile, 
+  # examScanPdfNames: examScanPdfNames, examScanPdfFiles: examScanPdfFiles, 
+  # examScanPngNames: examScanPngNames, examScanPngFiles: examScanPngFiles
   #   
   #   #convert pdfs to pngs: pdftools::pdf_convert()
   #   #scan pngs: nops_scan()
