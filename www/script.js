@@ -1763,14 +1763,26 @@ $('#examRegisteredParticipants_list_items').on('click', '.examRegisteredParticip
 });
 
 async function evaluateExam() {
-	// const examSolutionFile = '';
-	// const examParticipantRegistrationFile = '';
-	// const examScanNames = iuf.examEvaluationScans.map(pdf => pdf[0]);
-	// const examScanFiles = iuf.examEvaluationScans.map(pdf => pdf[1]);
+	const examSolutionsName = iuf['examEvaluation']['solutions'][0];
+	const examSolutionsFile = iuf['examEvaluation']['solutions'][0];
+	
+	const examRegisteredParticipantsnName = iuf['examEvaluation']['registeredParticipants'][0];
+	const examRegisteredParticipantsnFile = iuf['examEvaluation']['registeredParticipants'][0];
+	
+	const examScanPdf = iuf['examEvaluation']['scans'].filter(x => x.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase() == 'pdf')
+	const examScanPdfNames = examScanPdf.map(pdf => pdf[0]);
+	const examScanPdfFiles = examScanPdf.map(pdf => pdf[1]);
+	
+	const examScanPng = iuf['examEvaluation']['scans'].filter(x => x.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase() == 'png')
+	const examScanPngNames = examScanPng.map(pdf => pdf[0]);
+	const examScanPngFiles = examScanPng.map(pdf => pdf[1]);
 			
-	// Promise.all(taskCodes).then((taskCodes) => {
-		// Shiny.onInputChange("parseExam", {examSeed: $('#seedValueExam').val(), numberOfExams: $("#numberOfExams").val(), numberOfTasks: $("#numberOfTasks").val(), taskNames: taskNames, taskCodes:taskCodes, blocks: blocks, additionalPdfNames: additionalPdfNames, additionalPdfFiles: additionalPdfFiles}, {priority: 'event'});
-	// });
+	Promise.all(taskCodes).then((taskCodes) => {
+		Shiny.onInputChange("evaluateExam", {examSolutionsName: examSolutionsName, examSolutionsFile: examSolutionsFile, 
+		                                     examRegisteredParticipantsnName: examRegisteredParticipantsnName, examRegisteredParticipantsnFile: examRegisteredParticipantsnFile, 
+											 examScanPdfNames: examScanPdfNames, examScanPdfFiles: examScanPdfFiles, 
+											 examScanPngNames: examScanPngNames, examScanPngFiles: examScanPngFiles}, {priority: 'event'});
+	});
 }
 
 /* --------------------------------------------------------------

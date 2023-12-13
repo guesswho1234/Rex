@@ -26,6 +26,8 @@
 
 #TODO: refactor javascript code (f.e. combine the three drag and drop setups to one)
 
+#TODO: click between text / icon toggle removes all button info (remove this effect)
+
 # STARTUP -----------------------------------------------------------------
 rm(list = ls())
 cat("\f")
@@ -272,6 +274,14 @@ examParseResponse = function(session, message, downloadable) {
   ))
 }
 
+prepareEvaluation = function(){
+  
+}
+
+evaluateExam = function(){
+  
+}
+
 startWait = function(session){
   session$sendCustomMessage("wait", 0)
 }
@@ -417,10 +427,9 @@ ui = fluidPage(
 
 # SERVER -----------------------------------------------------------------
 server = function(input, output, session) {
-  # heartbeat
+  # HEARTBEAT -------------------------------------------------------------
   initialState = TRUE
 
-  # heartbeat
   observe({
     invalidateLater(1000 * 5, session)
     if(!initialState) {
@@ -429,6 +438,7 @@ server = function(input, output, session) {
     initialState <<- FALSE
   })
   
+  # INPUT VALUE CHANGES -------------------------------------------------------------
   # seed change
   observeEvent(input$seedValue, {
     updateNumericInput(session, "seedValue", value = checkSeed(input$seedValue))
@@ -454,26 +464,36 @@ server = function(input, output, session) {
     updateNumericInput(session, "numberOfFixedPoints", value = checkPosNumber(input$numberOfFixedPoints))
   })
   
-  # parse exercise
+  # set max number of exam tasks
+  observeEvent(input$setNumberOfExamTasks, {
+    maxNumberOfExamTasks <<- input$setNumberOfExamTasks
+  })
+  
+  # set number of task blocks
+  observeEvent(input$setNumberOfTaskBlocks, {
+    numberOfTaskBlocks <<- input$setNumberOfTaskBlocks
+  })
+  
+  # PARSE TASKS -------------------------------------------------------------
   exerciseParsing = eventReactive(input$parseExercise, {
     startWait(session)
-
+    
     x = callr::r_bg(
       func = parseExercise,
       args = list(isolate(input$parseExercise), isolate(input$seedValue), collectWarnings),
       supervise = TRUE
       # env = c(callr::rcmd_safe_env(), MAKEBSP = FALSE)
     )
-
+    
     # x$wait() makes it a sync task again - not what we want, but for now lets do this
     # in the future maybe send tasks to parse as batch from javascript
     # then async parse all tasks with one "long" wait screen
     # fill fields sync by looping through reponses (list of reponses, one for each task parsed)
     x$wait()
-
+    
     return(x)
   })
-
+  
   observe({
     if (exerciseParsing()$is_alive()) {
       invalidateLater(millis = 10, session = session)
@@ -483,24 +503,24 @@ server = function(input, output, session) {
       stopWait(session)
     }
   })
-
-  # parse exam
+  
+  # PARSE EXAM -------------------------------------------------------------
   examFiles = reactiveVal()
   
   examParsing = eventReactive(input$parseExam, {
     startWait(session)
-
+    
     preparedExam = prepareExam(isolate(input$parseExam), isolate(input$seedValue), isolate(input))
-
+    
     x = callr::r_bg(
       func = parseExam,
       args = list(preparedExam, collectWarnings),
       supervise = TRUE
     )
-
+    
     return(x)
   })
-
+  
   observe({
     if (examParsing()$is_alive()) {
       invalidateLater(millis = 100, session = session)
@@ -512,27 +532,46 @@ server = function(input, output, session) {
     }
   })
   
-  # set max number of exam tasks
-  observeEvent(input$setNumberOfExamTasks, {
-    maxNumberOfExamTasks <<- input$setNumberOfExamTasks
-  })
-  
-  # set number of task blocks
-  observeEvent(input$setNumberOfTaskBlocks, {
-    numberOfTaskBlocks <<- input$setNumberOfTaskBlocks
-  })
-  
-  # download exam files
   output$downloadExamFiles = downloadHandler(
     filename = paste0(paste0(c("exam", isolate(input$examTitle), 
-                                     isolate(input$examCourse), 
-                                     as.character(isolate(input$examDate)), 
-                                     isolate(input$seedValue)), collapse="_"), ".zip"),
+                               isolate(input$examCourse), 
+                               as.character(isolate(input$examDate)), 
+                               isolate(input$seedValue)), collapse="_"), ".zip"),
     content = function(fname) {
       zip(zipfile=fname, files=isolate(examFiles()), flags='-r9Xj')
     },
     contentType = "application/zip"
   )
+  
+  # EVALUATE EXAM -------------------------------------------------------------
+  # examEvaluation = eventReactive(input$evaluateExam, {
+  #   startWait(session)
+  #   
+  #   #convert pdfs to pngs: pdftools::pdf_convert()
+  #   #scan pngs: nops_scan()
+  #   #evaluate scans: nops_eval()
+  #   
+  #   preparedEvaluation = prepareEvaluation()
+  #   
+  #   x = callr::r_bg(
+  #     func = evaluateExam,
+  #     args = list(),
+  #     supervise = TRUE
+  #   )
+  #   
+  #   return(x)
+  # })
+  # 
+  # observe({
+  #   if (examParsing()$is_alive()) {
+  #     invalidateLater(millis = 100, session = session)
+  #   } else {
+  #     result = examParsing()$get_result()
+  #     examFiles(unlist(result$files, recursive = TRUE))
+  #     examParseResponse(session, result$message, length(examFiles()) > 0)
+  #     stopWait(session)
+  #   }
+  # })
 }
 
 # RUN APP -----------------------------------------------------------------

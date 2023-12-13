@@ -754,16 +754,10 @@ main > * {
     display: none;
 }
 
-.pdfUpload {
-	padding: 0.5rem;
+.examFileUpload {
+	margin-right: 0.25rem;
 	cursor: pointer;
 	display: table;
-	margin
-}
-
-.pdfUpload:hover {
-	color: var(---background2);
-	border-radius: 5px;
 }
 
 #exam .content {
@@ -845,6 +839,18 @@ main > * {
 .examSolutionsItem:hover .removeText,
 .examRegisteredParticipantsItem:hover .removeText {
 	display: block;
+}
+
+.examFileButton {
+	margin-top: 5px;
+	padding: 0.5rem;
+	background: var(---highlight_values);
+	border-radius: 5px;
+	border: 2px solid var(---background);
+}
+
+.examFileButton:hover {
+	border: 2px solid var(---main);
 }
 
 #responseMessage.Success {

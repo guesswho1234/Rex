@@ -273,9 +273,10 @@
 								<div>
 									<label><span lang="de">Zusatz Pdf-Seiten</span><span lang="en">Additional Pdf pages</span></label>
 									<div id="additionalPdfContainer">
-										<label class="pdfUpload" for="file-upload_addAdditionalPdf">
-											<div class="list_butttonIcon">
-												<i class="fa-solid fa-upload"></i>
+										<label class="examFileUpload" for="file-upload_addAdditionalPdf">
+											<div class="examFileButton">
+												<span class="iconButton"><i class="fa-solid fa-upload"></i></span>
+												<span class="textButton"><span lang="de">Importieren</span><span lang="en">Import</span></span>
 											</div>
 											<input type="file" id="file-upload_addAdditionalPdf" onchange='loadAdditionalPdfFileDialog(this.files);' multiple>
 										</label>
@@ -321,12 +322,11 @@
 								</div>
 								<div>
 									<label><span lang="de">Lösungen</span><span lang="en">Solutions</span></label>
-									<!--evaluation *.rds file-->
-									<!-- for="examSolutionFileUpload"-->
 									<div id="examSolutionsContainer">
-										<label class="pdfUpload" for="file-upload_examSolutions">
-											<div class="list_butttonIcon">
-												<i class="fa-solid fa-upload"></i>
+										<label class="examFileUpload" for="file-upload_examSolutions">
+											<div class="examFileButton">
+												<span class="iconButton"><i class="fa-solid fa-upload"></i></span>
+												<span class="textButton"><span lang="de">Importieren</span><span lang="en">Import</span></span>
 											</div>
 											<input type="file" id="file-upload_examSolutions" onchange='loadExamSolutionsFileDialog(this.files);'>
 										</label>
@@ -338,12 +338,11 @@
 										</div>
 									</div>
 									<label><span lang="de">Registrierte Teilnehmer</span><span lang="en">Registered participants</span></label>
-									<!--registered participants *.csv file-->
-									<!-- for="examParticipantRegistrationFileUpload"-->
 									<div id="examRegisteredParticipantsContainer">
-										<label class="pdfUpload" for="file-upload_examRegisteredParticipants">
-											<div class="list_butttonIcon">
-												<i class="fa-solid fa-upload"></i>
+										<label class="examFileUpload" for="file-upload_examRegisteredParticipants">
+											<div class="examFileButton">
+												<span class="iconButton"><i class="fa-solid fa-upload"></i></span>
+												<span class="textButton"><span lang="de">Importieren</span><span lang="en">Import</span></span>
 											</div>
 											<input type="file" id="file-upload_examRegisteredParticipants" onchange='loadExamRegisteredParticipantsFileDialog(this.files);'>
 										</label>
@@ -356,9 +355,10 @@
 									</div>
 									<label><span lang="de">Bewertungs-Scans</span><span lang="en">Evaluation scans</span></label>
 									<div id="examScansContainer">
-										<label class="pdfUpload" for="file-upload_examScans">
-											<div class="list_butttonIcon">
-												<i class="fa-solid fa-upload"></i>
+										<label class="examFileUpload" for="file-upload_examScans">
+											<div class="examFileButton">
+												<span class="iconButton"><i class="fa-solid fa-upload"></i></span>
+												<span class="textButton"><span lang="de">Importieren</span><span lang="en">Import</span></span>
 											</div>
 											<input type="file" id="file-upload_examScans" onchange='loadExamScansFileDialog(this.files);' multiple>
 										</label>
