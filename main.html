@@ -207,8 +207,8 @@
 					<div class="sidebar">
 						<div id="examFunctions_list" class="itemList">
 							<div id="examFunctions_list_items">
-								<div class="examFunctionsItem sidebarListItem active"><span lang="de">Prüfung Erstellen</span><span lang="en">Create exam</span></div>
-								<div class="examFunctionsItem sidebarListItem"><span lang="de">Prüfung Auswerten</span><span lang="en">Evaluate exam</span></div>
+								<div id="createExamTab" class="examFunctionsItem sidebarListItem active"><span lang="de">Prüfung Erstellen</span><span lang="en">Create exam</span></div>
+								<div id="evaluateExamTab" class="examFunctionsItem sidebarListItem"><span lang="de">Prüfung Auswerten</span><span lang="en">Evaluate exam</span></div>
 							</div>
 						</div>
 					</div>
@@ -271,9 +271,9 @@
 									{{ numericInput_numberOfBlanks }}
 								</div>
 								<div>
-									<label for="additionalPdf"><span lang="de">Zusatz Pdf-Seiten</span><span lang="en">Additional Pdf pages</span></label>
+									<label><span lang="de">Zusatz Pdf-Seiten</span><span lang="en">Additional Pdf pages</span></label>
 									<div id="additionalPdfContainer">
-										<label id="pdfUpload" for="file-upload_addAdditionalPdf">
+										<label class="pdfUpload" for="file-upload_addAdditionalPdf">
 											<div class="list_butttonIcon">
 												<i class="fa-solid fa-upload"></i>
 											</div>
@@ -300,6 +300,86 @@
 						</div>
 						<div id="exam_evaluate" class="contentTab">
 							<h2><span lang="de">Prüfung Auswerten</span><span lang="en">Evaluate exam</span></h2>
+							<div>
+								<div>
+									<label for="numberOfFixedPoints"><span lang="de">Punkte pro Aufgabe</span><span lang="en">Points per exercise</span></label>
+									{{ numericInput_pointsPerExercise }}
+								</div>
+								<div>
+									<label for="partialPoints"><span lang="de">Teilpunkte</span><span lang="en">Partial points</span></label>
+									{{ checkboxInput_partialPoints }}
+								</div>
+								<div>
+									<label for="negativePoints"><span lang="de">Minuspunkte</span><span lang="en">Negative points</span></label>
+									{{ checkboxInput_negativePoints }}
+								</div>
+								<div>
+									<label for="marks"><span lang="de">Notenschlüssel</span><span lang="en">Clef</span></label>
+									<!--some form of editable table-->
+									<!--marks: mindestpunkte fuer note-->
+									<!--labels: labels for marks-->
+								</div>
+								<div>
+									<label><span lang="de">Lösungen</span><span lang="en">Solutions</span></label>
+									<!--evaluation *.rds file-->
+									<!-- for="examSolutionFileUpload"-->
+									<div id="examSolutionsContainer">
+										<label class="pdfUpload" for="file-upload_examSolutions">
+											<div class="list_butttonIcon">
+												<i class="fa-solid fa-upload"></i>
+											</div>
+											<input type="file" id="file-upload_examSolutions" onchange='loadExamSolutionsFileDialog(this.files);'>
+										</label>
+										<div id="examSolutionsFile">
+											<div id="examSolutionsFile_list" class="itemList">
+												<div id="examSolutions_list_items">
+												</div>
+											</div>
+										</div>
+									</div>
+									<label><span lang="de">Registrierte Teilnehmer</span><span lang="en">Registered participants</span></label>
+									<!--registered participants *.csv file-->
+									<!-- for="examParticipantRegistrationFileUpload"-->
+									<div id="examRegisteredParticipantsContainer">
+										<label class="pdfUpload" for="file-upload_examRegisteredParticipants">
+											<div class="list_butttonIcon">
+												<i class="fa-solid fa-upload"></i>
+											</div>
+											<input type="file" id="file-upload_examRegisteredParticipants" onchange='loadExamRegisteredParticipantsFileDialog(this.files);'>
+										</label>
+										<div id="examRegisteredParticipantsFile">
+											<div id="examRegisteredParticipantsFile_list" class="itemList">
+												<div id="examRegisteredParticipants_list_items">
+												</div>
+											</div>
+										</div>
+									</div>
+									<label><span lang="de">Bewertungs-Scans</span><span lang="en">Evaluation scans</span></label>
+									<div id="examScansContainer">
+										<label class="pdfUpload" for="file-upload_examScans">
+											<div class="list_butttonIcon">
+												<i class="fa-solid fa-upload"></i>
+											</div>
+											<input type="file" id="file-upload_examScans" onchange='loadExamScansFileDialog(this.files);' multiple>
+										</label>
+										<div id="examScanFiles">
+											<div id="examScans_list" class="itemList">
+												<div id="examScan_list_items">
+												</div>
+											</div>
+										</div>
+									</div>
+									<div id="dnd_examEvaluation" class="dnd">
+										<div class="dndInfo">
+											<div class="title"><span lang="de">DRAG & DROP</br></br>BEWERTUNGS-DATEIEN (*.pdf, *.png, *.rds und *.csv)</span><span lang="en">DRAG & DROP</br></br>EVALUATION FILES (*.pdf, *.png, *.rds und *.csv)</span></div>
+											<div class="dndIcon"><i class="fas fa-file-upload"></i></div>
+										</div>
+									</div>
+								</div>
+								<div>
+									<button id="evaluateExam" type="button" class="btn btn-default action-button shiny-bound-input" onclick='evaluateExam();'><span lang="de">Prüfung bewerten</span><span lang="en">Evaluate exam</span></button>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>

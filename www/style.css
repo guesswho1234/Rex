@@ -331,7 +331,8 @@ main > * {
 	background: var(---label_yellow);
 }
 
-#createExam {
+#createExam,
+#evaluateExam {
 	margin-top: 25px;
 }
 	
@@ -736,25 +737,31 @@ main > * {
 }
 
 /* --------------------------------------------------------------
- EXAMS 
+ CREATE EXAMS 
 -------------------------------------------------------------- */
-#additionalPdfContainer {
+#additionalPdfContainer,
+#examScansContainer,
+#examSolutionsContainer,
+#examRegisteredParticipantsContainer {
 	display: flex;
 	width: 300px;
 }
 
-#file-upload_addAdditionalPdf {
+#file-upload_addAdditionalPdf,
+#file-upload_examScans,
+#file-upload_examSolutions,
+#file-upload_examRegisteredParticipants {
     display: none;
 }
 
-#pdfUpload {
+.pdfUpload {
 	padding: 0.5rem;
 	cursor: pointer;
 	display: table;
 	margin
 }
 
-#pdfUpload:hover {
+.pdfUpload:hover {
 	color: var(---background2);
 	border-radius: 5px;
 }
@@ -777,45 +784,66 @@ main > * {
 	color: #aaa;
 }
 
-.autofillField{
+.autofillField {
 	text-decoration: underline;
 	cursor: pointer;
 }
 
-#additionalPdfFiles {
+#additionalPdfFiles,
+#examScanFiles,
+#examSolutionsFile,
+#examRegisteredParticipantsFile {
 	width: 270px;
 	min-height: 34px;
 	background: var(---background3);
 }
 
-#additionalPdf_list_items {
+#additionalPdf_list_items,
+#examScan_list_items,
+#examSolutions_list_items,
+#examRegisteredParticipants_list_items {
 	display: block;
 	padding: 0.25rem;
 }
 
-.additionalPdfItem {
+.additionalPdfItem,
+.examScanItem,
+.examSolutionsItem,
+.examRegisteredParticipantsItem {
 	display: flex;
 	margin: 0.25rem;
 	padding: 0.25rem;
 	justify-content: space-between;
 }
 
-.additionalPdfName {
+.additionalPdfName,
+.examScanName,
+.examSolutionsName,
+.examRegisteredParticipantsName {
 	width: 90%;
 	overflow: hidden;
 	white-space: nowrap;
 }
 
-.additionalPdfItem .removeText {
+.additionalPdfItem .removeText,
+.examScanItem .removeText,
+.examSolutionsItem .removeText,
+.examRegisteredParticipantsItem .removeText {
 	display: none;
 }
 
-.additionalPdfItem:hover {
+.additionalPdfItem:hover,
+.examScanItem:hover,
+.examSolutionsItem:hover,
+.examRegisteredParticipantsItem:hover {
 	background: var(---highlight_removePdf);
 	cursor: pointer;
 }
 
-.additionalPdfItem:hover .removeText {
+.additionalPdfItem:hover .removeText,
+.examScanItem:hover .removeText,
+.examSolutionsItem:hover .removeText,
+.examRegisteredParticipantsItem:hover .removeText {
 	display: block;
 }
 
@@ -830,11 +858,6 @@ main > * {
 #responseMessage.Error {
 	background: var(---tryCatch_error);
 }
-
-/* #downloadExamFiles { */
-	/* display: none; */
-	/* margin-left: 1rem; */
-/* } */
 
 /* --------------------------------------------------------------
  HELP 

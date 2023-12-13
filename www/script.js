@@ -9,6 +9,10 @@
 $(document).ready(function () {
 	iuf['tasks'] = new Array();
 	iuf['examAdditionalPdf'] = new Array();
+	iuf['examEvaluation'] = new Array();
+	iuf['examEvaluation']['scans'] = new Array();
+	iuf['examEvaluation']['registeredParticipants'] = new Array();
+	iuf['examEvaluation']['solutions'] = new Array();
 	
 	$('#s_initialSeed').html(itemSingle($('#seedValue').val(), 'greenLabel'));
 	$('#s_numberOfExams').html(itemSingle($('#numberOfExams').val(), 'grayLabel'));
@@ -1445,7 +1449,7 @@ Shiny.addCustomMessageHandler('setTaskE', function(jsonData) {
 });
 
 /* --------------------------------------------------------------
- EXAM 
+ CREATE EXAM 
 -------------------------------------------------------------- */
 $("#examFunctions_list_items .sidebarListItem").click(function(){
 	$('#examFunctions_list_items .sidebarListItem').removeClass('active');
@@ -1467,7 +1471,7 @@ let dndAdditionalPdf = {
 			dndAdditionalPdf.hzone.addEventListener('dragenter', function (e) {
 				e.preventDefault();
 				e.stopPropagation();
-				if( $('#exam').hasClass('active') ) {
+				if( $('#exam').hasClass('active') && $('#createExamTab').hasClass('active')) {
 					dndAdditionalPdf.dzone.classList.add('drag');
 				}
 			});
@@ -1586,22 +1590,188 @@ async function createExam() {
 	});
 }
 
-Shiny.addCustomMessageHandler('examParseResponse', function(jsonData) {
-	//TODO: still needed for anything?
-	// e = JSON.parse(jsonData)
+/* --------------------------------------------------------------
+ EVALUATE EXAM 
+-------------------------------------------------------------- */
+
+let dndExamEvaluation = {
+	hzone: null,
+	dzone: null,
+
+	init : function () {
+		dndExamEvaluation.hzone = document.querySelector("body");
+		dndExamEvaluation.dzone = document.getElementById('dnd_examEvaluation');
+
+		if ( window.File && window.FileReader && window.FileList && window.Blob ) {
+			// hover zone
+			dndExamEvaluation.hzone.addEventListener('dragenter', function (e) {
+				e.preventDefault();
+				e.stopPropagation();
+				if( $('#exam').hasClass('active') && $('#evaluateExamTab').hasClass('active')) {
+					dndExamEvaluation.dzone.classList.add('drag');
+				}
+			});
+			dndExamEvaluation.hzone.addEventListener('dragleave', function (e) {
+				e.preventDefault();
+				e.stopPropagation();
+			});
+			dndExamEvaluation.hzone.addEventListener('dragover', function (e) {
+				e.preventDefault();
+				e.stopPropagation();
+			});
+			
+			// drop zone
+			dndExamEvaluation.dzone.addEventListener('dragleave', function (e) {
+				e.preventDefault();
+				e.stopPropagation();
+				dndExamEvaluation.dzone.classList.remove('drag');
+			});
+			dndExamEvaluation.dzone.addEventListener('drop', async function (e) {
+				e.preventDefault();
+				e.stopPropagation();
+				dndExamEvaluation.dzone.classList.remove('drag');
+				
+				loadExamEvaluation(e.dataTransfer.items);
+			});
+		}
+	},
+};
+
+window.addEventListener('DOMContentLoaded', dndExamEvaluation.init);
+
+function loadExamEvaluation(items) {	
+	getFilesDataTransferItems(items).then(async (files) => {
+		Array.from(files).forEach(file => {	
+			addExamEvaluationFile(file);
+		});
+	});
+}
+
+function loadExamSolutionsFileDialog(items) {
+	items.forEach(function(file) {
+		fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
+		
+		if(fileExt == 'rds') {
+			addExamEvaluationFile(file);
+		}
+	});
+}
+
+function loadExamRegisteredParticipantsFileDialog(items) {
+	items.forEach(function(file) {
+		fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
+		
+		if(fileExt == 'csv') {
+			addExamEvaluationFile(file);
+		}
+	});
+}
+
+function loadExamScansFileDialog(items) {
+	items.forEach(function(file) {
+		fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
+		
+		if(fileExt == 'pdf' || fileExt == 'png') {
+			addExamEvaluationFile(file);
+		}
+	});
+}
+
+function addExamEvaluationFile(file) {
+	fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
 	
-	// switch(e.key) {
-		// case "Success": 
-			// $('#downloadExamFiles').show(); 
-			// break;
-		// case "Warning": 
-			// $('#downloadExamFiles').show();
-			// break;
-		// case "Error": 
-			// $('#downloadExamFiles').hide();
-			// break;
-	// }
+	let fileReader;
+	let base64;
+	
+	console.log(fileExt);
+	
+	switch(fileExt) {
+		case 'pdf':
+		case 'png': 
+			fileReader = new FileReader();
+			fileName = file.name.split('.')[0];
+
+			fileReader.onload = function(fileLoadedEvent) {
+				base64 = fileLoadedEvent.target.result;
+				iuf['examEvaluation']['scans'].push([fileName, base64.split(',')[1]]);
+			};
+
+			fileReader.readAsDataURL(file);
+			
+			$('#examScan_list_items').append('<div class="examScanItem"><span class="examScanName">' + fileName + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
+			break;
+		case 'rds': 
+			fileReader = new FileReader();
+			fileName = file.name.split('.')[0];
+
+			fileReader.onload = function(fileLoadedEvent) {
+				base64 = fileLoadedEvent.target.result;
+				iuf['examEvaluation']['solutions'] = [fileName, base64.split(',')[1]];
+			};
+
+			fileReader.readAsDataURL(file);
+			
+			$('#examSolutions_list_items').empty();
+			$('#examSolutions_list_items').append('<div class="examSolutionsItem"><span class="examSolutionName">' + fileName + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
+			
+			break;
+		case 'csv':
+			fileReader = new FileReader();
+			fileName = file.name.split('.')[0];
+
+			fileReader.onload = function(fileLoadedEvent) {
+				csv = fileLoadedEvent.target.result;
+				iuf['examEvaluation']['registeredParticipants'] = [fileName, csv];
+			};
+
+			fileReader.readAsText(file);
+			
+			$('#examRegisteredParticipants_list_items').empty();
+			$('#examRegisteredParticipants_list_items').append('<div class="examRegisteredParticipantsItem"><span class="examRegisteredParticipantsName">' + fileName + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
+			
+			break;
+			break;
+	}
+}
+
+function removeExamScan(element) {
+	const examScanID = element.index('.examScanItem');
+	iuf['examEvaluation']['scans'].splice(examScanID, 1);
+	element.remove();
+}
+
+$('#examScan_list_items').on('click', '.examScanItem', function() {
+	removeExamScan($(this));
 });
+
+function removeSolutions(element) {
+	iuf['examEvaluation']['solutions'] = [];
+	element.remove();
+}
+
+$('#examSolutions_list_items').on('click', '.examSolutionsItem', function() {
+	removeSolutions($(this));
+});
+
+function removeRegisteredParticipants(element) {
+	iuf['examEvaluation']['registeredParticipants'] = [];
+	element.remove();
+}
+
+$('#examRegisteredParticipants_list_items').on('click', '.examRegisteredParticipantsItem', function() {
+	removeRegisteredParticipants($(this));
+});
+
+async function evaluateExam() {
+	// const examSolutionFile = '';
+	// const examParticipantRegistrationFile = '';
+	// const examScanNames = iuf.examEvaluationScans.map(pdf => pdf[0]);
+	// const examScanFiles = iuf.examEvaluationScans.map(pdf => pdf[1]);
+			
+	// Promise.all(taskCodes).then((taskCodes) => {
+		// Shiny.onInputChange("parseExam", {examSeed: $('#seedValueExam').val(), numberOfExams: $("#numberOfExams").val(), numberOfTasks: $("#numberOfTasks").val(), taskNames: taskNames, taskCodes:taskCodes, blocks: blocks, additionalPdfNames: additionalPdfNames, additionalPdfFiles: additionalPdfFiles}, {priority: 'event'});
+	// });
+}
 
 /* --------------------------------------------------------------
 HELP 

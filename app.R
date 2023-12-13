@@ -22,6 +22,10 @@
 
 #TODO: check if tasks can be "reproduced exactly" with exam seed as task seed
 
+#TODO: use "pdftools" and "pdftools::pdf_convert(img, format = "png")" to convert pdf to png
+
+#TODO: refactor javascript code (f.e. combine the three drag and drop setups to one)
+
 # STARTUP -----------------------------------------------------------------
 rm(list = ls())
 cat("\f")
@@ -266,8 +270,6 @@ examParseResponse = function(session, message, downloadable) {
       modalButton("OK")
     )
   ))
-  
-  session$sendCustomMessage("examParseResponse", rjs_keyValuePairsToJsonObject(c("key", "value"), c(message$key, message$value)))
 }
 
 startWait = function(session){
@@ -391,18 +393,25 @@ ui = fluidPage(
     numericInput_seedValue = numericInput("seedValue", label = NULL, value = initSeed, min = seedMin, max = seedMax),
 
     # EXAM --------------------------------------------------------------------
-    numericInput_seedValueExam = numericInput("seedValueExam", label = NULL, value = initSeed, min = seedMin, max = seedMax),
-    numericInput_numberOfExams = numericInput("numberOfExams", label = NULL, value = 1, min = 1, step = 1),
-    numericInput_numberOfTasks = numericInput("numberOfTasks", label = NULL, value = 0, step = 1),
-    selectInput_examLanguage = selectInput("examLanguage", label = NULL, choices = languages, selected = NULL, multiple = FALSE),
-    textInput_examTitle = textInput("examTitle", label = NULL, value = NULL),
-    textInput_examCourse = textInput("examCourse", label = NULL, value = NULL),
-    textInput_examInstitution = textInput("examInstitution", label = NULL, value = NULL),
-    dateInput_examDate = dateInput("examDate", label = NULL, value = NULL, format = "yyyy-mm-dd"),
-    numericInput_numberOfBlanks = numericInput("numberOfBlanks", label = NULL, value = 0, min = 0),
-    numericInput_numberOfFixedPoints = numericInput("numberOfFixedPoints", label = NULL, value = NULL, min = 1),
-    checkboxInput_showPoints = checkboxInput("showPoints", label = NULL, value = NULL),
-    checkboxInput_duplex = checkboxInput("duplex", label = NULL, value = NULL)
+      # CREATE ------------------------------------------------------------------
+      numericInput_seedValueExam = numericInput("seedValueExam", label = NULL, value = initSeed, min = seedMin, max = seedMax),
+      numericInput_numberOfExams = numericInput("numberOfExams", label = NULL, value = 1, min = 1, step = 1),
+      numericInput_numberOfTasks = numericInput("numberOfTasks", label = NULL, value = 0, step = 1),
+      selectInput_examLanguage = selectInput("examLanguage", label = NULL, choices = languages, selected = NULL, multiple = FALSE),
+      textInput_examTitle = textInput("examTitle", label = NULL, value = NULL),
+      textInput_examCourse = textInput("examCourse", label = NULL, value = NULL),
+      textInput_examInstitution = textInput("examInstitution", label = NULL, value = NULL),
+      dateInput_examDate = dateInput("examDate", label = NULL, value = NULL, format = "yyyy-mm-dd"),
+      numericInput_numberOfBlanks = numericInput("numberOfBlanks", label = NULL, value = 0, min = 0),
+      numericInput_numberOfFixedPoints = numericInput("numberOfFixedPoints", label = NULL, value = NULL, min = 1),
+      checkboxInput_showPoints = checkboxInput("showPoints", label = NULL, value = NULL),
+      checkboxInput_duplex = checkboxInput("duplex", label = NULL, value = NULL),
+
+      # EVALUATE ----------------------------------------------------------------
+      numericInput_pointsPerExercise = numericInput("pointsPerExercise", label = NULL, value = NULL, min = 1, step = 1),
+      checkboxInput_partialPoints = checkboxInput("partialPoints", label = NULL, value = NULL),
+      checkboxInput_negativePoints = checkboxInput("negativePoints", label = NULL, value = NULL),
+      selectInput_evaluationLanguage = selectInput("selectInput_evaluationLanguage", label = NULL, choices = languages, selected = NULL, multiple = FALSE)
   )
 )
 
