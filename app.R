@@ -467,7 +467,7 @@ server = function(input, output, session) {
 
   observe({
     if (exerciseParsing()$is_alive()) {
-      invalidateLater(millis = 100, session = session)
+      invalidateLater(millis = 10, session = session)
     } else {
       result = exerciseParsing()$get_result()
       loadExercise(result$id, result$seed, result$html, result$e, session)
