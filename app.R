@@ -10,7 +10,7 @@
 
 #TODO: exam fields - expand on validation and helpers to fill in the form
 
-#TODO: only mchoice questions for nops exam
+#TODO: allow only mchoice questions for nops exam
 
 #TODO: add possibility to create pdf exam with open questions (can then be appended to nops)
 
@@ -19,10 +19,6 @@
 #TODO: parsing multiple tasks sequentially does not work properly with new background processing (only last exercise is parsed)
 
 #TODO: change all iuf tasks by adding "library(exams)" and "library(iuftools)" and replacing "if(MAKEBSP) set.seed(1)" to "if(exists(MAKEBSP) && MAKEBSP) set.seed(1)"
-
-#TODO: add additionalPDF files including names, needed to export files with proper names after exam creation
-
-#TODO: remove task validation and spoiler free answers
 
 #TODO: check if tasks can be "reproduced exactly" with exam seed as task seed
 
@@ -151,126 +147,103 @@ loadExercise = function(id, seed, html, e, session) {
   session$sendCustomMessage("setTaskId", -1)
 }
 
-getExamFields = function(input) {
-  title = input$examTitle
-  course = input$examCourse
-  institution = input$examInstitution
-  blank = input$numberOfBlanks
-  showpoints = input$showPoints
-
-  date = Sys.Date()
-  points = NULL
-
-  if(length(input$examDate) == 1) date = input$examDate
-  if(!is.na(input$numberOfFixedPoints)) points = input$numberOfFixedPoints
-
-  examFields = list(title=title,
-                    course=course,
-                    institution=institution,
-                    blank=blank,
-                    showpoints=showpoints,
-                    date=date,
-                    points=points)
-
-  return(examFields)
-}
-
-prepareExam = function(exam, seed, examFields) {
+prepareExam = function(exam, seed, input) {
   dir = tempdir()
   
-  taskFiles = unlist(lapply(seq_along(exam$names), function(i){
-    file = tempfile(pattern = paste0(exam$names[[i]], "_"), tmpdir = dir, fileext = ".rnw") # tempfile name
-    writeLines(text = exam$codes[[i]], con = file) # write contents to file
+  taskFiles = unlist(lapply(setNames(seq_along(exam$taskNames), exam$taskNames), function(i){
+    file = tempfile(pattern = paste0(exam$taskNames[[i]], "_"), tmpdir = dir, fileext = ".rnw") # tempfile name
+    writeLines(text = exam$taskCodes[[i]], con = file) # write contents to file
     
     return(file)
   }))
-
-  additionalPdfFiles = unlist(lapply(exam$additionalPdf, function(i){
-    file = tempfile(pattern = "additionalPDF_", tmpdir = dir, fileext = ".pdf") # tempfile name
-    raw = openssl::base64_decode(i)
+  
+  additionalPdfFiles = unlist(lapply(setNames(seq_along(exam$additionalPdfNames), exam$additionalPdfNames), function(i){
+    file = tempfile(pattern = paste0(exam$additionalPdfNames[[i]], "_"), tmpdir = dir, fileext = ".pdf") # tempfile name
+    raw = openssl::base64_decode(exam$additionalPdfFiles[[i]])
     writeBin(raw, con = file)
     
     return(file)
   }))
+
+  numberOfExams = as.numeric(exam$numberOfExams)
+  blocks = as.numeric(exam$blocks)
+  uniqueBlocks = unique(blocks)
+  numberOfTasks = as.numeric(exam$numberOfTasks)
+  tasksPerBlock = numberOfTasks / length(uniqueBlocks)
+  tasks = lapply(uniqueBlocks, function(x) taskFiles[blocks==x])
+
+  seedList = matrix(1, nrow=numberOfExams, ncol=length(exam$taskNames))
+  seedList = seedList * as.numeric(paste0(if(is.na(exam$examSeed)) NULL else exam$examSeed, 1:numberOfExams))
   
-  scramblingPreparations = lapply(1:exam$numberOfExams, function(examId){
-    examSeed = as.numeric(paste0(if(is.na(exam$examSeed)) NULL else exam$examSeed, examId))
-    set.seed(examSeed)
+  pages = NULL
+  
+  if(length(additionalPdfFiles) > 0) {
+    pages = additionalPdfFiles
+  }
+  
+  title = input$examTitle
+  course = input$examCourse
+  points = if(!is.na(input$numberOfFixedPoints) && is.numeric(input$numberOfFixedPoints)) input$numberOfFixedPoints else NULL
+  date = input$examDate
+  name = paste0(c("exam", title, course, as.character(date), exam$examSeed, ""), collapse="_")
+  
+  print(input$examLanguage)
+  print(input$duplex)
 
-    blocks = as.numeric(exam$blocks)
-
-    numberOfTasks = as.numeric(exam$numberOfTasks)
-
-    tasksPerBlock = numberOfTasks / length(unique(blocks))
-    taskBlocks = lapply(unique(blocks), function(x) taskFiles[blocks==x])
-    
-    tasks = Reduce(c, lapply(taskBlocks, sample, tasksPerBlock))
-    tasks = sample(tasks, numberOfTasks)
-    
-    seedList = rep(examSeed, length(tasks))
-    name = paste0("scrambling_", examSeed, "_")
-    # dir = tempdir()
-
-    pages = NULL
-
-    if(length(additionalPdfFiles) > 0) {
-      pages = additionalPdfFiles
-    }
-
-    scramblingPdfFile = paste0(dir, "/", name, "1.pdf")
-    scramblingRdsFile = paste0(dir, "/", name, ".rds")
-
-    return(list(
-      taskNames = exam$names,
-      tasks = tasks,
-      name = name,
-      dir = dir,
-      seed = seedList,
-      #language = language, # disabled for now
-      #duplex = duplex, # disabled for now
-      pages = pages,
-      title = examFields$title,
-      course = examFields$course,
-      institution = examFields$institution,
-      date = examFields$date,
-      blank = examFields$blank,
-      points = examFields$points,
-      showpoints = examFields$showpoints,
-      scramblingFiles=list(scramblingPdfFile=scramblingPdfFile, scramblingRdsFile=scramblingRdsFile)
-    ))
-  })
-
-  return(list(scramblings=scramblingPreparations, sourceFiles=list(taskFiles=taskFiles, additionalPdfFiles=additionalPdfFiles)))
+  examFields = list(
+    file = tasks,
+    n = numberOfExams,
+    nsamp = tasksPerBlock,
+    dir = dir,
+    name = name,
+    language = input$examLanguage,
+    title = title,
+    course = course,
+    institution = input$examInstitution,
+    date = date,
+    blank = input$numberOfBlanks,
+    duplex = input$duplex,
+    pages = pages,
+    points = points,
+    showpoints = input$showPoints,
+    seed = seedList
+  )
+  
+  examPdfFiles = paste0(dir, "/", name, 1:exam$numberOfExams, ".pdf")
+  examRdsFile = paste0(dir, "/", name, ".rds")
+  
+  return(list(examFields=examFields, examFiles=list(pdfFiles=examPdfFiles, rdsFile=examRdsFile), sourceFiles=list(taskFiles=taskFiles, additionalPdfFiles=additionalPdfFiles)))
 }
 
 parseExam = function(preparedExam, collectWarnings) {
   out = tryCatch({
     warnings = collectWarnings({
-      scramblingFiles = lapply(preparedExam$scramblings, function(scrambling){
-        nopsExam = exams::exams2nops(file = scrambling$tasks,
-                                     name = scrambling$name,
-                                     dir = scrambling$dir,
-                                     seed = scrambling$seedList,
-                                     #language = scrambling$language, # disabled for now
-                                     #duplex = scrambling$duplex, # disabled for now
-                                     pages = scrambling$pages,
-                                     title = scrambling$title,
-                                     course = scrambling$course,
-                                     institution = scrambling$institution,
-                                     date = scrambling$date,
-                                     blank = scrambling$blank,
-                                     points = scrambling$points,
-                                     showpoints = scrambling$showpoints)
-        return(scrambling$scramblingFiles)
-      })
-      
+        with(preparedExam$examFields, {
+          exams::exams2nops(file = file,
+                            n = n,
+                            nsamp = nsamp,
+                            name = name,
+                            dir = dir,
+                            language = language,
+                            title = title,
+                            course = course,
+                            institution = institution,
+                            date = date,
+                            blank = blank,
+                            duplex = duplex,
+                            pages = pages,
+                            points = points,
+                            showpoints = showpoints,
+                            seed = seed)
+        })
+
       NULL
     })
     key = "Success"
     value = paste(unlist(warnings), collapse="%;%")
     if(value != "") key = "Warning"
     
-    return(list(message=list(key=key, value=value), files=list(sourceFiles=preparedExam$sourceFiles, scramblingFiles=scramblingFiles)))
+    return(list(message=list(key=key, value=value), files=list(sourceFiles=preparedExam$sourceFiles, examFiles=preparedExam$examFiles)))
   },
   error = function(e){
     message = e$message
@@ -286,7 +259,7 @@ parseExam = function(preparedExam, collectWarnings) {
 examParseResponse = function(session, message, downloadable) {
   showModal(modalDialog(
     title = "exams2nops",
-    tags$span(id='responseMessage', class=message$key, paste0(message$key, ": ", gsub("%;%", "\n\r", message$value))),
+    tags$span(id='responseMessage', class=message$key, paste0(message$key, ": ", gsub("%;%", "<br>", message$value))),
     footer = tagList(
       if (downloadable)
         downloadButton('downloadExamFiles', 'Download'),
@@ -508,8 +481,7 @@ server = function(input, output, session) {
   examParsing = eventReactive(input$parseExam, {
     startWait(session)
 
-    examFields = getExamFields(isolate(input))
-    preparedExam = prepareExam(isolate(input$parseExam), isolate(input$seedValue), examFields)
+    preparedExam = prepareExam(isolate(input$parseExam), isolate(input$seedValue), isolate(input))
 
     x = callr::r_bg(
       func = parseExam,
@@ -543,7 +515,10 @@ server = function(input, output, session) {
   
   # download exam files
   output$downloadExamFiles = downloadHandler(
-    filename = paste0("exam_", isolate(input$seedValue), ".zip"),
+    filename = paste0(paste0(c("exam", isolate(input$examTitle), 
+                                     isolate(input$examCourse), 
+                                     as.character(isolate(input$examDate)), 
+                                     isolate(input$seedValue)), collapse="_"), ".zip"),
     content = function(fname) {
       zip(zipfile=fname, files=isolate(examFiles()), flags='-r9Xj')
     },

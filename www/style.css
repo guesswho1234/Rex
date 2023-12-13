@@ -647,22 +647,22 @@ main > * {
 
 #resultContent .result {
 	color: var(---highlight_correct);
-	background:  var(---highlight_correct);
 	font-weight: bold;
 	width: max-content;
 	border-radius: 3px;
 	margin-right: 0.5rem;
 	padding-left: 0.5rem;
 	padding-right: 0.5rem;
+	border: 2px solid var(---transparent);
+	border-radius: 3px;
+	padding: 2px;
+	width: 60px;
+	text-align: center;
 }
 
 #resultContent .result.numericResult {
 	display: flex;
 	align-items: center;
-}
-
-#resultContent .result.spoiler{
-	background: unset;
 }
 
 #resultContent .choice {
@@ -720,14 +720,14 @@ main > * {
 *[contenteditable="true"],
 .editTrueFalse {
 	padding: 2px;
-	border: 2px solid var(---highlight_values);
+	border: 2px solid var(---highlight_values) !important;
 	border-radius: 3px;
 }
 
 *[contenteditable="true"]:focus {
 	padding: 2px;
 	border-color: var(---transparent);
-	background-color: var(---highlight_values);
+	background-color: var(---highlight_values) !important;
 }
 
 #task_info_buttons {
