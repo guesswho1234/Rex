@@ -8,8 +8,6 @@
 
 #TODO: "export" button to download all tasks as zip (need to implement this in javascript)
 
-#TODO: exam fields - expand on validation and helpers to fill in the form
-
 #TODO: allow only mchoice questions for nops exam
 
 #TODO: add possibility to create pdf exam with open questions (can then be appended to nops)
@@ -27,6 +25,8 @@
 #TODO: click between text / icon toggle removes all button info (remove this effect)
 
 #TODO: fix csv file in exam evaluation since it has empty rows after each text row
+
+#TODO: field validation and helpers to fill in forms
 
 # STARTUP -----------------------------------------------------------------
 rm(list = ls())
