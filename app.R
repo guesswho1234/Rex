@@ -30,8 +30,6 @@
 
 #TODO: properly handle promiseAll in javascript when passing files to r backend
 
-#TODO: ptftools pdf -> png converter works, but puts files into workingdirectory, should be in temp
-
 # STARTUP -----------------------------------------------------------------
 rm(list = ls())
 cat("\f")
@@ -563,10 +561,9 @@ server = function(input, output, session) {
       return(file)
     }))
 
-    print(pdfFiles)
-
-    lapply(pdfFiles, function(pdf){
-      pdftools::pdf_convert(pdf=pdf, format='png') #, filenames=file)
+    lapply(seq_along(pdfFiles), function(i){
+      filenames = tempfile(pattern = paste0(names(pdfFiles)[i], "_"), tmpdir = dir, fileext = ".png") # tempfile name
+      pdftools::pdf_convert(pdf=pdfFiles[[i]], format='png', pages=1:1, filenames=filenames)
     })
   })
   
