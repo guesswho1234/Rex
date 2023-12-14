@@ -2,7 +2,7 @@
 
 #TODO: some connections are not properly closed and warnings can be thrown in R: "Warnung in list(...) ungenutzte Verbindung 4 () geschlossen"; maybe this happens when tasks with errors are sent to the backend to be parsed
 
-#TODO: unlink all files properly and at the right time (f.e. unlik all exam files after download)
+#TODO: unlink all files properly and at the right time (f.e. unlik all exam files after download) -> on.exit(unlink(...)) right after creation of tempdir() or tmpfile()
 
 #TODO: turn off hotkeys per default, allow to turn on hotkeys in nav bar and have a hot key modal to show what does what
 
@@ -25,8 +25,6 @@
 #TODO: refactor javascript code (f.e. combine the three drag and drop setups to one)
 
 #TODO: click between text / icon toggle removes all button info (remove this effect)
-
-#TODO: properly handle promiseAll in javascript when passing files to r backend
 
 #TODO: fix csv file in exam evaluation since it has empty rows after each text row
 
@@ -276,8 +274,8 @@ examCreationResponse = function(session, message, downloadable) {
 
 prepareEvaluation = function(evaluation){
   dir = tempdir()
-
-  solutionFile = unlist(lapply(setNames(seq_along(evaluation$examSolutionsName), evaluation$examSolutionsName), function(i){
+  
+  solutionFile = unlist(lapply(seq_along(evaluation$examSolutionsName), function(i){
     file = tempfile(pattern = paste0(evaluation$examSolutionsName[[i]], "_"), tmpdir = dir, fileext = ".rds")
     raw = openssl::base64_decode(evaluation$examSolutionsFile[[i]])
     writeBin(raw, con = file)
@@ -285,16 +283,14 @@ prepareEvaluation = function(evaluation){
     return(file)
   }))
   
-  registeredParticipantsFile = unlist(lapply(setNames(seq_along(evaluation$examRegisteredParticipantsnName), evaluation$examRegisteredParticipantsnName), function(i){
+  registeredParticipantsFile = unlist(lapply(seq_along(evaluation$examRegisteredParticipantsnName), function(i){
     file = tempfile(pattern = paste0(evaluation$examRegisteredParticipantsnName[[i]], "_"), tmpdir = dir, fileext = ".csv")
     writeLines(text = evaluation$examRegisteredParticipantsnFile[[i]], con = file)
     
     return(file)
   }))
   
-  print(evaluation$examRegisteredParticipantsnFile)
-  
-  pngFiles = unlist(lapply(setNames(seq_along(evaluation$examScanPngNames), evaluation$examScanPngNames), function(i){
+  pngFiles = unlist(lapply(seq_along(evaluation$examScanPngNames), function(i){
     file = tempfile(pattern = paste0(evaluation$examScanPngNames[[i]], "_"), tmpdir = dir, fileext = ".png")
     raw = openssl::base64_decode(evaluation$examScanPngFiles[[i]])
     writeBin(raw, con = file)
@@ -302,22 +298,82 @@ prepareEvaluation = function(evaluation){
     return(file)
   }))
   
-  pdfFiles = unlist(lapply(setNames(seq_along(evaluation$examScanPdfNames), evaluation$examScanPdfNames), function(i){
+  pdfFiles = lapply(setNames(seq_along(evaluation$examScanPdfNames), evaluation$examScanPdfNames), function(i){
     file = tempfile(pattern = paste0(evaluation$examScanPdfNames[[i]], "_"), tmpdir = dir, fileext = ".pdf")
     raw = openssl::base64_decode(evaluation$examScanPdfFiles[[i]])
     writeBin(raw, con = file)
     
     return(file)
-  }))
+  })
   
-  lapply(seq_along(pdfFiles), function(i){
+  convertedPngFiles = unlist(lapply(seq_along(pdfFiles), function(i){
     filenames = tempfile(pattern = paste0(names(pdfFiles)[i], "_"), tmpdir = dir, fileext = ".png")
     pdftools::pdf_convert(pdf=pdfFiles[[i]], filenames=filenames, pages=1:1, format='png')
-  })
+  }))
+  
+  scanFiles = c(pngFiles, convertedPngFiles)
+  
+  return(list(dir=dir, examName=evaluation$examSolutionsName[[1]], files=list(solution=solutionFile, registeredParticipants=registeredParticipantsFile, scans=scanFiles)))
 }
 
-evaluateExam = function(){
+evaluateExam = function(preparedEvaluation, collectWarnings){
+  out = tryCatch({
+    nops_scan_fileName = "nops_scan.zip"
+    nops_scan_file = paste0(preparedEvaluation$dir, "/", nops_scan_fileName)
+    nops_evaluation_files = paste0("evaluation", seq_along(preparedEvaluation$files$scans), ".html")
+    nops_evaluationCsv = paste0(preparedEvaluation$dir, "/nops_eval.csv")
+    nops_evaluationZip = paste0(preparedEvaluation$dir, "/nops_eval.zip")
+    
+    warnings = collectWarnings({
+      with(preparedEvaluation, {
+        exams::nops_scan(images=files$scans,
+                         dir=dir,
+                         file=nops_scan_fileName,
+                         rotate=FALSE)
+        
+        exams::nops_eval(
+          register = files$registeredParticipants,
+          solutions = files$solution,
+          scans = nops_scan_file,
+          # eval = exams_eval(partial = partial, negative = negative, rule = "false2"),
+          # points = points,
+          # mark = mark,
+          # labels = labels,
+          dir = dir,
+          file = nops_evaluation_files
+          # interactive = FALSE
+        )
+      })
+      
+      NULL
+    })
+    key = "Success"
+    value = paste(unlist(warnings), collapse="%;%")
+    if(value != "") key = "Warning"
+
+    return(list(message=list(key=key, value=value), examName=preparedEvaluation$examName, files=list(sourceFiles=preparedEvaluation$files, scanFiles=nops_scan_file, evaluationFiles=list(summary=nops_evaluationCsv, individualExams=nops_evaluationZip))))
+  },
+  error = function(e){
+    message = e$message
+    message = gsub("\"", "'", message)
+    message = gsub("[\r\n]", "%;%", message)
+    
+    return(list(message=list(key="Error", value=message), examName=NULL, files=list()))
+  })
   
+  return(out)
+}
+
+examEvaluationResponse = function(session, message, downloadable) {
+  showModal(modalDialog(
+    title = "nops_scan & nops_eval",
+    tags$span(id='responseMessage', class=message$key, paste0(message$key, ": ", gsub("%;%", "<br>", message$value))),
+    footer = tagList(
+      if (downloadable)
+        downloadButton('downloadEvaluationFiles', 'Download'),
+      modalButton("OK")
+    )
+  ))
 }
 
 startWait = function(session){
@@ -433,7 +489,7 @@ languages = c("en",
 # UI -----------------------------------------------------------------
 ui = fluidPage(
   shinyjs::useShinyjs(),
-  # textOutput("debug"),
+  textOutput("debug"),
   htmlTemplate(
     filename = "main.html",
 
@@ -582,54 +638,40 @@ server = function(input, output, session) {
   )
   
   # EVALUATE EXAM -------------------------------------------------------------
-  observeEvent(input$evaluateExam, {
-    prepareEvaluation(isolate(input$evaluateExam))
+  evaluationFiles = reactiveVal()
+
+    examEvaluation = eventReactive(input$evaluateExam, {
+    startWait(session)
+
+    preparedEvaluation = prepareEvaluation(isolate(input$evaluateExam))
+
+    x = callr::r_bg(
+      func = evaluateExam,
+      args = list(preparedEvaluation, collectWarnings),
+      supervise = TRUE
+    )
+
+    return(x)
+  })
+
+  observe({
+    if (examEvaluation()$is_alive()) {
+      invalidateLater(millis = 100, session = session)
+    } else {
+      result = examEvaluation()$get_result()
+      evaluationFiles(c(result$examName, unlist(result$files, recursive = TRUE)))
+      examEvaluationResponse(session, result$message, length(evaluationFiles()) > 0)
+      stopWait(session)
+    }
   })
   
-  # examEvaluation = eventReactive(input$evaluateExam, {
-  #   startWait(session)
-  # 
-  #   # examSolutionsName: examSolutionsName, examSolutionsFile: examSolutionsFile,
-  #   # examRegisteredParticipantsnName: examRegisteredParticipantsnName, examRegisteredParticipantsnFile: examRegisteredParticipantsnFile,
-  #   # examScanPdfNames: examScanPdfNames, examScanPdfFiles: examScanPdfFiles,
-  #   # examScanPngNames: examScanPngNames, examScanPngFiles: examScanPngFiles
-  # 
-  #   #convert pdfs to pngs: pdftools::pdf_convert()
-  #   #scan pngs: nops_scan()
-  #   #evaluate scans: nops_eval()
-  # 
-  #   print(input$evaluateExam$examScanPdfNames)
-  # 
-  #   dir = tempdir()
-  # 
-  #   convertedPDfFiles = lapply(setNames(seq_along(input$evaluateExam$examScanPdfNames, input$evaluateExam$examScanPdfNames)), function(x){
-  #     file = tempfile(pattern = paste0(examScanPdfNames[[x]], "_"), tmpdir = dir, fileext = ".png")
-  #     print(file)
-  #     pdftools::pdf_convert(pdf=examScanPdfFiles[[x]], format='png', filenames = file)
-  #   })
-  #                   
-  #   preparedEvaluation = prepareEvaluation()
-  # 
-  #   x = callr::r_bg(
-  #     func = evaluateExam,
-  #     args = list(),
-  #     supervise = TRUE
-  #   )
-  # 
-  #   return(x)
-  #   return(null)
-  # })
-  # 
-  # observe({
-  #   if (examParsing()$is_alive()) {
-  #     invalidateLater(millis = 100, session = session)
-  #   } else {
-  #     result = examParsing()$get_result()
-  #     examFiles(unlist(result$files, recursive = TRUE))
-  #     examCreationResponse(session, result$message, length(examFiles()) > 0)
-  #     stopWait(session)
-  #   }
-  # })
+  output$downloadEvaluationFiles = downloadHandler(
+    filename = paste0(gsub("exam", "evaluation", evaluationFiles()[1]), ".zip"),
+    content = function(fname) {
+      zip(zipfile=fname, files=isolate(evaluationFiles()[-1]), flags='-r9Xj')
+    },
+    contentType = "application/zip"
+  )
 }
 
 # RUN APP -----------------------------------------------------------------
