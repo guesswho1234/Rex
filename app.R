@@ -24,7 +24,7 @@
 
 #TODO: click between text / icon toggle removes all button info (remove this effect)
 
-#TODO: fix csv file in exam evaluation since it has empty rows after each text row
+#TODO: fix csv file (registeredParticipants) since it has empty rows after each text row after importing
 
 #TODO: field validation and helpers to fill in forms
 
@@ -318,11 +318,13 @@ prepareEvaluation = function(evaluation){
 
 evaluateExam = function(preparedEvaluation, collectWarnings){
   out = tryCatch({
-    nops_scan_fileName = "nops_scan.zip"
+    nops_scan_fileName = paste0(preparedEvaluation$examName, "_nops_scan", ".zip")
     nops_scan_file = paste0(preparedEvaluation$dir, "/", nops_scan_fileName)
+    nops_evaluation_fileNamePrefix = paste0(preparedEvaluation$examName, "_nops_eval")
     nops_evaluation_files = paste0("evaluation", seq_along(preparedEvaluation$files$scans), ".html")
-    nops_evaluationCsv = paste0(preparedEvaluation$dir, "/nops_eval.csv")
-    nops_evaluationZip = paste0(preparedEvaluation$dir, "/nops_eval.zip")
+    nops_evaluation_fileNames = paste0("evaluation", seq_along(preparedEvaluation$files$scans), ".html")
+    nops_evaluationCsv = paste0(preparedEvaluation$dir, "/", nops_evaluation_fileNamePrefix, ".csv")
+    nops_evaluationZip = paste0(preparedEvaluation$dir, "/", nops_evaluation_fileNamePrefix, ".zip")
     
     warnings = collectWarnings({
       with(preparedEvaluation, {
@@ -339,8 +341,9 @@ evaluateExam = function(preparedEvaluation, collectWarnings){
           # points = points,
           # mark = mark,
           # labels = labels,
+          results = nops_evaluation_fileNamePrefix,
           dir = dir,
-          file = nops_evaluation_files
+          file = nops_evaluation_fileNames
           # interactive = FALSE
         )
       })
@@ -351,7 +354,12 @@ evaluateExam = function(preparedEvaluation, collectWarnings){
     value = paste(unlist(warnings), collapse="%;%")
     if(value != "") key = "Warning"
 
-    return(list(message=list(key=key, value=value), examName=preparedEvaluation$examName, files=list(sourceFiles=preparedEvaluation$files, scanFiles=nops_scan_file, evaluationFiles=list(summary=nops_evaluationCsv, individualExams=nops_evaluationZip))))
+    return(list(message=list(key=key, value=value), 
+                examName=preparedEvaluation$examName, 
+                files=list(sourceFiles=preparedEvaluation$files, 
+                           scanFiles=nops_scan_file, 
+                           evaluationFiles=list(summary=nops_evaluationCsv, 
+                                                individualExams=nops_evaluationZip))))
   },
   error = function(e){
     message = e$message
