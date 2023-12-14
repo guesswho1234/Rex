@@ -5,7 +5,7 @@ helpers.installPackages(
   "xtable",
   "tth",
   "callr",
-  "pdftool"
+  "pdftools"
 )
 
 # special case of installing iuftools from source
