@@ -28,6 +28,10 @@
 
 #TODO: click between text / icon toggle removes all button info (remove this effect)
 
+#TODO: properly handle promiseAll in javascript when passing files to r backend
+
+#TODO: ptftools pdf -> png converter works, but puts files into workingdirectory, should be in temp
+
 # STARTUP -----------------------------------------------------------------
 rm(list = ls())
 cat("\f")
@@ -545,27 +549,59 @@ server = function(input, output, session) {
   )
   
   # EVALUATE EXAM -------------------------------------------------------------
+  observeEvent(input$evaluateExam, {
+    dir = tempdir()
+    
+    # somehow fires twice
+    print("test")
+
+    pdfFiles = unlist(lapply(setNames(seq_along(input$evaluateExam$examScanPdfNames), input$evaluateExam$examScanPdfNames), function(i){
+      file = tempfile(pattern = paste0(input$evaluateExam$examScanPdfNames[[i]], "_"), tmpdir = dir, fileext = ".pdf") # tempfile name
+      raw = openssl::base64_decode(input$evaluateExam$examScanPdfFiles[[i]])
+      writeBin(raw, con = file) # write contents to file
+
+      return(file)
+    }))
+
+    print(pdfFiles)
+
+    lapply(pdfFiles, function(pdf){
+      pdftools::pdf_convert(pdf=pdf, format='png') #, filenames=file)
+    })
+  })
+  
   # examEvaluation = eventReactive(input$evaluateExam, {
   #   startWait(session)
-  #
-  # examSolutionsName: examSolutionsName, examSolutionsFile: examSolutionsFile, 
-  # examRegisteredParticipantsnName: examRegisteredParticipantsnName, examRegisteredParticipantsnFile: examRegisteredParticipantsnFile, 
-  # examScanPdfNames: examScanPdfNames, examScanPdfFiles: examScanPdfFiles, 
-  # examScanPngNames: examScanPngNames, examScanPngFiles: examScanPngFiles
-  #   
+  # 
+  #   # examSolutionsName: examSolutionsName, examSolutionsFile: examSolutionsFile,
+  #   # examRegisteredParticipantsnName: examRegisteredParticipantsnName, examRegisteredParticipantsnFile: examRegisteredParticipantsnFile,
+  #   # examScanPdfNames: examScanPdfNames, examScanPdfFiles: examScanPdfFiles,
+  #   # examScanPngNames: examScanPngNames, examScanPngFiles: examScanPngFiles
+  # 
   #   #convert pdfs to pngs: pdftools::pdf_convert()
   #   #scan pngs: nops_scan()
   #   #evaluate scans: nops_eval()
-  #   
+  # 
+  #   print(input$evaluateExam$examScanPdfNames)
+  # 
+  #   dir = tempdir()
+  # 
+  #   convertedPDfFiles = lapply(setNames(seq_along(input$evaluateExam$examScanPdfNames, input$evaluateExam$examScanPdfNames)), function(x){
+  #     file = tempfile(pattern = paste0(examScanPdfNames[[x]], "_"), tmpdir = dir, fileext = ".png") # tempfile name
+  #     print(file)
+  #     pdftools::pdf_convert(pdf=examScanPdfFiles[[x]], format='png', filenames = file)
+  #   })
+  #                   
   #   preparedEvaluation = prepareEvaluation()
-  #   
+  # 
   #   x = callr::r_bg(
   #     func = evaluateExam,
   #     args = list(),
   #     supervise = TRUE
   #   )
-  #   
+  # 
   #   return(x)
+  #   return(null)
   # })
   # 
   # observe({

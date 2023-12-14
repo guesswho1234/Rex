@@ -1584,8 +1584,8 @@ async function createExam() {
 	const blocks = examTasks.map((task) => task.block);
 	const additionalPdfNames = iuf.examAdditionalPdf.map(pdf => pdf[0]);
 	const additionalPdfFiles = iuf.examAdditionalPdf.map(pdf => pdf[1]);
-			
-	Promise.all(taskCodes).then((taskCodes) => {
+	
+	Promise.all([taskCodes, additionalPdfFiles]).then((values) => {
 		Shiny.onInputChange("parseExam", {examSeed: $('#seedValueExam').val(), numberOfExams: $("#numberOfExams").val(), numberOfTasks: $("#numberOfTasks").val(), taskNames: taskNames, taskCodes:taskCodes, blocks: blocks, additionalPdfNames: additionalPdfNames, additionalPdfFiles: additionalPdfFiles}, {priority: 'event'});
 	});
 }
@@ -1678,12 +1678,11 @@ function loadExamScansFileDialog(items) {
 }
 
 function addExamEvaluationFile(file) {
-	fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
+	const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
 	
 	let fileReader;
 	let base64;
-	
-	console.log(fileExt);
+	let fileName;
 	
 	switch(fileExt) {
 		case 'pdf':
@@ -1693,7 +1692,7 @@ function addExamEvaluationFile(file) {
 
 			fileReader.onload = function(fileLoadedEvent) {
 				base64 = fileLoadedEvent.target.result;
-				iuf['examEvaluation']['scans'].push([fileName, base64.split(',')[1]]);
+				iuf['examEvaluation']['scans'].push([fileName, fileExt, base64.split(',')[1]]);
 			};
 
 			fileReader.readAsDataURL(file);
@@ -1706,14 +1705,13 @@ function addExamEvaluationFile(file) {
 
 			fileReader.onload = function(fileLoadedEvent) {
 				base64 = fileLoadedEvent.target.result;
-				iuf['examEvaluation']['solutions'] = [fileName, base64.split(',')[1]];
+				iuf['examEvaluation']['solutions'] = [fileName, fileExt, base64.split(',')[1]];
 			};
 
 			fileReader.readAsDataURL(file);
 			
 			$('#examSolutions_list_items').empty();
 			$('#examSolutions_list_items').append('<div class="examSolutionsItem"><span class="examSolutionName">' + fileName + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
-			
 			break;
 		case 'csv':
 			fileReader = new FileReader();
@@ -1721,15 +1719,13 @@ function addExamEvaluationFile(file) {
 
 			fileReader.onload = function(fileLoadedEvent) {
 				csv = fileLoadedEvent.target.result;
-				iuf['examEvaluation']['registeredParticipants'] = [fileName, csv];
+				iuf['examEvaluation']['registeredParticipants'] = [fileName, fileExt, csv];
 			};
 
 			fileReader.readAsText(file);
 			
 			$('#examRegisteredParticipants_list_items').empty();
 			$('#examRegisteredParticipants_list_items').append('<div class="examRegisteredParticipantsItem"><span class="examRegisteredParticipantsName">' + fileName + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
-			
-			break;
 			break;
 	}
 }
@@ -1764,24 +1760,26 @@ $('#examRegisteredParticipants_list_items').on('click', '.examRegisteredParticip
 
 async function evaluateExam() {
 	const examSolutionsName = iuf['examEvaluation']['solutions'][0];
-	const examSolutionsFile = iuf['examEvaluation']['solutions'][0];
+	const examSolutionsFile = iuf['examEvaluation']['solutions'][2];
 	
 	const examRegisteredParticipantsnName = iuf['examEvaluation']['registeredParticipants'][0];
-	const examRegisteredParticipantsnFile = iuf['examEvaluation']['registeredParticipants'][0];
+	const examRegisteredParticipantsnFile = iuf['examEvaluation']['registeredParticipants'][2];
 	
-	const examScanPdf = iuf['examEvaluation']['scans'].filter(x => x.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase() == 'pdf')
-	const examScanPdfNames = examScanPdf.map(pdf => pdf[0]);
-	const examScanPdfFiles = examScanPdf.map(pdf => pdf[1]);
+	const examScanPdf = iuf['examEvaluation']['scans'].filter(x => x[1] == 'pdf')
+	const examScanPdfNames = examScanPdf.map(x => x[0]);
+	const examScanPdfFiles = examScanPdf.map(x => x[2]);
 	
-	const examScanPng = iuf['examEvaluation']['scans'].filter(x => x.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase() == 'png')
-	const examScanPngNames = examScanPng.map(pdf => pdf[0]);
-	const examScanPngFiles = examScanPng.map(pdf => pdf[1]);
+	const examScanPng = iuf['examEvaluation']['scans'].filter(x => x[1] == 'png')
+	const examScanPngNames = examScanPng.map(x => x[0]);
+	const examScanPngFiles = examScanPng.map(x => x[2]);
 			
-	Promise.all(taskCodes).then((taskCodes) => {
-		Shiny.onInputChange("evaluateExam", {examSolutionsName: examSolutionsName, examSolutionsFile: examSolutionsFile, 
-		                                     examRegisteredParticipantsnName: examRegisteredParticipantsnName, examRegisteredParticipantsnFile: examRegisteredParticipantsnFile, 
-											 examScanPdfNames: examScanPdfNames, examScanPdfFiles: examScanPdfFiles, 
-											 examScanPngNames: examScanPngNames, examScanPngFiles: examScanPngFiles}, {priority: 'event'});
+	Promise.all(examScanPdfFiles).then((values) => {
+		console.log(values)
+		Shiny.onInputChange("evaluateExam", {examScanPdfNames: examScanPdfNames, examScanPdfFiles: values}, {priority: 'event'});
+		// Shiny.onInputChange("evaluateExam", {examSolutionsName: examSolutionsName, examSolutionsFile: examSolutionsFile, 
+		                                     // examRegisteredParticipantsnName: examRegisteredParticipantsnName, examRegisteredParticipantsnFile: examRegisteredParticipantsnFile, 
+											 // examScanPdfNames: examScanPdfNames, examScanPdfFiles: examScanPdfFiles, 
+											 // examScanPngNames: examScanPngNames, examScanPngFiles: examScanPngFiles}, {priority: 'event'});
 	});
 }
 
