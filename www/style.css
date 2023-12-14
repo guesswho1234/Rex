@@ -331,8 +331,8 @@ main > * {
 	background: var(---label_yellow);
 }
 
-#createExam,
-#evaluateExam {
+#createExamEvent,
+#evaluateExamEvent {
 	margin-top: 25px;
 }
 	

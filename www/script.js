@@ -1577,7 +1577,7 @@ function calcTotalFixedPoints(){
 	}
 }
 
-async function createExam() {
+async function createExamEvent() {
 	const examTasks = iuf['tasks'].filter((task) => task.exam & task.file !== null);
 	const taskNames = examTasks.map((task) => task.name);
 	const taskCodes = examTasks.map((task) => task.file);
@@ -1585,9 +1585,11 @@ async function createExam() {
 	const additionalPdfNames = iuf.examAdditionalPdf.map(pdf => pdf[0]);
 	const additionalPdfFiles = iuf.examAdditionalPdf.map(pdf => pdf[1]);
 	
-	Promise.all([taskCodes, additionalPdfFiles]).then((values) => {
-		Shiny.onInputChange("parseExam", {examSeed: $('#seedValueExam').val(), numberOfExams: $("#numberOfExams").val(), numberOfTasks: $("#numberOfTasks").val(), taskNames: taskNames, taskCodes:taskCodes, blocks: blocks, additionalPdfNames: additionalPdfNames, additionalPdfFiles: additionalPdfFiles}, {priority: 'event'});
-	});
+	Shiny.onInputChange("createExam", {examSeed: $('#seedValueExam').val(), numberOfExams: $("#numberOfExams").val(), numberOfTasks: $("#numberOfTasks").val(), taskNames: taskNames, taskCodes:taskCodes, blocks: blocks, additionalPdfNames: additionalPdfNames, additionalPdfFiles: additionalPdfFiles}, {priority: 'event'});
+	
+	// Promise.all([taskCodes, additionalPdfFiles]).then((values) => {
+		// Shiny.onInputChange("createExam", {examSeed: $('#seedValueExam').val(), numberOfExams: $("#numberOfExams").val(), numberOfTasks: $("#numberOfTasks").val(), taskNames: taskNames, taskCodes:taskCodes, blocks: blocks, additionalPdfNames: additionalPdfNames, additionalPdfFiles: additionalPdfFiles}, {priority: 'event'});
+	// });
 }
 
 /* --------------------------------------------------------------
@@ -1758,7 +1760,7 @@ $('#examRegisteredParticipants_list_items').on('click', '.examRegisteredParticip
 	removeRegisteredParticipants($(this));
 });
 
-async function evaluateExam() {
+async function evaluateExamEvent() {
 	const examSolutionsName = iuf['examEvaluation']['solutions'][0];
 	const examSolutionsFile = iuf['examEvaluation']['solutions'][2];
 	
@@ -1772,15 +1774,18 @@ async function evaluateExam() {
 	const examScanPng = iuf['examEvaluation']['scans'].filter(x => x[1] == 'png')
 	const examScanPngNames = examScanPng.map(x => x[0]);
 	const examScanPngFiles = examScanPng.map(x => x[2]);
+	
+	Shiny.onInputChange("evaluateExam", {examSolutionsName: examSolutionsName, examSolutionsFile: examSolutionsFile, 
+										 examRegisteredParticipantsnName: examRegisteredParticipantsnName, examRegisteredParticipantsnFile: examRegisteredParticipantsnFile, 
+										 examScanPdfNames: examScanPdfNames, examScanPdfFiles: examScanPdfFiles, 
+										 examScanPngNames: examScanPngNames, examScanPngFiles: examScanPngFiles}, {priority: 'event'});
 			
-	Promise.all(examScanPdfFiles).then((values) => {
-		console.log(values)
-		Shiny.onInputChange("evaluateExam", {examScanPdfNames: examScanPdfNames, examScanPdfFiles: values}, {priority: 'event'});
+	// Promise.all(examScanPdfFiles).then((values) => {
 		// Shiny.onInputChange("evaluateExam", {examSolutionsName: examSolutionsName, examSolutionsFile: examSolutionsFile, 
 		                                     // examRegisteredParticipantsnName: examRegisteredParticipantsnName, examRegisteredParticipantsnFile: examRegisteredParticipantsnFile, 
 											 // examScanPdfNames: examScanPdfNames, examScanPdfFiles: examScanPdfFiles, 
 											 // examScanPngNames: examScanPngNames, examScanPngFiles: examScanPngFiles}, {priority: 'event'});
-	});
+	// });
 }
 
 /* --------------------------------------------------------------

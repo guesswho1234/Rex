@@ -22,13 +22,13 @@
 
 #TODO: check if tasks can be "reproduced exactly" with exam seed as task seed
 
-#TODO: use "pdftools" and "pdftools::pdf_convert(img, format = "png")" to convert pdf to png
-
 #TODO: refactor javascript code (f.e. combine the three drag and drop setups to one)
 
 #TODO: click between text / icon toggle removes all button info (remove this effect)
 
 #TODO: properly handle promiseAll in javascript when passing files to r backend
+
+#TODO: fix csv file in exam evaluation since it has empty rows after each text row
 
 # STARTUP -----------------------------------------------------------------
 rm(list = ls())
@@ -160,14 +160,14 @@ prepareExam = function(exam, seed, input) {
   dir = tempdir()
   
   taskFiles = unlist(lapply(setNames(seq_along(exam$taskNames), exam$taskNames), function(i){
-    file = tempfile(pattern = paste0(exam$taskNames[[i]], "_"), tmpdir = dir, fileext = ".rnw") # tempfile name
-    writeLines(text = exam$taskCodes[[i]], con = file) # write contents to file
+    file = tempfile(pattern = paste0(exam$taskNames[[i]], "_"), tmpdir = dir, fileext = ".rnw")
+    writeLines(text = exam$taskCodes[[i]], con = file)
     
     return(file)
   }))
   
   additionalPdfFiles = unlist(lapply(setNames(seq_along(exam$additionalPdfNames), exam$additionalPdfNames), function(i){
-    file = tempfile(pattern = paste0(exam$additionalPdfNames[[i]], "_"), tmpdir = dir, fileext = ".pdf") # tempfile name
+    file = tempfile(pattern = paste0(exam$additionalPdfNames[[i]], "_"), tmpdir = dir, fileext = ".pdf")
     raw = openssl::base64_decode(exam$additionalPdfFiles[[i]])
     writeBin(raw, con = file)
     
@@ -196,9 +196,6 @@ prepareExam = function(exam, seed, input) {
   date = input$examDate
   name = paste0(c("exam", title, course, as.character(date), exam$examSeed, ""), collapse="_")
   
-  print(input$examLanguage)
-  print(input$duplex)
-
   examFields = list(
     file = tasks,
     n = numberOfExams,
@@ -224,7 +221,7 @@ prepareExam = function(exam, seed, input) {
   return(list(examFields=examFields, examFiles=list(pdfFiles=examPdfFiles, rdsFile=examRdsFile), sourceFiles=list(taskFiles=taskFiles, additionalPdfFiles=additionalPdfFiles)))
 }
 
-parseExam = function(preparedExam, collectWarnings) {
+createExam = function(preparedExam, collectWarnings) {
   out = tryCatch({
     warnings = collectWarnings({
         with(preparedExam$examFields, {
@@ -265,7 +262,7 @@ parseExam = function(preparedExam, collectWarnings) {
   return(out)
 }
 
-examParseResponse = function(session, message, downloadable) {
+examCreationResponse = function(session, message, downloadable) {
   showModal(modalDialog(
     title = "exams2nops",
     tags$span(id='responseMessage', class=message$key, paste0(message$key, ": ", gsub("%;%", "<br>", message$value))),
@@ -277,8 +274,46 @@ examParseResponse = function(session, message, downloadable) {
   ))
 }
 
-prepareEvaluation = function(){
+prepareEvaluation = function(evaluation){
+  dir = tempdir()
+
+  solutionFile = unlist(lapply(setNames(seq_along(evaluation$examSolutionsName), evaluation$examSolutionsName), function(i){
+    file = tempfile(pattern = paste0(evaluation$examSolutionsName[[i]], "_"), tmpdir = dir, fileext = ".rds")
+    raw = openssl::base64_decode(evaluation$examSolutionsFile[[i]])
+    writeBin(raw, con = file)
+    
+    return(file)
+  }))
   
+  registeredParticipantsFile = unlist(lapply(setNames(seq_along(evaluation$examRegisteredParticipantsnName), evaluation$examRegisteredParticipantsnName), function(i){
+    file = tempfile(pattern = paste0(evaluation$examRegisteredParticipantsnName[[i]], "_"), tmpdir = dir, fileext = ".csv")
+    writeLines(text = evaluation$examRegisteredParticipantsnFile[[i]], con = file)
+    
+    return(file)
+  }))
+  
+  print(evaluation$examRegisteredParticipantsnFile)
+  
+  pngFiles = unlist(lapply(setNames(seq_along(evaluation$examScanPngNames), evaluation$examScanPngNames), function(i){
+    file = tempfile(pattern = paste0(evaluation$examScanPngNames[[i]], "_"), tmpdir = dir, fileext = ".png")
+    raw = openssl::base64_decode(evaluation$examScanPngFiles[[i]])
+    writeBin(raw, con = file)
+    
+    return(file)
+  }))
+  
+  pdfFiles = unlist(lapply(setNames(seq_along(evaluation$examScanPdfNames), evaluation$examScanPdfNames), function(i){
+    file = tempfile(pattern = paste0(evaluation$examScanPdfNames[[i]], "_"), tmpdir = dir, fileext = ".pdf")
+    raw = openssl::base64_decode(evaluation$examScanPdfFiles[[i]])
+    writeBin(raw, con = file)
+    
+    return(file)
+  }))
+  
+  lapply(seq_along(pdfFiles), function(i){
+    filenames = tempfile(pattern = paste0(names(pdfFiles)[i], "_"), tmpdir = dir, fileext = ".png")
+    pdftools::pdf_convert(pdf=pdfFiles[[i]], filenames=filenames, pages=1:1, format='png')
+  })
 }
 
 evaluateExam = function(){
@@ -507,38 +542,38 @@ server = function(input, output, session) {
     }
   })
   
-  # PARSE EXAM -------------------------------------------------------------
+  # CREATE EXAM -------------------------------------------------------------
   examFiles = reactiveVal()
-  
-  examParsing = eventReactive(input$parseExam, {
+
+  examCreation = eventReactive(input$createExam, {
     startWait(session)
-    
-    preparedExam = prepareExam(isolate(input$parseExam), isolate(input$seedValue), isolate(input))
-    
+
+    preparedExam = prepareExam(isolate(input$createExam), isolate(input$seedValue), isolate(input))
+
     x = callr::r_bg(
-      func = parseExam,
+      func = createExam,
       args = list(preparedExam, collectWarnings),
       supervise = TRUE
     )
-    
+
     return(x)
   })
-  
+
   observe({
-    if (examParsing()$is_alive()) {
+    if (examCreation()$is_alive()) {
       invalidateLater(millis = 100, session = session)
     } else {
-      result = examParsing()$get_result()
+      result = examCreation()$get_result()
       examFiles(unlist(result$files, recursive = TRUE))
-      examParseResponse(session, result$message, length(examFiles()) > 0)
+      examCreationResponse(session, result$message, length(examFiles()) > 0)
       stopWait(session)
     }
   })
-  
+
   output$downloadExamFiles = downloadHandler(
-    filename = paste0(paste0(c("exam", isolate(input$examTitle), 
-                               isolate(input$examCourse), 
-                               as.character(isolate(input$examDate)), 
+    filename = paste0(paste0(c("exam", isolate(input$examTitle),
+                               isolate(input$examCourse),
+                               as.character(isolate(input$examDate)),
                                isolate(input$seedValue)), collapse="_"), ".zip"),
     content = function(fname) {
       zip(zipfile=fname, files=isolate(examFiles()), flags='-r9Xj')
@@ -548,23 +583,7 @@ server = function(input, output, session) {
   
   # EVALUATE EXAM -------------------------------------------------------------
   observeEvent(input$evaluateExam, {
-    dir = tempdir()
-    
-    # somehow fires twice
-    print("test")
-
-    pdfFiles = unlist(lapply(setNames(seq_along(input$evaluateExam$examScanPdfNames), input$evaluateExam$examScanPdfNames), function(i){
-      file = tempfile(pattern = paste0(input$evaluateExam$examScanPdfNames[[i]], "_"), tmpdir = dir, fileext = ".pdf") # tempfile name
-      raw = openssl::base64_decode(input$evaluateExam$examScanPdfFiles[[i]])
-      writeBin(raw, con = file) # write contents to file
-
-      return(file)
-    }))
-
-    lapply(seq_along(pdfFiles), function(i){
-      filenames = tempfile(pattern = paste0(names(pdfFiles)[i], "_"), tmpdir = dir, fileext = ".png") # tempfile name
-      pdftools::pdf_convert(pdf=pdfFiles[[i]], format='png', pages=1:1, filenames=filenames)
-    })
+    prepareEvaluation(isolate(input$evaluateExam))
   })
   
   # examEvaluation = eventReactive(input$evaluateExam, {
@@ -584,7 +603,7 @@ server = function(input, output, session) {
   #   dir = tempdir()
   # 
   #   convertedPDfFiles = lapply(setNames(seq_along(input$evaluateExam$examScanPdfNames, input$evaluateExam$examScanPdfNames)), function(x){
-  #     file = tempfile(pattern = paste0(examScanPdfNames[[x]], "_"), tmpdir = dir, fileext = ".png") # tempfile name
+  #     file = tempfile(pattern = paste0(examScanPdfNames[[x]], "_"), tmpdir = dir, fileext = ".png")
   #     print(file)
   #     pdftools::pdf_convert(pdf=examScanPdfFiles[[x]], format='png', filenames = file)
   #   })
@@ -607,7 +626,7 @@ server = function(input, output, session) {
   #   } else {
   #     result = examParsing()$get_result()
   #     examFiles(unlist(result$files, recursive = TRUE))
-  #     examParseResponse(session, result$message, length(examFiles()) > 0)
+  #     examCreationResponse(session, result$message, length(examFiles()) > 0)
   #     stopWait(session)
   #   }
   # })
