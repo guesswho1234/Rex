@@ -4,7 +4,8 @@ helpers.installPackages(
   "exams",
   "xtable",
   "tth",
-  "callr"
+  "callr",
+  "pdftool"
 )
 
 # special case of installing iuftools from source
