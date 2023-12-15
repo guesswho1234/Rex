@@ -1,6 +1,10 @@
 var rnwTemplate = `<<echo=FALSE, results=hide>>=
 @
 %% \\exextra[editable,numeric]{1}
+%% \\exextra[examHistory,character]{}
+%% \\exextra[authoredBy,character]{}
+%% \\exextra[topic,character]{?t}
+%% \\exextra[tags,character]{}
 <<echo=FALSE, results=tex>>=
 question=?q
 choices=?c

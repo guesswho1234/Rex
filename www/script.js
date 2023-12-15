@@ -407,47 +407,35 @@ function examTasksSummary() {
 	
 	if($('.taskItem.exam').length == 0) { 
 		$('#s_numberOfTasks').html("");
-		$('#s_averageDifficulty').html("");
 		$('#s_totalPoints').html("");
 		$('#s_topicsTable').html("");
-		$('#s_tagsTable').html("");
 		$('#s_typeTable').html("");
-		$('#s_tasksChecked').html("");
 		
 		return;
 	}
 	
 	let numberOfExamTasksCounter = 0;
-	let totalDifficulty = 0;
 	let totalPoints = 0;
 	let topics = [];
-	let tags = [];
 	let types = [];
-	let checkedBy = 0;
 		
 	iuf['tasks'].forEach((item, index) => {
 		if(item.exam) {
 			numberOfExamTasksCounter++;
-			totalDifficulty += Number(item.difficulty);
 			totalPoints += Number(item.points);
 			if (item.topic !== null) topics.push(item.topic);
-			if (item.tags !== null) item.tags.forEach(i => tags.push(i));
 			Array.isArray(item.result) ? types.push("mc") : types.push("num");
-			checkedBy += (item.checkedBy != "" && item.checkedBy !== null);
 		}
 	})
 	
 	$('#s_numberOfTasks').html(itemSingle(numberOfExamTasksCounter, 'grayLabel'));
-	$('#s_averageDifficulty').html(itemSingle(Math.round(totalDifficulty / numberOfExamTasksCounter * 100)/100, 'yellowLabel'));	
 	$('#s_totalPoints').html(itemSingle(totalPoints, 'yellowLabel'));
 	$('#s_topicsTable').html(itemTable(topics));
-	$('#s_tagsTable').html(itemTable(tags));
 	$('#s_typeTable').html(itemTable(types));
-	$('#s_tasksChecked').html(itemSingle(checkedBy + "/" + numberOfExamTasksCounter, 'grayLabel'));
 }
 
 function itemSingle(item, className) {
-	return '<span class="s_labelSingle ' + className + '">' + item + '</span>';
+	return '<span class="s_labelContainer"><span class="s_label"><span class="s_labelSingle ' + className + '">' + item + '</span></span></span>';
 }
 
 function itemTable(arr) {
@@ -591,17 +579,6 @@ $('#searchTasks input').change(function () {
 			filterTasks(fieldsToFilter, filterBy);
 		}
 		
-		if (input.includes("checkedBy:")) {
-			const fieldsToFilter = iuf.tasks.map(task => {
-				if( task.checkedBy === null) {
-					return "";
-				} 
-				
-				return task.checkedBy.join(',');
-			})
-			filterTasks(fieldsToFilter, filterBy);
-		}
-		
 		if (input.includes("topic:")) {
 			const fieldsToFilter = iuf.tasks.map(task => {
 				if( task.topic === null) {
@@ -620,17 +597,6 @@ $('#searchTasks input').change(function () {
 				} 
 				
 				return task.tags.join(',');
-			})
-			filterTasks(fieldsToFilter, filterBy);
-		}
-		
-		if (input.includes("difficulty:")) {
-			const fieldsToFilter = iuf.tasks.map(task => {
-				if( task.difficulty === null) {
-					return "";
-				} 
-				
-				return task.difficulty;
 			})
 			filterTasks(fieldsToFilter, filterBy);
 		}
@@ -815,9 +781,9 @@ function loadTask(file, block = 1) {
 	}
 }
 
-const d_taskName = 'taskName';
-const d_questionText = 'QuestionText';
-const d_answerText = 'AnswerText';
+const d_taskName = 'Name';
+const d_questionText = 'Text';
+const d_answerText = 'Text';
 const d_result = false;
 
 function newSimpleTask(file = '', block = 1) {
@@ -831,7 +797,8 @@ function newSimpleTask(file = '', block = 1) {
 					       null,
 					       true,
 						   "mchoice",
-						   block);
+						   block,
+						   'Text');
 		viewTask(taskID);
 }
 
@@ -863,15 +830,13 @@ function createTask(taskID, name='task',
 							editable=false,
 							type=null,
 							block=1,
+							topic=null,
 							seed=null, 
 						    exam=false, 
 							examHistory=null,
 							authoredBy=null,
-							checkedBy=null,
 							precision=null,
-							difficulty=null,
 							points=1,
-							topic=null,
 							tags=null){
 	iuf['tasks'][taskID]['file'] = file;
 	iuf['tasks'][taskID]['name'] = name;
@@ -882,9 +847,7 @@ function createTask(taskID, name='task',
 	iuf['tasks'][taskID]['result'] = result;
 	iuf['tasks'][taskID]['examHistory'] = examHistory;
 	iuf['tasks'][taskID]['authoredBy'] = authoredBy;
-	iuf['tasks'][taskID]['checkedBy'] = checkedBy;
 	iuf['tasks'][taskID]['precision'] = precision;
-	iuf['tasks'][taskID]['difficulty'] = difficulty;
 	iuf['tasks'][taskID]['points'] = points;
 	iuf['tasks'][taskID]['topic'] = topic;
 	iuf['tasks'][taskID]['tags'] = tags;
@@ -897,7 +860,7 @@ function createTask(taskID, name='task',
 		setSimpleTaskFileContents(taskID);
 	}
 	
-	$('#task_list_items').append('<div class="taskItem sidebarListItem"><span class="taskTryCatch"><i class="fa-solid fa-triangle-exclamation"></i><span class="taskTryCatchText"></span></span><span class="taskName">' + name + '</span></span><span class="taskBlock disabled"><input type="number" value="' + block + '"/></span><span class="taskButtons"><span class="taskParse taskButton disabled"><span class="iconButton"><i class="fa-solid fa-rotate"></i></span><span class="textButton"><span lang="de">Berechnen</span><span lang="en">Prase</span></span></span><span class="examTask taskButton ' + (editable ? '' : 'disabled') + '"><span class="iconButton"><i class="fa-solid fa-circle-check"></i></span><span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span></span><span class="taskRemove taskButton"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></span></span></div>');
+	$('#task_list_items').append('<div class="taskItem sidebarListItem"><span class="taskTryCatch"><i class="fa-solid fa-triangle-exclamation"></i><span class="taskTryCatchText"></span></span><span class="taskName">' + name + '</span></span><span class="taskBlock disabled"><input type="number" value="' + block + '"/></span><span class="taskButtons"><span class="examTask taskButton ' + (editable ? '' : 'disabled') + '"><span class="iconButton"><i class="fa-solid fa-circle-check"></i></span><span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span></span><span class="taskRemove taskButton"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></span></span></div>');
 }
 
 function parseTask(taskID) {	
@@ -962,9 +925,7 @@ function resetOutputFields() {
 			      'result',
 			      'examHistory',
 			      'authoredBy',
-			      'checkedBy',
 			      'precision',
-			      'difficulty',
 			      'topic',
 			      'tags'];
 			  
@@ -1016,8 +977,15 @@ $('body').on('focus', '[contenteditable]', function() {
 		if ($this.hasClass('points')) {
 			iuf['tasks'][taskID]['points'] = parseInt($this.text());
 		}
+		
+		console.log($this)
+		
+		if ($this.hasClass('topicText')) {
+			iuf['tasks'][taskID]['topic'] = $this.text();
+		}
 
 		setSimpleTaskFileContents(taskID);
+		examTasksSummary();
     }
 });
 
@@ -1092,30 +1060,16 @@ function loadTaskFromObject(taskID) {
 		setTaskFieldFromObject(field, content);
 	}
 	
-	if(iuf['tasks'][taskID]['checkedBy'] !== null) {
-		const field = 'checkedBy'
-		const content = iuf['tasks'][taskID]['checkedBy'].map(i => '<span>' + i + '</span>').join('');
-		
-		setTaskFieldFromObject(field, content);
-	}
-	
 	if(iuf['tasks'][taskID]['precision'] !== null) {
 		const field = 'precision'
 		const content = '<span>' + iuf['tasks'][taskID]['precision'] + '</span>';
 		
 		setTaskFieldFromObject(field, content);
 	}
-	
-	if(iuf['tasks'][taskID]['difficulty'] !== null) {
-		const field = 'difficulty'
-		const content = '<span>' + iuf['tasks'][taskID]['difficulty'] + '</span>';
-		
-		setTaskFieldFromObject(field, content);
-	}
-	
+
 	if(iuf['tasks'][taskID]['topic'] !== null) {
 		const field = 'topic'
-		const content = '<span>' + iuf['tasks'][taskID]['topic'] + '</span>';
+		const content = '<span class="topicText" contenteditable="' + editable + '" spellcheck="false">' + iuf['tasks'][taskID]['topic'] + '</span>';
 		
 		setTaskFieldFromObject(field, content);
 	}
@@ -1145,6 +1099,7 @@ function setSimpleTaskFileContents(taskID){
 	fileText = fileText.replace("?c", 'c(' + iuf['tasks'][taskID]['choices'].map(c=>'"' + c + '"').join(',') + ')');
 	fileText = fileText.replace("?s", 'c(' + iuf['tasks'][taskID]['result'].map(s=>s?"T":"F").join(',') + ')');
 	fileText = fileText.replace("?p", iuf['tasks'][taskID]['points']);
+	fileText = fileText.replace("?t", iuf['tasks'][taskID]['topic']);
 	fileText = fileText.replaceAll("\n", "\r\n");
 
 	iuf['tasks'][taskID]['file'] = fileText;
@@ -1364,17 +1319,8 @@ Shiny.addCustomMessageHandler('setTaskAuthoredBy', function(jsonData) {
 	iuf['tasks'][getID()]['authoredBy'] = taskAuthors;
 });
 
-Shiny.addCustomMessageHandler('setTaskCheckedBy', function(jsonData) {
-	const taskCheckers = JSON.parse(jsonData);
-	iuf['tasks'][getID()]['checkedBy'] = taskCheckers;
-});
-
 Shiny.addCustomMessageHandler('seTasktPrecision', function(taskPrecision) {
 	iuf['tasks'][getID()]['precision'] = taskPrecision;
-});
-
-Shiny.addCustomMessageHandler('setTaskDifficulty', function(taskDifficulty) {
-	iuf['tasks'][getID()]['difficulty'] = taskDifficulty;
 });
 
 Shiny.addCustomMessageHandler('setTaskPoints', function(taskPoints) {
@@ -1586,10 +1532,6 @@ async function createExamEvent() {
 	const additionalPdfFiles = iuf.examAdditionalPdf.map(pdf => pdf[1]);
 	
 	Shiny.onInputChange("createExam", {examSeed: $('#seedValueExam').val(), numberOfExams: $("#numberOfExams").val(), numberOfTasks: $("#numberOfTasks").val(), taskNames: taskNames, taskCodes:taskCodes, blocks: blocks, additionalPdfNames: additionalPdfNames, additionalPdfFiles: additionalPdfFiles}, {priority: 'event'});
-	
-	// Promise.all([taskCodes, additionalPdfFiles]).then((values) => {
-		// Shiny.onInputChange("createExam", {examSeed: $('#seedValueExam').val(), numberOfExams: $("#numberOfExams").val(), numberOfTasks: $("#numberOfTasks").val(), taskNames: taskNames, taskCodes:taskCodes, blocks: blocks, additionalPdfNames: additionalPdfNames, additionalPdfFiles: additionalPdfFiles}, {priority: 'event'});
-	// });
 }
 
 /* --------------------------------------------------------------
@@ -1779,13 +1721,6 @@ async function evaluateExamEvent() {
 										 examRegisteredParticipantsnName: examRegisteredParticipantsnName, examRegisteredParticipantsnFile: examRegisteredParticipantsnFile, 
 										 examScanPdfNames: examScanPdfNames, examScanPdfFiles: examScanPdfFiles, 
 										 examScanPngNames: examScanPngNames, examScanPngFiles: examScanPngFiles}, {priority: 'event'});
-			
-	// Promise.all(examScanPdfFiles).then((values) => {
-		// Shiny.onInputChange("evaluateExam", {examSolutionsName: examSolutionsName, examSolutionsFile: examSolutionsFile, 
-		                                     // examRegisteredParticipantsnName: examRegisteredParticipantsnName, examRegisteredParticipantsnFile: examRegisteredParticipantsnFile, 
-											 // examScanPdfNames: examScanPdfNames, examScanPdfFiles: examScanPdfFiles, 
-											 // examScanPngNames: examScanPngNames, examScanPngFiles: examScanPngFiles}, {priority: 'event'});
-	// });
 }
 
 /* --------------------------------------------------------------

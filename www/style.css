@@ -281,7 +281,7 @@ main > * {
 }
 
 .summary .s_labelSingle{
-	margin: 5px;
+	margin: auto;
 	padding: 3px;
 	border-radius: 3px;
 }
@@ -290,6 +290,7 @@ main > * {
 	display: flex;
 	flex-wrap: wrap;
 	flex-direction: row;
+	place-content: center;
 }
 
 .summary .s_label {

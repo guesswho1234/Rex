@@ -94,7 +94,6 @@ loadExercise = function(id, seed, html, e, session) {
   if(!is.null(html)) {
     examHistory = c() 
     authoredBy = c()
-    checkedBy = c()
     tags = c()
     type = c()
     question = c()
@@ -109,18 +108,12 @@ loadExercise = function(id, seed, html, e, session) {
       authoredBy = rjs_vectorToJsonStringArray(authoredBy) 
     }
     
-    if(length(html$exam1$exercise1$metainfo$checkedBy) > 0) { 
-      checkedBy = trimws(strsplit(html$exam1$exercise1$metainfo$checkedBy, ",")[[1]], "both")
-      checkedBy = rjs_vectorToJsonStringArray(checkedBy)
-    }
-    
     if(length(html$exam1$exercise1$metainfo$tags) > 0) { 
       tags = trimws(strsplit(html$exam1$exercise1$metainfo$tags, ",")[[1]], "both")
       tags = rjs_vectorToJsonStringArray(tags)
     }
     
     precision = html$exam1$exercise1$metainfo$precision
-    difficulty = html$exam1$exercise1$metainfo$difficulty  
     points = html$exam1$exercise1$points
     topic = html$exam1$exercise1$metainfo$topic
     type = html$exam1$exercise1$metainfo$type
@@ -129,9 +122,7 @@ loadExercise = function(id, seed, html, e, session) {
     
     session$sendCustomMessage("setTaskExamHistory", examHistory)
     session$sendCustomMessage("setTaskAuthoredBy", authoredBy)
-    session$sendCustomMessage("setTaskCheckedBy", checkedBy)
     session$sendCustomMessage("setTaskPrecision", precision)
-    session$sendCustomMessage("setTaskDifficulty", difficulty)
     session$sendCustomMessage("setTaskPoints", points)
     session$sendCustomMessage("setTaskTopic", topic)
     session$sendCustomMessage("setTaskType", type)
