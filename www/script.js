@@ -960,7 +960,7 @@ $('body').on('focus', '[contenteditable]', function() {
     const $this = $(this);
     if ($this.data('before') !== $this.html()) {
 		const taskID = getID();
-				
+			
 		if ($this.hasClass('taskNameText')) {
 			$('.taskItem:nth-child(' + (taskID + 1) + ') .taskName').text($this.text());
 			iuf['tasks'][taskID]['name'] = $this.text();
@@ -978,13 +978,12 @@ $('body').on('focus', '[contenteditable]', function() {
 			iuf['tasks'][taskID]['points'] = parseInt($this.text());
 		}
 		
-		console.log($this)
-		
 		if ($this.hasClass('topicText')) {
 			iuf['tasks'][taskID]['topic'] = $this.text();
 		}
 
 		setSimpleTaskFileContents(taskID);
+		
 		examTasksSummary();
     }
 });
@@ -1231,6 +1230,7 @@ $('#task_info').on('click', '#addNewAnswer', function() {
 	iuf['tasks'][taskID]['choices'].push(d_answerText);
 	iuf['tasks'][taskID]['result'].push(d_result);
 	
+	setSimpleTaskFileContents(taskID);
 	loadTaskFromObject(taskID);
 	
 	f_langDeEn();
@@ -1245,6 +1245,7 @@ $('#task_info').on('click', '.removeAnswer', function() {
 		iuf['tasks'][taskID]['result'].splice(choicesID, 1);
 	} 
 	
+	setSimpleTaskFileContents(taskID);
 	loadTaskFromObject(taskID);
 });
 

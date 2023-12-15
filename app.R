@@ -1,33 +1,75 @@
 # developed in r version 4.2.2
 
-#TODO: some connections are not properly closed and warnings can be thrown in R: "Warnung in list(...) ungenutzte Verbindung 4 () geschlossen"; maybe this happens when tasks with errors are sent to the backend to be parsed
 
-#TODO: unlink all files properly and at the right time (f.e. unlik all exam files after download) -> on.exit(unlink(...)) right after creation of tempdir() or tmpfile()
+# TODO -------------------------------------------------------------------
+  # TODO IUF TASKS ----------------------------------------------------------
+  #TODO: change all iuf tasks by adding "library(exams)" and "library(iuftools)" and replacing "if(MAKEBSP) set.seed(1)" to "if(exists(MAKEBSP) && MAKEBSP) set.seed(1)"
+  
+  
+  # TODO PUBLISHING -----------------------------------------------------------
+  #TODO: minimize all client side files (js, css, ...)
+  
+  
+  # TODO COSMETICS ----------------------------------------------------------
+  #TODO: refactor code (f.e. combine the three drag and drop setups to one, comment code, remove unneeded code, ...)
+  
+  #TODO: fix txt-file write (*.rnw, *.csv); empty row after each text row (affects task files and registered participants file)
+  
+  #TODO: change error, warning, success for popup: icon and optional "error codes" with small description hide/show textbox with code font
 
-#TODO: turn off hotkeys per default, allow to turn on hotkeys in nav bar and have a hot key modal to show what does what
+  #TODO: imported file lists (additional pdf, solutions, ...) file names can overflow if they are too long, make it pretty
+  
+  
+  # TODO USABILITY ----------------------------------------------------------
+  #TODO: disable nav and keys on "wait"
+  
+  #TODO: turn off hotkeys per default; allow to turn on hotkeys in nav bar and have a hot key modal to show binds
 
-#TODO: "export" button to download all tasks as zip (need to implement this in javascript)
+  #TODO: enter key when editing fields of editable tasks aceepts input, shift enter moves to the next line
 
-#TODO: allow only mchoice questions for nops exam
+  #TODO: button to clean / remove all additional files, or button with "new exam" and "new evaluation" that resets all fields
+  
+  
+  # TODO VALIDATION ---------------------------------------------------------
+  #TODO: field validation and helpers to fill in forms
+  # for nops: all exam tasks require to have the same amount of choices
+  # for nops: all exam tasks need at least 2 choices
+  # for nops: all choices need to have unique values
+  # at least one exam task needs to be selected
+  
+  #TODO: allow only mchoice questions for nops exam
+  
+  
+  # TODO CHECKS -----------------------------------------------------------
+  #TODO: check if tasks can be "reproduced exactly" with exam seed as task seed
+  
+  
+  # TODO BUGS AND ERRORS ---------------------------------------------------------------
+  #TODO: click between text / icon toggle removes all button info (remove this effect)
+  
+  #TODO: parsing multiple tasks asyncronous does not work properly with new background processing (only last exercise is parsed); current workaround is sequential parsing
+  # in case of long parsing times, websocket connection might be closed when hosted on heroku since heartbeats are not received when not using async parsing
+  
+  #TODO: connections are not properly closed / files anre not properly unlinked
+  # unlink all files as soon as not needed anymore
+  # or on.exit(unlink(...)) right after creation of tempdir() or tmpfile()
+  # at thend end unlink all just to be sure?
+  
+  #TODO: shift+f moves to search fields even when editing fields of editable tasks
 
-#TODO: add possibility to create pdf exam with open questions (can then be appended to nops)
-
-#TODO: disable nav and keys on "wait"
-
-#TODO: parsing multiple tasks sequentially does not work properly with new background processing (only last exercise is parsed)
-
-#TODO: change all iuf tasks by adding "library(exams)" and "library(iuftools)" and replacing "if(MAKEBSP) set.seed(1)" to "if(exists(MAKEBSP) && MAKEBSP) set.seed(1)"
-
-#TODO: check if tasks can be "reproduced exactly" with exam seed as task seed
-
-#TODO: refactor javascript code (f.e. combine the three drag and drop setups to one)
-
-#TODO: click between text / icon toggle removes all button info (remove this effect)
-
-#TODO: fix csv file (registeredParticipants) since it has empty rows after each text row after importing
-
-#TODO: field validation and helpers to fill in forms
-
+  
+  # TODO NEW FEATURES -------------------------------------------------------
+  #TODO: add possibility to create pdf exam with open questions (can then be appended to nops)
+  
+  #TODO: "export" button to download all tasks as zip (need to implement this in javascript)
+  
+  #TODO: multipage pdf to individual png files for nops eval
+  
+  #TODO: allow to include one png image file per editabel exercise (separate upload field, no drag & drop)
+  
+  #TODO: allow to include one latex equation per editable exercise (separate input text field, multiline)
+  
+  
 # STARTUP -----------------------------------------------------------------
 rm(list = ls())
 cat("\f")
@@ -204,16 +246,27 @@ prepareExam = function(exam, seed, input) {
     seed = seedList
   )
   
+  examHtmlFiles = paste0(dir, "/", name, 1:exam$numberOfExams, ".html")
   examPdfFiles = paste0(dir, "/", name, 1:exam$numberOfExams, ".pdf")
   examRdsFile = paste0(dir, "/", name, ".rds")
   
-  return(list(examFields=examFields, examFiles=list(pdfFiles=examPdfFiles, rdsFile=examRdsFile), sourceFiles=list(taskFiles=taskFiles, additionalPdfFiles=additionalPdfFiles)))
+  return(list(examFields=examFields, examFiles=list(examHtmlFiles=examHtmlFiles, pdfFiles=examPdfFiles, rdsFile=examRdsFile), sourceFiles=list(taskFiles=taskFiles, additionalPdfFiles=additionalPdfFiles)))
 }
 
 createExam = function(preparedExam, collectWarnings) {
   out = tryCatch({
     warnings = collectWarnings({
         with(preparedExam$examFields, {
+          # create exam html preview with solutions
+          exams::exams2html(file = file,
+                            n = n,
+                            nsamp = nsamp,
+                            name = name,
+                            dir = dir,
+                            solution=TRUE,
+                            seed = seed)
+          
+          # create exam
           exams::exams2nops(file = file,
                             n = n,
                             nsamp = nsamp,
@@ -232,7 +285,7 @@ createExam = function(preparedExam, collectWarnings) {
                             seed = seed)
         })
 
-      NULL
+    NULL
     })
     key = "Success"
     value = paste(unlist(warnings), collapse="%;%")
@@ -298,8 +351,11 @@ prepareEvaluation = function(evaluation){
   })
   
   convertedPngFiles = unlist(lapply(seq_along(pdfFiles), function(i){
-    filenames = tempfile(pattern = paste0(names(pdfFiles)[i], "_"), tmpdir = dir, fileext = ".png")
-    pdftools::pdf_convert(pdf=pdfFiles[[i]], filenames=filenames, pages=1:1, format='png')
+    numberOfPages = pdftools::pdf_info(pdfFiles[[i]])$pages
+    filenames = sapply(1:numberOfPages, function(page){
+      tempfile(pattern = paste0(names(pdfFiles)[i], "_scan", page, "_"), tmpdir = dir, fileext = ".png")
+    }) 
+    pdftools::pdf_convert(pdf=pdfFiles[[i]], filenames=filenames, pages=NULL, format='png')
   }))
   
   scanFiles = c(pngFiles, convertedPngFiles)
@@ -319,11 +375,13 @@ evaluateExam = function(preparedEvaluation, collectWarnings){
     
     warnings = collectWarnings({
       with(preparedEvaluation, {
+        # process scans
         exams::nops_scan(images=files$scans,
                          dir=dir,
                          file=nops_scan_fileName,
                          rotate=FALSE)
         
+        # evaluate scans
         exams::nops_eval(
           register = files$registeredParticipants,
           solutions = files$solution,
@@ -598,6 +656,8 @@ server = function(input, output, session) {
   })
   
   # CREATE EXAM -------------------------------------------------------------
+  
+  # exam seed change
   examFiles = reactiveVal()
 
   examCreation = eventReactive(input$createExam, {
