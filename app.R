@@ -2,13 +2,13 @@
 
 
 # TODO -------------------------------------------------------------------
-  # TODO IUF TASKS ----------------------------------------------------------
-  #TODO: change all iuf tasks by adding "library(exams)" and "library(iuftools)" and replacing "if(MAKEBSP) set.seed(1)" to "if(exists(MAKEBSP) && MAKEBSP) set.seed(1)"
-  
-  
-  # TODO PUBLISHING -----------------------------------------------------------
+# TODO PUBLISHING -----------------------------------------------------------
   #TODO: minimize all client side files (js, css, ...)
   
+  
+  # TODO IUF TASKS ----------------------------------------------------------
+  #TODO: change all iuf tasks by adding "library(exams)" and "library(iuftools)" and replacing "if(MAKEBSP) set.seed(1)" to "if(exists(MAKEBSP) && MAKEBSP) set.seed(1)"
+
   
   # TODO COSMETICS ----------------------------------------------------------
   #TODO: refactor code (f.e. combine the three drag and drop setups to one, comment code, remove unneeded code, ...)
@@ -57,6 +57,8 @@
   
   #TODO: shift+f moves to search fields even when editing fields of editable tasks
 
+  #TODO: since pdftools were added, heroku app does not work anymore -> check logs
+
   
   # TODO NEW FEATURES -------------------------------------------------------
   #TODO: add possibility to create pdf exam with open questions (can then be appended to nops)
@@ -67,6 +69,8 @@
   
   #TODO: allow to include one latex equation per editable exercise (separate input text field, multiline)
   
+  #TODO: evaluate exams with faulty scans
+
   
 # STARTUP -----------------------------------------------------------------
 rm(list = ls())
