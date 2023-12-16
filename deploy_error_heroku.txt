@@ -1,5 +1,5 @@
-POST git-receive-pack (467 bytes)
-remote: Updated 94 paths from e9d4407        
+POST git-receive-pack (818 bytes)
+remote: Updated 96 paths from 3cba564        
 remote: Compressing source files... done.        
 remote: Building source:        
 remote: 
@@ -13,7 +13,7 @@ remote: Done
 remote: -----> R (shiny) app detected        
 remote: -----> Installing R        
 remote:        Version 4.2.1 will be installed on heroku-22 stack.        
-remote: -----> Downloading buildpack archives from AWS S3
+remote: -----> Downloading buildpack archives from AWS S3        
 remote:        Loading https://heroku-buildpack-r.s3.amazonaws.com/latest/heroku-buildpack-r-22-4.2.1-deploy.tar.gz from cache        
 remote:        Loading https://heroku-buildpack-r.s3.amazonaws.com/latest/heroku-buildpack-r-22-4.2.1-shiny.tar.gz from cache        
 remote:        Restoring R packages from cache        
@@ -23,26 +23,52 @@ remote: -----> Executing init.R file
 remote:        Skipping already installed package: exams         
 remote:        Skipping already installed package: xtable         
 remote:        Skipping already installed package: tth         
+remote:        Skipping already installed package: png         
 remote:        Skipping already installed package: callr         
-remote:        Installing pdftools ...        
-remote:        Installing staplr ...        
-remote:        also installing the dependencies ârJavaâ, âpdftoolsâ        
+remote:        Installing package into â/app/R/site-libraryâ        
+remote:        (as âlibâ is unspecified)        
+remote:        system (cmd0): /app/R/lib/R/bin/R CMD INSTALL        
+remote:        trying URL 'https://cloud.r-project.org/src/contrib/pdftools_3.4.0.tar.gz'        
+remote:        Content type 'application/x-gzip' length 936466 bytes (914 KB)        
+remote:        ==================================================        
+remote:        downloaded 914 KB        
 remote:                
-remote:        Installing TRUE ...        
-remote:        Warning messages:        
-remote:        1: In install.packages(p, clean = TRUE, quiet = (verbose != "1")) :        
-remote:          installation of package âpdftoolsâ had non-zero exit status        
-remote:        2: In install.packages(p, clean = TRUE, quiet = (verbose != "1")) :        
-remote:          installation of package ârJavaâ had non-zero exit status        
-remote:        3: In install.packages(p, clean = TRUE, quiet = (verbose != "1")) :        
-remote:          installation of package âpdftoolsâ had non-zero exit status        
-remote:        4: In install.packages(p, clean = TRUE, quiet = (verbose != "1")) :        
-remote:          installation of package âstaplrâ had non-zero exit status        
-remote:        5: package âTRUEâ is not available for this version of R        
+remote:        foundpkgs: pdftools, /tmp/RtmpVWKkzr/downloaded_packages/pdftools_3.4.0.tar.gz        
+remote:        files: /tmp/RtmpVWKkzr/downloaded_packages/pdftools_3.4.0.tar.gz        
+remote:        * installing *source* package âpdftoolsâ ...        
+remote:        ** package âpdftoolsâ successfully unpacked and MD5 sums checked        
+remote:        ** using staged installation        
+remote:        Package poppler-cpp was not found in the pkg-config search path.        
+remote:        Perhaps you should add the directory containing `poppler-cpp.pc'        
+remote:        to the PKG_CONFIG_PATH environment variable        
+remote:        No package 'poppler-cpp' found        
+remote:        Using PKG_CFLAGS=-I/usr/include/poppler/cpp -I/usr/include/poppler        
+remote:        Using PKG_LIBS=-lpoppler-cpp        
+remote:        --------------------------- [ANTICONF] --------------------------------        
+remote:        Configuration failed to find 'poppler-cpp' system library. Try installing:        
+remote:         * rpm: poppler-cpp-devel (Fedora, CentOS, RHEL)        
+remote:         * brew: poppler (MacOS)        
+remote:         * deb: libpoppler-cpp-dev (Debian, Ubuntu, etc)        
+remote:         * On Ubuntu 16.04 or 18.04 use this PPA:        
+remote:            sudo add-apt-repository -y ppa:cran/poppler        
+remote:            sudo apt-get update        
+remote:            sudo apt-get install -y libpoppler-cpp-dev        
+remote:        If poppler-cpp is already installed, check that 'pkg-config' is in your        
+remote:        PATH and PKG_CONFIG_PATH contains a poppler-cpp.pc file. If pkg-config        
+remote:        is unavailable you can set INCLUDE_DIR and LIB_DIR manually via:        
+remote:        R CMD INSTALL --configure-vars='INCLUDE_DIR=... LIB_DIR=...'        
+remote:        -------------------------- [ERROR MESSAGE] ---------------------------        
+remote:        <stdin>:1:10: fatal error: poppler-document.h: No such file or directory        
+remote:        compilation terminated.        
+remote:        --------------------------------------------------------------------        
+remote:        ERROR: configuration failed for package âpdftoolsâ        
+remote:        * removing â/app/R/site-library/pdftoolsâ        
 remote:                
-remote:        A version of this package for your version of R might be available elsewhere,        
-remote:        see the ideas at        
-remote:        https://cran.r-project.org/doc/manuals/r-patched/R-admin.html#Installing-packages         
+remote:        The downloaded source packages are in        
+remote:        	â/tmp/RtmpVWKkzr/downloaded_packagesâ        
+remote:        Warning message:        
+remote:        In install.packages("pdftools", verbose = TRUE) :        
+remote:          installation of package âpdftoolsâ had non-zero exit status
 remote:        Installing package into â/app/R/site-libraryâ        
 remote:        (as âlibâ is unspecified)        
 remote:        * installing *source* package âiuftoolsâ ...        
@@ -64,28 +90,10 @@ remote:
 remote:        tlmgr option sys_bin ~/bin        
 remote:        tlmgr: setting option sys_bin to /app/bin.        
 remote:        tlmgr: updating /app/.TinyTeX/tlpkg/texlive.tlpdb        
-remote: -----> Finalising environment...        
-remote: -----> Writing environment to profile        
-remote: -----> Caching build outputs        
-remote:        Build environment...        
-remote:        Done: 479M        
-remote:        R packages...        
-remote:        Done: 77M        
-remote: -----> R 4.2.1 installed successfully!        
-remote:        Install took 166 seconds to complete        
-remote: -----> Discovering process types        
-remote:        Procfile declares types     -> (none)        
-remote:        Default types for buildpack -> console, web
-remote: 
-remote: -----> Compressing...        
-remote:        Done: 291.5M        
-remote: -----> Launching...        
-remote:        Released v38        
-remote:        https://rexams-fd58d4e659c3.herokuapp.com/ deployed to Heroku        
-remote: 
-remote: Verifying deploy... done.        
-Pushing to https://git.heroku.com/rexams.git
-To https://git.heroku.com/rexams.git
-   38cf315..78b7d23  main -> main
-updating local tracking ref 'refs/remotes/heroku/main'
+remote:        tlmgr option repository 'https://mirror.mwt.me/ctan/systems/texlive/tlnet'        
+remote:        tlmgr: setting default package repository to https://mirror.mwt.me/ctan/systems/texlive/tlnet        
+remote:        tlmgr: updating /app/.TinyTeX/tlpkg/texlive.tlpdb        
+remote:        tlmgr update --list        
+remote:        tlmgr: package repository https://mirror.mwt.me/ctan/systems/texlive/tlnet (verified)        
+remote:        update:   texlive-scripts    [112k]: local:    69130, source:    69136        
 
