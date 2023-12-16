@@ -1,5 +1,4 @@
-# developed in r version 4.2.2
-
+# developed in r version 4.2.1
 
 # TODO -------------------------------------------------------------------
 # TODO PUBLISHING -----------------------------------------------------------
@@ -78,13 +77,14 @@ cat("\f")
 gc()
 
 # PACKAGES ----------------------------------------------------------------
-library(shiny) # shiny_1.4.0
+library(shiny) # shiny_1.8.0
 library(shinyjs) # shinyjs_2.1.0
-library(shinyWidgets) # shinyWidgets_0.5.1
-library(shinycssloaders) #shinycssloaders_0.3
-library(exams) #exams_2.4
+library(shinyWidgets) # shinyWidgets_0.8.0
+library(shinycssloaders) #shinycssloaders_1.0.0
+library(exams) #exams_2.4-0
 library(png) #png_0.1-8 
-library(xtable) #xtable_1.8
+library(tth) #tth_4.12-0-1 
+library(xtable) #xtable_1.8-4
 library(iuftools) #iuftools_1.0.0
 library(callr) # callr_3.7.3
 library(pdftools) # pdftools_3.4.0

@@ -7,8 +7,7 @@ helpers.installPackages(
   "png",
   "callr",
   "pdftools",
-  #"staplr",
-  verbose = TRUE
+  #"staplr"
 )
 
 # special case of installing iuftools from source
