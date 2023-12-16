@@ -1,0 +1,91 @@
+POST git-receive-pack (467 bytes)
+remote: Updated 94 paths from e9d4407        
+remote: Compressing source files... done.        
+remote: Building source:        
+remote: 
+remote: -----> Building on the Heroku-22 stack        
+remote: -----> Using buildpacks:        
+remote:        1. https://github.com/amitree/heroku-buildpack-poppler        
+remote:        2. vsv/heroku-buildpack-r        
+remote: -----> https://github.com/amitree/heroku-buildpack-poppler app detected        
+remote: Extracting poppler_0.81.0-1_amd64.deb...        
+remote: Done        
+remote: -----> R (shiny) app detected        
+remote: -----> Installing R        
+remote:        Version 4.2.1 will be installed on heroku-22 stack.        
+remote: -----> Downloading buildpack archives from AWS S3
+remote:        Loading https://heroku-buildpack-r.s3.amazonaws.com/latest/heroku-buildpack-r-22-4.2.1-deploy.tar.gz from cache        
+remote:        Loading https://heroku-buildpack-r.s3.amazonaws.com/latest/heroku-buildpack-r-22-4.2.1-shiny.tar.gz from cache        
+remote:        Restoring R packages from cache        
+remote:        Setting up build environment from cache        
+remote: -----> Configuring build environment...        
+remote: -----> Executing init.R file        
+remote:        Skipping already installed package: exams         
+remote:        Skipping already installed package: xtable         
+remote:        Skipping already installed package: tth         
+remote:        Skipping already installed package: callr         
+remote:        Installing pdftools ...        
+remote:        Installing staplr ...        
+remote:        also installing the dependencies ârJavaâ, âpdftoolsâ        
+remote:                
+remote:        Installing TRUE ...        
+remote:        Warning messages:        
+remote:        1: In install.packages(p, clean = TRUE, quiet = (verbose != "1")) :        
+remote:          installation of package âpdftoolsâ had non-zero exit status        
+remote:        2: In install.packages(p, clean = TRUE, quiet = (verbose != "1")) :        
+remote:          installation of package ârJavaâ had non-zero exit status        
+remote:        3: In install.packages(p, clean = TRUE, quiet = (verbose != "1")) :        
+remote:          installation of package âpdftoolsâ had non-zero exit status        
+remote:        4: In install.packages(p, clean = TRUE, quiet = (verbose != "1")) :        
+remote:          installation of package âstaplrâ had non-zero exit status        
+remote:        5: package âTRUEâ is not available for this version of R        
+remote:                
+remote:        A version of this package for your version of R might be available elsewhere,        
+remote:        see the ideas at        
+remote:        https://cran.r-project.org/doc/manuals/r-patched/R-admin.html#Installing-packages         
+remote:        Installing package into â/app/R/site-libraryâ        
+remote:        (as âlibâ is unspecified)        
+remote:        * installing *source* package âiuftoolsâ ...        
+remote:        ** using staged installation        
+remote:        ** R        
+remote:        ** byte-compile and prepare package for lazy loading        
+remote:        ** help        
+remote:        *** installing help indices        
+remote:        ** building package indices        
+remote:        ** testing if installed package can be loaded from temporary location        
+remote:        ** testing if installed package can be loaded from final location        
+remote:        ** testing if installed package keeps a record of temporary installation path        
+remote:        * DONE (iuftools)        
+remote:        trying URL 'https://yihui.org/tinytex/TinyTeX-1.tar.gz'        
+remote:        Content type 'application/octet-stream' length 92495861 bytes (88.2 MB)        
+remote:        ==================================================        
+remote:        downloaded 88.2 MB        
+remote:                
+remote:        tlmgr option sys_bin ~/bin        
+remote:        tlmgr: setting option sys_bin to /app/bin.        
+remote:        tlmgr: updating /app/.TinyTeX/tlpkg/texlive.tlpdb        
+remote: -----> Finalising environment...        
+remote: -----> Writing environment to profile        
+remote: -----> Caching build outputs        
+remote:        Build environment...        
+remote:        Done: 479M        
+remote:        R packages...        
+remote:        Done: 77M        
+remote: -----> R 4.2.1 installed successfully!        
+remote:        Install took 166 seconds to complete        
+remote: -----> Discovering process types        
+remote:        Procfile declares types     -> (none)        
+remote:        Default types for buildpack -> console, web
+remote: 
+remote: -----> Compressing...        
+remote:        Done: 291.5M        
+remote: -----> Launching...        
+remote:        Released v38        
+remote:        https://rexams-fd58d4e659c3.herokuapp.com/ deployed to Heroku        
+remote: 
+remote: Verifying deploy... done.        
+Pushing to https://git.heroku.com/rexams.git
+To https://git.heroku.com/rexams.git
+   38cf315..78b7d23  main -> main
+updating local tracking ref 'refs/remotes/heroku/main'
+

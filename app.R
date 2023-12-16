@@ -83,6 +83,7 @@ library(shinyjs) # shinyjs_2.1.0
 library(shinyWidgets) # shinyWidgets_0.5.1
 library(shinycssloaders) #shinycssloaders_0.3
 library(exams) #exams_2.4
+library(png) #png_0.1-8 
 library(xtable) #xtable_1.8
 library(iuftools) #iuftools_1.0.0
 library(callr) # callr_3.7.3
@@ -380,8 +381,7 @@ prepareEvaluation = function(evaluation, rotate, input){
              input$markLabel4,
              input$markLabel5)
   
-  if(all(is.na(mark)) &&  all(labels=="")){
-    mark = c(0.5, 0.6, 0.75, 0.85)
+  if(any(labels=="")){
     labels = NULL
   }
 
@@ -404,8 +404,12 @@ evaluateExam = function(preparedEvaluation, collectWarnings){
     nops_evaluationZip = paste0(preparedEvaluation$dir, "/", nops_evaluation_fileNamePrefix, ".zip")
 
     warnings = collectWarnings({
-      if(any(is.na(preparedEvaluation$fields$mark)) || any(preparedEvaluation$fields$labels=="")){
-        stop("Mark and labels are not valid.")
+      if(any(is.na(preparedEvaluation$fields$mark))){
+        stop("Clef is invalid.")
+      }
+      
+      if(!is.null(preparedEvaluation$fields$labels) && any(preparedEvaluation$fields$labels=="")){
+        stop("Clef is invalid.")
       }
       
       with(preparedEvaluation, {

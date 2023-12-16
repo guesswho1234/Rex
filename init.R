@@ -4,6 +4,7 @@ helpers.installPackages(
   "exams",
   "xtable",
   "tth",
+  "png",
   "callr",
   "pdftools",
   "staplr",
