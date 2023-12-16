@@ -3,7 +3,12 @@ With init.R and run.R in place, we can push directly to Heroku.
 However, we need to select a buildpack that tells Heroku how to handle the shiny app.
 We use: https://github.com/virtualstaticvoid/heroku-buildpack-r
 
-After creating a new project on Heroku, make sure to add the buildpack as a config var:
-heroku config:set BUILDPACK_URL=https://github.com/virtualstaticvoid/heroku-buildpack-r.git -a <heroku_project_name>
+heroku cli command:
+heroku buildpacks:set -a APP_NAME https://github.com/virtualstaticvoid/heroku-buildpack-r
 
-That's it. Just push to Heroku.
+# Poppler buildpack 
+To be able to use the pdftools package we need poppler to be available.
+For this we additionally need to add the following buildpack as well.
+
+heroku cli command:
+heroku buildpacks:add -a APP_NAME https://github.com/amitree/heroku-buildpack-poppler
