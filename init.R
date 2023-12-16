@@ -7,7 +7,7 @@ helpers.installPackages(
   "png",
   "callr",
   "pdftools",
-  "staplr",
+  #"staplr",
   verbose = TRUE
 )
 
