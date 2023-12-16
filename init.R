@@ -5,7 +5,7 @@ helpers.installPackages(
   "xtable",
   "tth",
   "png",
-  "callr",
+  "callr"
   #"pdftools"
   #"staplr"
 )
