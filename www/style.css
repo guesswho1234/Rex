@@ -740,6 +740,22 @@ main > * {
 /* --------------------------------------------------------------
  CREATE EXAMS 
 -------------------------------------------------------------- */
+#marks {
+	width: 300px;
+}
+
+#marks tr td:first-of-type {
+	width: 100px;
+}
+
+#marks tr td:last-of-type {
+	width: 200px;
+}
+
+#marks td > * {
+	width: unset !important;
+}
+
 #additionalPdfContainer,
 #examScansContainer,
 #examSolutionsContainer,
@@ -788,7 +804,7 @@ main > * {
 #examScanFiles,
 #examSolutionsFile,
 #examRegisteredParticipantsFile {
-	width: 270px;
+	width: 262px;
 	min-height: 34px;
 	background: var(---background3);
 }

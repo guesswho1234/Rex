@@ -46,9 +46,9 @@
 			</ul>
 			<div id="navMisc">
 				<div id="buttonModeSwitchContainer">
-					<span id="textButtons" class="buttonModeSelector active"><i class="fa-solid fa-font"></i></span>
-					<span> | </span>
 					<span id="iconButtons" class="buttonModeSelector"><i class="fa-solid fa-icons"></i></span>
+					<span> | </span>
+					<span id="textButtons" class="buttonModeSelector active"><i class="fa-solid fa-font"></i></span>
 				</div>
 				<div id="languageSwitchContainer">
 					<span id="deLang" class="langSelector active">DE</span>
@@ -291,10 +291,6 @@
 							<h2><span lang="de">Prüfung Auswerten</span><span lang="en">Evaluate exam</span></h2>
 							<div>
 								<div>
-									<label for="numberOfFixedPoints"><span lang="de">Punkte pro Aufgabe</span><span lang="en">Points per exercise</span></label>
-									{{ numericInput_pointsPerExercise }}
-								</div>
-								<div>
 									<label for="partialPoints"><span lang="de">Teilpunkte</span><span lang="en">Partial points</span></label>
 									{{ checkboxInput_partialPoints }}
 								</div>
@@ -303,10 +299,51 @@
 									{{ checkboxInput_negativePoints }}
 								</div>
 								<div>
+									<label for="rule"><span lang="de">Regel</span><span lang="en">Rule</span></label>
+									</br>
+									<span id="infoRules" class="infoField"><span lang="de">Regel für Abzugspunkte bei Flaschantworten</span><span lang="en">Rule for point deductions for wrong answers</span></span>
+									{{ selectInput_rule }}
+								</div>
+								<div>
 									<label for="marks"><span lang="de">Notenschlüssel</span><span lang="en">Clef</span></label>
-									<!--some form of editable table-->
-									<!--marks: mindestpunkte fuer note-->
-									<!--labels: labels for marks-->
+									</br>
+									<span id="infoMark" class="infoField"><span lang="de">Zahlen von 0 bis 1 werden als 0% bis 100% interpretiert</span><span lang="en">Numbers between 0 and 1 are interpreted as 0% to 100%</span></span>
+									<table id="marks">
+										<tr>
+											<th><span lang="de">Punkte</span><span lang="en">Points</span></th>
+											<th><span lang="de">Note</span><span lang="en">Mark</span></th>
+										</tr>
+										<tr>
+											<td>{{ numericInput_markThreshold1 }}</td>
+											<td>{{ textInput_markLabel1 }}</td>
+										</tr>
+										<tr>
+											<td>{{ numericInput_markThreshold2 }}</td>
+											<td>{{ textInput_markLabe12 }}</td>
+										</tr>
+										<tr>
+											<td>{{ numericInput_markThreshold3 }}</td>
+											<td>{{ textInput_markLabel3 }}</td>
+										</tr>
+										<tr>
+											<td>{{ numericInput_markThreshold4 }}</td>
+											<td>{{ textInput_markLabel4 }}</td>
+										</tr>
+										<tr>
+											<td>{{ numericInput_markThreshold5 }}</td>
+											<td>{{ textInput_markLabel5 }}</td>
+										</tr>
+									</table>
+								</div>
+								<div>
+									<label for="evaluationLanguage"><span lang="de">Sprache</span><span lang="en">Language</span></label>
+									{{ selectInput_evaluationLanguage }}
+								</div>
+								<div>
+									<label for="rotateScans"><span lang="de">Scans drehen</span><span lang="en">Rotate scans</span></label>
+									</br>
+									<span id="infoRules" class="infoField"><span lang="de">Dreht alle PDF-Seiten um 180 Grad</span><span lang="en">Rotates all PDF pages by 180 degrees</span></span>
+									{{ checkboxInput_rotateScans }}
 								</div>
 								<div>
 									<label><span lang="de">Lösungen</span><span lang="en">Solutions</span></label>

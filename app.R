@@ -38,6 +38,8 @@
   # at least one exam task needs to be selected
   
   #TODO: allow only mchoice questions for nops exam
+
+  #TODO: produce own errors via stop("...")
   
   
   # TODO CHECKS -----------------------------------------------------------
@@ -45,8 +47,6 @@
   
   
   # TODO BUGS AND ERRORS ---------------------------------------------------------------
-  #TODO: click between text / icon toggle removes all button info (remove this effect)
-  
   #TODO: parsing multiple tasks asyncronous does not work properly with new background processing (only last exercise is parsed); current workaround is sequential parsing
   # in case of long parsing times, websocket connection might be closed when hosted on heroku since heartbeats are not received when not using async parsing
   
@@ -62,8 +62,6 @@
   #TODO: add possibility to create pdf exam with open questions (can then be appended to nops)
   
   #TODO: "export" button to download all tasks as zip (need to implement this in javascript)
-  
-  #TODO: multipage pdf to individual png files for nops eval
   
   #TODO: allow to include one png image file per editabel exercise (separate upload field, no drag & drop)
   
@@ -85,6 +83,7 @@ library(xtable) #xtable_1.8
 library(iuftools) #iuftools_1.0.0
 library(callr) # callr_3.7.3
 library(pdftools) # pdftools_3.4.0
+library(staplr) # staplr_3.2.2
 
 # FUNCTIONS ----------------------------------------------------------------
 collectWarnings = function(expr) {
@@ -316,9 +315,9 @@ examCreationResponse = function(session, message, downloadable) {
   ))
 }
 
-prepareEvaluation = function(evaluation){
+prepareEvaluation = function(evaluation, rotate, input){
   dir = tempdir()
-  
+
   solutionFile = unlist(lapply(seq_along(evaluation$examSolutionsName), function(i){
     file = tempfile(pattern = paste0(evaluation$examSolutionsName[[i]], "_"), tmpdir = dir, fileext = ".rds")
     raw = openssl::base64_decode(evaluation$examSolutionsFile[[i]])
@@ -347,6 +346,8 @@ prepareEvaluation = function(evaluation){
     raw = openssl::base64_decode(evaluation$examScanPdfFiles[[i]])
     writeBin(raw, con = file)
     
+    staplr::rotate_pdf(page_rotation=ifelse(rotate, 180, 0) , input_filepath=file, output_filepath=file, overwrite=TRUE)
+    
     return(file)
   })
   
@@ -355,12 +356,37 @@ prepareEvaluation = function(evaluation){
     filenames = sapply(1:numberOfPages, function(page){
       tempfile(pattern = paste0(names(pdfFiles)[i], "_scan", page, "_"), tmpdir = dir, fileext = ".png")
     }) 
-    pdftools::pdf_convert(pdf=pdfFiles[[i]], filenames=filenames, pages=NULL, format='png')
+    pdftools::pdf_convert(pdf=pdfFiles[[i]], filenames=filenames, pages=NULL, format='png', dpi=300, antialias=TRUE, verbose=FALSE)
   }))
   
   scanFiles = c(pngFiles, convertedPngFiles)
+
+  partial = input$partialPoints
+  negative = input$negativePoints
+  rule = input$rule
   
-  return(list(dir=dir, examName=evaluation$examSolutionsName[[1]], files=list(solution=solutionFile, registeredParticipants=registeredParticipantsFile, scans=scanFiles)))
+  mark = c(input$markThreshold1,
+           input$markThreshold2,
+           input$markThreshold3,
+           input$markThreshold4,
+           input$markThreshold5)
+  labels = c(input$markLabel1,
+             input$markLabe12,
+             input$markLabel3,
+             input$markLabel4,
+             input$markLabel5)
+  
+  if(all(is.na(mark)) &&  all(labels=="")){
+    mark = c(0.5, 0.6, 0.75, 0.85)
+    labels = NULL
+  }
+
+  language = input$evaluationLanguage
+
+  return(list(dir=dir, 
+              examName=evaluation$examSolutionsName[[1]], 
+              fields=list(points=points, partial=partial, negative=negative, rule=rule, mark=mark, labels=labels, language=language), 
+              files=list(solution=solutionFile, registeredParticipants=registeredParticipantsFile, scans=scanFiles)))
 }
 
 evaluateExam = function(preparedEvaluation, collectWarnings){
@@ -369,31 +395,35 @@ evaluateExam = function(preparedEvaluation, collectWarnings){
     nops_scan_file = paste0(preparedEvaluation$dir, "/", nops_scan_fileName)
     nops_evaluation_fileNamePrefix = paste0(preparedEvaluation$examName, "_nops_eval")
     nops_evaluation_files = paste0("evaluation", seq_along(preparedEvaluation$files$scans), ".html")
-    nops_evaluation_fileNames = paste0("evaluation", seq_along(preparedEvaluation$files$scans), ".html")
+    nops_evaluation_fileNames = "evaluation.html"
     nops_evaluationCsv = paste0(preparedEvaluation$dir, "/", nops_evaluation_fileNamePrefix, ".csv")
     nops_evaluationZip = paste0(preparedEvaluation$dir, "/", nops_evaluation_fileNamePrefix, ".zip")
-    
+
     warnings = collectWarnings({
+      if(any(is.na(preparedEvaluation$fields$mark)) || any(preparedEvaluation$fields$labels=="")){
+        stop("Mark and labels are not valid.")
+      }
+      
       with(preparedEvaluation, {
         # process scans
         exams::nops_scan(images=files$scans,
-                         dir=dir,
                          file=nops_scan_fileName,
-                         rotate=FALSE)
+                         dir=dir)
         
         # evaluate scans
         exams::nops_eval(
           register = files$registeredParticipants,
           solutions = files$solution,
           scans = nops_scan_file,
-          # eval = exams_eval(partial = partial, negative = negative, rule = "false2"),
+          eval = exams::exams_eval(partial = fields$partial, negative = fields$negative, rule = fields$rule),
           # points = points,
-          # mark = mark,
-          # labels = labels,
+          mark = fields$mark,
+          labels = fields$abels,
           results = nops_evaluation_fileNamePrefix,
           dir = dir,
-          file = nops_evaluation_fileNames
-          # interactive = FALSE
+          file = nops_evaluation_fileNames,
+          language = fields$language,
+          interactive = FALSE
         )
       })
       
@@ -521,7 +551,6 @@ seedMax = 99999999
 initSeed = as.numeric(gsub("-", "", Sys.Date()))
 numberOfTaskBlocks = 1
 maxNumberOfExamTasks = 0
-MAKEBSP = FALSE
 languages = c("en",
               "hr",
               "da",
@@ -542,6 +571,7 @@ languages = c("en",
               "sl",
               "es",
               "tr")
+rules = list("- 1/max(nwrong, 2)"="false2", "- 1/nwrong"="false", "- 1/ncorrect"="true", "- 1"="all", "- 0"="none")
 
 # UI -----------------------------------------------------------------
 ui = fluidPage(
@@ -569,10 +599,24 @@ ui = fluidPage(
       checkboxInput_duplex = checkboxInput("duplex", label = NULL, value = NULL),
 
       # EVALUATE ----------------------------------------------------------------
-      numericInput_pointsPerExercise = numericInput("pointsPerExercise", label = NULL, value = NULL, min = 1, step = 1),
       checkboxInput_partialPoints = checkboxInput("partialPoints", label = NULL, value = NULL),
       checkboxInput_negativePoints = checkboxInput("negativePoints", label = NULL, value = NULL),
-      selectInput_evaluationLanguage = selectInput("selectInput_evaluationLanguage", label = NULL, choices = languages, selected = NULL, multiple = FALSE)
+      selectInput_rule = selectInput("rule", label = NULL, choices = rules, selected = NULL, multiple = FALSE),
+    
+      numericInput_markThreshold1 = numericInput("markThreshold1", label = NULL, value = 0, min = 0),
+      numericInput_markThreshold2 = numericInput("markThreshold2", label = NULL, value = 0.5, min = 0),
+      numericInput_markThreshold3 = numericInput("markThreshold3", label = NULL, value = 0.6, min = 0),
+      numericInput_markThreshold4 = numericInput("markThreshold4", label = NULL, value = 0.75, min = 0),
+      numericInput_markThreshold5 = numericInput("markThreshold5", label = NULL, value = 0.85, min = 0),
+      
+      textInput_markLabel1 = textInput("markLabel1", label = NULL, value = NULL),
+      textInput_markLabe12 = textInput("markLabe12", label = NULL, value = NULL),
+      textInput_markLabel3 = textInput("markLabel3", label = NULL, value = NULL),
+      textInput_markLabel4 = textInput("markLabel4", label = NULL, value = NULL),
+      textInput_markLabel5 = textInput("markLabel5", label = NULL, value = NULL),
+    
+      selectInput_evaluationLanguage = selectInput("evaluationLanguage", label = NULL, choices = languages, selected = NULL, multiple = FALSE),
+      checkboxInput_rotateScans = checkboxInput("rotateScans", label = NULL, value = NULL)
   )
 )
 
@@ -697,12 +741,14 @@ server = function(input, output, session) {
   )
   
   # EVALUATE EXAM -------------------------------------------------------------
+  
+  # exam seed change
   evaluationFiles = reactiveVal()
 
-    examEvaluation = eventReactive(input$evaluateExam, {
+  examEvaluation = eventReactive(input$evaluateExam, {
     startWait(session)
-
-    preparedEvaluation = prepareEvaluation(isolate(input$evaluateExam))
+    
+    preparedEvaluation = prepareEvaluation(isolate(input$evaluateExam), isolate(input$rotateScans), isolate(input))
 
     x = callr::r_bg(
       func = evaluateExam,
@@ -723,7 +769,7 @@ server = function(input, output, session) {
       stopWait(session)
     }
   })
-  
+
   output$downloadEvaluationFiles = downloadHandler(
     filename = paste0(gsub("exam", "evaluation", evaluationFiles()[1]), ".zip"),
     content = function(fname) {

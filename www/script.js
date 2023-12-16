@@ -230,7 +230,7 @@ $('#buttonModeSwitchContainer span').click(function () {
 	$('body').removeClass("textButtonMode");
 	
 	switch( $(this).attr('id') ) {
-		case "iconButtons": 
+		default: 
 			$('body').addClass("iconButtonMode");
 			break;
 		case "textButtons": 
@@ -285,14 +285,6 @@ function f_langDeEn() {
 		$('[lang="de"]').show();
 	}
 }
-
-$('#languageSwitchContainer span').click(function () {
-	$('#languageSwitchContainer').find('.active').removeClass('active');
-	$(this).addClass('active');
-	
-	setLanguageCookie($(this).text().toLowerCase());
-	f_langDeEn();
-});
 
 function setLanguageCookie(lang) {
     document.cookie = 'IuF_JS_lang=' + lang + ';path=/;SameSite=Lax';
@@ -1656,7 +1648,7 @@ function addExamEvaluationFile(file) {
 			fileReader.readAsDataURL(file);
 			
 			$('#examSolutions_list_items').empty();
-			$('#examSolutions_list_items').append('<div class="examSolutionsItem"><span class="examSolutionName">' + fileName + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
+			$('#examSolutions_list_items').append('<div class="examSolutionsItem"><span class="examSolutionsName">' + fileName + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
 			break;
 		case 'csv':
 			fileReader = new FileReader();
