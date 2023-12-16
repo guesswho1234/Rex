@@ -11,7 +11,7 @@ helpers.installPackages(
 )
 
 #test
-install.packages("pdftools", verbose = TRUE)
+#install.packages("pdftools", verbose = TRUE)
 
 # special case of installing iuftools from source
 install.packages("./iuftools", repos = NULL, type="source")
