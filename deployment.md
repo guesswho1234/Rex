@@ -39,6 +39,21 @@ find / -xdev 2>/dev/null -name "poppler"
 
 find / -iname poppler-cpp.pc
 	/app/.apt/usr/lib/x86_64-linux-gnu/pkgconfig/poppler-cpp.pc
+	
+~/.apt/usr/lib/x86_64-linux-gnu/pkgconfig $ cat poppler-cpp.pc
+	prefix=/usr
+	libdir=/usr/lib/x86_64-linux-gnu
+	includedir=/usr/include
+
+	Name: poppler-cpp
+	Description: cpp backend for Poppler PDF rendering library
+	Version: 0.81.0
+	Requires:
+	Requires.private: poppler = 0.81.0
+
+	Libs: -L${libdir} -lpoppler-cpp
+	Cflags: -I${includedir}/poppler/cpp
+	
 
 
 
