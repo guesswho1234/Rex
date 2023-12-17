@@ -24,8 +24,8 @@ remote:        ** using staged installation
 remote:        Found INCLUDE_DIR and/or LIB_DIR!        
 remote:        Using PKG_CFLAGS=-I./.apt/usr/include/poppler/cpp -I/usr/include/poppler/cpp -I/usr/include/poppler        
 remote:        Using PKG_LIBS=-L -lpoppler-cpp      
-  
-remote:        --------------------------- [ANTICONF] --------------------------------        
+ 
+remote:        --------------------------- [ANTICONF] --------------------------------       
 remote:        Configuration failed to find 'poppler-cpp' system library. Try installing:        
 remote:         * rpm: poppler-cpp-devel (Fedora, CentOS, RHEL)        
 remote:         * brew: poppler (MacOS)        
