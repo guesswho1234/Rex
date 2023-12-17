@@ -1,5 +1,5 @@
-POST git-receive-pack (796 bytes)
-remote: Updated 97 paths from 863555d        
+POST git-receive-pack (461 bytes)
+remote: Updated 97 paths from 50df52f        
 remote: Compressing source files... done.        
 remote: Building source:        
 remote: 
@@ -24,41 +24,17 @@ remote:        Skipping already installed package: exams
 remote:        Skipping already installed package: xtable         
 remote:        Skipping already installed package: tth         
 remote:        Skipping already installed package: png         
+remote:        Skipping already installed package: callr         
 remote:        Installing package into â/app/R/site-libraryâ        
 remote:        (as âlibâ is unspecified)        
-remote:        system (cmd0): /app/R/lib/R/bin/R CMD INSTALL --no-test-load        
-remote:        trying URL 'https://cloud.r-project.org/src/contrib/callr_3.7.3.tar.gz'        
-remote:        Content type 'application/x-gzip' length 97813 bytes (95 KB)        
-remote:        ==================================================        
-remote:        downloaded 95 KB        
-remote:                
-remote:        foundpkgs: callr, /tmp/RtmptbtAwz/downloaded_packages/callr_3.7.3.tar.gz        
-remote:        files: /tmp/RtmptbtAwz/downloaded_packages/callr_3.7.3.tar.gz        
-remote:        * installing *source* package âcallrâ ...        
-remote:        ** package âcallrâ successfully unpacked and MD5 sums checked        
-remote:        ** using staged installation        
-remote:        ** R        
-remote:        ** inst        
-remote:        ** byte-compile and prepare package for lazy loading        
-remote:        ** help        
-remote:        *** installing help indices        
-remote:        *** copying figures        
-remote:        ** building package indices        
-remote:        * DONE (callr)        
-remote:        1): succeeded '/app/R/lib/R/bin/R CMD INSTALL --no-test-load -l '/app/R/site-library' '/tmp/RtmptbtAwz/downloaded_packages/callr_3.7.3.tar.gz''        
-remote:                
-remote:        The downloaded source packages are in        
-remote:        	â/tmp/RtmptbtAwz/downloaded_packagesâ        
-remote:        Installing package into â/app/R/site-libraryâ        
-remote:        (as âlibâ is unspecified)        
-remote:        system (cmd0): /app/R/lib/R/bin/R CMD INSTALL --no-test-load        
+remote:        system (cmd0): /app/R/lib/R/bin/R CMD INSTALL        
 remote:        trying URL 'https://cloud.r-project.org/src/contrib/pdftools_3.4.0.tar.gz'        
 remote:        Content type 'application/x-gzip' length 936466 bytes (914 KB)        
 remote:        ==================================================        
 remote:        downloaded 914 KB        
 remote:                
-remote:        foundpkgs: pdftools, /tmp/RtmptbtAwz/downloaded_packages/pdftools_3.4.0.tar.gz        
-remote:        files: /tmp/RtmptbtAwz/downloaded_packages/pdftools_3.4.0.tar.gz        
+remote:        foundpkgs: pdftools, /tmp/Rtmp5VeSeh/downloaded_packages/pdftools_3.4.0.tar.gz        
+remote:        files: /tmp/Rtmp5VeSeh/downloaded_packages/pdftools_3.4.0.tar.gz        
 remote:        * installing *source* package âpdftoolsâ ...        
 remote:        ** package âpdftoolsâ successfully unpacked and MD5 sums checked        
 remote:        ** using staged installation        
@@ -75,12 +51,21 @@ remote:        ** byte-compile and prepare package for lazy loading
 remote:        ** help        
 remote:        *** installing help indices        
 remote:        ** building package indices        
-remote:        ** checking absolute paths in shared objects and dynamic libraries        
-remote:        * DONE (pdftools)        
-remote:        1): succeeded '/app/R/lib/R/bin/R CMD INSTALL --no-test-load -l '/app/R/site-library' '/tmp/RtmptbtAwz/downloaded_packages/pdftools_3.4.0.tar.gz''        
+remote:        ** testing if installed package can be loaded from temporary location        
+remote:        Error: package or namespace load failed for âpdftoolsâ in dyn.load(file, DLLpath = DLLpath, ...):        
+remote:         unable to load shared object '/app/R/site-library/00LOCK-pdftools/00new/pdftools/libs/pdftools.so':        
+remote:          /app/R/site-library/00LOCK-pdftools/00new/pdftools/libs/pdftools.so: undefined symbol: _ZNK7poppler8document10create_tocEv        
+remote:        Error: loading failed        
+remote:        Execution halted        
+remote:        ERROR: loading failed        
+remote:        * removing â/app/R/site-library/pdftoolsâ        
+remote:        * restoring previous â/app/R/site-library/pdftoolsâ        
 remote:                
 remote:        The downloaded source packages are in        
-remote:        	â/tmp/RtmptbtAwz/downloaded_packagesâ        
+remote:        	â/tmp/Rtmp5VeSeh/downloaded_packagesâ        
+remote:        Warning message:        
+remote:        In install.packages("pdftools", verbose = TRUE) :        
+remote:          installation of package âpdftoolsâ had non-zero exit status
 remote:        Installing package into â/app/R/site-libraryâ        
 remote:        (as âlibâ is unspecified)        
 remote:        * installing *source* package âiuftoolsâ ...        
@@ -106,4 +91,24 @@ remote: -----> Finalising environment...
 remote: -----> Writing environment to profile        
 remote: -----> Caching build outputs        
 remote:        Build environment...        
+remote:        Done: 479M        
+remote:        R packages...        
+remote:        Done: 77M        
+remote: -----> R 4.2.1 installed successfully!        
+remote:        Install took 183 seconds to complete        
+remote: -----> Discovering process types        
+remote:        Procfile declares types     -> (none)        
+remote:        Default types for buildpack -> console, web
+remote: 
+remote: -----> Compressing...        
+remote:        Done: 292.5M        
+remote: -----> Launching...        
+remote:        Released v82        
+remote:        https://rexams-fd58d4e659c3.herokuapp.com/ deployed to Heroku        
+remote: 
+remote: Verifying deploy... done.        
+Pushing to https://git.heroku.com/rexams.git
+To https://git.heroku.com/rexams.git
+   229ee66..208e486  main -> main
+updating local tracking ref 'refs/remotes/heroku/main'
 
