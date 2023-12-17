@@ -6,13 +6,13 @@ helpers.installPackages(
   "tth",
   "png",
   "callr"
-  #"pdftools"
-  #"staplr"
+  "pdftools"
+  "staplr"
 )
 
 #install packages causing problems with verbose = TRUE
-install.packages("pdftools", verbose = TRUE)
-install.packages("staplr", verbose = TRUE)
+#install.packages("pdftools", verbose = TRUE)
+#install.packages("staplr", verbose = TRUE)
 
 # special case of installing iuftools from source
 install.packages("./iuftools", repos = NULL, type="source")
