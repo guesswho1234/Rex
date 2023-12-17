@@ -1,11 +1,4 @@
-# Poppler buildpack !!! not sure if this does the trick !!!
-To be able to use the pdftools package we need poppler to be available.
-For this we additionally need to add the following buildpack as well.
-
-heroku cli command:
-heroku buildpacks:add -a APP_NAME https://github.com/amitree/heroku-buildpack-poppler
-
-# Heroku Buildpack !!! this works !!!
+# Heroku Buildpack
 With init.R and run.R in place, we can push directly to Heroku.
 However, we need to select a buildpack that tells Heroku how to handle the shiny app.
 We use: https://github.com/virtualstaticvoid/heroku-buildpack-r
@@ -13,11 +6,16 @@ We use: https://github.com/virtualstaticvoid/heroku-buildpack-r
 heroku cli command:
 heroku buildpacks:set -a APP_NAME https://github.com/virtualstaticvoid/heroku-buildpack-r
 
-# order is important
-heroku buildpacks:set -a APP_NAME https://github.com/virtualstaticvoid/heroku-buildpack-r
+# Poppler buildpack
+To be able to use the pdftools package we need poppler to be available.
+For this we additionally need to add the following buildpack as well.
+
+heroku cli command:
 heroku buildpacks:add --index 1 -a APP_NAME https://github.com/amitree/heroku-buildpack-poppler
 
-# things i tried
+# order of buildpacks is important - poppler should be first
+
+# error when building
 remote:        foundpkgs: pdftools, /tmp/RtmpbKzL0T/downloaded_packages/pdftools_3.4.0.tar.gz        
 remote:        files: /tmp/RtmpbKzL0T/downloaded_packages/pdftools_3.4.0.tar.gz        
 remote:        * installing *source* package âpdftoolsâ ...        
@@ -46,7 +44,7 @@ remote:        <stdin>:1:10: fatal error: poppler-document.h: No such file or di
 remote:        compilation terminated.        
 remote:        --------------------------------------------------------------------  
 
-
+# pkgconfig
 find / -iname pkgconfig
 	./tcltk/lib/pkgconfig
 	./R/lib/pkgconfig
@@ -58,11 +56,13 @@ find / -iname poppler-cpp.pc
 			~/.apt/usr/lib/x86_64-linux-gnu/pkgconfig $ dir
 				poppler-cpp.pc  poppler-splash.pc  poppler.pc
 
+# library
 ~ $ cd ./.apt/usr/lib/x86_64-linux-gnu/
 	~/.apt/usr/lib/x86_64-linux-gnu $ dir
 		libpoppler-cpp.so    libpoppler-cpp.so.0.7.0  libpoppler.so.91      pkgconfig
 		libpoppler-cpp.so.0  libpoppler.so
 
+# include
 find / -xdev 2>/dev/null -name "poppler"
 	~ $ cd ./.apt/usr/include/poppler/cpp
 		~/.apt/usr/include/poppler/cpp $ dir
@@ -70,6 +70,7 @@ find / -xdev 2>/dev/null -name "poppler"
 			poppler-document.h       poppler-global.h  poppler-page-transition.h  poppler-toc.h
 			poppler-embedded-file.h  poppler-image.h   poppler-page.h             poppler-version.h
 
+# poppler-cpp.pc
 find / -iname poppler-cpp.pc
 	/app/.apt/usr/lib/x86_64-linux-gnu/pkgconfig/poppler-cpp.pc
 	

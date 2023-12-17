@@ -1,5 +1,5 @@
-POST git-receive-pack (1871 bytes)
-remote: Updated 97 paths from 7310bc5        
+POST git-receive-pack (446 bytes)
+remote: Updated 97 paths from b075490        
 remote: Compressing source files... done.        
 remote: Building source:        
 remote: 
@@ -33,19 +33,14 @@ remote:        Content type 'application/x-gzip' length 936466 bytes (914 KB)
 remote:        ==================================================        
 remote:        downloaded 914 KB        
 remote:                
-remote:        foundpkgs: pdftools, /tmp/RtmpEVba3H/downloaded_packages/pdftools_3.4.0.tar.gz        
-remote:        files: /tmp/RtmpEVba3H/downloaded_packages/pdftools_3.4.0.tar.gz        
+remote:        foundpkgs: pdftools, /tmp/RtmpLA0JOK/downloaded_packages/pdftools_3.4.0.tar.gz        
+remote:        files: /tmp/RtmpLA0JOK/downloaded_packages/pdftools_3.4.0.tar.gz        
 remote:        * installing *source* package âpdftoolsâ ...        
 remote:        ** package âpdftoolsâ successfully unpacked and MD5 sums checked        
-remote:        ** using staged installation   
-     
-remote:        Package poppler-cpp was not found in the pkg-config search path.        
-remote:        Perhaps you should add the directory containing `poppler-cpp.pc'        
-remote:        to the PKG_CONFIG_PATH environment variable        
-remote:        No package 'poppler-cpp' found        
+remote:        ** using staged installation        
 remote:        Found INCLUDE_DIR and/or LIB_DIR!        
 remote:        Using PKG_CFLAGS=-I./.apt/usr/include/poppler/cpp -I/usr/include/poppler/cpp -I/usr/include/poppler        
-remote:        Using PKG_LIBS=-L./.apt/usr/lib/x86_64-linux-gnu/ -lpoppler-cpp        
+remote:        Using PKG_LIBS=-L/app/.apt/usr/lib/x86_64-linux-gnu/pkgconfig/ -lpoppler-cpp        
 remote:        --------------------------- [ANTICONF] --------------------------------        
 remote:        Configuration failed to find 'poppler-cpp' system library. Try installing:        
 remote:         * rpm: poppler-cpp-devel (Fedora, CentOS, RHEL)        
@@ -67,7 +62,7 @@ remote:        ERROR: configuration failed for package âpdftoolsâ
 remote:        * removing â/app/R/site-library/pdftoolsâ        
 remote:                
 remote:        The downloaded source packages are in        
-remote:        	â/tmp/RtmpEVba3H/downloaded_packagesâ        
+remote:        	â/tmp/RtmpLA0JOK/downloaded_packagesâ        
 remote:        Warning message:        
 remote:        In install.packages("pdftools", verbose = TRUE) :        
 remote:          installation of package âpdftoolsâ had non-zero exit status
@@ -91,10 +86,10 @@ remote:        Content type 'application/x-gzip' length 4488743 bytes (4.3 MB)
 remote:        ==================================================        
 remote:        downloaded 4.3 MB        
 remote:                
-remote:        foundpkgs: rJava, pdftools, staplr, /tmp/RtmpEVba3H/downloaded_packages/rJava_1.0-10.tar.gz, /tmp/RtmpEVba3H/downloaded_packages/pdftools_3.4.0.tar.gz, /tmp/RtmpEVba3H/downloaded_packages/staplr_3.2.2.tar.gz        
-remote:        files: /tmp/RtmpEVba3H/downloaded_packages/rJava_1.0-10.tar.gz,         
-remote:        	/tmp/RtmpEVba3H/downloaded_packages/pdftools_3.4.0.tar.gz,         
-remote:        	/tmp/RtmpEVba3H/downloaded_packages/staplr_3.2.2.tar.gz        
+remote:        foundpkgs: rJava, pdftools, staplr, /tmp/RtmpLA0JOK/downloaded_packages/rJava_1.0-10.tar.gz, /tmp/RtmpLA0JOK/downloaded_packages/pdftools_3.4.0.tar.gz, /tmp/RtmpLA0JOK/downloaded_packages/staplr_3.2.2.tar.gz        
+remote:        files: /tmp/RtmpLA0JOK/downloaded_packages/rJava_1.0-10.tar.gz,         
+remote:        	/tmp/RtmpLA0JOK/downloaded_packages/pdftools_3.4.0.tar.gz,         
+remote:        	/tmp/RtmpLA0JOK/downloaded_packages/staplr_3.2.2.tar.gz        
 remote:        * installing *source* package ârJavaâ ...        
 remote:        ** package ârJavaâ successfully unpacked and MD5 sums checked        
 remote:        ** using staged installation        
@@ -148,13 +143,9 @@ remote:        * removing â/app/R/site-library/rJavaâ
 remote:        * installing *source* package âpdftoolsâ ...        
 remote:        ** package âpdftoolsâ successfully unpacked and MD5 sums checked        
 remote:        ** using staged installation        
-remote:        Package poppler-cpp was not found in the pkg-config search path.        
-remote:        Perhaps you should add the directory containing `poppler-cpp.pc'        
-remote:        to the PKG_CONFIG_PATH environment variable        
-remote:        No package 'poppler-cpp' found        
 remote:        Found INCLUDE_DIR and/or LIB_DIR!        
 remote:        Using PKG_CFLAGS=-I./.apt/usr/include/poppler/cpp -I/usr/include/poppler/cpp -I/usr/include/poppler        
-remote:        Using PKG_LIBS=-L./.apt/usr/lib/x86_64-linux-gnu/ -lpoppler-cpp        
+remote:        Using PKG_LIBS=-L/app/.apt/usr/lib/x86_64-linux-gnu/pkgconfig/ -lpoppler-cpp        
 remote:        --------------------------- [ANTICONF] --------------------------------        
 remote:        Configuration failed to find 'poppler-cpp' system library. Try installing:        
 remote:         * rpm: poppler-cpp-devel (Fedora, CentOS, RHEL)        
@@ -178,7 +169,7 @@ remote:        ERROR: dependencies ârJavaâ, âpdftoolsâ are n
 remote:        * removing â/app/R/site-library/staplrâ        
 remote:                
 remote:        The downloaded source packages are in        
-remote:        	â/tmp/RtmpEVba3H/downloaded_packagesâ        
+remote:        	â/tmp/RtmpLA0JOK/downloaded_packagesâ        
 remote:        Warning messages:        
 remote:        1: In install.packages("staplr", verbose = TRUE) :        
 remote:          installation of package ârJavaâ had non-zero exit status        
@@ -188,4 +179,30 @@ remote:        3: In install.packages("staplr", verbose = TRUE) :
 remote:          installation of package âstaplrâ had non-zero exit status        
 remote:        Installing package into â/app/R/site-libraryâ        
 remote:        (as âlibâ is unspecified)        
+remote:        * installing *source* package âiuftoolsâ ...        
+remote:        ** using staged installation        
+remote:        ** R        
+remote:        ** byte-compile and prepare package for lazy loading        
+remote:        ** help        
+remote:        *** installing help indices        
+remote:        ** building package indices        
+remote:        ** testing if installed package can be loaded from temporary location        
+remote:        ** testing if installed package can be loaded from final location        
+remote:        ** testing if installed package keeps a record of temporary installation path        
+remote:        * DONE (iuftools)        
+remote:        trying URL 'https://yihui.org/tinytex/TinyTeX-1.tar.gz'        
+remote:        Content type 'application/octet-stream' length 92486077 bytes (88.2 MB)        
+remote:        ==================================================        
+remote:        downloaded 88.2 MB        
+remote:                
+remote:        tlmgr option sys_bin ~/bin        
+remote:        tlmgr: setting option sys_bin to /app/bin.        
+remote:        tlmgr: updating /app/.TinyTeX/tlpkg/texlive.tlpdb        
+remote:        tlmgr option repository 'https://mirror.mwt.me/ctan/systems/texlive/tlnet'        
+remote:        tlmgr: setting default package repository to https://mirror.mwt.me/ctan/systems/texlive/tlnet        
+remote:        tlmgr: updating /app/.TinyTeX/tlpkg/texlive.tlpdb        
+remote:        tlmgr update --list        
+remote:        tlmgr: package repository https://mirror.mwt.me/ctan/systems/texlive/tlnet (verified)        
+remote:        update:   texlive-scripts    [112k]: local:    69136, source:    69143        
+remote: -----> Finalising environment...        
 
