@@ -88,7 +88,7 @@ library(xtable) #xtable_1.8-4
 library(iuftools) #iuftools_1.0.0
 library(callr) # callr_3.7.3
 library(pdftools) # pdftools_3.4.0
-library(staplr) # staplr_3.2.2
+#library(staplr) # staplr_3.2.2
 
 # FUNCTIONS ----------------------------------------------------------------
 collectWarnings = function(expr) {
