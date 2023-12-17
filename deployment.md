@@ -17,8 +17,33 @@ heroku buildpacks:set -a APP_NAME https://github.com/virtualstaticvoid/heroku-bu
 heroku buildpacks:set -a APP_NAME https://github.com/virtualstaticvoid/heroku-buildpack-r
 heroku buildpacks:add --index 1 -a APP_NAME https://github.com/amitree/heroku-buildpack-poppler
 
-
 # things i tried
+remote:        foundpkgs: pdftools, /tmp/RtmpbKzL0T/downloaded_packages/pdftools_3.4.0.tar.gz        
+remote:        files: /tmp/RtmpbKzL0T/downloaded_packages/pdftools_3.4.0.tar.gz        
+remote:        * installing *source* package âpdftoolsâ ...        
+remote:        ** package âpdftoolsâ successfully unpacked and MD5 sums checked        
+remote:        ** using staged installation        
+remote:        Found INCLUDE_DIR and/or LIB_DIR!        
+remote:        Using PKG_CFLAGS=-I./.apt/usr/include/poppler/cpp -I/usr/include/poppler/cpp -I/usr/include/poppler        
+remote:        Using PKG_LIBS=-L -lpoppler-cpp        
+remote:        --------------------------- [ANTICONF] --------------------------------        
+remote:        Configuration failed to find 'poppler-cpp' system library. Try installing:        
+remote:         * rpm: poppler-cpp-devel (Fedora, CentOS, RHEL)        
+remote:         * brew: poppler (MacOS)        
+remote:         * deb: libpoppler-cpp-dev (Debian, Ubuntu, etc)        
+remote:         * On Ubuntu 16.04 or 18.04 use this PPA:        
+remote:            sudo add-apt-repository -y ppa:cran/poppler        
+remote:            sudo apt-get update        
+remote:            sudo apt-get install -y libpoppler-cpp-dev        
+remote:        If poppler-cpp is already installed, check that 'pkg-config' is in your        
+remote:        PATH and PKG_CONFIG_PATH contains a poppler-cpp.pc file. If pkg-config        
+remote:        is unavailable you can set INCLUDE_DIR and LIB_DIR manually via:        
+remote:        R CMD INSTALL --configure-vars='INCLUDE_DIR=... LIB_DIR=...'        
+remote:        -------------------------- [ERROR MESSAGE] ---------------------------        
+remote:        <stdin>:1:10: fatal error: poppler-document.h: No such file or directory        
+remote:        compilation terminated.        
+remote:        --------------------------------------------------------------------  
+
 find / -iname pkgconfig
 	./tcltk/lib/pkgconfig
 	./R/lib/pkgconfig
@@ -29,6 +54,11 @@ find / -iname poppler-cpp.pc
 		~ $ cd /app/.apt/usr/lib/x86_64-linux-gnu/pkgconfig/
 			~/.apt/usr/lib/x86_64-linux-gnu/pkgconfig $ dir
 				poppler-cpp.pc  poppler-splash.pc  poppler.pc
+
+~ $ cd ./.apt/usr/lib/x86_64-linux-gnu/
+	~/.apt/usr/lib/x86_64-linux-gnu $ dir
+		libpoppler-cpp.so    libpoppler-cpp.so.0.7.0  libpoppler.so.91      pkgconfig
+		libpoppler-cpp.so.0  libpoppler.so
 
 find / -xdev 2>/dev/null -name "poppler"
 	~ $ cd ./.apt/usr/include/poppler/cpp
