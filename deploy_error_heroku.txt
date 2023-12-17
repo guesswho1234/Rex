@@ -1,5 +1,5 @@
-POST git-receive-pack (1415 bytes)
-remote: Updated 97 paths from 1e72595        
+POST git-receive-pack (733 bytes)
+remote: Updated 97 paths from 6e4b8d1        
 remote: Compressing source files... done.        
 remote: Building source:        
 remote: 
@@ -24,127 +24,92 @@ remote:        Skipping already installed package: exams
 remote:        Skipping already installed package: xtable         
 remote:        Skipping already installed package: tth         
 remote:        Skipping already installed package: png         
-remote:        Skipping already installed package: callr         
 remote:        Installing package into â/app/R/site-libraryâ        
 remote:        (as âlibâ is unspecified)        
-remote:        system (cmd0): /app/R/lib/R/bin/R CMD INSTALL        
-remote:        trying URL 'https://cloud.r-project.org/src/contrib/pdftools_3.4.0.tar.gz'        
-remote:        Content type 'application/x-gzip' length 936466 bytes (914 KB)        
+remote:        system (cmd0): /app/R/lib/R/bin/R CMD INSTALL --no-test-load        
+remote:        trying URL 'https://cloud.r-project.org/src/contrib/callr_3.7.3.tar.gz'        
+remote:        Content type 'application/x-gzip' length 97813 bytes (95 KB)        
 remote:        ==================================================        
-remote:        downloaded 914 KB        
+remote:        downloaded 95 KB        
 remote:                
-remote:        foundpkgs: pdftools, /tmp/Rtmpi6TORB/downloaded_packages/pdftools_3.4.0.tar.gz        
-remote:        files: /tmp/Rtmpi6TORB/downloaded_packages/pdftools_3.4.0.tar.gz        
-remote:        * installing *source* package âpdftoolsâ ...        
-remote:        ** package âpdftoolsâ successfully unpacked and MD5 sums checked        
+remote:        foundpkgs: callr, /tmp/Rtmpv8RAcJ/downloaded_packages/callr_3.7.3.tar.gz        
+remote:        files: /tmp/Rtmpv8RAcJ/downloaded_packages/callr_3.7.3.tar.gz        
+remote:        * installing *source* package âcallrâ ...        
+remote:        ** package âcallrâ successfully unpacked and MD5 sums checked        
 remote:        ** using staged installation        
-remote:        Package poppler-cpp was not found in the pkg-config search path.        
-remote:        Perhaps you should add the directory containing `poppler-cpp.pc'        
-remote:        to the PKG_CONFIG_PATH environment variable        
-remote:        No package 'poppler-cpp' found        
-remote:        Found INCLUDE_DIR and/or LIB_DIR!        
-remote:        Using PKG_CFLAGS=-I/app/.apt/usr/include/poppler/cpp -I/usr/include/poppler/cpp -I/usr/include/poppler        
-remote:        Using PKG_LIBS=-L/app/.apt/usr/lib/x86_64-linux-gnu/pkgconfig/ -lpoppler-cpp        
-remote:        ** libs        
-remote:        g++ -std=gnu++14 -I"/app/R/lib/R/include" -DNDEBUG -I/app/.apt/usr/include/poppler/cpp -I/usr/include/poppler/cpp -I/usr/include/poppler -I'/app/R/site-library/Rcpp/include' -I/usr/local/include  -fvisibility=hidden -fpic  -g -O2  -c RcppExports.cpp -o RcppExports.o        
-remote:        g++ -std=gnu++14 -I"/app/R/lib/R/include" -DNDEBUG -I/app/.apt/usr/include/poppler/cpp -I/usr/include/poppler/cpp -I/usr/include/poppler -I'/app/R/site-library/Rcpp/include' -I/usr/local/include  -fvisibility=hidden -fpic  -g -O2  -c bindings.cpp -o bindings.o        
-remote:        g++ -std=gnu++14 -shared -L/app/R/lib/R/lib -L/usr/local/lib -o pdftools.so RcppExports.o bindings.o -L/app/.apt/usr/lib/x86_64-linux-gnu/pkgconfig/ -lpoppler-cpp -L/app/R/lib/R/lib -lR        
-remote:        /bin/ld: cannot find -lpoppler-cpp: No such file or directory        
-remote:        collect2: error: ld returned 1 exit status        
-remote:        make: *** [/app/R/lib/R/share/make/shlib.mk:10: pdftools.so] Error 1        
-remote:        ERROR: compilation failed for package âpdftoolsâ        
-remote:        * removing â/app/R/site-library/pdftoolsâ        
+remote:        ** R        
+remote:        ** inst        
+remote:        ** byte-compile and prepare package for lazy loading        
+remote:        ** help        
+remote:        *** installing help indices        
+remote:        *** copying figures        
+remote:        ** building package indices        
+remote:        * DONE (callr)        
+remote:        1): succeeded '/app/R/lib/R/bin/R CMD INSTALL --no-test-load -l '/app/R/site-library' '/tmp/Rtmpv8RAcJ/downloaded_packages/callr_3.7.3.tar.gz''        
 remote:                
 remote:        The downloaded source packages are in        
-remote:        	â/tmp/Rtmpi6TORB/downloaded_packagesâ        
-remote:        Warning message:        
-remote:        In install.packages("pdftools", verbose = TRUE) :        
-remote:          installation of package âpdftoolsâ had non-zero exit status
+remote:        	â/tmp/Rtmpv8RAcJ/downloaded_packagesâ        
 remote:        Installing package into â/app/R/site-libraryâ        
 remote:        (as âlibâ is unspecified)        
-remote:        system (cmd0): /app/R/lib/R/bin/R CMD INSTALL        
-remote:        also installing the dependencies ârJavaâ, âpdftoolsâ        
-remote:                
-remote:        trying URL 'https://cloud.r-project.org/src/contrib/rJava_1.0-10.tar.gz'        
-remote:        Content type 'application/x-gzip' length 1055729 bytes (1.0 MB)        
-remote:        ==================================================
-remote:        downloaded 1.0 MB        
-remote:                
+remote:        system (cmd0): /app/R/lib/R/bin/R CMD INSTALL --no-test-load        
 remote:        trying URL 'https://cloud.r-project.org/src/contrib/pdftools_3.4.0.tar.gz'        
 remote:        Content type 'application/x-gzip' length 936466 bytes (914 KB)        
 remote:        ==================================================        
 remote:        downloaded 914 KB        
 remote:                
-remote:        trying URL 'https://cloud.r-project.org/src/contrib/staplr_3.2.2.tar.gz'        
-remote:        Content type 'application/x-gzip' length 4488743 bytes (4.3 MB)        
-remote:        ==================================================        
-remote:        downloaded 4.3 MB        
-remote:                
-remote:        foundpkgs: rJava, pdftools, staplr, /tmp/Rtmpi6TORB/downloaded_packages/rJava_1.0-10.tar.gz, /tmp/Rtmpi6TORB/downloaded_packages/pdftools_3.4.0.tar.gz, /tmp/Rtmpi6TORB/downloaded_packages/staplr_3.2.2.tar.gz        
-remote:        files: /tmp/Rtmpi6TORB/downloaded_packages/rJava_1.0-10.tar.gz,         
-remote:        	/tmp/Rtmpi6TORB/downloaded_packages/pdftools_3.4.0.tar.gz,         
-remote:        	/tmp/Rtmpi6TORB/downloaded_packages/staplr_3.2.2.tar.gz        
-remote:        * installing *source* package ârJavaâ ...        
-remote:        ** package ârJavaâ successfully unpacked and MD5 sums checked        
-remote:        ** using staged installation        
-remote:        checking for gcc... gcc        
-remote:        checking whether the C compiler works... yes        
-remote:        checking for C compiler default output file name... a.out        
-remote:        checking for suffix of executables...         
-remote:        checking whether we are cross compiling... no        
-remote:        checking for suffix of object files... o        
-remote:        checking whether we are using the GNU C compiler... yes        
-remote:        checking whether gcc accepts -g... yes        
-remote:        checking for gcc option to accept ISO C89... none needed        
-remote:        checking how to run the C preprocessor... gcc -E        
-remote:        checking for grep that handles long lines and -e... /bin/grep        
-remote:        checking for egrep... /bin/grep -E        
-remote:        checking for ANSI C header files... yes        
-remote:        checking for sys/wait.h that is POSIX.1 compatible... yes        
-remote:        checking for sys/types.h... yes        
-remote:        checking for sys/stat.h... yes        
-remote:        checking for stdlib.h... yes        
-remote:        checking for string.h... yes        
-remote:        checking for memory.h... yes        
-remote:        checking for strings.h... yes        
-remote:        checking for inttypes.h... yes        
-remote:        checking for stdint.h... yes        
-remote:        checking for unistd.h... yes        
-remote:        checking for string.h... (cached) yes        
-remote:        checking sys/time.h usability... yes        
-remote:        checking sys/time.h presence... yes        
-remote:        checking for sys/time.h... yes        
-remote:        checking for unistd.h... (cached) yes        
-remote:        checking for an ANSI C-conforming const... yes        
-remote:        checking whether time.h and sys/time.h may both be included... yes        
-remote:        configure: checking whether gcc supports static inline...        
-remote:        yes        
-remote:        checking whether setjmp.h is POSIX.1 compatible... yes        
-remote:        checking whether sigsetjmp is declared... yes        
-remote:        checking whether siglongjmp is declared... yes        
-remote:        checking Java support in R... present:        
-remote:        interpreter : '/usr/bin/java'        
-remote:        archiver    : '/usr/bin/jar'        
-remote:        compiler    : '/usr/bin/javac'        
-remote:        header prep.: ''        
-remote:        cpp flags   : '-I/usr/lib/jvm/java-11-openjdk-amd64/include -I/usr/lib/jvm/java-11-openjdk-amd64/include/linux'        
-remote:        java libs   : '-L/usr/lib/jvm/java-11-openjdk-amd64/lib/server -ljvm'        
-remote:        checking whether Java run-time works... ./configure: line 3796: /usr/bin/java: No such file or directory        
-remote:        no        
-remote:        configure: error: Java interpreter '/usr/bin/java' does not work        
-remote:        ERROR: configuration failed for package ârJavaâ        
-remote:        * removing â/app/R/site-library/rJavaâ        
+remote:        foundpkgs: pdftools, /tmp/Rtmpv8RAcJ/downloaded_packages/pdftools_3.4.0.tar.gz        
+remote:        files: /tmp/Rtmpv8RAcJ/downloaded_packages/pdftools_3.4.0.tar.gz        
 remote:        * installing *source* package âpdftoolsâ ...        
 remote:        ** package âpdftoolsâ successfully unpacked and MD5 sums checked        
 remote:        ** using staged installation        
-remote:        Package poppler-cpp was not found in the pkg-config search path.        
-remote:        Perhaps you should add the directory containing `poppler-cpp.pc'        
-remote:        to the PKG_CONFIG_PATH environment variable        
-remote:        No package 'poppler-cpp' found        
 remote:        Found INCLUDE_DIR and/or LIB_DIR!        
 remote:        Using PKG_CFLAGS=-I/app/.apt/usr/include/poppler/cpp -I/usr/include/poppler/cpp -I/usr/include/poppler        
-remote:        Using PKG_LIBS=-L/app/.apt/usr/lib/x86_64-linux-gnu/pkgconfig/ -lpoppler-cpp        
+remote:        Using PKG_LIBS=-L -lpoppler-cpp        
 remote:        ** libs        
 remote:        g++ -std=gnu++14 -I"/app/R/lib/R/include" -DNDEBUG -I/app/.apt/usr/include/poppler/cpp -I/usr/include/poppler/cpp -I/usr/include/poppler -I'/app/R/site-library/Rcpp/include' -I/usr/local/include  -fvisibility=hidden -fpic  -g -O2  -c RcppExports.cpp -o RcppExports.o        
 remote:        g++ -std=gnu++14 -I"/app/R/lib/R/include" -DNDEBUG -I/app/.apt/usr/include/poppler/cpp -I/usr/include/poppler/cpp -I/usr/include/poppler -I'/app/R/site-library/Rcpp/include' -I/usr/local/include  -fvisibility=hidden -fpic  -g -O2  -c bindings.cpp -o bindings.o        
+remote:        g++ -std=gnu++14 -shared -L/app/R/lib/R/lib -L/usr/local/lib -o pdftools.so RcppExports.o bindings.o -L -lpoppler-cpp -L/app/R/lib/R/lib -lR        
+remote:        installing to /app/R/site-library/00LOCK-pdftools/00new/pdftools/libs        
+remote:        ** R        
+remote:        ** byte-compile and prepare package for lazy loading        
+remote:        ** help        
+remote:        *** installing help indices        
+remote:        ** building package indices        
+remote:        ** checking absolute paths in shared objects and dynamic libraries        
+remote:        * DONE (pdftools)        
+remote:        1): succeeded '/app/R/lib/R/bin/R CMD INSTALL --no-test-load -l '/app/R/site-library' '/tmp/Rtmpv8RAcJ/downloaded_packages/pdftools_3.4.0.tar.gz''        
+remote:                
+remote:        The downloaded source packages are in        
+remote:        	â/tmp/Rtmpv8RAcJ/downloaded_packagesâ
+remote:        Installing package into â/app/R/site-libraryâ        
+remote:        (as âlibâ is unspecified)        
+remote:        * installing *source* package âiuftoolsâ ...        
+remote:        ** using staged installation        
+remote:        ** R        
+remote:        ** byte-compile and prepare package for lazy loading        
+remote:        ** help        
+remote:        *** installing help indices        
+remote:        ** building package indices        
+remote:        ** testing if installed package can be loaded from temporary location        
+remote:        ** testing if installed package can be loaded from final location        
+remote:        ** testing if installed package keeps a record of temporary installation path        
+remote:        * DONE (iuftools)        
+remote:        trying URL 'https://yihui.org/tinytex/TinyTeX-1.tar.gz'        
+remote:        Content type 'application/octet-stream' length 92486077 bytes (88.2 MB)        
+remote:        ==================================================        
+remote:        downloaded 88.2 MB        
+remote:                
+remote:        tlmgr option sys_bin ~/bin        
+remote:        tlmgr: setting option sys_bin to /app/bin.        
+remote:        tlmgr: updating /app/.TinyTeX/tlpkg/texlive.tlpdb        
+remote:        tlmgr option repository 'https://ctan.math.illinois.edu/systems/texlive/tlnet'        
+remote:        tlmgr: setting default package repository to https://ctan.math.illinois.edu/systems/texlive/tlnet        
+remote:        tlmgr: updating /app/.TinyTeX/tlpkg/texlive.tlpdb        
+remote:        tlmgr update --list        
+remote:        tlmgr: package repository https://ctan.math.illinois.edu/systems/texlive/tlnet (verified)        
+remote:        update:   texlive-scripts    [112k]: local:    69136, source:    69143        
+remote: -----> Finalising environment...        
+remote: -----> Writing environment to profile        
+remote: -----> Caching build outputs        
+remote:        Build environment...        
 
