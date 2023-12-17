@@ -31,6 +31,9 @@ remote:        Warning message:
 remote:        In install.packages("pdftools", verbose = TRUE) :        
 remote:          installation of package âpdftoolsâ had non-zero exit status
 
+# run bash
+C:\Users\User> heroku run bash -a rexams
+
 # pkgconfig
 find / -iname pkgconfig
 	./tcltk/lib/pkgconfig
