@@ -25,7 +25,8 @@ remote:        ** package âpdftoolsâ successfully unpacked and MD5 sum
 remote:        ** using staged installation        
 remote:        Found INCLUDE_DIR and/or LIB_DIR!        
 remote:        Using PKG_CFLAGS=-I./.apt/usr/include/poppler/cpp -I/usr/include/poppler/cpp -I/usr/include/poppler        
-remote:        Using PKG_LIBS=-L -lpoppler-cpp        
+remote:        Using PKG_LIBS=-L -lpoppler-cpp      
+  
 remote:        --------------------------- [ANTICONF] --------------------------------        
 remote:        Configuration failed to find 'poppler-cpp' system library. Try installing:        
 remote:         * rpm: poppler-cpp-devel (Fedora, CentOS, RHEL)        
@@ -38,7 +39,8 @@ remote:            sudo apt-get install -y libpoppler-cpp-dev
 remote:        If poppler-cpp is already installed, check that 'pkg-config' is in your        
 remote:        PATH and PKG_CONFIG_PATH contains a poppler-cpp.pc file. If pkg-config        
 remote:        is unavailable you can set INCLUDE_DIR and LIB_DIR manually via:        
-remote:        R CMD INSTALL --configure-vars='INCLUDE_DIR=... LIB_DIR=...'        
+remote:        R CMD INSTALL --configure-vars='INCLUDE_DIR=... LIB_DIR=...'      
+  
 remote:        -------------------------- [ERROR MESSAGE] ---------------------------        
 remote:        <stdin>:1:10: fatal error: poppler-document.h: No such file or directory        
 remote:        compilation terminated.        

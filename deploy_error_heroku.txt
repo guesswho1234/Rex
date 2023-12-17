@@ -1,5 +1,5 @@
-POST git-receive-pack (818 bytes)
-remote: Updated 96 paths from 3cba564        
+POST git-receive-pack (1871 bytes)
+remote: Updated 97 paths from 7310bc5        
 remote: Compressing source files... done.        
 remote: Building source:        
 remote: 
@@ -33,17 +33,19 @@ remote:        Content type 'application/x-gzip' length 936466 bytes (914 KB)
 remote:        ==================================================        
 remote:        downloaded 914 KB        
 remote:                
-remote:        foundpkgs: pdftools, /tmp/RtmpVWKkzr/downloaded_packages/pdftools_3.4.0.tar.gz        
-remote:        files: /tmp/RtmpVWKkzr/downloaded_packages/pdftools_3.4.0.tar.gz        
+remote:        foundpkgs: pdftools, /tmp/RtmpEVba3H/downloaded_packages/pdftools_3.4.0.tar.gz        
+remote:        files: /tmp/RtmpEVba3H/downloaded_packages/pdftools_3.4.0.tar.gz        
 remote:        * installing *source* package âpdftoolsâ ...        
 remote:        ** package âpdftoolsâ successfully unpacked and MD5 sums checked        
-remote:        ** using staged installation        
+remote:        ** using staged installation   
+     
 remote:        Package poppler-cpp was not found in the pkg-config search path.        
 remote:        Perhaps you should add the directory containing `poppler-cpp.pc'        
 remote:        to the PKG_CONFIG_PATH environment variable        
 remote:        No package 'poppler-cpp' found        
-remote:        Using PKG_CFLAGS=-I/usr/include/poppler/cpp -I/usr/include/poppler        
-remote:        Using PKG_LIBS=-lpoppler-cpp        
+remote:        Found INCLUDE_DIR and/or LIB_DIR!        
+remote:        Using PKG_CFLAGS=-I./.apt/usr/include/poppler/cpp -I/usr/include/poppler/cpp -I/usr/include/poppler        
+remote:        Using PKG_LIBS=-L./.apt/usr/lib/x86_64-linux-gnu/ -lpoppler-cpp        
 remote:        --------------------------- [ANTICONF] --------------------------------        
 remote:        Configuration failed to find 'poppler-cpp' system library. Try installing:        
 remote:         * rpm: poppler-cpp-devel (Fedora, CentOS, RHEL)        
@@ -65,35 +67,125 @@ remote:        ERROR: configuration failed for package âpdftoolsâ
 remote:        * removing â/app/R/site-library/pdftoolsâ        
 remote:                
 remote:        The downloaded source packages are in        
-remote:        	â/tmp/RtmpVWKkzr/downloaded_packagesâ        
+remote:        	â/tmp/RtmpEVba3H/downloaded_packagesâ        
 remote:        Warning message:        
 remote:        In install.packages("pdftools", verbose = TRUE) :        
 remote:          installation of package âpdftoolsâ had non-zero exit status
 remote:        Installing package into â/app/R/site-libraryâ        
 remote:        (as âlibâ is unspecified)        
-remote:        * installing *source* package âiuftoolsâ ...        
-remote:        ** using staged installation        
-remote:        ** R        
-remote:        ** byte-compile and prepare package for lazy loading        
-remote:        ** help        
-remote:        *** installing help indices        
-remote:        ** building package indices        
-remote:        ** testing if installed package can be loaded from temporary location        
-remote:        ** testing if installed package can be loaded from final location        
-remote:        ** testing if installed package keeps a record of temporary installation path        
-remote:        * DONE (iuftools)        
-remote:        trying URL 'https://yihui.org/tinytex/TinyTeX-1.tar.gz'        
-remote:        Content type 'application/octet-stream' length 92495861 bytes (88.2 MB)        
-remote:        ==================================================        
-remote:        downloaded 88.2 MB        
+remote:        system (cmd0): /app/R/lib/R/bin/R CMD INSTALL        
+remote:        also installing the dependencies ârJavaâ, âpdftoolsâ        
 remote:                
-remote:        tlmgr option sys_bin ~/bin        
-remote:        tlmgr: setting option sys_bin to /app/bin.        
-remote:        tlmgr: updating /app/.TinyTeX/tlpkg/texlive.tlpdb        
-remote:        tlmgr option repository 'https://mirror.mwt.me/ctan/systems/texlive/tlnet'        
-remote:        tlmgr: setting default package repository to https://mirror.mwt.me/ctan/systems/texlive/tlnet        
-remote:        tlmgr: updating /app/.TinyTeX/tlpkg/texlive.tlpdb        
-remote:        tlmgr update --list        
-remote:        tlmgr: package repository https://mirror.mwt.me/ctan/systems/texlive/tlnet (verified)        
-remote:        update:   texlive-scripts    [112k]: local:    69130, source:    69136        
+remote:        trying URL 'https://cloud.r-project.org/src/contrib/rJava_1.0-10.tar.gz'        
+remote:        Content type 'application/x-gzip' length 1055729 bytes (1.0 MB)        
+remote:        ==================================================
+remote:        downloaded 1.0 MB        
+remote:                
+remote:        trying URL 'https://cloud.r-project.org/src/contrib/pdftools_3.4.0.tar.gz'        
+remote:        Content type 'application/x-gzip' length 936466 bytes (914 KB)        
+remote:        ==================================================        
+remote:        downloaded 914 KB        
+remote:                
+remote:        trying URL 'https://cloud.r-project.org/src/contrib/staplr_3.2.2.tar.gz'        
+remote:        Content type 'application/x-gzip' length 4488743 bytes (4.3 MB)        
+remote:        ==================================================        
+remote:        downloaded 4.3 MB        
+remote:                
+remote:        foundpkgs: rJava, pdftools, staplr, /tmp/RtmpEVba3H/downloaded_packages/rJava_1.0-10.tar.gz, /tmp/RtmpEVba3H/downloaded_packages/pdftools_3.4.0.tar.gz, /tmp/RtmpEVba3H/downloaded_packages/staplr_3.2.2.tar.gz        
+remote:        files: /tmp/RtmpEVba3H/downloaded_packages/rJava_1.0-10.tar.gz,         
+remote:        	/tmp/RtmpEVba3H/downloaded_packages/pdftools_3.4.0.tar.gz,         
+remote:        	/tmp/RtmpEVba3H/downloaded_packages/staplr_3.2.2.tar.gz        
+remote:        * installing *source* package ârJavaâ ...        
+remote:        ** package ârJavaâ successfully unpacked and MD5 sums checked        
+remote:        ** using staged installation        
+remote:        checking for gcc... gcc        
+remote:        checking whether the C compiler works... yes        
+remote:        checking for C compiler default output file name... a.out        
+remote:        checking for suffix of executables...         
+remote:        checking whether we are cross compiling... no        
+remote:        checking for suffix of object files... o        
+remote:        checking whether we are using the GNU C compiler... yes        
+remote:        checking whether gcc accepts -g... yes        
+remote:        checking for gcc option to accept ISO C89... none needed        
+remote:        checking how to run the C preprocessor... gcc -E        
+remote:        checking for grep that handles long lines and -e... /bin/grep        
+remote:        checking for egrep... /bin/grep -E        
+remote:        checking for ANSI C header files... yes        
+remote:        checking for sys/wait.h that is POSIX.1 compatible... yes        
+remote:        checking for sys/types.h... yes        
+remote:        checking for sys/stat.h... yes        
+remote:        checking for stdlib.h... yes        
+remote:        checking for string.h... yes        
+remote:        checking for memory.h... yes        
+remote:        checking for strings.h... yes        
+remote:        checking for inttypes.h... yes        
+remote:        checking for stdint.h... yes        
+remote:        checking for unistd.h... yes        
+remote:        checking for string.h... (cached) yes        
+remote:        checking sys/time.h usability... yes        
+remote:        checking sys/time.h presence... yes        
+remote:        checking for sys/time.h... yes        
+remote:        checking for unistd.h... (cached) yes        
+remote:        checking for an ANSI C-conforming const... yes        
+remote:        checking whether time.h and sys/time.h may both be included... yes        
+remote:        configure: checking whether gcc supports static inline...        
+remote:        yes        
+remote:        checking whether setjmp.h is POSIX.1 compatible... yes        
+remote:        checking whether sigsetjmp is declared... yes        
+remote:        checking whether siglongjmp is declared... yes        
+remote:        checking Java support in R... present:        
+remote:        interpreter : '/usr/bin/java'        
+remote:        archiver    : '/usr/bin/jar'        
+remote:        compiler    : '/usr/bin/javac'        
+remote:        header prep.: ''        
+remote:        cpp flags   : '-I/usr/lib/jvm/java-11-openjdk-amd64/include -I/usr/lib/jvm/java-11-openjdk-amd64/include/linux'        
+remote:        java libs   : '-L/usr/lib/jvm/java-11-openjdk-amd64/lib/server -ljvm'        
+remote:        checking whether Java run-time works... ./configure: line 3796: /usr/bin/java: No such file or directory        
+remote:        no        
+remote:        configure: error: Java interpreter '/usr/bin/java' does not work        
+remote:        ERROR: configuration failed for package ârJavaâ        
+remote:        * removing â/app/R/site-library/rJavaâ        
+remote:        * installing *source* package âpdftoolsâ ...        
+remote:        ** package âpdftoolsâ successfully unpacked and MD5 sums checked        
+remote:        ** using staged installation        
+remote:        Package poppler-cpp was not found in the pkg-config search path.        
+remote:        Perhaps you should add the directory containing `poppler-cpp.pc'        
+remote:        to the PKG_CONFIG_PATH environment variable        
+remote:        No package 'poppler-cpp' found        
+remote:        Found INCLUDE_DIR and/or LIB_DIR!        
+remote:        Using PKG_CFLAGS=-I./.apt/usr/include/poppler/cpp -I/usr/include/poppler/cpp -I/usr/include/poppler        
+remote:        Using PKG_LIBS=-L./.apt/usr/lib/x86_64-linux-gnu/ -lpoppler-cpp        
+remote:        --------------------------- [ANTICONF] --------------------------------        
+remote:        Configuration failed to find 'poppler-cpp' system library. Try installing:        
+remote:         * rpm: poppler-cpp-devel (Fedora, CentOS, RHEL)        
+remote:         * brew: poppler (MacOS)        
+remote:         * deb: libpoppler-cpp-dev (Debian, Ubuntu, etc)        
+remote:         * On Ubuntu 16.04 or 18.04 use this PPA:        
+remote:            sudo add-apt-repository -y ppa:cran/poppler        
+remote:            sudo apt-get update        
+remote:            sudo apt-get install -y libpoppler-cpp-dev        
+remote:        If poppler-cpp is already installed, check that 'pkg-config' is in your        
+remote:        PATH and PKG_CONFIG_PATH contains a poppler-cpp.pc file. If pkg-config        
+remote:        is unavailable you can set INCLUDE_DIR and LIB_DIR manually via:        
+remote:        R CMD INSTALL --configure-vars='INCLUDE_DIR=... LIB_DIR=...'        
+remote:        -------------------------- [ERROR MESSAGE] ---------------------------        
+remote:        <stdin>:1:10: fatal error: poppler-document.h: No such file or directory        
+remote:        compilation terminated.        
+remote:        --------------------------------------------------------------------        
+remote:        ERROR: configuration failed for package âpdftoolsâ        
+remote:        * removing â/app/R/site-library/pdftoolsâ        
+remote:        ERROR: dependencies ârJavaâ, âpdftoolsâ are not available for package âstaplrâ        
+remote:        * removing â/app/R/site-library/staplrâ        
+remote:                
+remote:        The downloaded source packages are in        
+remote:        	â/tmp/RtmpEVba3H/downloaded_packagesâ        
+remote:        Warning messages:        
+remote:        1: In install.packages("staplr", verbose = TRUE) :        
+remote:          installation of package ârJavaâ had non-zero exit status        
+remote:        2: In install.packages("staplr", verbose = TRUE) :        
+remote:          installation of package âpdftoolsâ had non-zero exit status        
+remote:        3: In install.packages("staplr", verbose = TRUE) :        
+remote:          installation of package âstaplrâ had non-zero exit status        
+remote:        Installing package into â/app/R/site-libraryâ        
+remote:        (as âlibâ is unspecified)        
 
