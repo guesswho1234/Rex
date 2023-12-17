@@ -34,7 +34,7 @@ remote:          installation of package âpdftoolsâ had non-zero exit 
 # run bash
 C:\Users\User> heroku run bash -a rexams
 
-# check / set path
+# check and set path
 ~/R/site-library $ echo $PATH
 	/app/R/lib/R/bin:/app/tcltk/bin:/app/pandoc/bin:/usr/local/bin:/usr/bin:/bin
 ~/R/site-library $ PATH="$PATH:/app/.apt/usr/lib/x86_64-linux-gnu/pkgconfig/"
