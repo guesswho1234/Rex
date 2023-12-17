@@ -11,8 +11,8 @@ helpers.installPackages(
 )
 
 #install packages causing problems
-install.packages("callr", verbose = TRUE, INSTALL_opts=c("--no-test-load"))
-install.packages("pdftools", verbose = TRUE, INSTALL_opts=c("--no-test-load"))
+install.packages("callr", verbose = TRUE, INSTALL_opts=c("--no-test-load --no-lock"))
+install.packages("pdftools", verbose = TRUE, INSTALL_opts=c("--no-test-load --no-lock"))
 #install.packages("staplr", verbose = TRUE)
 
 # special case of installing iuftools from source

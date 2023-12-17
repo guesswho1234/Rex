@@ -1,5 +1,5 @@
-POST git-receive-pack (733 bytes)
-remote: Updated 97 paths from 6e4b8d1        
+POST git-receive-pack (796 bytes)
+remote: Updated 97 paths from 863555d        
 remote: Compressing source files... done.        
 remote: Building source:        
 remote: 
@@ -32,8 +32,8 @@ remote:        Content type 'application/x-gzip' length 97813 bytes (95 KB)
 remote:        ==================================================        
 remote:        downloaded 95 KB        
 remote:                
-remote:        foundpkgs: callr, /tmp/Rtmpv8RAcJ/downloaded_packages/callr_3.7.3.tar.gz        
-remote:        files: /tmp/Rtmpv8RAcJ/downloaded_packages/callr_3.7.3.tar.gz        
+remote:        foundpkgs: callr, /tmp/RtmptbtAwz/downloaded_packages/callr_3.7.3.tar.gz        
+remote:        files: /tmp/RtmptbtAwz/downloaded_packages/callr_3.7.3.tar.gz        
 remote:        * installing *source* package âcallrâ ...        
 remote:        ** package âcallrâ successfully unpacked and MD5 sums checked        
 remote:        ** using staged installation        
@@ -45,10 +45,10 @@ remote:        *** installing help indices
 remote:        *** copying figures        
 remote:        ** building package indices        
 remote:        * DONE (callr)        
-remote:        1): succeeded '/app/R/lib/R/bin/R CMD INSTALL --no-test-load -l '/app/R/site-library' '/tmp/Rtmpv8RAcJ/downloaded_packages/callr_3.7.3.tar.gz''        
+remote:        1): succeeded '/app/R/lib/R/bin/R CMD INSTALL --no-test-load -l '/app/R/site-library' '/tmp/RtmptbtAwz/downloaded_packages/callr_3.7.3.tar.gz''        
 remote:                
 remote:        The downloaded source packages are in        
-remote:        	â/tmp/Rtmpv8RAcJ/downloaded_packagesâ        
+remote:        	â/tmp/RtmptbtAwz/downloaded_packagesâ        
 remote:        Installing package into â/app/R/site-libraryâ        
 remote:        (as âlibâ is unspecified)        
 remote:        system (cmd0): /app/R/lib/R/bin/R CMD INSTALL --no-test-load        
@@ -57,8 +57,8 @@ remote:        Content type 'application/x-gzip' length 936466 bytes (914 KB)
 remote:        ==================================================        
 remote:        downloaded 914 KB        
 remote:                
-remote:        foundpkgs: pdftools, /tmp/Rtmpv8RAcJ/downloaded_packages/pdftools_3.4.0.tar.gz        
-remote:        files: /tmp/Rtmpv8RAcJ/downloaded_packages/pdftools_3.4.0.tar.gz        
+remote:        foundpkgs: pdftools, /tmp/RtmptbtAwz/downloaded_packages/pdftools_3.4.0.tar.gz        
+remote:        files: /tmp/RtmptbtAwz/downloaded_packages/pdftools_3.4.0.tar.gz        
 remote:        * installing *source* package âpdftoolsâ ...        
 remote:        ** package âpdftoolsâ successfully unpacked and MD5 sums checked        
 remote:        ** using staged installation        
@@ -77,10 +77,10 @@ remote:        *** installing help indices
 remote:        ** building package indices        
 remote:        ** checking absolute paths in shared objects and dynamic libraries        
 remote:        * DONE (pdftools)        
-remote:        1): succeeded '/app/R/lib/R/bin/R CMD INSTALL --no-test-load -l '/app/R/site-library' '/tmp/Rtmpv8RAcJ/downloaded_packages/pdftools_3.4.0.tar.gz''        
+remote:        1): succeeded '/app/R/lib/R/bin/R CMD INSTALL --no-test-load -l '/app/R/site-library' '/tmp/RtmptbtAwz/downloaded_packages/pdftools_3.4.0.tar.gz''        
 remote:                
 remote:        The downloaded source packages are in        
-remote:        	â/tmp/Rtmpv8RAcJ/downloaded_packagesâ
+remote:        	â/tmp/RtmptbtAwz/downloaded_packagesâ        
 remote:        Installing package into â/app/R/site-libraryâ        
 remote:        (as âlibâ is unspecified)        
 remote:        * installing *source* package âiuftoolsâ ...        
@@ -102,12 +102,6 @@ remote:
 remote:        tlmgr option sys_bin ~/bin        
 remote:        tlmgr: setting option sys_bin to /app/bin.        
 remote:        tlmgr: updating /app/.TinyTeX/tlpkg/texlive.tlpdb        
-remote:        tlmgr option repository 'https://ctan.math.illinois.edu/systems/texlive/tlnet'        
-remote:        tlmgr: setting default package repository to https://ctan.math.illinois.edu/systems/texlive/tlnet        
-remote:        tlmgr: updating /app/.TinyTeX/tlpkg/texlive.tlpdb        
-remote:        tlmgr update --list        
-remote:        tlmgr: package repository https://ctan.math.illinois.edu/systems/texlive/tlnet (verified)        
-remote:        update:   texlive-scripts    [112k]: local:    69136, source:    69143        
 remote: -----> Finalising environment...        
 remote: -----> Writing environment to profile        
 remote: -----> Caching build outputs        
