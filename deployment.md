@@ -16,32 +16,20 @@ heroku buildpacks:add --index 1 -a APP_NAME https://github.com/amitree/heroku-bu
 # order of buildpacks is important - poppler should be first
 
 # error when building
-remote:        foundpkgs: pdftools, /tmp/RtmpbKzL0T/downloaded_packages/pdftools_3.4.0.tar.gz        
-remote:        files: /tmp/RtmpbKzL0T/downloaded_packages/pdftools_3.4.0.tar.gz        
-remote:        * installing *source* package âpdftoolsâ ...        
-remote:        ** package âpdftoolsâ successfully unpacked and MD5 sums checked        
-remote:        ** using staged installation        
-remote:        Found INCLUDE_DIR and/or LIB_DIR!        
-remote:        Using PKG_CFLAGS=-I./.apt/usr/include/poppler/cpp -I/usr/include/poppler/cpp -I/usr/include/poppler        
-remote:        Using PKG_LIBS=-L -lpoppler-cpp      
- 
-remote:        --------------------------- [ANTICONF] --------------------------------       
-remote:        Configuration failed to find 'poppler-cpp' system library. Try installing:        
-remote:         * rpm: poppler-cpp-devel (Fedora, CentOS, RHEL)        
-remote:         * brew: poppler (MacOS)        
-remote:         * deb: libpoppler-cpp-dev (Debian, Ubuntu, etc)        
-remote:         * On Ubuntu 16.04 or 18.04 use this PPA:        
-remote:            sudo add-apt-repository -y ppa:cran/poppler        
-remote:            sudo apt-get update        
-remote:            sudo apt-get install -y libpoppler-cpp-dev        
-remote:        If poppler-cpp is already installed, check that 'pkg-config' is in your        
-remote:        PATH and PKG_CONFIG_PATH contains a poppler-cpp.pc file. If pkg-config        
-remote:        is unavailable you can set INCLUDE_DIR and LIB_DIR manually via:        
-remote:        R CMD INSTALL --configure-vars='INCLUDE_DIR=... LIB_DIR=...'      
-remote:        -------------------------- [ERROR MESSAGE] ---------------------------        
-remote:        <stdin>:1:10: fatal error: poppler-document.h: No such file or directory        
-remote:        compilation terminated.        
-remote:        --------------------------------------------------------------------  
+remote:        ** testing if installed package can be loaded from temporary location        
+remote:        Error: package or namespace load failed for âpdftoolsâ in dyn.load(file, DLLpath = DLLpath, ...):        
+remote:         unable to load shared object '/app/R/site-library/00LOCK-pdftools/00new/pdftools/libs/pdftools.so':        
+remote:          /app/R/site-library/00LOCK-pdftools/00new/pdftools/libs/pdftools.so: undefined symbol: _ZNK7poppler8document10create_tocEv        
+remote:        Error: loading failed        
+remote:        Execution halted        
+remote:        ERROR: loading failed        
+remote:        * removing â/app/R/site-library/pdftoolsâ        
+remote:                
+remote:        The downloaded source packages are in        
+remote:        	â/tmp/RtmpfxUYya/downloaded_packagesâ        
+remote:        Warning message:        
+remote:        In install.packages("pdftools", verbose = TRUE) :        
+remote:          installation of package âpdftoolsâ had non-zero exit status
 
 # pkgconfig
 find / -iname pkgconfig
