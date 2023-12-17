@@ -46,6 +46,7 @@ remote:        <stdin>:1:10: fatal error: poppler-document.h: No such file or di
 remote:        compilation terminated.        
 remote:        --------------------------------------------------------------------  
 
+
 find / -iname pkgconfig
 	./tcltk/lib/pkgconfig
 	./R/lib/pkgconfig
