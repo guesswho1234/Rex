@@ -17,11 +17,11 @@ alternative:
 https://github.com/hackclub/heroku-buildpack-poppler
 https://github.com/k16shikano/heroku-buildpack-poppler
 
-heroku buildpacks:add --index 1 -a APP_NAME https://github.com/k16shikano/heroku-buildpack-poppler
+heroku buildpacks:add --index 1 -a rexams https://github.com/k16shikano/heroku-buildpack-poppler
 
 # error when building
-# INCLUDE_DIR = /app/.apt/usr/include/poppler/cpp
-# PKG_CONFIG_PATH = /app/.apt/usr/lib/x86_64-linux-gnu/pkgconfig/
+# heroku config:set -a rexams PKG_CONFIG_PATH=/app/.apt/usr/lib/x86_64-linux-gnu/pkgconfig/
+# heroku config:set -a rexams INCLUDE_DIR=/app/.apt/usr/include/poppler/cpp
 remote:        ** testing if installed package can be loaded from temporary location        
 remote:        Error: package or namespace load failed for âpdftoolsâ in dyn.load(file, DLLpath = DLLpath, ...):        
 remote:         unable to load shared object '/app/R/site-library/00LOCK-pdftools/00new/pdftools/libs/pdftools.so':        
