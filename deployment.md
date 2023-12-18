@@ -13,10 +13,16 @@ For this we additionally need to add the following buildpack as well.
 heroku cli command:
 heroku buildpacks:add --index 1 -a APP_NAME https://github.com/amitree/heroku-buildpack-poppler
 
+alternative:
+
+heroku buildpacks:add --index 1 -a APP_NAME https://github.com/k16shikano/heroku-buildpack-poppler
+
 # order of buildpacks is important - poppler should be first
 
 
 # error when building
+# INCLUDE_DIR = /app/.apt/usr/include/poppler/cpp
+# PKG_CONFIG_PATH = /app/.apt/usr/lib/x86_64-linux-gnu/pkgconfig/
 remote:        ** testing if installed package can be loaded from temporary location        
 remote:        Error: package or namespace load failed for âpdftoolsâ in dyn.load(file, DLLpath = DLLpath, ...):        
 remote:         unable to load shared object '/app/R/site-library/00LOCK-pdftools/00new/pdftools/libs/pdftools.so':        
