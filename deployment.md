@@ -4,21 +4,14 @@ However, we need to select a buildpack that tells Heroku how to handle the shiny
 We use: https://github.com/virtualstaticvoid/heroku-buildpack-r
 
 heroku cli command:
-heroku buildpacks:set -a APP_NAME https://github.com/virtualstaticvoid/heroku-buildpack-r
+heroku buildpacks:set -a rexams https://github.com/virtualstaticvoid/heroku-buildpack-r
 
-# Poppler buildpack
+# Poppler buildpack (order of buildpacks is important - poppler should be firs)
 To be able to use the pdftools package we need poppler to be available.
 For this we additionally need to add the following buildpack as well.
 
 heroku cli command:
-heroku buildpacks:add --index 1 -a APP_NAME https://github.com/amitree/heroku-buildpack-poppler
-
-alternative:
-
-heroku buildpacks:add --index 1 -a APP_NAME https://github.com/k16shikano/heroku-buildpack-poppler
-
-# order of buildpacks is important - poppler should be first
-
+heroku buildpacks:add --index 1 -a rexams https://github.com/amitree/heroku-buildpack-poppler
 
 # error when building
 # INCLUDE_DIR = /app/.apt/usr/include/poppler/cpp
