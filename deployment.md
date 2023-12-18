@@ -13,6 +13,12 @@ For this we additionally need to add the following buildpack as well.
 heroku cli command:
 heroku buildpacks:add --index 1 -a rexams https://github.com/amitree/heroku-buildpack-poppler
 
+alternative:
+https://github.com/hackclub/heroku-buildpack-poppler
+https://github.com/k16shikano/heroku-buildpack-poppler
+
+heroku buildpacks:add --index 1 -a APP_NAME https://github.com/k16shikano/heroku-buildpack-poppler
+
 # error when building
 # INCLUDE_DIR = /app/.apt/usr/include/poppler/cpp
 # PKG_CONFIG_PATH = /app/.apt/usr/lib/x86_64-linux-gnu/pkgconfig/
@@ -45,11 +51,16 @@ find / -iname pkgconfig
 	./R/lib/pkgconfig
 	./.apt/usr/lib/x86_64-linux-gnu/pkgconfig
 
+# poppler-cpp.pc (https://github.com/amitree/heroku-buildpack-poppler)
 find / -iname poppler-cpp.pc
 	/app/.apt/usr/lib/x86_64-linux-gnu/pkgconfig/poppler-cpp.pc	
 		~ $ cd /app/.apt/usr/lib/x86_64-linux-gnu/pkgconfig/
 			~/.apt/usr/lib/x86_64-linux-gnu/pkgconfig $ dir
 				poppler-cpp.pc  poppler-splash.pc  poppler.pc
+				
+# poppler-cpp.pc (https://github.com/k16shikano/heroku-buildpack-poppler)
+find / -iname poppler-cpp.pc
+	/app/vendor/poppler/lib/pkgconfig/poppler-cpp.pc			
 
 # library
 ~ $ cd ./.apt/usr/lib/x86_64-linux-gnu/
@@ -57,13 +68,17 @@ find / -iname poppler-cpp.pc
 		libpoppler-cpp.so    libpoppler-cpp.so.0.7.0  libpoppler.so.91      pkgconfig
 		libpoppler-cpp.so.0  libpoppler.so
 
-# include
+# include (https://github.com/amitree/heroku-buildpack-poppler)
 find / -xdev 2>/dev/null -name "poppler"
 	~ $ cd ./.apt/usr/include/poppler/cpp
 		~/.apt/usr/include/poppler/cpp $ dir
 			poppler-destination.h    poppler-font.h    poppler-page-renderer.h    poppler-rectangle.h
 			poppler-document.h       poppler-global.h  poppler-page-transition.h  poppler-toc.h
 			poppler-embedded-file.h  poppler-image.h   poppler-page.h             poppler-version.h
+
+# include (https://github.com/k16shikano/heroku-buildpack-poppler)
+find / -xdev 2>/dev/null -name "poppler"
+	/usr/share/poppler
 
 # poppler-cpp.pc
 find / -iname poppler-cpp.pc
@@ -83,8 +98,3 @@ find / -iname poppler-cpp.pc
 	Libs: -L${libdir} -lpoppler-cpp
 	Cflags: -I${includedir}/poppler/cpp
 	
-
-
-
-
-
