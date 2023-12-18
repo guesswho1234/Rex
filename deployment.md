@@ -15,16 +15,7 @@ heroku buildpacks:add --index 1 -a rexams https://github.com/amitree/heroku-buil
 heroku config:set -a rexams PKG_CONFIG_PATH=/app/.apt/usr/lib/x86_64-linux-gnu/pkgconfig
 heroku config:set -a rexams INCLUDE_DIR=/app/.apt/usr/include/poppler/cpp
 
-alternative:
-
-heroku buildpacks:add --index 1 -a rexams https://github.com/k16shikano/heroku-buildpack-poppler
-heroku config:set -a rexams PKG_CONFIG_PATH=/app/vendor/poppler/lib/pkgconfig/
-heroku config:set -a rexams INCLUDE_DIR=/app/vendor/poppler/include/poppler/cpp/
-
-heroku config:set -a rexams LIB_DIR=/app/vendor/poppler/lib/pkgconfig
-heroku config:set -a rexams INCLUDE_DIR=/app/vendor/poppler/include/poppler/cpp/
-
-# error when building
+# error when building https://github.com/amitree/heroku-buildpack-poppler
 remote:        ** testing if installed package can be loaded from temporary location        
 remote:        Error: package or namespace load failed for âpdftoolsâ in dyn.load(file, DLLpath = DLLpath, ...):        
 remote:         unable to load shared object '/app/R/site-library/00LOCK-pdftools/00new/pdftools/libs/pdftools.so':        
@@ -39,6 +30,48 @@ remote:        	â/tmp/RtmpfxUYya/downloaded_packagesâ
 remote:        Warning message:        
 remote:        In install.packages("pdftools", verbose = TRUE) :        
 remote:          installation of package âpdftoolsâ had non-zero exit status
+
+
+alternative:
+
+heroku buildpacks:add --index 1 -a rexams https://github.com/k16shikano/heroku-buildpack-poppler
+heroku config:set -a rexams PKG_CONFIG_PATH=/app/vendor/poppler/lib/pkgconfig/
+heroku config:set -a rexams INCLUDE_DIR=/app/vendor/poppler/include/poppler/cpp/
+
+heroku config:set -a rexams LIB_DIR=/app/vendor/poppler/lib/pkgconfig/poppler-cpp.pc
+heroku config:set -a rexams INCLUDE_DIR=/app/vendor/poppler/include/poppler/cpp/
+
+# error when building with https://github.com/k16shikano/heroku-buildpack-poppler
+remote:        Installing package into â/app/R/site-libraryâ        
+remote:        (as âlibâ is unspecified)        
+remote:        system (cmd0): /app/R/lib/R/bin/R CMD INSTALL        
+remote:        trying URL 'https://cloud.r-project.org/src/contrib/pdftools_3.4.0.tar.gz'        
+remote:        Content type 'application/x-gzip' length 936466 bytes (914 KB)        
+remote:        ==================================================        
+remote:        downloaded 914 KB        
+remote:                
+remote:        foundpkgs: pdftools, /tmp/RtmpcDGPWm/downloaded_packages/pdftools_3.4.0.tar.gz        
+remote:        files: /tmp/RtmpcDGPWm/downloaded_packages/pdftools_3.4.0.tar.gz        
+remote:        * installing *source* package âpdftoolsâ ...        
+remote:        ** package âpdftoolsâ successfully unpacked and MD5 sums checked        
+remote:        ** using staged installation        
+remote:        Package poppler-cpp was not found in the pkg-config search path.        
+remote:        Perhaps you should add the directory containing `poppler-cpp.pc'        
+remote:        to the PKG_CONFIG_PATH environment variable        
+remote:        No package 'poppler-cpp' found        
+remote:        Found INCLUDE_DIR and/or LIB_DIR!        
+remote:        Using PKG_CFLAGS=-I/app/vendor/poppler/include/poppler/cpp/ -I/usr/include/poppler/cpp -I/usr/include/poppler        
+remote:        Using PKG_LIBS=-L/app/vendor/poppler/lib/pkgconfig/ -lpoppler-cpp        
+remote:        ** libs        
+remote:        g++ -std=gnu++14 -I"/app/R/lib/R/include" -DNDEBUG -I/app/vendor/poppler/include/poppler/cpp/ -I/usr/include/poppler/cpp -I/usr/include/poppler -I'/app/R/site-library/Rcpp/include' -I/usr/local/include  -fvisibility=hidden -fpic  -g -O2  -c RcppExports.cpp -o RcppExports.o        
+remote:        g++ -std=gnu++14 -I"/app/R/lib/R/include" -DNDEBUG -I/app/vendor/poppler/include/poppler/cpp/ -I/usr/include/poppler/cpp -I/usr/include/poppler -I'/app/R/site-library/Rcpp/include' -I/usr/local/include  -fvisibility=hidden -fpic  -g -O2  -c bindings.cpp -o bindings.o        
+remote:        g++ -std=gnu++14 -shared -L/app/R/lib/R/lib -L/usr/local/lib -o pdftools.so RcppExports.o bindings.o -L/app/vendor/poppler/lib/pkgconfig/ -lpoppler-cpp -L/app/R/lib/R/lib -lR        
+remote:        /bin/ld: cannot find -lpoppler-cpp: No such file or directory        
+remote:        collect2: error: ld returned 1 exit status        
+remote:        make: *** [/app/R/lib/R/share/make/shlib.mk:10: pdftools.so] Error 1        
+remote:        ERROR: compilation failed for package âpdftoolsâ        
+remote:        * removing â/app/R/site-library/pdftoolsâ        
+remote:        * restoring previous â/app/R/site-library/pdftoolsâ     
 
 # run bash
 C:\Users\User> heroku run bash -a rexams
@@ -100,5 +133,4 @@ find / -iname poppler-cpp.pc
 
 	Libs: -L${libdir} -lpoppler-cpp
 	Cflags: -I${includedir}/poppler/cpp
-	
 	
