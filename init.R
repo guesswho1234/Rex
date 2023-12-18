@@ -11,7 +11,7 @@ helpers.installPackages(
 )
 
 #install packages causing problems
-install.packages("pdftools", verbose = TRUE)
+install.packages("pdftools", verbose = TRUE, INSTALL_opts="--no-test-load")
 #install.packages("staplr", verbose = TRUE)
 
 # special case of installing iuftools from source
