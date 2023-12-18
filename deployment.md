@@ -101,3 +101,4 @@ find / -iname poppler-cpp.pc
 	Libs: -L${libdir} -lpoppler-cpp
 	Cflags: -I${includedir}/poppler/cpp
 	
+	
