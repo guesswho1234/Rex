@@ -21,6 +21,7 @@ heroku buildpacks:add --index 1 -a rexams https://github.com/k16shikano/heroku-b
 heroku config:set -a rexams PKG_CONFIG_PATH=/app/vendor/poppler/lib/pkgconfig
 heroku config:set -a rexams INCLUDE_DIR=/usr/share/poppler
 
+
 # error when building
 remote:        ** testing if installed package can be loaded from temporary location        
 remote:        Error: package or namespace load failed for âpdftoolsâ in dyn.load(file, DLLpath = DLLpath, ...):        
