@@ -18,9 +18,11 @@ heroku config:set -a rexams INCLUDE_DIR=/app/.apt/usr/include/poppler/cpp
 alternative:
 
 heroku buildpacks:add --index 1 -a rexams https://github.com/k16shikano/heroku-buildpack-poppler
-heroku config:set -a rexams PKG_CONFIG_PATH=/app/vendor/poppler/lib/pkgconfig
-heroku config:set -a rexams INCLUDE_DIR=/usr/share/poppler
+heroku config:set -a rexams PKG_CONFIG_PATH=/app/vendor/poppler/lib/pkgconfig/
+heroku config:set -a rexams INCLUDE_DIR=/app/vendor/poppler/include/poppler/cpp/
 
+heroku config:set -a rexams LIB_DIR=/app/vendor/poppler/lib/pkgconfig
+heroku config:set -a rexams INCLUDE_DIR=/app/vendor/poppler/include/poppler/cpp/
 
 # error when building
 remote:        ** testing if installed package can be loaded from temporary location        
