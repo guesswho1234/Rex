@@ -120,6 +120,7 @@ find / -iname pdftools.so
 # download file	from bash
 curl -F "file=@pdftools.so" https://file.io
 
+
 # pdftk, ghostscript, imagemagick
 heroku buildpacks:add https://github.com/DuckyTeam/heroku-buildpack-imagemagick --index 1 --app rexams
 heroku buildpacks:add https://github.com/thegrizzlylabs/heroku-buildpack-ghostscript.git --index 1 --app rexams
