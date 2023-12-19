@@ -125,4 +125,3 @@ heroku buildpacks:add https://github.com/DuckyTeam/heroku-buildpack-imagemagick 
 heroku buildpacks:add https://github.com/thegrizzlylabs/heroku-buildpack-ghostscript.git --index 1 --app rexams
 heroku buildpacks:add https://github.com/fxtentacle/heroku-pdftk-buildpack.git --index 1 --app rexams
 heroku config:set LD_LIBRARY_PATH=/app/bin --app rexams	
-	
