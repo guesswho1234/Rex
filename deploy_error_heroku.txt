@@ -1,114 +1,25 @@
-POST git-receive-pack (461 bytes)
-remote: Updated 97 paths from 50df52f        
-remote: Compressing source files... done.        
-remote: Building source:        
-remote: 
-remote: -----> Building on the Heroku-22 stack        
-remote: -----> Using buildpacks:        
-remote:        1. https://github.com/amitree/heroku-buildpack-poppler        
-remote:        2. vsv/heroku-buildpack-r        
-remote: -----> https://github.com/amitree/heroku-buildpack-poppler app detected        
-remote: Extracting poppler_0.81.0-1_amd64.deb...        
-remote: Done        
-remote: -----> R (shiny) app detected        
-remote: -----> Installing R        
-remote:        Version 4.2.1 will be installed on heroku-22 stack.        
-remote: -----> Downloading buildpack archives from AWS S3
-remote:        Loading https://heroku-buildpack-r.s3.amazonaws.com/latest/heroku-buildpack-r-22-4.2.1-deploy.tar.gz from cache        
-remote:        Loading https://heroku-buildpack-r.s3.amazonaws.com/latest/heroku-buildpack-r-22-4.2.1-shiny.tar.gz from cache        
-remote:        Restoring R packages from cache        
-remote:        Setting up build environment from cache        
-remote: -----> Configuring build environment...        
-remote: -----> Executing init.R file        
-remote:        Skipping already installed package: exams         
-remote:        Skipping already installed package: xtable         
-remote:        Skipping already installed package: tth         
-remote:        Skipping already installed package: png         
-remote:        Skipping already installed package: callr         
-remote:        Installing package into â/app/R/site-libraryâ        
-remote:        (as âlibâ is unspecified)        
-remote:        system (cmd0): /app/R/lib/R/bin/R CMD INSTALL        
-remote:        trying URL 'https://cloud.r-project.org/src/contrib/pdftools_3.4.0.tar.gz'        
-remote:        Content type 'application/x-gzip' length 936466 bytes (914 KB)        
-remote:        ==================================================        
-remote:        downloaded 914 KB        
-remote:                
-remote:        foundpkgs: pdftools, /tmp/Rtmp5VeSeh/downloaded_packages/pdftools_3.4.0.tar.gz        
-remote:        files: /tmp/Rtmp5VeSeh/downloaded_packages/pdftools_3.4.0.tar.gz        
-remote:        * installing *source* package âpdftoolsâ ...        
-remote:        ** package âpdftoolsâ successfully unpacked and MD5 sums checked        
-remote:        ** using staged installation        
-remote:        Found INCLUDE_DIR and/or LIB_DIR!        
-remote:        Using PKG_CFLAGS=-I/app/.apt/usr/include/poppler/cpp -I/usr/include/poppler/cpp -I/usr/include/poppler        
-remote:        Using PKG_LIBS=-L -lpoppler-cpp        
-remote:        ** libs        
-remote:        g++ -std=gnu++14 -I"/app/R/lib/R/include" -DNDEBUG -I/app/.apt/usr/include/poppler/cpp -I/usr/include/poppler/cpp -I/usr/include/poppler -I'/app/R/site-library/Rcpp/include' -I/usr/local/include  -fvisibility=hidden -fpic  -g -O2  -c RcppExports.cpp -o RcppExports.o        
-remote:        g++ -std=gnu++14 -I"/app/R/lib/R/include" -DNDEBUG -I/app/.apt/usr/include/poppler/cpp -I/usr/include/poppler/cpp -I/usr/include/poppler -I'/app/R/site-library/Rcpp/include' -I/usr/local/include  -fvisibility=hidden -fpic  -g -O2  -c bindings.cpp -o bindings.o        
-remote:        g++ -std=gnu++14 -shared -L/app/R/lib/R/lib -L/usr/local/lib -o pdftools.so RcppExports.o bindings.o -L -lpoppler-cpp -L/app/R/lib/R/lib -lR        
-remote:        installing to /app/R/site-library/00LOCK-pdftools/00new/pdftools/libs        
-remote:        ** R        
-remote:        ** byte-compile and prepare package for lazy loading        
-remote:        ** help        
-remote:        *** installing help indices        
-remote:        ** building package indices        
-remote:        ** testing if installed package can be loaded from temporary location        
-remote:        Error: package or namespace load failed for âpdftoolsâ in dyn.load(file, DLLpath = DLLpath, ...):        
-remote:         unable to load shared object '/app/R/site-library/00LOCK-pdftools/00new/pdftools/libs/pdftools.so':        
-remote:          /app/R/site-library/00LOCK-pdftools/00new/pdftools/libs/pdftools.so: undefined symbol: _ZNK7poppler8document10create_tocEv        
-remote:        Error: loading failed        
-remote:        Execution halted        
-remote:        ERROR: loading failed        
-remote:        * removing â/app/R/site-library/pdftoolsâ        
-remote:        * restoring previous â/app/R/site-library/pdftoolsâ        
-remote:                
-remote:        The downloaded source packages are in        
-remote:        	â/tmp/Rtmp5VeSeh/downloaded_packagesâ        
-remote:        Warning message:        
-remote:        In install.packages("pdftools", verbose = TRUE) :        
-remote:          installation of package âpdftoolsâ had non-zero exit status
-remote:        Installing package into â/app/R/site-libraryâ        
-remote:        (as âlibâ is unspecified)        
-remote:        * installing *source* package âiuftoolsâ ...        
-remote:        ** using staged installation        
-remote:        ** R        
-remote:        ** byte-compile and prepare package for lazy loading        
-remote:        ** help        
-remote:        *** installing help indices        
-remote:        ** building package indices        
-remote:        ** testing if installed package can be loaded from temporary location        
-remote:        ** testing if installed package can be loaded from final location        
-remote:        ** testing if installed package keeps a record of temporary installation path        
-remote:        * DONE (iuftools)        
-remote:        trying URL 'https://yihui.org/tinytex/TinyTeX-1.tar.gz'        
-remote:        Content type 'application/octet-stream' length 92486077 bytes (88.2 MB)        
-remote:        ==================================================        
-remote:        downloaded 88.2 MB        
-remote:                
-remote:        tlmgr option sys_bin ~/bin        
-remote:        tlmgr: setting option sys_bin to /app/bin.        
-remote:        tlmgr: updating /app/.TinyTeX/tlpkg/texlive.tlpdb        
-remote: -----> Finalising environment...        
-remote: -----> Writing environment to profile        
-remote: -----> Caching build outputs        
-remote:        Build environment...        
-remote:        Done: 479M        
-remote:        R packages...        
-remote:        Done: 77M        
-remote: -----> R 4.2.1 installed successfully!        
-remote:        Install took 183 seconds to complete        
-remote: -----> Discovering process types        
-remote:        Procfile declares types     -> (none)        
-remote:        Default types for buildpack -> console, web
-remote: 
-remote: -----> Compressing...        
-remote:        Done: 292.5M        
-remote: -----> Launching...        
-remote:        Released v82        
-remote:        https://rexams-fd58d4e659c3.herokuapp.com/ deployed to Heroku        
-remote: 
-remote: Verifying deploy... done.        
-Pushing to https://git.heroku.com/rexams.git
-To https://git.heroku.com/rexams.git
-   229ee66..208e486  main -> main
-updating local tracking ref 'refs/remotes/heroku/main'
+libpoppler-cpp.so.0: cannot open shared object file: No such file or directory 
+===============================================================================
+
+echo $PATH
+find / -iname pkgconfig
+find / -iname poppler-cpp.pc    
+find / -iname poppler-font.h
+
+heroku config:set LIB_DIR=//app/.apt/usr/lib/x86_64-linux-gnu/ --app rexams	
+heroku config:set INCLUDE_DIR=/app/.apt/usr/include/poppler/cpp/ --app rexams
+
+===============================================================================	
+# maybe LD_LIBRARY_PATH has to be set properly too 
+other directories:
+libdir = /usr/lib/x86_64-linux-gnu
+includedir = /usr/include/
+
+directory where is located:+
+find / -iname libpoppler-cpp.so.0
+/app/.apt/usr/lib/x86_64-linux-gnu/
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/app/.apt/usr/lib/x86_64-linux-gnu/
+
+heroku config:add LD_LIBRARY_PATH=/app/.apt/usr/lib/x86_64-linux-gnu/ --app rexams	
+
 
