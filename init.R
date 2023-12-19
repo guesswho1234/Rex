@@ -6,7 +6,6 @@ helpers.installPackages(
   "tth",
   "png",
   "callr",
-  "magick"
   # "pdftools"
   #"staplr"
 )
@@ -14,9 +13,9 @@ helpers.installPackages(
 #install packages causing problems
 # install.packages("pdftools", verbose = TRUE, INSTALL_opts="--no-test-load", include.only = c("pdf_info", "pdf_convert")) # test if it works when only necessary functions are usied
 # install.packages("pdftools", verbose = TRUE, INSTALL_opts="--no-test-load") # test if disabling test-load solves the problem (does not)
-# install.packages("pdftools", verbose = TRUE)
+install.packages("pdftools", verbose = TRUE)
 # install.packages("staplr", verbose = TRUE)
-install.packages("magick", verbose = TRUE)
+# install.packages("magick", verbose = TRUE)
 
 # special case of installing iuftools from source
 install.packages("./iuftools", repos = NULL, type="source")
