@@ -17,10 +17,14 @@ in ubuntu 22.04 libpng12.so.0 is no longer available
 install using ppa
 	libpng12-0_1.2.54-1ubuntu1.1+1~ppa0~eoan_amd64
 	
-heroku buildpacks:add --index 1 -a rexamshttps://github.com/rricard/heroku-buildpack-dpkg.git
+heroku buildpacks:add --index 1 -a rexams https://github.com/heroku/heroku-buildpack-apt
+	
+heroku buildpacks:add --index 1 -a rexams https://github.com/rricard/heroku-buildpack-dpkg.git
 
 create Depfile with 
 http://mirrors.kernel.org/ubuntu/pool/main/libp/libpng/libpng12-0_1.2.54-1ubuntu1_amd64.deb	
+
+heroku buildpacks:add --index 1 -a rexams https://github.com/freddix/libpng12.git
 
 ===============================================================================	
 # maybe LD_LIBRARY_PATH has to be set properly too 
