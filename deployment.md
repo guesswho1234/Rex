@@ -66,6 +66,9 @@ heroku buildpacks:add --index 1 -a rexams https://github.com/jjuster/heroku-buil
 # apt
 heroku buildpacks:add --index 1 -a rexams https://github.com/heroku/heroku-buildpack-apt
 
+#dpkg
+heroku buildpacks:add --index 1 -a rexamshttps://github.com/rricard/heroku-buildpack-dpkg.git
+
 # some bash commands used to find out paths etc.
 ## run bash (connect from powershell)
 C:\Users\User> heroku run bash -a rexams
@@ -127,7 +130,6 @@ find / -iname pdftools.so
 
 # download file	from bash
 curl -F "file=@pdftools.so" https://file.io
-
 
 # pdftk, ghostscript, imagemagick
 heroku buildpacks:add https://github.com/DuckyTeam/heroku-buildpack-imagemagick --index 1 --app rexams
