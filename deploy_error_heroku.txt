@@ -1,45 +1,39 @@
-libpoppler-cpp.so.0: cannot open shared object file: No such file or directory 
+ERROR: poppler cpp files not found after buildpack was used
 ===============================================================================
-echo $PATH
-find / -iname pkgconfig
-find / -iname poppler-cpp.pc    
-find / -iname poppler-font.h
+setting new paths fixed this issue:
 
-heroku config:set LIB_DIR=/app/.apt/usr/lib/x86_64-linux-gnu/ --app rexams	
-heroku config:set INCLUDE_DIR=/app/.apt/usr/include/poppler/cpp/ --app rexams
+find paths (via bash in powershell)
+	heroku run bash -a rexams
+	find / -iname poppler-cpp.pc    
+	find / -iname poppler-font.h
+	
+set new paths (directly in powershell)
+	heroku config:set LIB_DIR=/app/.apt/usr/lib/x86_64-linux-gnu/ --app rexams	
+	heroku config:set INCLUDE_DIR=/app/.apt/usr/include/poppler/cpp/ --app rexams
 
-libpng12.so.0: cannot open shared object file: No such file or directory 
+NEW ERROR: libpoppler-cpp.so.0: cannot open shared object file: No such file or directory 
 ===============================================================================
-heroku config:add LD_LIBRARY_PATH=/app/.apt/usr/lib/x86_64-linux-gnu/:/app/R/lib/R/lib:/app/tcltk/lib --app rexams	
+libpoppler-cpp.so.0 does exist. setting new lib paths to this file:
+	heroku config:add LD_LIBRARY_PATH=/app/.apt/usr/lib/x86_64-linux-gnu/:/app/R/lib/R/lib:/app/tcltk/lib --app rexams
 
-in ubuntu 22.04 libpng12.so.0 is no longer available
+NEW ERROR: libpng12.so.0: cannot open shared object file: No such file or directory 
+===============================================================================
 
-somehow need to either get a new poppler version that accepts libpng16.so.0 or get the libpng12.so.0 file into the system
+in ubuntu 22.04 libpng12 is no longer available (only newer version libpng16)
 
-install using ppa?
+somehow need to either get a new poppler version that accepts libpng16 or get  libpng12 installed
+
+use apt and install libpng12.so.0? (did not work)	
+	heroku buildpacks:add --index 1 -a rexams https://github.com/heroku/heroku-buildpack-apt
+
+	create Aptfile with 
+	libpng12-0
+	
+use dpkg and install libpng12.so.0? (did not work)
+	heroku buildpacks:add --index 1 -a rexams https://github.com/rricard/heroku-buildpack-dpkg.git
+
+	create Depfile with 
+	http://mirrors.kernel.org/ubuntu/pool/main/libp/libpng/libpng12-0_1.2.54-1ubuntu1_amd64.deb	
+
+install using ppa (what even is that)? (did not try yet)
 	libpng12-0_1.2.54-1ubuntu1.1+1~ppa0~eoan_amd64
-
-use apt and install libpng12.so.0?	
-heroku buildpacks:add --index 1 -a rexams https://github.com/heroku/heroku-buildpack-apt
-
-create Aptfile with 
-libpng12-0
-
-use dpkg and install libpng12.so.0?
-heroku buildpacks:add --index 1 -a rexams https://github.com/rricard/heroku-buildpack-dpkg.git
-
-create Depfile with 
-http://mirrors.kernel.org/ubuntu/pool/main/libp/libpng/libpng12-0_1.2.54-1ubuntu1_amd64.deb	
-
-===============================================================================	
-# maybe LD_LIBRARY_PATH has to be set properly too 
-#other directories:
-#libdir = /usr/lib/x86_64-linux-gnu
-#includedir = /usr/include/
-#
-#directory where is located:+
-#find / -iname libpoppler-cpp.so.0
-#/app/.apt/usr/lib/x86_64-linux-gnu/
-#export LD_LIBRARY_PATH=/app/.apt/usr/lib/x86_64-linux-gnu/:$LD_LIBRARY_PATH
-#
-#heroku config:add LD_LIBRARY_PATH=/app/.apt/usr/lib/x86_64-linux-gnu/:/app/R/lib/R/lib:/app/tcltk/lib --app rexams	
