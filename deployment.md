@@ -63,6 +63,9 @@ remote:        * restoring previous â/app/R/site-library/pdftoolsâ
 # libpng
 heroku buildpacks:add --index 1 -a rexams https://github.com/jjuster/heroku-buildpack-libpng
 
+# apt
+heroku buildpacks:add --index 1 -a rexams https://github.com/heroku/heroku-buildpack-apt
+
 # some bash commands used to find out paths etc.
 ## run bash (connect from powershell)
 C:\Users\User> heroku run bash -a rexams
