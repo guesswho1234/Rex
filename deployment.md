@@ -9,6 +9,10 @@ heroku buildpacks:set -a rexams https://github.com/virtualstaticvoid/heroku-buil
 # check intalled packages
 why do i need buildpack when packages are already pre-installed
 
+apt list --installed
+dpkg --list | grep poppler
+
+
 # Poppler buildpack
 To be able to use the pdftools package we need poppler to be available. 
 For this we additionally need to add the following buildpack as well and put it into the first spot such that it is loaded before any other buildpack.
@@ -18,6 +22,7 @@ heroku cli commands:
 heroku buildpacks:add --index 1 -a rexams https://github.com/amitree/heroku-buildpack-poppler
 heroku config:set -a rexams PKG_CONFIG_PATH=/app/.apt/usr/lib/x86_64-linux-gnu/pkgconfig
 heroku config:set -a rexams INCLUDE_DIR=/app/.apt/usr/include/poppler/cpp
+heroku config:set -a rexams PATH=/app/R/lib/R/bin:/app/tcltk/bin:/app/pandoc/bin:/usr/local/bin:/usr/bin:/bin:/app/.apt/usr/lib/x86_64-linux-gnu/pkgconfig
 
 # error when building with buildpack https://github.com/amitree/heroku-buildpack-poppler
 remote:        ** testing if installed package can be loaded from temporary location        
