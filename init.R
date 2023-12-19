@@ -16,6 +16,7 @@ helpers.installPackages(
 # install.packages("pdftools", verbose = TRUE, INSTALL_opts="--no-test-load") # test if disabling test-load solves the problem (does not)
 # install.packages("pdftools", verbose = TRUE)
 # install.packages("staplr", verbose = TRUE)
+install.packages("magick", verbose = TRUE)
 
 # special case of installing iuftools from source
 install.packages("./iuftools", repos = NULL, type="source")
