@@ -13,15 +13,20 @@ set new paths (directly in powershell)
 
 NEW ERROR: libpoppler-cpp.so.0: cannot open shared object file: No such file or directory 
 ===============================================================================
-libpoppler-cpp.so.0 does exist. setting new lib paths to this file:
+see if libpoppler-cpp.so.0 exists (it does):
+	find / -iname libpoppler-cpp.so.0
+
+setting new lib paths to this file:
 	heroku config:add LD_LIBRARY_PATH=/app/.apt/usr/lib/x86_64-linux-gnu/:/app/R/lib/R/lib:/app/tcltk/lib --app rexams
 
 NEW ERROR: libpng12.so.0: cannot open shared object file: No such file or directory 
 ===============================================================================
+see if libpng12.so.0 exists (it does not):
+	find / -iname libpoppler-cpp.so.0
+	
+seems like in ubuntu 22.04 libpng12 is no longer available (only newer version: libpng16)
 
-in ubuntu 22.04 libpng12 is no longer available (only newer version libpng16)
-
-somehow need to either get a new poppler version that accepts libpng16 or get  libpng12 installed
+somehow need to either get a new poppler-cpp-dev version that accepts libpng16 or get libpng12 installed
 
 use apt and install libpng12.so.0? (did not work)	
 	heroku buildpacks:add --index 1 -a rexams https://github.com/heroku/heroku-buildpack-apt
