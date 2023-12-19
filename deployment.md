@@ -12,7 +12,6 @@ why do i need buildpack when packages are already pre-installed
 apt list --installed
 dpkg --list | grep poppler
 
-
 # Poppler buildpack
 To be able to use the pdftools package we need poppler to be available. 
 For this we additionally need to add the following buildpack as well and put it into the first spot such that it is loaded before any other buildpack.
