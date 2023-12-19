@@ -6,7 +6,7 @@ We use: https://github.com/virtualstaticvoid/heroku-buildpack-r
 heroku cli command:
 heroku buildpacks:set -a rexams https://github.com/virtualstaticvoid/heroku-buildpack-r
 
-# added something to LD_LIBRARY_PATH
+# added something to LD_LIBRARY_PATH (does not work)
 heroku buildpacks:set -a rexams https://github.com/guesswho1234/heroku-buildpack-r
 
 # check intalled packages
@@ -59,6 +59,9 @@ remote:        Execution halted
 remote:        ERROR: loading failed        
 remote:        * removing â/app/R/site-library/pdftoolsâ        
 remote:        * restoring previous â/app/R/site-library/pdftoolsâ
+
+# libpng
+heroku buildpacks:add --index 1 -a rexams https://github.com/jjuster/heroku-buildpack-libpng
 
 # some bash commands used to find out paths etc.
 ## run bash (connect from powershell)

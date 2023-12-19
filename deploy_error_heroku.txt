@@ -1,25 +1,34 @@
 libpoppler-cpp.so.0: cannot open shared object file: No such file or directory 
 ===============================================================================
-
 echo $PATH
 find / -iname pkgconfig
 find / -iname poppler-cpp.pc    
 find / -iname poppler-font.h
 
-heroku config:set LIB_DIR=//app/.apt/usr/lib/x86_64-linux-gnu/ --app rexams	
+heroku config:set LIB_DIR=/app/.apt/usr/lib/x86_64-linux-gnu/ --app rexams	
 heroku config:set INCLUDE_DIR=/app/.apt/usr/include/poppler/cpp/ --app rexams
+
+libpng12.so.0: cannot open shared object file: No such file or directory 
+===============================================================================
+heroku config:add LD_LIBRARY_PATH=/app/.apt/usr/lib/x86_64-linux-gnu/:/app/R/lib/R/lib:/app/tcltk/lib --app rexams	
+
+in ubuntu 22.04 libpng12.so.0 is no longer available
+
+install using
+	libpng12-0_1.2.54-1ubuntu1.1+1~ppa0~eoan_amd64
+	
+or via https://github.com/heroku/heroku-buildpack-apt
+	create aptfile
 
 ===============================================================================	
 # maybe LD_LIBRARY_PATH has to be set properly too 
-other directories:
-libdir = /usr/lib/x86_64-linux-gnu
-includedir = /usr/include/
-
-directory where is located:+
-find / -iname libpoppler-cpp.so.0
-/app/.apt/usr/lib/x86_64-linux-gnu/
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/app/.apt/usr/lib/x86_64-linux-gnu/
-
-heroku config:add LD_LIBRARY_PATH=/app/.apt/usr/lib/x86_64-linux-gnu/ --app rexams	
-
-
+#other directories:
+#libdir = /usr/lib/x86_64-linux-gnu
+#includedir = /usr/include/
+#
+#directory where is located:+
+#find / -iname libpoppler-cpp.so.0
+#/app/.apt/usr/lib/x86_64-linux-gnu/
+#export LD_LIBRARY_PATH=/app/.apt/usr/lib/x86_64-linux-gnu/:$LD_LIBRARY_PATH
+#
+#heroku config:add LD_LIBRARY_PATH=/app/.apt/usr/lib/x86_64-linux-gnu/:/app/R/lib/R/lib:/app/tcltk/lib --app rexams	
