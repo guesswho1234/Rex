@@ -6,6 +6,9 @@ We use: https://github.com/virtualstaticvoid/heroku-buildpack-r
 heroku cli command:
 heroku buildpacks:set -a rexams https://github.com/virtualstaticvoid/heroku-buildpack-r
 
+# check intalled packages
+why do i need buildpack when packages are already pre-installed
+
 # Poppler buildpack
 To be able to use the pdftools package we need poppler to be available. 
 For this we additionally need to add the following buildpack as well and put it into the first spot such that it is loaded before any other buildpack.
@@ -108,3 +111,13 @@ cat poppler-cpp.pc
 ## pdftools.so (file causing problems)
 find / -iname pdftools.so
 	/app/R/site-library/pdftools/libs/pdftools.so
+
+# download file	from bash
+curl -F "file=@pdftools.so" https://file.io
+
+# pdftk, ghostscript, imagemagick
+heroku buildpacks:add https://github.com/DuckyTeam/heroku-buildpack-imagemagick --index 1 --app rexams
+heroku buildpacks:add https://github.com/thegrizzlylabs/heroku-buildpack-ghostscript.git --index 1 --app rexams
+heroku buildpacks:add https://github.com/fxtentacle/heroku-pdftk-buildpack.git --index 1 --app rexams
+heroku config:set LD_LIBRARY_PATH=/app/bin --app rexams	
+	
