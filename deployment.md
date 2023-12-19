@@ -6,6 +6,9 @@ We use: https://github.com/virtualstaticvoid/heroku-buildpack-r
 heroku cli command:
 heroku buildpacks:set -a rexams https://github.com/virtualstaticvoid/heroku-buildpack-r
 
+# added something to LD_LIBRARY_PATH
+heroku buildpacks:set -a rexams https://github.com/guesswho1234/heroku-buildpack-r
+
 # check intalled packages
 why do i need buildpack when packages are already pre-installed
 
