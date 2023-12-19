@@ -1,0 +1,134 @@
+
+Skip to content
+
+    ropensci
+    /
+    pdftools
+
+Code
+Issues 49
+Pull requests 3
+Actions
+Projects
+Security
+
+    Insights
+
+Install issue on Ubuntu #9
+Closed
+baseliners opened this issue May 17, 2016 · 6 comments
+Comments
+@baseliners
+baseliners commented May 17, 2016 •
+
+Hi - I get the following error while trying to install on Ubuntu. I installed libpoppler-cpp-dev prior to installing pdftools. Error:
+
+* installing to library ‘/home/dev/R/x86_64-pc-linux-gnu-library/3.2’
+* installing *source* package ‘pdftools’ ...
+** package ‘pdftools’ successfully unpacked and MD5 sums checked
+Found pkg-config cflags and libs!
+Using PKG_CFLAGS=-I/usr/local/include/poppler/cpp -I/usr/local/include/poppler
+Using PKG_LIBS=-L/usr/local/lib -lpoppler-cpp
+** libs
+g++ -I/usr/share/R/include -DNDEBUG -I/usr/local/include/poppler/cpp -I/usr/local/include/poppler    -I"/usr/local/lib/R/site-library/Rcpp/include"   -fpic  -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -g  -c RcppExports.cpp -o RcppExports.o
+g++ -I/usr/share/R/include -DNDEBUG -I/usr/local/include/poppler/cpp -I/usr/local/include/poppler    -I"/usr/local/lib/R/site-library/Rcpp/include"   -fpic  -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -g  -c bindings.cpp -o bindings.o
+g++ -I/usr/share/R/include -DNDEBUG -I/usr/local/include/poppler/cpp -I/usr/local/include/poppler    -I"/usr/local/lib/R/site-library/Rcpp/include"   -fpic  -g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -D_FORTIFY_SOURCE=2 -g  -c init.cpp -o init.o
+g++ -shared -L/usr/lib/R/lib -Wl,-Bsymbolic-functions -Wl,-z,relro -o pdftools.so RcppExports.o bindings.o init.o -L/usr/local/lib -lpoppler-cpp -L/usr/lib/R/lib -lR
+installing to /home/dev/R/x86_64-pc-linux-gnu-library/3.2/pdftools/libs
+** R
+** preparing package for lazy loading
+** help
+*** installing help indices
+** building package indices
+** testing if installed package can be loaded
+Error in dyn.load(file, DLLpath = DLLpath, ...) :
+  unable to load shared object '/home/dev/R/x86_64-pc-linux-gnu-library/3.2/pdftools/libs/pdftools.so':
+  /home/dev/R/x86_64-pc-linux-gnu-library/3.2/pdftools/libs/pdftools.so: undefined symbol: _ZN7poppler24set_debug_error_functionEPFvRKSsPvES2_
+Error: loading failed
+Execution halted
+ERROR: loading failed
+* removing ‘/home/dev/R/x86_64-pc-linux-gnu-library/3.2/pdftools’
+
+@jeroen
+Member
+jeroen commented May 17, 2016
+
+You have a version conflict between libpoppler-dev and another version of libpoppler which you manually compiled in /usr/local. Try removing the latter.
+@baseliners
+Author
+baseliners commented May 17, 2016
+
+Thanks. I removed all the libpoppler* files in /usr/local/lib and re-tried but still get the same error. I then removed the libpoppler-cpp-dev package and re-installed via apt-get but still get the same error.
+@jeroen
+Member
+jeroen commented May 17, 2016
+
+Mmm you should have better run make uninstall from the source directory that you used to build poppler. Anyway from your output it looks like you need to remove at least /usr/local/include/poppler.
+@baseliners
+Author
+baseliners commented May 18, 2016 •
+
+make uninstall did the trick, thanks! One unrelated qn (I can open another thread if needed) - is there an easy way to get a line of text on a given page? Something like cat(txt[1][2])? I do see the newline characters so I can parse it but would be nice if this were built-in. Thoughts?
+@jeroen jeroen closed this as completed Aug 10, 2016
+@alexstorer
+alexstorer commented Jul 27, 2017 •
+
+I'm running into the same problem on Mac. I tried to install poppler using hombrew in the following variations:
+
+    brew install --build-from-source -cc=g++ poppler
+    brew install --build-from-source poppler
+    brew install poppler
+
+I also tried changing my compiler settings in ~/.R/Makevars from g++ to clang. All yielded the same error in R.
+
+Error: package or namespace load failed for ‘pdftools’ in dyn.load(file, DLLpath = DLLpath, ...): unable to load shared object '/usr/local/lib/R/site-library/pdftools/libs/pdftools.so': dlopen(/usr/local/lib/R/site-library/pdftools/libs/pdftools.so, 6): Symbol not found: __ZN7poppler24set_debug_error_functionEPFvRKSsPvES2_ Referenced from: /usr/local/lib/R/site-library/pdftools/libs/pdftools.so Expected in: flat namespace in /usr/local/lib/R/site-library/pdftools/libs/pdftools.so
+@jeroen
+Member
+jeroen commented Dec 6, 2017
+
+Can you post your sessionInfo () and install output please?
+@smartinsightsfromdata smartinsightsfromdata mentioned this issue Feb 18, 2018
+Failing to install tesseract on OSX ropensci/tesseract#22
+Closed
+@beanumber beanumber mentioned this issue Jul 24, 2019
+libpoppler version conflict on Ubuntu #65
+Closed
+@ivlachos ivlachos mentioned this issue Aug 5, 2020
+Problem installing: Undefined Symbol #81
+Closed
+@guesswho1234
+Add a comment
+Comment
+
+Add your comment here...
+Remember, contributions to this repository should follow its code of conduct.
+Assignees
+No one assigned
+Labels
+None yet
+Projects
+None yet
+Milestone
+No milestone
+Development
+
+No branches or pull requests
+Notifications
+Customize
+
+You’re not receiving notifications from this thread.
+3 participants
+@jeroen
+@alexstorer
+@baseliners
+Footer
+© 2023 GitHub, Inc.
+Footer navigation
+
+    Terms
+    Privacy
+    Security
+    Status
+    Docs
+    Contact
+
