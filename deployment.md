@@ -97,7 +97,6 @@ find / -xdev 2>/dev/null -name "poppler"
 			poppler-document.h       poppler-global.h  poppler-page-transition.h  poppler-toc.h
 			poppler-embedded-file.h  poppler-image.h   poppler-page.h             poppler-version.h
 
-
 ## poppler-cpp.pc contents
 cat poppler-cpp.pc
 	prefix=/usr
