@@ -24,10 +24,9 @@ allows to install additional packages with "helpers.installPackages" allowing ca
 
 ## set heroku environment variables (to find via dpkg installed packages)
 
+`heroku config:set LIB_DIR=/app/.dpkg/usr/lib/x86_64-linux-gnu/`
 `heroku config:set INCLUDE_DIR=/app/.dpkg/usr/include/poppler/cpp/ --app rexams`
 `heroku config:add LD_LIBRARY_PATH=/app/.dpkg/usr/lib/x86_64-linux-gnu/:/app/R/lib/R/lib:/app/tcltk/lib --app rexams`	
-`heroku config:add PATH=/app/.dpkg/usr/lib/jvm/jdk-17-oracle-x64/bin/:/app/R/lib/R/bin:/app/tcltk/bin:/app/pandoc/bin:/app/.dpkg/usr/bin:/usr/local/bin:/usr/bin:/bin --app rexams`
-`heroku config:add JAVA_HOME=/app/.dpkg/usr/lib/jvm/jdk-17-oracle-x64 --app rexams`
 
 # some useful commands
 ## check intalled packages on ubuntu system
@@ -47,11 +46,7 @@ PATH="$PATH:/app/.apt/usr/lib/x86_64-linux-gnu/pkgconfig/"
 find / -iname pkgconfig
 
 ## poppler-cpp.pc
-find / -iname *poppler-cpp.pc*
-
-find / -iname *jdk-17-oracle-x64*
-/app/.dpkg/usr/lib/jvm/jdk-17-oracle-x64
-				
+find / -iname *poppler-cpp.pc*				
 
 ## poppler-cpp.pc contents
 cat poppler-cpp.pc
