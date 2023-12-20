@@ -1,3 +1,8 @@
+INCLUDE_DIR = /app/.dpkg/usr/include/ImageMagick-6/
+LD_LIBRARY_PATH = /app/.dpkg/usr/lib/x86_64-linux-gnu/:/app/R/lib/R/lib:/app/tcltk/lib
+LIB_DIR = /app/.dpkg/usr/lib/x86_64-linux-gnu/
+
+
 POST git-receive-pack (619 bytes)
 remote: Updated 101 paths from 1b9f61d        
 remote: Compressing source files... done.        
