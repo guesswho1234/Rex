@@ -113,12 +113,13 @@
 									</div>
 									<input type="file" id="file-upload_tasks" onchange='loadTasksFileDialog(this.files);' multiple>
 								</label>
-								<div id="taskDownload" class="listButton">
+								<label id="taskExportAllProxy" class="listButton" for="taskExportAll">
 									<div class="list_butttonIcon">
 										<span class="iconButton"><i class="fa-solid fa-download"></i></span>
 										<span class="textButton"><span lang="de">Exportieren</span><span lang="en">Export</span></span>
 									</div>
-								</div>	
+									{{ button_taskExportAll }}
+								</label>
 								<div id="examTaskAll" class="listButton">
 									<div class="list_butttonIcon">
 										<span class="iconButton"><i class="fa-solid fa-circle-check"></i></span>

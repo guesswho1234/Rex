@@ -53,11 +53,11 @@
   #TODO: since pdftools were added, heroku app does not work anymore -> poppler problem
 
   #TODO: evaluating the same exam (same name for solutions) is a problem due to duplicated names in temp dirs. not an error but incorrect files will be used
+
+  #TODO: export all tasks - download fires infinitely
   
   # TODO NEW FEATURES -------------------------------------------------------
   #TODO: add possibility to create pdf exam with open questions (can then be appended to nops)
-  
-  #TODO: "export" button to download all tasks as zip (need to implement this in javascript)
   
   #TODO: allow to include one png image file per editabel exercise (separate upload field, no drag & drop)
   
@@ -96,6 +96,19 @@ collectWarnings = function(expr) {
   withCallingHandlers(expr, warning = wHandler)
   
   return(warnings)
+}
+
+prepareExportAllTasks = function(tasks){
+  dir = tempdir()
+  
+  taskFiles = unlist(lapply(setNames(seq_along(tasks$taskNames), tasks$taskNames), function(i){
+    file = tempfile(pattern = paste0(tasks$taskNames[[i]], "_"), tmpdir = dir, fileext = ".rnw")
+    writeLines(text = tasks$taskCodes[[i]], con = file)
+    
+    return(file)
+  }))
+  
+  return(list(taskFiles=taskFiles))
 }
 
 parseExercise = function(task, seed, collectWarnings){
@@ -588,6 +601,7 @@ ui = fluidPage(
 
     # EXAM --------------------------------------------------------------------
       # CREATE ------------------------------------------------------------------
+      button_taskExportAll = downloadButton('taskExportAll', 'Export'),
       numericInput_seedValueExam = numericInput("seedValueExam", label = NULL, value = initSeed, min = seedMin, max = seedMax),
       numericInput_numberOfExams = numericInput("numberOfExams", label = NULL, value = 1, min = 1, step = 1),
       numericInput_numberOfTasks = numericInput("numberOfTasks", label = NULL, value = 0, step = 1),
@@ -671,6 +685,26 @@ server = function(input, output, session) {
   observeEvent(input$setNumberOfTaskBlocks, {
     numberOfTaskBlocks <<- input$setNumberOfTaskBlocks
   })
+  
+  # EXPORT ALL TASKS ------------------------------------------------------
+  taskFiles = reactiveVal()
+  
+  observeEvent(input$taskExportAll, {
+    result = prepareExportAllTasks(isolate(input$taskExportAll))
+    taskFiles(unlist(result$taskFiles, recursive = TRUE))
+    if(length(taskFiles()) > 0) {
+      session$sendCustomMessage("taskExportAll", 1) #tried via js, same resulst
+      # shinyjs::runjs("$('#downloadData')[0].click();") #fires infinitely
+    }
+  })
+  
+  output$taskExportAll = downloadHandler(
+    filename = "tasks.zip",
+    content = function(fname) {
+      zip(zipfile=fname, files=isolate(taskFiles()), flags='-r9Xj')
+    },
+    contentType = "application/zip"
+  )
   
   # PARSE TASKS -------------------------------------------------------------
   exerciseParsing = eventReactive(input$parseExercise, {

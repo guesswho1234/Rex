@@ -367,13 +367,14 @@ const languages = {en:["Englisch", "English"],
 				   es:["Spansich", "Spanish"],
 				   tr:["Türkisch", "Turkish"]}
 	
-Shiny.addCustomMessageHandler('setExamLanguageChoices', function(test) {
-    $('#examLanguage').parent().find('.selectize-dropdown-content div').each(function (index, element) {	
-		element.innerHTML = '<span lang="de">' + languages[element.attributes['data-value'].nodeValue][0] + '</span><span lang="en">' + languages[element.attributes['data-value'].nodeValue][1] + '</span>';
-	});
+// not used anymore - can probably be removed	
+// Shiny.addCustomMessageHandler('setExamLanguageChoices', function(test) {
+    // $('#examLanguage').parent().find('.selectize-dropdown-content div').each(function (index, element) {	
+		// element.innerHTML = '<span lang="de">' + languages[element.attributes['data-value'].nodeValue][0] + '</span><span lang="en">' + languages[element.attributes['data-value'].nodeValue][1] + '</span>';
+	// });
 		
-	f_langDeEn();
-});			   
+	// f_langDeEn();
+// });			   
 
 /* --------------------------------------------------------------
  DATA 
@@ -541,6 +542,10 @@ function taskParseAll(){
 
 $('#newTask').click(function () {
 	newSimpleTask();
+});
+
+$('#taskExportAllProxy').click(function () {
+	taskExportAll();
 });
 
 $('#examTaskAll').click(function () {
@@ -895,7 +900,7 @@ function createTask(taskID, name='task',
 		setSimpleTaskFileContents(taskID);
 	}
 	
-	$('#task_list_items').append('<div class="taskItem sidebarListItem"><span class="taskTryCatch"><i class="fa-solid fa-triangle-exclamation"></i><span class="taskTryCatchText"></span></span><span class="taskName">' + name + '</span></span><span class="taskBlock disabled"><input type="number" value="' + block + '"/></span><span class="taskButtons"><span class="examTask taskButton ' + (editable ? '' : 'disabled') + '"><span class="iconButton"><i class="fa-solid fa-circle-check"></i></span><span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span></span><span class="taskRemove taskButton"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></span></span></div>');
+	$('#task_list_items').append('<div class="taskItem sidebarListItem"><span class="taskTryCatch"><i class="fa-solid fa-triangle-exclamation"></i><span class="taskTryCatchText"></span></span><span class="taskName">' + name + '</span></span><span class="taskBlock disabled"><span lang="de">Block:</span><span lang="en">Block:</span><input type="number" value="' + block + '"/></span><span class="taskButtons"><span class="examTask taskButton ' + (editable ? '' : 'disabled') + '"><span class="iconButton"><i class="fa-solid fa-circle-check"></i></span><span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span></span><span class="taskRemove taskButton"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></span></span></div>');
 }
 
 function parseTask(taskID) {	
@@ -1300,6 +1305,21 @@ function download(content, fileName, contentType) {
 	a.click();
 	a.remove();
 }
+
+function taskExportAll() {	
+	const taskNames = iuf['tasks'].map(task => task.name);
+	const taskCodes = iuf['tasks'].map(task => task.file);
+	
+	Shiny.onInputChange("taskExportAll", {taskNames:taskNames, taskCodes: taskCodes}, {priority: 'event'});	
+}
+
+Shiny.addCustomMessageHandler('taskExportAll', function(x) {
+	// TODO:
+	// does fire infinitely
+	// same as when calling shinyjs::runjs("$('#downloadData')[0].click();") in r
+	// works when copied into browser console
+	// $('#taskExportAll')[0].click();
+});
 
 getID = function() {
 	return(taskID_hook == -1 ? $('.taskItem.active').index('.taskItem') : taskID_hook);

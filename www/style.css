@@ -17,6 +17,7 @@
 	---tryCatch_success: rgb(150, 215, 148);
 	---tryCatch_warning: rgb(255, 211, 128);
 	---tryCatch_error: rgb(255, 128, 128);
+	---heart: hsl(0,50%,50%);
 }
 
 html {
@@ -24,15 +25,6 @@ html {
 	font-style: normal;
 	font-weight: normal;
 	font-size: 16px;
-	overflow: -moz-scrollbars-none;
-}
-
-html {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
-html::-webkit-scrollbar { 
-    display: none;
 }
 
 body {
@@ -160,7 +152,7 @@ body.textButtonMode .textButton {
   top: 0; 
   width: 8px; 
   height: 12px; 
-  background: hsl(0,50%,50%); 
+  background: var(---heart); 
   border-radius: 50px 50px 0 0; 
   -webkit-transform: rotate(-45deg); 
   -moz-transform: rotate(-45deg); 
@@ -421,6 +413,14 @@ main > * {
 	border-radius: 5px;
 }
 
+#taskExportAllProxy {
+	font-weight: normal !important;
+}
+
+#taskExportAll {
+	display: none;
+}
+
 #searchTasks input {
 	width: 100%;
 }
@@ -530,6 +530,11 @@ main > * {
 	margin-right: 0px;
 	margin-left: auto;
 	text-align: center;
+	font-weight: bold;
+}
+
+.taskBlock span:first-of-type {
+	margin-right: 0.25rem;
 	font-weight: bold;
 }
 
@@ -728,6 +733,7 @@ main > * {
 	padding: 2px;
 	border: 2px solid var(---highlight_values) !important;
 	border-radius: 3px;
+	margin-left: 2px;
 }
 
 *[contenteditable="true"]:focus {
