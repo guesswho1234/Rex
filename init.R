@@ -9,12 +9,12 @@ helpers.installPackages(
 )
 
 #install packages causing problems
-install.packages("pdftools", verbose = TRUE)
+# install.packages("pdftools", verbose = TRUE)
 # install.packages("staplr", verbose = TRUE)
 # install.packages("magick", verbose = TRUE)
 
 # special case of installing iuftools from source
-# install.packages("./iuftools", repos = NULL, type="source")
+install.packages("./iuftools", repos = NULL, type="source")
 
 # tinytex setup
 tinytex::install_tinytex()
