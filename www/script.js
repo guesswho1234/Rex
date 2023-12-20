@@ -17,6 +17,8 @@ $(document).ready(function () {
 	$('#s_initialSeed').html(itemSingle($('#seedValue').val(), 'greenLabel'));
 	$('#s_numberOfExams').html(itemSingle($('#numberOfExams').val(), 'grayLabel'));
 	
+	f_hotKeys();
+	f_buttonMode();
 	f_langDeEn();
 });
 
@@ -49,7 +51,42 @@ function pong(){
 /* --------------------------------------------------------------
  KEY EVENTS 
 -------------------------------------------------------------- */
+$('#hotkeysActiveContainer').click(function () {
+	setHotkeysCookie(+!getHotkeysCookie());
+	f_hotKeys();
+});
+
+function f_hotKeys() {
+	if (getHotkeysCookie()) {
+		$('#hotkeysActiveContainer span').addClass('active');
+		return;
+	} 
+	
+	$('#hotkeysActiveContainer span').removeClass('active');
+}
+
+function setHotkeysCookie(hotkeysActive) {
+    document.cookie = 'REX_JS_hotkeys=' + hotkeysActive + ';path=/;SameSite=Lax';
+}
+
+function getHotkeysCookie() {
+    const name = 'REX_JS_hotkeys';
+    const ca = document.cookie.split(';');
+	
+    for(let i=0;i < ca.length;i++) {
+        let c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+        if (c.indexOf(name) == 0) {
+			return c.substring(name.length + 1,c.length) === "1";
+		}
+    }
+    return null;
+}
+
 document.onkeyup = function(evt) {
+	if($('#disableOverlay').hasClass("active")) return;
+	if(!getHotkeysCookie()) return;
+	
 	const evtobj = window.event? event : evt
 	
 	if (evtobj.shiftKey && evtobj.keyCode == 70) {
@@ -61,6 +98,9 @@ document.onkeyup = function(evt) {
 }
 
 document.onkeydown = function(evt) {
+	if($('#disableOverlay').hasClass("active")) return;
+	if(!getHotkeysCookie()) return;
+	
 	const evtobj = window.event? event : evt
 	
 	// TASKS
@@ -223,50 +263,54 @@ function selectListItem(index) {
  BUTTON MODE 
 -------------------------------------------------------------- */
 $('#buttonModeSwitchContainer span').click(function () {
-	$('#buttonModeSwitchContainer').find('.active').removeClass('active');
-	$(this).addClass('active');
-	
+	setButtonModeCookie($(this).attr('id').toLowerCase());
+	f_buttonMode();
+	f_langDeEn();
+});
+
+function f_buttonMode() {
 	$('body').removeClass("iconButtonMode");
 	$('body').removeClass("textButtonMode");
 	
-	switch( $(this).attr('id') ) {
-		default: 
-			$('body').addClass("iconButtonMode");
-			break;
-		case "textButtons": 
-			$('body').addClass("textButtonMode");
-			break;
+	buttonMode = getButtonModeCookie()
+	
+	if (buttonMode === 'textbuttons') {
+		$('body').addClass("textButtonMode");
+	} else {
+		$('body').addClass("iconButtonMode");
 	}
+}
 
-	f_langDeEn();
-});
+function setButtonModeCookie(buttonMode) {
+    document.cookie = 'REX_JS_buttonMode=' + buttonMode + ';path=/;SameSite=Lax';
+}
+
+function getButtonModeCookie() {
+    const name = 'REX_JS_buttonMode';
+    const ca = document.cookie.split(';');
+	
+    for(let i=0;i < ca.length;i++) {
+        let c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+        if (c.indexOf(name) == 0) {
+			return c.substring(name.length + 1,c.length);
+		}
+    }
+    return null;
+}
 
 /* --------------------------------------------------------------
  LANGUAGE 
 -------------------------------------------------------------- */
 $('#languageSwitchContainer span').click(function () {
-	$('#languageSwitchContainer').find('.active').removeClass('active');
-	$(this).addClass('active');
-	
 	setLanguageCookie($(this).text().toLowerCase());
 	f_langDeEn();
 });
 
 function f_langDeEn() {
-	let lang = $('#languageSwitchContainer').find('.active').text().toLowerCase();
+	lang = getLanguageCookie()
 	
-	if (getLanguageCookie() == 'en') {
-		lang = getLanguageCookie()
-		$('#languageSwitchContainer').find('.active').removeClass('active');
-		$('#enLang').addClass('active');	
-	} else {
-		lang = getLanguageCookie()
-		$('#languageSwitchContainer').find('.active').removeClass('active');
-		$('#deLang').addClass('active');	
-	}
-
-	/* switch to EN */
-	if ( lang === 'en' ) {
+	if (lang === 'en') {
 		iuf['language'] = 'en';
 		
 		$('html').attr('lang', 'en');
@@ -274,7 +318,6 @@ function f_langDeEn() {
 		
 		$('[lang="de"]').hide();
 		$('[lang="en"]').show();
-	/* switch to DE */
 	} else {
 		iuf['language'] = 'de';
 		
@@ -287,14 +330,14 @@ function f_langDeEn() {
 }
 
 function setLanguageCookie(lang) {
-    document.cookie = 'IuF_JS_lang=' + lang + ';path=/;SameSite=Lax';
+    document.cookie = 'REX_JS_lang=' + lang + ';path=/;SameSite=Lax';
 }
 
 function getLanguageCookie() {
-    const name = 'IuF_JS_lang';
+    const name = 'REX_JS_lang';
     const ca = document.cookie.split(';');
     for(let i=0;i < ca.length;i++) {
-        const c = ca[i];
+        let c = ca[i];
         while (c.charAt(0)==' ') c = c.substring(1,c.length);
         if (c.indexOf(name) == 0) {
 			return c.substring(name.length + 1,c.length);
@@ -1183,38 +1226,6 @@ $('#task_list_items').on('click', '.taskItem', function() {
 		
 	viewTask($(this).index('.taskItem'));
 });
-
-function resetValidation() {
-	$('#resultContent').find('.correct').removeClass('correct');
-	$('#resultContent').find('.incorrect').removeClass('incorrect');
-}
-
-function validateAnswer() {
-	resetValidation();
-	
-	if($('#resultContent').find('input').length == 1) {
-		Number($('#resultContent input').val().replace(',', '.')) === Number(iuf.tasks[getID()].result) ? $('#resultContent input').addClass('correct') : $('#resultContent input').addClass('incorrect');
-		
-		setTimeout(function(){
-			resetValidation();
-		}, 1000);
-	} 
-	
-	if($('#resultContent').find('input').length > 1) {
-		resetValidation();
-
-		let correct = true;		
-		$('#resultContent input[type=checkbox]').each(function (index, element) {		
-			correct = correct && element.checked === iuf.tasks[getID()].result[index]; 
-		});
-		
-		correct ? $('#resultContent input[type=checkbox]').nextAll('span').addClass('correct') : $('#resultContent input[type=checkbox]').nextAll('span').addClass('incorrect');
-		
-		setTimeout(function(){
-			resetValidation();
-		}, 1000);
-	} 
-}
 
 $('#task_info').on('click', '#addNewAnswer', function() {
 	const taskID = getID();

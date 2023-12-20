@@ -16,15 +16,9 @@
   
   #TODO: change error, warning, success for popup: icon and optional "error codes" with small description hide/show textbox with code font
 
-  #TODO: imported file lists (additional pdf, solutions, ...) file names can overflow if they are too long, make it pretty
-  
   
   # TODO USABILITY ----------------------------------------------------------
-  #TODO: disable nav and keys on "wait"
-  
-  #TODO: turn off hotkeys per default; allow to turn on hotkeys in nav bar and have a hot key modal to show binds
-
-  #TODO: enter key when editing fields of editable tasks aceepts input, shift enter moves to the next line
+  #TODO: enter key when editing fields of editable tasks accepts input, shift enter moves to the next line
 
   #TODO: button to clean / remove all additional files, or button with "new exam" and "new evaluation" that resets all fields
   
@@ -56,7 +50,7 @@
   
   #TODO: shift+f moves to search fields even when editing fields of editable tasks
 
-  #TODO: since pdftools were added, heroku app does not work anymore -> check logs
+  #TODO: since pdftools were added, heroku app does not work anymore -> poppler problem
 
   #TODO: evaluating the same exam (same name for solutions) is a problem due to duplicated names in temp dirs. not an error but incorrect files will be used
   
@@ -86,9 +80,8 @@ library(exams) #exams_2.4-0
 library(png) #png_0.1-8 
 library(tth) #tth_4.12-0-1 
 library(xtable) #xtable_1.8-4
-# library(iuftools) #iuftools_1.0.0
+library(iuftools) #iuftools_1.0.0
 library(callr) # callr_3.7.3
-# library(magick)
 library(pdftools) # pdftools_3.4.0
 # library(staplr) # staplr_3.2.2
 
