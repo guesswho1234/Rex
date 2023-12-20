@@ -10,4 +10,3 @@ http://archive.ubuntu.com/ubuntu/pool/universe/i/imagemagick/libmagickcore-6.q16
 http://archive.ubuntu.com/ubuntu/pool/universe/i/imagemagick/libmagick++-6.q16-8_6.9.11.60+dfsg-1.3build2_amd64.deb		http://archive.ubuntu.com/ubuntu/pool/universe/i/imagemagick/libmagick++-6-headers_6.9.11.60+dfsg-1.3build2_all.deb
 http://archive.ubuntu.com/ubuntu/pool/universe/i/imagemagick/libmagick++-6.q16-dev_6.9.11.60+dfsg-1.3build2_amd64.deb
 http://ports.ubuntu.com/pool/universe/i/imagemagick/libmagick++-dev_6.9.11.60+dfsg-1.3build2_all.deb
-

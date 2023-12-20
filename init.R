@@ -5,15 +5,14 @@ helpers.installPackages(
   "xtable",
   "tth",
   "png",
-  "callr",
-  "pdftools"
+  "callr"
+  #"pdftools"
 )
 
 #install packages causing problems
 # install.packages("staplr", verbose = TRUE)
 # install.packages("pdftools", verbose = TRUE)
 # install.packages("magick", verbose = TRUE)
-
 
 # special case of installing iuftools from source
 install.packages("./iuftools", repos = NULL, type="source")

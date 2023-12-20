@@ -1,7 +1,0 @@
-`heroku config:add PATH=/app/.dpkg/usr/lib/jvm/jdk-17-oracle-x64/bin/:/app/R/lib/R/bin:/app/tcltk/bin:/app/pandoc/bin:/app/.dpkg/usr/bin:/usr/local/bin:/usr/bin:/bin --app rexams`
-`heroku config:add JAVA_HOME=/app/.dpkg/usr/lib/jvm/jdk-17-oracle-x64 --app rexams`
-
-https://download.oracle.com/java/17/latest/jdk-17_linux-x64_bin.deb
-
-find / -iname *jdk-17-oracle-x64*
-/app/.dpkg/usr/lib/jvm/jdk-17-oracle-x64
