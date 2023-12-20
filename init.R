@@ -12,6 +12,7 @@ helpers.installPackages(
 #install packages causing problems
 install.packages("staplr", verbose = TRUE)
 
+
 # special case of installing iuftools from source
 install.packages("./iuftools", repos = NULL, type="source")
 
