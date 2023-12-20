@@ -40,6 +40,9 @@ allows to install additional packages with "helpers.installPackages" allowing ca
 `heroku config:add LD_LIBRARY_PATH=/app/.dpkg/usr/lib/x86_64-linux-gnu/:/app/R/lib/R/lib:/app/tcltk/lib --app rexams`	
 
 # some useful commands
+## reset heroku app build cache
+heroku builds:cache:purge -a rexams --confirm rexams
+
 ## check intalled packages on ubuntu system
 apt list --installed
 dpkg --list | grep poppler
