@@ -23,23 +23,9 @@ allows to install additional packages with "helpers.installPackages" allowing ca
 - http://ports.ubuntu.com/pool/main/p/poppler/libpoppler-cpp-dev_22.02.0-2_arm64.deb
 
 ## set heroku environment variables (to find via dpkg installed packages)
-`heroku config:set PKG_CONFIG_PATH=/app/.dpkg/usr/lib/x86_64-linux-gnu/ --app rexams` 
+
 `heroku config:set INCLUDE_DIR=/app/.dpkg/usr/include/poppler/cpp/ --app rexams`
 `heroku config:add LD_LIBRARY_PATH=/app/.dpkg/usr/lib/x86_64-linux-gnu/:/app/R/lib/R/lib:/app/tcltk/lib --app rexams`	
-
-new for java ?
-
-`heroku config:set LIB_DIR=/app/.dpkg/usr/lib/x86_64-linux-gnu/ --app rexams` 
-`heroku config:set INCLUDE_DIR=/app/.dpkg/usr/include/poppler/cpp/ --app rexams`
-`heroku config:add LD_LIBRARY_PATH=/app/.dpkg/usr/lib/jvm/jdk-17-oracle-x64/:/app/.dpkg/usr/lib/x86_64-linux-gnu/:/app/R/lib/R/lib:/app/tcltk/lib --app rexams`	
-
-new for magick
-`heroku config:set LIB_DIR=/app/.dpkg/usr/lib/x86_64-linux-gnu/ --app rexams` 
-Magick++.pc
-/app/.dpkg/usr/lib/x86_64-linux-gnu/pkgconfig/
-
-libs
-/usr/lib/x86_64-linux-gnu/
 
 ## add imagemagick buildpack
 `heroku buildpacks:add --index 1 -a rexams  https://github.com/DuckyTeam/heroku-buildpack-imagemagick.git`

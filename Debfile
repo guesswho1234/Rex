@@ -1,6 +1,4 @@
 http://archive.ubuntu.com/ubuntu/pool/main/p/poppler/libpoppler-cpp0v5_22.02.0-2_amd64.deb
 http://archive.ubuntu.com/ubuntu/pool/main/p/poppler/libpoppler-dev_22.02.0-2_amd64.deb
 http://ports.ubuntu.com/pool/main/p/poppler/libpoppler-cpp-dev_22.02.0-2_arm64.deb
-http://archive.ubuntu.com/ubuntu/pool/universe/i/imagemagick/imagemagick-6-common_6.9.11.60+dfsg-1.3build2_all.deb
-http://archive.ubuntu.com/ubuntu/pool/universe/i/imagemagick/libmagick++-6.q16-dev_6.9.11.60+dfsg-1.3build2_amd64.deb
-http://ports.ubuntu.com/pool/universe/i/imagemagick/libmagick++-dev_6.9.11.60+dfsg-1.3build2_all.deb
+https://download.oracle.com/java/17/latest/jdk-17_linux-x64_bin.deb
