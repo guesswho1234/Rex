@@ -1,0 +1,184 @@
+POST git-receive-pack (619 bytes)
+remote: Updated 101 paths from 1b9f61d        
+remote: Compressing source files... done.        
+remote: Building source:        
+remote: 
+remote: -----> Building on the Heroku-22 stack        
+remote: -----> Using buildpacks:        
+remote:        1. https://github.com/rricard/heroku-buildpack-dpkg.git        
+remote:        2. https://github.com/virtualstaticvoid/heroku-buildpack-r        
+remote: -----> Dpkg app detected        
+remote: -----> Loading cached http://archive.ubuntu.com/ubuntu/pool/universe/i/imagemagick/imagemagick-6-common_6.9.11.60+dfsg-1.3build2_all.deb        
+remote: -----> Loading cached http://archive.ubuntu.com/ubuntu/pool/universe/i/imagemagick/libmagickcore-6-headers_6.9.11.60+dfsg-1.3build2_all.deb        
+remote: -----> Fetching http://archive.ubuntu.com/ubuntu/pool/universe/i/imagemagick/libmagickcore-6-arch-config_6.9.11.60+dfsg-1.3build2_amd64.deb        
+remote:   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current        
+remote:                                  Dload  Upload   Total   Spent    Left  Speed        
+remote:   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0remote: 100 26352  100 26352    0     0   104k      0 --:--:-- --:--:-- --:--:--  104k        
+remote: -----> Loading cached http://archive.ubuntu.com/ubuntu/pool/universe/i/imagemagick/libmagickwand-6-headers_6.9.11.60+dfsg-1.3build2_all.deb        
+remote: -----> Fetching http://archive.ubuntu.com/ubuntu/pool/universe/i/imagemagick/libmagickcore-6.q16-6_6.9.11.60+dfsg-1.3build2_amd64.deb        
+remote:   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current        
+remote:                                  Dload  Upload   Total   Spent    Left  Speed        
+remote:   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0remote: 100 1749k  100 1749k    0     0  15.2M      0 --:--:-- --:--:-- --:--:-- 15.2M        
+remote: -----> Fetching http://archive.ubuntu.com/ubuntu/pool/universe/i/imagemagick/libmagickwand-6.q16-6_6.9.11.60+dfsg-1.3build2_amd64.deb        
+remote:   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current        
+remote:                                  Dload  Upload   Total   Spent    Left  Speed        
+remote:   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0remote: 100  319k  100  319k    0     0   636k      0 --:--:-- --:--:-- --:--:--  636k        
+remote: -----> Loading cached http://archive.ubuntu.com/ubuntu/pool/universe/i/imagemagick/libmagickcore-6-arch-config_6.9.11.60+dfsg-1.3build2_amd64.deb        
+remote: -----> Fetching http://archive.ubuntu.com/ubuntu/pool/universe/i/imagemagick/libmagickcore-6.q16-6-extra_6.9.11.60+dfsg-1.3build2_amd64.deb        
+remote:   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current        
+remote:                                  Dload  Upload   Total   Spent    Left  Speed        
+remote:   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0remote: 100 70302  100 70302    0     0  1190k      0 --:--:-- --:--:-- --:--:-- 1204k        
+remote: -----> Fetching http://archive.ubuntu.com/ubuntu/pool/universe/i/imagemagick/libmagickcore-6.q16-dev_6.9.11.60+dfsg-1.3build2_amd64.deb        
+remote:   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current        
+remote:                                  Dload  Upload   Total   Spent    Left  Speed        
+remote:   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0remote: 100 1089k  100 1089k    0     0  10.2M      0 --:--:-- --:--:-- --:--:-- 10.2M        
+remote: -----> Fetching http://archive.ubuntu.com/ubuntu/pool/universe/i/imagemagick/libmagickwand-6.q16-dev_6.9.11.60+dfsg-1.3build2_amd64.deb        
+remote:   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current        
+remote:                                  Dload  Upload   Total   Spent    Left  Speed        
+remote:  16  348k   16 57637    0     0   175k      0  0:00:01 --:--:--  0:00:01  174kremote: 100  348k  100  348k    0     0   663k      0 --:--:-- --:--:-- --:--:--  663k        
+remote: -----> Fetching http://archive.ubuntu.com/ubuntu/pool/universe/i/imagemagick/libmagick++-6.q16-8_6.9.11.60+dfsg-1.3build2_amd64.deb        
+remote:   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current        
+remote:                                  Dload  Upload   Total   Spent    Left  Speed        
+remote:   0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0remote: 100  153k  100  153k    0     0  2068k      0 --:--:-- --:--:-- --:--:-- 2097k        
+remote: -----> Loading cached http://archive.ubuntu.com/ubuntu/pool/universe/i/imagemagick/libmagick++-6-headers_6.9.11.60+dfsg-1.3build2_all.deb        
+remote: -----> Loading cached http://archive.ubuntu.com/ubuntu/pool/universe/i/imagemagick/libmagick++-6.q16-dev_6.9.11.60+dfsg-1.3build2_amd64.deb        
+remote: -----> Loading cached http://ports.ubuntu.com/pool/universe/i/imagemagick/libmagick++-dev_6.9.11.60+dfsg-1.3build2_all.deb        
+remote: -----> Installing imagemagick-6-common_6.9.11.60+dfsg-1.3build2_all.deb        
+remote: -----> Installing jdk-17_linux-x64_bin.deb        
+remote: -----> Installing libmagick++-6-headers_6.9.11.60+dfsg-1.3build2_all.deb        
+remote: -----> Installing libmagick++-6.q16-8_6.9.11.60+dfsg-1.3build2_amd64.deb        
+remote: -----> Installing libmagick++-6.q16-dev_6.9.11.60+dfsg-1.3build2_amd64.deb        
+remote: -----> Installing libmagickcore-6-arch-config_6.9.11.60+dfsg-1.3build2_amd64.deb        
+remote: -----> Installing libmagickcore-6-headers_6.9.11.60+dfsg-1.3build2_all.deb        
+remote: -----> Installing libmagickcore-6.q16-6_6.9.11.60+dfsg-1.3build2_amd64.deb        
+remote: -----> Installing libmagickcore-6.q16-6-extra_6.9.11.60+dfsg-1.3build2_amd64.deb        
+remote: -----> Installing libmagickcore-6.q16-dev_6.9.11.60+dfsg-1.3build2_amd64.deb        
+remote: -----> Installing libmagick++-dev_6.9.11.60+dfsg-1.3build2_all.deb        
+remote: -----> Installing libmagickwand-6-headers_6.9.11.60+dfsg-1.3build2_all.deb        
+remote: -----> Installing libmagickwand-6.q16-6_6.9.11.60+dfsg-1.3build2_amd64.deb        
+remote: -----> Installing libmagickwand-6.q16-dev_6.9.11.60+dfsg-1.3build2_amd64.deb        
+remote: -----> Installing libpng12-0_1.2.54-1ubuntu1_amd64.deb        
+remote: -----> Installing libpoppler27_0.20.3-2ubuntu1pdf2htmlEX_amd64.deb        
+remote: -----> Installing libpoppler-cpp0_0.20.3-2ubuntu1pdf2htmlEX_amd64.deb        
+remote: -----> Installing libpoppler-cpp0v5_22.02.0-2_amd64.deb        
+remote: -----> Installing libpoppler-cpp-dev_0.20.3-2ubuntu1pdf2htmlEX_amd64.deb
+remote: -----> Installing libpoppler-cpp-dev_22.02.0-2_arm64.deb        
+remote: -----> Installing libpoppler-dev_0.20.3-2ubuntu1pdf2htmlEX_amd64.deb        
+remote: -----> Installing libpoppler-dev_22.02.0-2_amd64.deb        
+remote: -----> Installing libpoppler-glib8_0.20.3-2ubuntu1pdf2htmlEX_amd64.deb        
+remote: -----> Installing libpoppler-glib-dev_0.20.3-2ubuntu1pdf2htmlEX_amd64.deb        
+remote: -----> Installing libpoppler-private-dev_0.20.3-2ubuntu1pdf2htmlEX_amd64.deb        
+remote: -----> Installing libpoppler-qt4-4_0.20.3-2ubuntu1pdf2htmlEX_amd64.deb        
+remote: -----> Installing libpoppler-qt4-dev_0.20.3-2ubuntu1pdf2htmlEX_amd64.deb        
+remote: -----> Installing poppler-dbg_0.20.3-2ubuntu1pdf2htmlEX_amd64.deb        
+remote: -----> Installing poppler-utils_0.20.3-2ubuntu1pdf2htmlEX_amd64.deb        
+remote: -----> Writing profile script        
+remote: -----> R (shiny) app detected        
+remote: -----> Installing R        
+remote:        Version 4.2.1 will be installed on heroku-22 stack.        
+remote: -----> Downloading buildpack archives from AWS S3        
+remote:        Loading https://heroku-buildpack-r.s3.amazonaws.com/latest/heroku-buildpack-r-22-4.2.1-deploy.tar.gz from cache        
+remote:        Loading https://heroku-buildpack-r.s3.amazonaws.com/latest/heroku-buildpack-r-22-4.2.1-shiny.tar.gz from cache        
+remote:        Restoring R packages from cache        
+remote:        Setting up build environment from cache        
+remote: -----> Configuring build environment...        
+remote: -----> Executing init.R file        
+remote:        Skipping already installed package: exams         
+remote:        Skipping already installed package: xtable         
+remote:        Skipping already installed package: tth         
+remote:        Skipping already installed package: png         
+remote:        Skipping already installed package: callr         
+remote:        Installing package into â/app/R/site-libraryâ        
+remote:        (as âlibâ is unspecified)        
+remote:        system (cmd0): /app/R/lib/R/bin/R CMD INSTALL        
+remote:        trying URL 'https://cloud.r-project.org/src/contrib/magick_2.8.2.tar.gz'        
+remote:        Content type 'application/x-gzip' length 4599270 bytes (4.4 MB)        
+remote:        ==================================================        
+remote:        downloaded 4.4 MB        
+remote:                
+remote:        foundpkgs: magick, /tmp/RtmpK1r2eE/downloaded_packages/magick_2.8.2.tar.gz        
+remote:        files: /tmp/RtmpK1r2eE/downloaded_packages/magick_2.8.2.tar.gz        
+remote:        * installing *source* package âmagickâ ...        
+remote:        ** package âmagickâ successfully unpacked and MD5 sums checked        
+remote:        ** using staged installation        
+remote:        Package Magick++ was not found in the pkg-config search path.        
+remote:        Perhaps you should add the directory containing `Magick++.pc'        
+remote:        to the PKG_CONFIG_PATH environment variable        
+remote:        No package 'Magick++' found        
+remote:        Found INCLUDE_DIR and/or LIB_DIR!        
+remote:        Using PKG_CFLAGS=-I/app/.dpkg/usr/include/ImageMagick-6/         
+remote:        Using PKG_LIBS=-L/app/.dpkg/usr/lib/x86_64-linux-gnu/ -lMagick++-6.Q16        
+remote:        --------------------------- [ANTICONF] --------------------------------        
+remote:        Configuration failed to find the Magick++ library. Try installing:        
+remote:         - deb: libmagick++-dev (Debian, Ubuntu)        
+remote:         - rpm: ImageMagick-c++-devel (Fedora, CentOS, RHEL)        
+remote:         - csw: imagemagick_dev (Solaris)        
+remote:         - brew imagemagick@6 (MacOS)        
+remote:        If Magick++ is already installed, check that 'pkg-config' is in your        
+remote:        PATH and PKG_CONFIG_PATH contains a Magick++.pc file. If pkg-config        
+remote:        is unavailable you can set INCLUDE_DIR and LIB_DIR manually via:        
+remote:        R CMD INSTALL --configure-vars='INCLUDE_DIR=... LIB_DIR=...'        
+remote:        -------------------------- [ERROR MESSAGE] ---------------------------        
+remote:        In file included from /app/.dpkg/usr/include/ImageMagick-6/Magick++/Include.h:14,        
+remote:                         from /app/.dpkg/usr/include/ImageMagick-6/Magick++.h:10,        
+remote:                         from <stdin>:1:        
+remote:        /app/.dpkg/usr/include/ImageMagick-6/magick/magick-config.h:21:10: fatal error: magick/magick-baseconfig.h: No such file or directory        
+remote:           21 | #include "magick/magick-baseconfig.h"        
+remote:              |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~        
+remote:        compilation terminated.        
+remote:        --------------------------------------------------------------------        
+remote:        ERROR: configuration failed for package âmagickâ        
+remote:        * removing â/app/R/site-library/magickâ        
+remote:                
+remote:        The downloaded source packages are in        
+remote:        	â/tmp/RtmpK1r2eE/downloaded_packagesâ        
+remote:        Warning message:        
+remote:        In install.packages("magick", verbose = TRUE) :        
+remote:          installation of package âmagickâ had non-zero exit status        
+remote:        Installing package into â/app/R/site-libraryâ        
+remote:        (as âlibâ is unspecified)        
+remote:        * installing *source* package âiuftoolsâ ...        
+remote:        ** using staged installation        
+remote:        ** R        
+remote:        ** byte-compile and prepare package for lazy loading        
+remote:        ** help        
+remote:        *** installing help indices        
+remote:        ** building package indices        
+remote:        ** testing if installed package can be loaded from temporary location        
+remote:        ** testing if installed package can be loaded from final location        
+remote:        ** testing if installed package keeps a record of temporary installation path        
+remote:        * DONE (iuftools)        
+remote:        trying URL 'https://yihui.org/tinytex/TinyTeX-1.tar.gz'        
+remote:        Content type 'application/octet-stream' length 92490924 bytes (88.2 MB)        
+remote:        ==================================================        
+remote:        downloaded 88.2 MB        
+remote:                
+remote:        tlmgr option sys_bin ~/bin        
+remote:        tlmgr: setting option sys_bin to /app/bin.        
+remote:        tlmgr: updating /app/.TinyTeX/tlpkg/texlive.tlpdb        
+remote: -----> Finalising environment...        
+remote: -----> Writing environment to profile        
+remote: -----> Caching build outputs        
+remote:        Build environment...        
+remote:        Done: 479M        
+remote:        R packages...        
+remote:        Done: 77M        
+remote: -----> R 4.2.1 installed successfully!        
+remote:        Install took 208 seconds to complete        
+remote: -----> Discovering process types        
+remote:        Procfile declares types     -> (none)        
+remote:        Default types for buildpack -> console, web
+remote: 
+remote: -----> Compressing...        
+remote:        Done: 478M        
+remote: -----> Launching...        
+remote:  !     Warning: Your slug size (478 MB) exceeds our soft limit (300 MB) which may affect boot time.        
+remote:        Released v239        
+remote:        https://rexams-fd58d4e659c3.herokuapp.com/ deployed to Heroku        
+remote: 
+remote: Verifying deploy... done.        
+Pushing to https://git.heroku.com/rexams.git
+To https://git.heroku.com/rexams.git
+   d04b35e..a9393dc  main -> main
+updating local tracking ref 'refs/remotes/heroku/main'
+

@@ -1,0 +1,159 @@
+POST git-receive-pack (930 bytes)
+remote: Updated 101 paths from da4cf4a        
+remote: Compressing source files... done.        
+remote: Building source:        
+remote: 
+remote: -----> Building on the Heroku-22 stack        
+remote: -----> Using buildpacks:        
+remote:        1. https://github.com/rricard/heroku-buildpack-dpkg.git        
+remote:        2. https://github.com/virtualstaticvoid/heroku-buildpack-r        
+remote: -----> Dpkg app detected        
+remote: -----> Fetching http://archive.ubuntu.com/ubuntu/pool/universe/g/graphicsmagick/graphicsmagick-libmagick-dev-compat_1.4+really1.3.38-1_all.deb        
+remote:   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current        
+remote:                                  Dload  Upload   Total   Spent    Left  Speed        
+remote:  72  9596   72  6951    0     0  27170      0 --:--:-- --:--:-- --:--:-- 27152        remote: 100  9596  100  9596    0     0  37460      0 --:--:-- --:--:-- --:--:-- 37338        
+remote: -----> Installing graphicsmagick-libmagick-dev-compat_1.4+really1.3.38-1_all.deb        
+remote: -----> Writing profile script        
+remote: -----> R (shiny) app detected        
+remote: -----> Installing R        
+remote:        Version 4.2.1 will be installed on heroku-22 stack.        
+remote: -----> Downloading buildpack archives from AWS S3
+remote:        Downloading https://heroku-buildpack-r.s3.amazonaws.com/latest/heroku-buildpack-r-22-4.2.1-deploy.tar.gz        
+remote:        Downloading https://heroku-buildpack-r.s3.amazonaws.com/latest/heroku-buildpack-r-22-4.2.1-shiny.tar.gz        
+remote:        Setting up build environment        
+remote:        Downloading https://heroku-buildpack-r.s3.amazonaws.com/latest/heroku-buildpack-r-22-4.2.1-chroot.tar.gz        
+remote: -----> Configuring build environment...        
+remote: -----> Executing init.R file        
+remote:        Installing exams ...        
+remote:        also installing the dependencies ârlangâ, âcliâ, âlifecycleâ, âstringiâ, âvctrsâ, âevaluateâ, âhighrâ, âxfunâ, âyamlâ, âfontawesomeâ, âstringrâ, âtinytexâ, âknitrâ, ârmarkdownâ        
+remote:                
+remote:        Skipping already installed package: xtable         
+remote:        Installing tth ...        
+remote:        Installing png ...        
+remote:        Installing callr ...        
+remote:        also installing the dependencies âpsâ, âprocessxâ        
+remote:                
+remote:        Installing package into â/app/R/site-libraryâ        
+remote:        (as âlibâ is unspecified)        
+remote:        system (cmd0): /app/R/lib/R/bin/R CMD INSTALL        
+remote:        also installing the dependency âcurlâ        
+remote:                
+remote:        trying URL 'https://cloud.r-project.org/src/contrib/curl_5.2.0.tar.gz'        
+remote:        Content type 'application/x-gzip' length 715878 bytes (699 KB)        
+remote:        ==================================================        
+remote:        downloaded 699 KB        
+remote:                
+remote:        trying URL 'https://cloud.r-project.org/src/contrib/magick_2.8.2.tar.gz'        
+remote:        Content type 'application/x-gzip' length 4599270 bytes (4.4 MB)        
+remote:        ==================================================
+remote:        downloaded 4.4 MB        
+remote:                
+remote:        foundpkgs: curl, magick, /tmp/RtmpDevop9/downloaded_packages/curl_5.2.0.tar.gz, /tmp/RtmpDevop9/downloaded_packages/magick_2.8.2.tar.gz        
+remote:        files: /tmp/RtmpDevop9/downloaded_packages/curl_5.2.0.tar.gz,         
+remote:        	/tmp/RtmpDevop9/downloaded_packages/magick_2.8.2.tar.gz        
+remote:        * installing *source* package âcurlâ ...        
+remote:        ** package âcurlâ successfully unpacked and MD5 sums checked        
+remote:        ** using staged installation        
+remote:        Found INCLUDE_DIR and/or LIB_DIR!        
+remote:        Using PKG_CFLAGS=-I/app/.dpkg/usr/include/ImageMagick-6/         
+remote:        Using PKG_LIBS=-L/app/.dpkg/usr/lib/x86_64-linux-gnu/ -lcurl        
+remote:        ** libs        
+remote:        rm -f curl.so callbacks.o curl.o download.o escape.o fetch.o findport.o form.o getdate.o handle.o ieproxy.o init.o interrupt.o multi.o nslookup.o options.o reflist.o split.o ssl.o typechecking.o utils.o version.o winidn.o writer.o        
+remote:        gcc -I"/app/R/lib/R/include" -DNDEBUG -I/app/.dpkg/usr/include/ImageMagick-6/  -DSTRICT_R_HEADERS  -I/usr/local/include  -fvisibility=hidden -fpic  -g -O2  -c callbacks.c -o callbacks.o        
+remote:        gcc -I"/app/R/lib/R/include" -DNDEBUG -I/app/.dpkg/usr/include/ImageMagick-6/  -DSTRICT_R_HEADERS  -I/usr/local/include  -fvisibility=hidden -fpic  -g -O2  -c curl.c -o curl.o        
+remote:        gcc -I"/app/R/lib/R/include" -DNDEBUG -I/app/.dpkg/usr/include/ImageMagick-6/  -DSTRICT_R_HEADERS  -I/usr/local/include  -fvisibility=hidden -fpic  -g -O2  -c download.c -o download.o        
+remote:        gcc -I"/app/R/lib/R/include" -DNDEBUG -I/app/.dpkg/usr/include/ImageMagick-6/  -DSTRICT_R_HEADERS  -I/usr/local/include  -fvisibility=hidden -fpic  -g -O2  -c escape.c -o escape.o        
+remote:        gcc -I"/app/R/lib/R/include" -DNDEBUG -I/app/.dpkg/usr/include/ImageMagick-6/  -DSTRICT_R_HEADERS  -I/usr/local/include  -fvisibility=hidden -fpic  -g -O2  -c fetch.c -o fetch.o        
+remote:        gcc -I"/app/R/lib/R/include" -DNDEBUG -I/app/.dpkg/usr/include/ImageMagick-6/  -DSTRICT_R_HEADERS  -I/usr/local/include  -fvisibility=hidden -fpic  -g -O2  -c findport.c -o findport.o        
+remote:        gcc -I"/app/R/lib/R/include" -DNDEBUG -I/app/.dpkg/usr/include/ImageMagick-6/  -DSTRICT_R_HEADERS  -I/usr/local/include  -fvisibility=hidden -fpic  -g -O2  -c form.c -o form.o        
+remote:        gcc -I"/app/R/lib/R/include" -DNDEBUG -I/app/.dpkg/usr/include/ImageMagick-6/  -DSTRICT_R_HEADERS  -I/usr/local/include  -fvisibility=hidden -fpic  -g -O2  -c getdate.c -o getdate.o        
+remote:        gcc -I"/app/R/lib/R/include" -DNDEBUG -I/app/.dpkg/usr/include/ImageMagick-6/  -DSTRICT_R_HEADERS  -I/usr/local/include  -fvisibility=hidden -fpic  -g -O2  -c handle.c -o handle.o        
+remote:        gcc -I"/app/R/lib/R/include" -DNDEBUG -I/app/.dpkg/usr/include/ImageMagick-6/  -DSTRICT_R_HEADERS  -I/usr/local/include  -fvisibility=hidden -fpic  -g -O2  -c ieproxy.c -o ieproxy.o        
+remote:        gcc -I"/app/R/lib/R/include" -DNDEBUG -I/app/.dpkg/usr/include/ImageMagick-6/  -DSTRICT_R_HEADERS  -I/usr/local/include  -fvisibility=hidden -fpic  -g -O2  -c init.c -o init.o        
+remote:        gcc -I"/app/R/lib/R/include" -DNDEBUG -I/app/.dpkg/usr/include/ImageMagick-6/  -DSTRICT_R_HEADERS  -I/usr/local/include  -fvisibility=hidden -fpic  -g -O2  -c interrupt.c -o interrupt.o        
+remote:        gcc -I"/app/R/lib/R/include" -DNDEBUG -I/app/.dpkg/usr/include/ImageMagick-6/  -DSTRICT_R_HEADERS  -I/usr/local/include  -fvisibility=hidden -fpic  -g -O2  -c multi.c -o multi.o        
+remote:        gcc -I"/app/R/lib/R/include" -DNDEBUG -I/app/.dpkg/usr/include/ImageMagick-6/  -DSTRICT_R_HEADERS  -I/usr/local/include  -fvisibility=hidden -fpic  -g -O2  -c nslookup.c -o nslookup.o        
+remote:        gcc -I"/app/R/lib/R/include" -DNDEBUG -I/app/.dpkg/usr/include/ImageMagick-6/  -DSTRICT_R_HEADERS  -I/usr/local/include  -fvisibility=hidden -fpic  -g -O2  -c options.c -o options.o        
+remote:        gcc -I"/app/R/lib/R/include" -DNDEBUG -I/app/.dpkg/usr/include/ImageMagick-6/  -DSTRICT_R_HEADERS  -I/usr/local/include  -fvisibility=hidden -fpic  -g -O2  -c reflist.c -o reflist.o        
+remote:        gcc -I"/app/R/lib/R/include" -DNDEBUG -I/app/.dpkg/usr/include/ImageMagick-6/  -DSTRICT_R_HEADERS  -I/usr/local/include  -fvisibility=hidden -fpic  -g -O2  -c split.c -o split.o        
+remote:        gcc -I"/app/R/lib/R/include" -DNDEBUG -I/app/.dpkg/usr/include/ImageMagick-6/  -DSTRICT_R_HEADERS  -I/usr/local/include  -fvisibility=hidden -fpic  -g -O2  -c ssl.c -o ssl.o        
+remote:        gcc -I"/app/R/lib/R/include" -DNDEBUG -I/app/.dpkg/usr/include/ImageMagick-6/  -DSTRICT_R_HEADERS  -I/usr/local/include  -fvisibility=hidden -fpic  -g -O2  -c typechecking.c -o typechecking.o        
+remote:        gcc -I"/app/R/lib/R/include" -DNDEBUG -I/app/.dpkg/usr/include/ImageMagick-6/  -DSTRICT_R_HEADERS  -I/usr/local/include  -fvisibility=hidden -fpic  -g -O2  -c utils.c -o utils.o        
+remote:        gcc -I"/app/R/lib/R/include" -DNDEBUG -I/app/.dpkg/usr/include/ImageMagick-6/  -DSTRICT_R_HEADERS  -I/usr/local/include  -fvisibility=hidden -fpic  -g -O2  -c version.c -o version.o        
+remote:        gcc -I"/app/R/lib/R/include" -DNDEBUG -I/app/.dpkg/usr/include/ImageMagick-6/  -DSTRICT_R_HEADERS  -I/usr/local/include  -fvisibility=hidden -fpic  -g -O2  -c winidn.c -o winidn.o        
+remote:        gcc -I"/app/R/lib/R/include" -DNDEBUG -I/app/.dpkg/usr/include/ImageMagick-6/  -DSTRICT_R_HEADERS  -I/usr/local/include  -fvisibility=hidden -fpic  -g -O2  -c writer.c -o writer.o        
+remote:        gcc -shared -L/app/R/lib/R/lib -L/usr/local/lib -o curl.so callbacks.o curl.o download.o escape.o fetch.o findport.o form.o getdate.o handle.o ieproxy.o init.o interrupt.o multi.o nslookup.o options.o reflist.o split.o ssl.o typechecking.o utils.o version.o winidn.o writer.o -L/app/.dpkg/usr/lib/x86_64-linux-gnu/ -lcurl -L/app/R/lib/R/lib -lR        
+remote:        installing to /app/R/site-library/00LOCK-curl/00new/curl/libs        
+remote:        ** R        
+remote:        ** inst        
+remote:        ** byte-compile and prepare package for lazy loading        
+remote:        ** help        
+remote:        *** installing help indices        
+remote:        ** building package indices        
+remote:        ** installing vignettes        
+remote:        ** testing if installed package can be loaded from temporary location        
+remote:        ** checking absolute paths in shared objects and dynamic libraries        
+remote:        ** testing if installed package can be loaded from final location        
+remote:        ** testing if installed package keeps a record of temporary installation path        
+remote:        * DONE (curl)        
+remote:        1): succeeded '/app/R/lib/R/bin/R CMD INSTALL -l '/app/R/site-library' '/tmp/RtmpDevop9/downloaded_packages/curl_5.2.0.tar.gz''        
+remote:        * installing *source* package âmagickâ ...        
+remote:        ** package âmagickâ successfully unpacked and MD5 sums checked        
+remote:        ** using staged installation        
+remote:        Package Magick++ was not found in the pkg-config search path.        
+remote:        Perhaps you should add the directory containing `Magick++.pc'        
+remote:        to the PKG_CONFIG_PATH environment variable        
+remote:        No package 'Magick++' found        
+remote:        Found INCLUDE_DIR and/or LIB_DIR!        
+remote:        Using PKG_CFLAGS=-I/app/.dpkg/usr/include/ImageMagick-6/         
+remote:        Using PKG_LIBS=-L/app/.dpkg/usr/lib/x86_64-linux-gnu/ -lMagick++-6.Q16        
+remote:        --------------------------- [ANTICONF] --------------------------------        
+remote:        Configuration failed to find the Magick++ library. Try installing:        
+remote:         - deb: libmagick++-dev (Debian, Ubuntu)        
+remote:         - rpm: ImageMagick-c++-devel (Fedora, CentOS, RHEL)        
+remote:         - csw: imagemagick_dev (Solaris)        
+remote:         - brew imagemagick@6 (MacOS)        
+remote:        If Magick++ is already installed, check that 'pkg-config' is in your        
+remote:        PATH and PKG_CONFIG_PATH contains a Magick++.pc file. If pkg-config        
+remote:        is unavailable you can set INCLUDE_DIR and LIB_DIR manually via:        
+remote:        R CMD INSTALL --configure-vars='INCLUDE_DIR=... LIB_DIR=...'        
+remote:        -------------------------- [ERROR MESSAGE] ---------------------------        
+remote:        <stdin>:1:10: fatal error: Magick++.h: No such file or directory        
+remote:        compilation terminated.        
+remote:        --------------------------------------------------------------------        
+remote:        ERROR: configuration failed for package âmagickâ        
+remote:        * removing â/app/R/site-library/magickâ        
+remote:                
+remote:        The downloaded source packages are in        
+remote:        	â/tmp/RtmpDevop9/downloaded_packagesâ        
+remote:        Warning message:        
+remote:        In install.packages("magick", verbose = TRUE) :        
+remote:          installation of package âmagickâ had non-zero exit status        
+remote:        Installing package into â/app/R/site-libraryâ        
+remote:        (as âlibâ is unspecified)        
+remote:        * installing *source* package âiuftoolsâ ...        
+remote:        ** using staged installation        
+remote:        ** R        
+remote:        ** byte-compile and prepare package for lazy loading        
+remote:        ** help        
+remote:        *** installing help indices        
+remote:        ** building package indices        
+remote:        ** testing if installed package can be loaded from temporary location        
+remote:        ** testing if installed package can be loaded from final location        
+remote:        ** testing if installed package keeps a record of temporary installation path        
+remote:        * DONE (iuftools)        
+remote:        trying URL 'https://yihui.org/tinytex/TinyTeX-1.tar.gz'        
+remote:        Content type 'application/octet-stream' length 92490924 bytes (88.2 MB)        
+remote:        ==================================================        
+remote:        downloaded 88.2 MB        
+remote:                
+remote:        tlmgr option sys_bin ~/bin        
+remote:        tlmgr: setting option sys_bin to /app/bin.        
+remote:        tlmgr: updating /app/.TinyTeX/tlpkg/texlive.tlpdb        
+remote:        tlmgr option repository 'https://mirror.mwt.me/ctan/systems/texlive/tlnet'        
+remote:        tlmgr: setting default package repository to https://mirror.mwt.me/ctan/systems/texlive/tlnet        
+remote:        tlmgr: updating /app/.TinyTeX/tlpkg/texlive.tlpdb        
+remote:        tlmgr update --list        
+remote:        tlmgr: package repository https://mirror.mwt.me/ctan/systems/texlive/tlnet (verified)        
+remote:        update:   texlive-scripts    [112k]: local:    69151, source:    69167        
+
