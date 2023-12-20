@@ -18,15 +18,25 @@ allows to install additional packages with "helpers.installPackages" allowing ca
 `heroku buildpacks:add --index 1 -a rexams https://github.com/rricard/heroku-buildpack-dpkg.git`
 
 ## create file named "Debfile" in repository and add the following lines
-- http://archive.ubuntu.com/ubuntu/pool/main/p/poppler/libpoppler-cpp0v5_22.02.0-2_amd64.deb
-- http://archive.ubuntu.com/ubuntu/pool/main/p/poppler/libpoppler-dev_22.02.0-2_amd64.deb
-- http://ports.ubuntu.com/pool/main/p/poppler/libpoppler-cpp-dev_22.02.0-2_arm64.deb
+- https://launchpad.net/~coolwanglu/+archive/pdf2htmlex/+files/libpoppler-cpp-dev_0.20.3-2ubuntu1pdf2htmlEX_amd64.deb
+- https://launchpad.net/~coolwanglu/+archive/pdf2htmlex/+files/libpoppler-cpp0_0.20.3-2ubuntu1pdf2htmlEX_amd64.deb
+- https://launchpad.net/~coolwanglu/+archive/pdf2htmlex/+files/libpoppler-dev_0.20.3-2ubuntu1pdf2htmlEX_amd64.deb
+- https://launchpad.net/~coolwanglu/+archive/pdf2htmlex/+files/libpoppler-glib-dev_0.20.3-2ubuntu1pdf2htmlEX_amd64.deb
+- https://launchpad.net/~coolwanglu/+archive/pdf2htmlex/+files/libpoppler-glib8_0.20.3-2ubuntu1pdf2htmlEX_amd64.deb
+- https://launchpad.net/~coolwanglu/+archive/pdf2htmlex/+files/libpoppler-private-dev_0.20.3-2ubuntu1pdf2htmlEX_amd64.deb
+- https://launchpad.net/~coolwanglu/+archive/pdf2htmlex/+files/libpoppler-qt4-4_0.20.3-2ubuntu1pdf2htmlEX_amd64.deb
+- https://launchpad.net/~coolwanglu/+archive/pdf2htmlex/+files/libpoppler-qt4-dev_0.20.3-2ubuntu1pdf2htmlEX_amd64.deb
+- https://launchpad.net/~coolwanglu/+archive/pdf2htmlex/+files/libpoppler27_0.20.3-2ubuntu1pdf2htmlEX_amd64.deb
+- https://launchpad.net/~coolwanglu/+archive/pdf2htmlex/+files/poppler-dbg_0.20.3-2ubuntu1pdf2htmlEX_amd64.deb
+- https://launchpad.net/~coolwanglu/+archive/pdf2htmlex/+files/poppler-utils_0.20.3-2ubuntu1pdf2htmlEX_amd64.deb
 
 ## set heroku environment variables (to find via dpkg installed packages)
+`heroku config:set PKG_CONFIG_PATH=/app/.apt/usr/lib/x86_64-linux-gnu/pkgconfig/ --app rexams`
 
-`heroku config:set PKG_CONFIG_PATH=/app/.apt/usr/lib/x86_64-linux-gnu/pkgconfig`
-`heroku config:set LIB_DIR=/app/.dpkg/usr/lib/x86_64-linux-gnu/`
+`heroku config:set LIB_DIR=/app/.dpkg/usr/lib/x86_64-linux-gnu/ --app rexams`
+
 `heroku config:set INCLUDE_DIR=/app/.dpkg/usr/include/poppler/cpp/ --app rexams`
+
 `heroku config:add LD_LIBRARY_PATH=/app/.dpkg/usr/lib/x86_64-linux-gnu/:/app/R/lib/R/lib:/app/tcltk/lib --app rexams`	
 
 # some useful commands
@@ -64,19 +74,6 @@ cat poppler-cpp.pc
 ## download file	from bash
 curl -F "file=@p<file>" https://file.io
 
-# new method via dpkg and installing poppler via the Debfile
-## add dpkg buildpack
-heroku buildpacks:add --index 1 -a rexams https://github.com/rricard/heroku-buildpack-dpkg.git
-
-## create a file named "Debfile" (no file extension) and add the following lines:
-		http://archive.ubuntu.com/ubuntu/pool/main/p/poppler/libpoppler-cpp0v5_22.02.0-2_amd64.deb
-		http://archive.ubuntu.com/ubuntu/pool/main/p/poppler/libpoppler-dev_22.02.0-2_amd64.deb
-		http://ports.ubuntu.com/pool/main/p/poppler/libpoppler-cpp-dev_22.02.0-2_arm64.deb
-
-## set heroku environment variables
-heroku config:set LIB_DIR=/app/.dpkg/usr/lib/x86_64-linux-gnu/ --app rexams 
-heroku config:set INCLUDE_DIR=/app/.dpkg/usr/include/poppler/cpp/ --app rexams
-heroku config:add LD_LIBRARY_PATH=/app/.dpkg/usr/lib/x86_64-linux-gnu/:/app/R/lib/R/lib:/app/tcltk/lib --app rexams	
 # bash file system info used to derive environment variable values
 ===============================================================================
 /app/.dpkg/usr/lib/x86_64-linux-gnu/
@@ -98,7 +95,6 @@ what is this? is this needed? what installs this? can we remove something?
 	poppler-cpp.pc	
 
 ===============================================================================
-
 /app/.dpkg/usr/include/poppler/cpp/
 	poppler-destination.h    poppler-global.h           poppler-rectangle.h
 	poppler-document.h       poppler-image.h            poppler-toc.h
@@ -107,7 +103,6 @@ what is this? is this needed? what installs this? can we remove something?
 	poppler-font.h           poppler-page.h
 	
 =============================================================================
-	
 /app/.dpkg/usr/lib/x86_64-linux-gnu/
 	libpng12.so.0            libpoppler-glib.so        libpoppler.a
 	libpoppler-cpp.a         libpoppler-glib.so.8      libpoppler.so
