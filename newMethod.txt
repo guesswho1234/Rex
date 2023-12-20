@@ -11,7 +11,7 @@ LIB_DIR = /app/.apt/usr/lib/x86_64-linux-gnu/
 /app/.dpkg/usr/lib/aarch64-linux-gnu/pkgconfig/
 	poppler-cpp.pc
 	
-heroku config:set LIB_DIR=/app/.dpkg/usr/lib/x86_64-linux-gnu/pkgconfig/ --app 
+heroku config:set LIB_DIR=/app/.dpkg/usr/lib/x86_64-linux-gnu/pkgconfig/ --app rexams 
 ===============================================================================
 
 /app/.dpkg/usr/include/poppler/cpp/
@@ -21,7 +21,6 @@ heroku config:set LIB_DIR=/app/.dpkg/usr/lib/x86_64-linux-gnu/pkgconfig/ --app
 	poppler-font-private.h   poppler-page-transition.h  poppler_cpp_export.h
 	poppler-font.h           poppler-page.h
 	
-rexams	
 heroku config:set INCLUDE_DIR=/app/.dpkg/usr/include/poppler/cpp/ --app rexams
 ===============================================================================
 	
