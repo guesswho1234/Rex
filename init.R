@@ -11,7 +11,8 @@ helpers.installPackages(
 
 #install packages causing problems
 # install.packages("staplr", verbose = TRUE)
-install.packages("magick", verbose = TRUE)
+install.packages("pdftools", verbose = TRUE)
+# install.packages("magick", verbose = TRUE)
 
 
 # special case of installing iuftools from source
