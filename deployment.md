@@ -31,7 +31,7 @@ allows to install additional packages with "helpers.installPackages" allowing ca
 - https://launchpad.net/~coolwanglu/+archive/pdf2htmlex/+files/poppler-utils_0.20.3-2ubuntu1pdf2htmlEX_amd64.deb
 
 ## set heroku environment variables (to find via dpkg installed packages)
-`heroku config:set PKG_CONFIG_PATH=/app/.apt/usr/lib/x86_64-linux-gnu/pkgconfig/ --app rexams`
+`heroku config:set PKG_CONFIG_PATH=/app/.apt/usr/lib/x86_64-linux-gnu/ --app rexams`
 
 `heroku config:set LIB_DIR=/app/.dpkg/usr/lib/x86_64-linux-gnu/ --app rexams`
 
