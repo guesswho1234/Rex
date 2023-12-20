@@ -39,10 +39,6 @@ allows to install additional packages with "helpers.installPackages" allowing ca
 
 `heroku config:add LD_LIBRARY_PATH=/app/.dpkg/usr/lib/x86_64-linux-gnu/:/app/R/lib/R/lib:/app/tcltk/lib --app rexams`	
 
-#
-preventing heroku from caching
-`heroku config:set NPM_CONFIG_PRODUCTION=false`
-
 # some useful commands
 ## check intalled packages on ubuntu system
 apt list --installed
