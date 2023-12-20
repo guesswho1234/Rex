@@ -52,9 +52,18 @@ find / -iname pkgconfig
 find / -iname *poppler-cpp.pc*
 
 ## magick
+find / -iname *Magick++.pc*
+find / -iname *Magick++.h*
+find / -iname *magick-baseconfig.h*
+
 find . -iname "Magick++.pc" -print 2>/dev/null
+	./.dpkg/usr/lib/x86_64-linux-gnu/
+	
 find . -iname "Magick++.h" -print 2>/dev/null
-find . -iname "magick-baseconfig.h" -print 2>/dev/null			
+	./.dpkg/usr/include/ImageMagick-6/
+	
+find . -iname "magick-baseconfig.h" -print 2>/dev/null		
+	./.dpkg/usr/include/x86_64-linux-gnu/ImageMagick-6/
 
 ## poppler-cpp.pc contents
 cat poppler-cpp.pc
