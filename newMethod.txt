@@ -1,7 +1,24 @@
-before (via amitree):
+# heroku settup before (via amitree poppler buildpack):
 INCLUDE_DIR = /app/.apt/usr/include/poppler/cpp/
 LD_LIBRARY_PATH = /app/.apt/usr/lib/x86_64-linux-gnu/:/app/R/lib/R/lib:/app/tcltk/lib
 LIB_DIR = /app/.apt/usr/lib/x86_64-linux-gnu/
+
+# new method via dpkg and installing poppler via the Debfile
+## add dpkg buildpack
+heroku buildpacks:add --index 1 -a rexams https://github.com/rricard/heroku-buildpack-dpkg.git
+
+## create a file named "Debfile" (no file extension) and add the following lines:
+		http://archive.ubuntu.com/ubuntu/pool/main/p/poppler/libpoppler-cpp0v5_22.02.0-2_amd64.deb
+		http://archive.ubuntu.com/ubuntu/pool/main/p/poppler/libpoppler-dev_22.02.0-2_amd64.deb
+		http://ports.ubuntu.com/pool/main/p/poppler/libpoppler-cpp-dev_22.02.0-2_arm64.deb
+
+## add heroku environment variables
+heroku config:set PKG_CONFIG_PATH=/app/.dpkg/usr/lib/x86_64-linux-gnu/ --app rexams 
+heroku config:set LIB_DIR=/app/.dpkg/usr/lib/x86_64-linux-gnu/ --app rexams 
+heroku config:set INCLUDE_DIR=/app/.dpkg/usr/include/poppler/cpp/ --app rexams
+heroku config:add LD_LIBRARY_PATH=/app/.dpkg/usr/lib/x86_64-linux-gnu/:/app/R/lib/R/lib:/app/tcltk/lib --app rexams	
+
+# bash file system info on new method
 ===============================================================================
 /app/.dpkg/usr/lib/x86_64-linux-gnu/
 	libpng12.so.0            libpoppler-glib.so        libpoppler.a
@@ -10,23 +27,17 @@ LIB_DIR = /app/.apt/usr/lib/x86_64-linux-gnu/
 	libpoppler-cpp.so.0      libpoppler-qt4.a          libpoppler.so.27.0.0
 	libpoppler-cpp.so.0.2.0  libpoppler-qt4.so         pkgconfig
 	libpoppler-cpp.so.0.9.0  libpoppler-qt4.so.4
-	libpoppler-glib.a        libpoppler-qt4.so.4.0.0
-	
-heroku config:set PKG_CONFIG_PATH=/app/.dpkg/usr/lib/x86_64-linux-gnu/ --app rexams 
-===============================================================================
+	libpoppler-glib.a        libpoppler-qt4.so.4.0.0	
 
+===============================================================================
 /app/.dpkg/usr/lib/x86_64-linux-gnu/pkgconfig/
 	poppler-cairo.pc  poppler-glib.pc  poppler-splash.pc
 	poppler-cpp.pc    poppler-qt4.pc   poppler.pc
 
+what is this? is this needed? what installs this? can we remove something?
 /app/.dpkg/usr/lib/aarch64-linux-gnu/pkgconfig/
-	poppler-cpp.pc
-	
-heroku config:set LIB_DIR=/app/.dpkg/usr/lib/x86_64-linux-gnu/pkgconfig/ --app rexams 
+	poppler-cpp.pc	
 
-or 
-
-heroku config:set LIB_DIR=/app/.dpkg/usr/lib/x86_64-linux-gnu/ --app rexams 
 ===============================================================================
 
 /app/.dpkg/usr/include/poppler/cpp/
@@ -36,8 +47,7 @@ heroku config:set LIB_DIR=/app/.dpkg/usr/lib/x86_64-linux-gnu/ --app rexams
 	poppler-font-private.h   poppler-page-transition.h  poppler_cpp_export.h
 	poppler-font.h           poppler-page.h
 	
-heroku config:set INCLUDE_DIR=/app/.dpkg/usr/include/poppler/cpp/ --app rexams
-===============================================================================
+=============================================================================
 	
 /app/.dpkg/usr/lib/x86_64-linux-gnu/
 	libpng12.so.0            libpoppler-glib.so        libpoppler.a
@@ -48,4 +58,3 @@ heroku config:set INCLUDE_DIR=/app/.dpkg/usr/include/poppler/cpp/ --app rexams
 	libpoppler-cpp.so.0.9.0  libpoppler-qt4.so.4
 	libpoppler-glib.a        libpoppler-qt4.so.4.0.0
 	
-heroku config:add LD_LIBRARY_PATH=/app/.dpkg/usr/lib/x86_64-linux-gnu/:/app/R/lib/R/lib:/app/tcltk/lib --app rexams	
