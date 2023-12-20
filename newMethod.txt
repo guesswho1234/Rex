@@ -3,6 +3,17 @@ INCLUDE_DIR = /app/.apt/usr/include/poppler/cpp/
 LD_LIBRARY_PATH = /app/.apt/usr/lib/x86_64-linux-gnu/:/app/R/lib/R/lib:/app/tcltk/lib
 LIB_DIR = /app/.apt/usr/lib/x86_64-linux-gnu/
 ===============================================================================
+/app/.dpkg/usr/lib/x86_64-linux-gnu/
+	libpng12.so.0            libpoppler-glib.so        libpoppler.a
+	libpoppler-cpp.a         libpoppler-glib.so.8      libpoppler.so
+	libpoppler-cpp.so        libpoppler-glib.so.8.4.0  libpoppler.so.27
+	libpoppler-cpp.so.0      libpoppler-qt4.a          libpoppler.so.27.0.0
+	libpoppler-cpp.so.0.2.0  libpoppler-qt4.so         pkgconfig
+	libpoppler-cpp.so.0.9.0  libpoppler-qt4.so.4
+	libpoppler-glib.a        libpoppler-qt4.so.4.0.0
+	
+heroku config:set PKG_CONFIG_PATH=/app/.dpkg/usr/lib/x86_64-linux-gnu/ --app rexams 
+===============================================================================
 
 /app/.dpkg/usr/lib/x86_64-linux-gnu/pkgconfig/
 	poppler-cairo.pc  poppler-glib.pc  poppler-splash.pc
@@ -12,6 +23,10 @@ LIB_DIR = /app/.apt/usr/lib/x86_64-linux-gnu/
 	poppler-cpp.pc
 	
 heroku config:set LIB_DIR=/app/.dpkg/usr/lib/x86_64-linux-gnu/pkgconfig/ --app rexams 
+
+or 
+
+heroku config:set LIB_DIR=/app/.dpkg/usr/lib/x86_64-linux-gnu/ --app rexams 
 ===============================================================================
 
 /app/.dpkg/usr/include/poppler/cpp/
