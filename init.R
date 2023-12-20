@@ -9,7 +9,7 @@ helpers.installPackages(
 )
 
 #install packages causing problems
-# install.packages("pdftools", verbose = TRUE)
+install.packages("pdftools", verbose = TRUE)
 # install.packages("staplr", verbose = TRUE)
 # install.packages("magick", verbose = TRUE)
 
