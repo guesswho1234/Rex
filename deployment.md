@@ -1,141 +1,108 @@
-# Heroku Buildpack
-With init.R and run.R in place, we can push directly to Heroku.
-However, we need to select a buildpack that tells Heroku how to handle the shiny app.
-We use: https://github.com/virtualstaticvoid/heroku-buildpack-r
+# how to deploy to heroku
+## Heroku 22 Stack
+-Distributor ID: Ubuntu
+-Description:    Ubuntu 22.04.3 LTS
+-Release:        22.04
+-Codename:       jammy
 
-heroku cli command:
-heroku buildpacks:set -a rexams https://github.com/virtualstaticvoid/heroku-buildpack-r
+## add r buildpack (for running r shiny)
+`heroku buildpacks:set -a rexams https://github.com/virtualstaticvoid/heroku-buildpack-r`
 
-# added something to LD_LIBRARY_PATH (does not work)
-heroku buildpacks:set -a rexams https://github.com/guesswho1234/heroku-buildpack-r
+### run.R
+sets up the shiny app environment
 
-# check intalled packages
-why do i need buildpack when packages are already pre-installed
+### init.R 
+allows to install additional packages with "helpers.installPackages" allowing caching
 
+## add dpkg buildpack (for installing additional packages; put first as buildpack order matters)
+`heroku buildpacks:add --index 1 -a rexams https://github.com/rricard/heroku-buildpack-dpkg.git`
+
+## create file named "Debfile" in repository and add the following lines
+- http://archive.ubuntu.com/ubuntu/pool/main/p/poppler/libpoppler-cpp0v5_22.02.0-2_amd64.deb
+- http://archive.ubuntu.com/ubuntu/pool/main/p/poppler/libpoppler-dev_22.02.0-2_amd64.deb
+- http://ports.ubuntu.com/pool/main/p/poppler/libpoppler-cpp-dev_22.02.0-2_arm64.deb
+
+## set heroku environment variables (to find via dpkg installed packages)
+`heroku config:set LIB_DIR=/app/.dpkg/usr/lib/x86_64-linux-gnu/ --app rexams` 
+`heroku config:set INCLUDE_DIR=/app/.dpkg/usr/include/poppler/cpp/ --app rexams`
+`heroku config:add LD_LIBRARY_PATH=/app/.dpkg/usr/lib/x86_64-linux-gnu/:/app/R/lib/R/lib:/app/tcltk/lib --app rexams`	
+
+# some useful commands
+## check intalled packages on ubuntu system
 apt list --installed
 dpkg --list | grep poppler
 
-# Poppler buildpack
-To be able to use the pdftools package we need poppler to be available. 
-For this we additionally need to add the following buildpack as well and put it into the first spot such that it is loaded before any other buildpack.
-Additionally, we need to set some config vars in order for poppler to be found.
-
-heroku cli commands:
-heroku buildpacks:add --index 1 -a rexams https://github.com/amitree/heroku-buildpack-poppler
-heroku config:set -a rexams PKG_CONFIG_PATH=/app/.apt/usr/lib/x86_64-linux-gnu/pkgconfig
-heroku config:set -a rexams INCLUDE_DIR=/app/.apt/usr/include/poppler/cpp
-heroku config:set -a rexams PATH=/app/R/lib/R/bin:/app/tcltk/bin:/app/pandoc/bin:/usr/local/bin:/usr/bin:/bin:/app/.apt/usr/lib/x86_64-linux-gnu/pkgconfig
-
-# error when building with buildpack https://github.com/amitree/heroku-buildpack-poppler
-remote:        ** testing if installed package can be loaded from temporary location        
-remote:        Error: package or namespace load failed for âpdftoolsâ in dyn.load(file, DLLpath = DLLpath, ...):        
-remote:         unable to load shared object '/app/R/site-library/00LOCK-pdftools/00new/pdftools/libs/pdftools.so':        
-remote:          /app/R/site-library/00LOCK-pdftools/00new/pdftools/libs/pdftools.so: undefined symbol: _ZNK7poppler8document10create_tocEv        
-remote:        Error: loading failed        
-remote:        Execution halted        
-remote:        ERROR: loading failed        
-remote:        * removing â/app/R/site-library/pdftoolsâ        
-remote:                
-remote:        The downloaded source packages are in        
-remote:        	â/tmp/RtmpfxUYya/downloaded_packagesâ        
-remote:        Warning message:        
-remote:        In install.packages("pdftools", verbose = TRUE) :        
-remote:          installation of package âpdftoolsâ had non-zero exit status
-
-This would be an alternative buildpack.
-
-heroku cli commands:
-heroku buildpacks:add --index 1 -a rexams https://github.com/k16shikano/heroku-buildpack-poppler
-heroku config:set -a rexams PKG_CONFIG_PATH=/app/vendor/poppler/lib/pkgconfig/
-heroku config:set -a rexams INCLUDE_DIR=/app/vendor/poppler/include/poppler/cpp/
-
-# error when building with buildpack https://github.com/k16shikano/heroku-buildpack-poppler (SAME ERROR)
-remote:        ** testing if installed package can be loaded from temporary location        
-remote:        Error: package or namespace load failed for âpdftoolsâ in dyn.load(file, DLLpath = DLLpath, ...):        
-remote:         unable to load shared object '/app/R/site-library/00LOCK-pdftools/00new/pdftools/libs/pdftools.so':        
-remote:          /app/R/site-library/00LOCK-pdftools/00new/pdftools/libs/pdftools.so: undefined symbol: _ZNK7poppler8document10create_tocEv        
-remote:        Error: loading failed        
-remote:        Execution halted        
-remote:        ERROR: loading failed        
-remote:        * removing â/app/R/site-library/pdftoolsâ        
-remote:        * restoring previous â/app/R/site-library/pdftoolsâ
-
-# libpng
-heroku buildpacks:add --index 1 -a rexams https://github.com/jjuster/heroku-buildpack-libpng
-
-# apt
-heroku buildpacks:add --index 1 -a rexams https://github.com/heroku/heroku-buildpack-apt
-
-#dpkg
-heroku buildpacks:add --index 1 -a rexams https://github.com/rricard/heroku-buildpack-dpkg.git
-
-# some bash commands used to find out paths etc.
-## run bash (connect from powershell)
+## connect to project filesystem
 C:\Users\User> heroku run bash -a rexams
 
-## check and set path (tried to add pkgconfig to path to spare config vars, not sure if this worked or not anymore, using config vars for now)
-~/R/site-library $ echo $PATH
-	/app/R/lib/R/bin:/app/tcltk/bin:/app/pandoc/bin:/usr/local/bin:/usr/bin:/bin
-~/R/site-library $ PATH="$PATH:/app/.apt/usr/lib/x86_64-linux-gnu/pkgconfig/"
+## check environment variable "PATH"
+echo $PATH
+
+## append to environment variable "PATH"
+PATH="$PATH:/app/.apt/usr/lib/x86_64-linux-gnu/pkgconfig/"
 
 ## pkgconfig (found multiple pkgconfig files, need to link all in config var?)
 find / -iname pkgconfig
-	./tcltk/lib/pkgconfig
-	./R/lib/pkgconfig
-	./.apt/usr/lib/x86_64-linux-gnu/pkgconfig
 
-## poppler-cpp.pc (https://github.com/amitree/heroku-buildpack-poppler)
-find / -iname poppler-cpp.pc
-	/app/.apt/usr/lib/x86_64-linux-gnu/pkgconfig/poppler-cpp.pc	
-		~ $ cd /app/.apt/usr/lib/x86_64-linux-gnu/pkgconfig/
-			~/.apt/usr/lib/x86_64-linux-gnu/pkgconfig $ dir
-				poppler-cpp.pc  poppler-splash.pc  poppler.pc
+## poppler-cpp.pc
+find / -iname *poppler-cpp.pc*
 				
-## poppler-cpp.pc (https://github.com/k16shikano/heroku-buildpack-poppler)
-find / -iname poppler-cpp.pc
-	/app/vendor/poppler/lib/pkgconfig/poppler-cpp.pc			
-
-## poppler/cpp path (https://github.com/amitree/heroku-buildpack-poppler)
-find / -xdev 2>/dev/null -name "poppler"
-	~ $ cd ./.apt/usr/include/poppler/cpp
-		~/.apt/usr/include/poppler/cpp $ dir
-			poppler-destination.h    poppler-font.h    poppler-page-renderer.h    poppler-rectangle.h
-			poppler-document.h       poppler-global.h  poppler-page-transition.h  poppler-toc.h
-			poppler-embedded-file.h  poppler-image.h   poppler-page.h             poppler-version.h
-
-## poppler/cpp path (https://github.com/k16shikano/heroku-buildpack-poppler)
-/app/.apt/usr/include/poppler/cpp
-	poppler-destination.h    poppler-font.h    poppler-page-renderer.h    poppler-rectangle.h
-			poppler-document.h       poppler-global.h  poppler-page-transition.h  poppler-toc.h
-			poppler-embedded-file.h  poppler-image.h   poppler-page.h             poppler-version.h
 
 ## poppler-cpp.pc contents
 cat poppler-cpp.pc
-	prefix=/usr
-	libdir=/usr/lib/x86_64-linux-gnu
-	includedir=/usr/include
 
-	Name: poppler-cpp
-	Description: cpp backend for Poppler PDF rendering library
-	Version: 0.81.0
-	Requires:
-	Requires.private: poppler = 0.81.0
+## download file	from bash
+curl -F "file=@p<file>" https://file.io
 
-	Libs: -L${libdir} -lpoppler-cpp
-	Cflags: -I${includedir}/poppler/cpp
+# new method via dpkg and installing poppler via the Debfile
+## add dpkg buildpack
+heroku buildpacks:add --index 1 -a rexams https://github.com/rricard/heroku-buildpack-dpkg.git
 
-## pdftools.so (file causing problems)
-find / -iname pdftools.so
-	/app/R/site-library/pdftools/libs/pdftools.so
+## create a file named "Debfile" (no file extension) and add the following lines:
+		http://archive.ubuntu.com/ubuntu/pool/main/p/poppler/libpoppler-cpp0v5_22.02.0-2_amd64.deb
+		http://archive.ubuntu.com/ubuntu/pool/main/p/poppler/libpoppler-dev_22.02.0-2_amd64.deb
+		http://ports.ubuntu.com/pool/main/p/poppler/libpoppler-cpp-dev_22.02.0-2_arm64.deb
 
-# download file	from bash
-curl -F "file=@pdftools.so" https://file.io
+## set heroku environment variables
+heroku config:set LIB_DIR=/app/.dpkg/usr/lib/x86_64-linux-gnu/ --app rexams 
+heroku config:set INCLUDE_DIR=/app/.dpkg/usr/include/poppler/cpp/ --app rexams
+heroku config:add LD_LIBRARY_PATH=/app/.dpkg/usr/lib/x86_64-linux-gnu/:/app/R/lib/R/lib:/app/tcltk/lib --app rexams	
+# bash file system info used to derive environment variable values
+===============================================================================
+/app/.dpkg/usr/lib/x86_64-linux-gnu/
+	libpng12.so.0            libpoppler-glib.so        libpoppler.a
+	libpoppler-cpp.a         libpoppler-glib.so.8      libpoppler.so
+	libpoppler-cpp.so        libpoppler-glib.so.8.4.0  libpoppler.so.27
+	libpoppler-cpp.so.0      libpoppler-qt4.a          libpoppler.so.27.0.0
+	libpoppler-cpp.so.0.2.0  libpoppler-qt4.so         pkgconfig
+	libpoppler-cpp.so.0.9.0  libpoppler-qt4.so.4
+	libpoppler-glib.a        libpoppler-qt4.so.4.0.0	
 
-# pdftk, ghostscript, imagemagick
-heroku buildpacks:add https://github.com/DuckyTeam/heroku-buildpack-imagemagick --index 1 --app rexams
-heroku buildpacks:add https://github.com/thegrizzlylabs/heroku-buildpack-ghostscript.git --index 1 --app rexams
-heroku buildpacks:add https://github.com/fxtentacle/heroku-pdftk-buildpack.git --index 1 --app rexams
-heroku config:add LD_LIBRARY_PATH=/app/bin --app rexams	
+===============================================================================
+/app/.dpkg/usr/lib/x86_64-linux-gnu/pkgconfig/
+	poppler-cairo.pc  poppler-glib.pc  poppler-splash.pc
+	poppler-cpp.pc    poppler-qt4.pc   poppler.pc
 
-# libopenblas.so.0
-find / -iname libopenblas.so.0
+what is this? is this needed? what installs this? can we remove something?
+/app/.dpkg/usr/lib/aarch64-linux-gnu/pkgconfig/
+	poppler-cpp.pc	
+
+===============================================================================
+
+/app/.dpkg/usr/include/poppler/cpp/
+	poppler-destination.h    poppler-global.h           poppler-rectangle.h
+	poppler-document.h       poppler-image.h            poppler-toc.h
+	poppler-embedded-file.h  poppler-page-renderer.h    poppler-version.h
+	poppler-font-private.h   poppler-page-transition.h  poppler_cpp_export.h
+	poppler-font.h           poppler-page.h
+	
+=============================================================================
+	
+/app/.dpkg/usr/lib/x86_64-linux-gnu/
+	libpng12.so.0            libpoppler-glib.so        libpoppler.a
+	libpoppler-cpp.a         libpoppler-glib.so.8      libpoppler.so
+	libpoppler-cpp.so        libpoppler-glib.so.8.4.0  libpoppler.so.27
+	libpoppler-cpp.so.0      libpoppler-qt4.a          libpoppler.so.27.0.0
+	libpoppler-cpp.so.0.2.0  libpoppler-qt4.so         pkgconfig
+	libpoppler-cpp.so.0.9.0  libpoppler-qt4.so.4
+	libpoppler-glib.a        libpoppler-qt4.so.4.0.0

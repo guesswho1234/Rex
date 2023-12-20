@@ -83,7 +83,7 @@ library(xtable) #xtable_1.8-4
 library(iuftools) #iuftools_1.0.0
 library(callr) # callr_3.7.3
 library(pdftools) # pdftools_3.4.0
-# library(staplr) # staplr_3.2.2
+library(staplr) # staplr_3.2.2
 
 # FUNCTIONS ----------------------------------------------------------------
 collectWarnings = function(expr) {
@@ -359,7 +359,7 @@ prepareEvaluation = function(evaluation, rotate, input){
     raw = openssl::base64_decode(evaluation$examScanPdfFiles[[i]])
     writeBin(raw, con = file)
 
-    # staplr::rotate_pdf(page_rotation=ifelse(rotate, 180, 0) , input_filepath=file, output_filepath=file, overwrite=TRUE)
+    staplr::rotate_pdf(page_rotation=ifelse(rotate, 180, 0) , input_filepath=file, output_filepath=file, overwrite=TRUE)
 
     return(file)
   })
