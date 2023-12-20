@@ -49,7 +49,8 @@ PATH="$PATH:/app/.apt/usr/lib/x86_64-linux-gnu/pkgconfig/"
 find / -iname pkgconfig
 
 ## poppler-cpp.pc
-find / -iname *poppler-cpp.pc*				
+find / -iname *poppler-cpp.pc*
+				
 
 ## poppler-cpp.pc contents
 cat poppler-cpp.pc
