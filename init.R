@@ -1,6 +1,9 @@
 # tell the buildpack to install the required packages:
 # using the helper caches the installed packages between deployments afaik.
 helpers.installPackages(
+  "shinyjs",
+  "shinyWidgets",
+  "shinycssloaders",
   "exams",
   "xtable",
   "tth",
