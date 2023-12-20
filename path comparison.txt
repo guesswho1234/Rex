@@ -1,0 +1,27 @@
+magick:
+
+	libdir
+		*.pc file
+			/usr/lib/x86_64-linux-gnu/
+		custom
+			/app/.dpkg/usr/lib/x86_64-linux-gnu/
+		
+	includedir
+		*.pc file
+			/usr/include/ImageMagick-6/
+		custom
+			/app/.dpkg/usr/include/ImageMagick-6/
+		
+poppler:
+	libdir
+		*.pc file
+			/usr/lib/x86_64-linux-gnu/
+		custom
+			/app/.dpkg/usr/lib/x86_64-linux-gnu/
+		
+	includedir
+		*.pc file
+			/usr/include/
+		custom
+			/app/.dpkg/usr/include/poppler/cpp/
+			
