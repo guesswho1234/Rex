@@ -50,7 +50,11 @@ find / -iname pkgconfig
 
 ## poppler-cpp.pc
 find / -iname *poppler-cpp.pc*
-				
+
+## magick
+find . -iname "Magick++.pc" -print 2>/dev/null
+find . -iname "Magick++.h" -print 2>/dev/null
+find . -iname "magick-baseconfig.h" -print 2>/dev/null			
 
 ## poppler-cpp.pc contents
 cat poppler-cpp.pc
