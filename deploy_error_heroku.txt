@@ -1,3 +1,9 @@
+Heroku 22 Stack:
+Distributor ID: Ubuntu
+Description:    Ubuntu 22.04.3 LTS
+Release:        22.04
+Codename:       jammy
+
 ERROR: poppler cpp files not found after buildpack was used
 ===============================================================================
 setting new paths fixed this issue:
