@@ -29,7 +29,7 @@ allows to install additional packages with "helpers.installPackages" allowing ca
 `heroku config:add LD_LIBRARY_PATH=/app/.dpkg/usr/lib/x86_64-linux-gnu/:/app/R/lib/R/lib:/app/tcltk/lib --app rexams`	
 
 ### new version for magick (additional INCLUDE_DIR):
-`heroku config:set INCLUDE_DIR=/app/.dpkg/usr/include/ImageMagick-6/:/app/.dpkg/usr/include/poppler/cpp/ --app rexams`
+`heroku config:set INCLUDE_DIR=/app/.dpkg/usr/include/ImageMagick-6/ --app rexams`
 
 # some useful commands
 ## check intalled packages on ubuntu system
