@@ -67,7 +67,7 @@ heroku buildpacks:add --index 1 -a rexams https://github.com/jjuster/heroku-buil
 heroku buildpacks:add --index 1 -a rexams https://github.com/heroku/heroku-buildpack-apt
 
 #dpkg
-heroku buildpacks:add --index 1 -a rexamshttps://github.com/rricard/heroku-buildpack-dpkg.git
+heroku buildpacks:add --index 1 -a rexams https://github.com/rricard/heroku-buildpack-dpkg.git
 
 # some bash commands used to find out paths etc.
 ## run bash (connect from powershell)
