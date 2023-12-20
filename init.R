@@ -5,8 +5,8 @@ helpers.installPackages(
   "xtable",
   "tth",
   "png",
-  "callr"
-  #"pdftools"
+  "callr",
+  "pdftools"
 )
 
 #install packages causing problems
