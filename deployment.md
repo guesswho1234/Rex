@@ -39,7 +39,7 @@ allows to install additional packages with "helpers.installPackages" allowing ca
 
 `heroku config:add LD_LIBRARY_PATH=/app/.dpkg/usr/lib/x86_64-linux-gnu/:/app/R/lib/R/lib:/app/tcltk/lib --app rexams`	
 
-##
+## amitree poppler buildpack
 heroku buildpacks:add --index 1 -a rexams https://github.com/amitree/heroku-buildpack-poppler
 
 # some useful commands
