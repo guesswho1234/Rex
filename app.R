@@ -50,11 +50,12 @@
   
   #TODO: shift+f moves to search fields even when editing fields of editable tasks
 
-  #TODO: since pdftools were added, heroku app does not work anymore -> poppler problem
-
   #TODO: evaluating the same exam (same name for solutions) is a problem due to duplicated names in temp dirs. not an error but incorrect files will be used
 
   #TODO: export all tasks - download fires infinitely
+
+  #TODO: get package "staplr" running (for that need java on heroku)
+
   
   # TODO NEW FEATURES -------------------------------------------------------
   #TODO: add possibility to create pdf exam with open questions (can then be appended to nops)
@@ -83,7 +84,7 @@ library(xtable) #xtable_1.8-4
 library(iuftools) #iuftools_1.0.0
 library(callr) # callr_3.7.3
 library(pdftools) # pdftools_3.4.0
-library(staplr) # staplr_3.2.2
+# library(staplr) # staplr_3.2.2
 
 # FUNCTIONS ----------------------------------------------------------------
 collectWarnings = function(expr) {
@@ -359,7 +360,7 @@ prepareEvaluation = function(evaluation, rotate, input){
     raw = openssl::base64_decode(evaluation$examScanPdfFiles[[i]])
     writeBin(raw, con = file)
 
-    staplr::rotate_pdf(page_rotation=ifelse(rotate, 180, 0) , input_filepath=file, output_filepath=file, overwrite=TRUE)
+    # staplr::rotate_pdf(page_rotation=ifelse(rotate, 180, 0) , input_filepath=file, output_filepath=file, overwrite=TRUE)
 
     return(file)
   })
