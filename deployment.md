@@ -24,6 +24,7 @@ allows to install additional packages with "helpers.installPackages" allowing ca
 
 ## set heroku environment variables (to find via dpkg installed packages)
 
+`heroku config:set PKG_CONFIG_PATH=/app/.dpkg/usr/lib/x86_64-linux-gnu/`
 `heroku config:set LIB_DIR=/app/.dpkg/usr/lib/x86_64-linux-gnu/`
 `heroku config:set INCLUDE_DIR=/app/.dpkg/usr/include/poppler/cpp/ --app rexams`
 `heroku config:add LD_LIBRARY_PATH=/app/.dpkg/usr/lib/x86_64-linux-gnu/:/app/R/lib/R/lib:/app/tcltk/lib --app rexams`	
