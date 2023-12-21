@@ -85,6 +85,7 @@ library(iuftools) #iuftools_1.0.0
 library(callr) # callr_3.7.3
 library(pdftools) # pdftools_3.4.0
 library(qpdf) # qpdf_1.3.2
+library(openssl) # openssl_2.1.1
 
 # FUNCTIONS ----------------------------------------------------------------
 collectWarnings = function(expr) {
