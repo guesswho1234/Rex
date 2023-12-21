@@ -40,7 +40,6 @@
   
   
   # TODO CHECKS -----------------------------------------------------------
-  #TODO: check if tasks can be "reproduced exactly" with exam seed as task seed
   
   
   # TODO BUGS AND ERRORS ---------------------------------------------------------------
@@ -56,7 +55,7 @@
 
   #TODO: evaluating the same exam (same name for solutions) is a problem due to duplicated names in temp dirs. not an error but incorrect files will be used
 
-  #TODO: export all tasks - download fires infinitely
+  #TODO: export all tasks - download fires infinitely when click is simulated
 
   
   # TODO NEW FEATURES -------------------------------------------------------
@@ -574,7 +573,7 @@ checkPosNumber = function(numberField){
 
 # PARAMETERS --------------------------------------------------------------
 seedMin = 1
-seedMax = 99999999
+seedMax = 999999999999
 initSeed = as.numeric(gsub("-", "", Sys.Date()))
 numberOfTaskBlocks = 1
 maxNumberOfExamTasks = 0
