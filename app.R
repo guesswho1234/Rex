@@ -83,8 +83,8 @@ library(tth) #tth_4.12-0-1
 library(xtable) #xtable_1.8-4
 library(iuftools) #iuftools_1.0.0
 library(callr) # callr_3.7.3
-# library(pdftools) # pdftools_3.4.0
-# library(staplr) # staplr_3.2.2
+library(pdftools) # pdftools_3.4.0
+library(qpdf) # qpdf_1.3.2
 
 # FUNCTIONS ----------------------------------------------------------------
 collectWarnings = function(expr) {
@@ -360,18 +360,23 @@ prepareEvaluation = function(evaluation, rotate, input){
     raw = openssl::base64_decode(evaluation$examScanPdfFiles[[i]])
     writeBin(raw, con = file)
 
-    # staplr::rotate_pdf(page_rotation=ifelse(rotate, 180, 0) , input_filepath=file, output_filepath=file, overwrite=TRUE)
-
+    if(rotate){
+      output = tempfile(pattern = paste0(evaluation$examScanPdfNames[[i]], "_"), tmpdir = dir, fileext = ".pdf")
+      numberOfPages = qpdf::pdf_length(file)
+      qpdf::pdf_rotate_pages(input=file, output=output, pages=1:numberOfPages, angle=ifelse(rotate, 180, 0))
+      file = output
+    }
+    
     return(file)
   })
   
-  #convertedPngFiles = unlist(lapply(seq_along(pdfFiles), function(i){
-  #  numberOfPages = pdftools::pdf_info(pdfFiles[[i]])$pages
-  #  filenames = sapply(1:numberOfPages, function(page){
-  #    tempfile(pattern = paste0(names(pdfFiles)[i], "_scan", page, "_"), tmpdir = dir, fileext = ".png")
-  #  })
-  #  pdftools::pdf_convert(pdf=pdfFiles[[i]], filenames=filenames, pages=NULL, format='png', dpi=300, antialias=TRUE, verbose=FALSE)
-  #}))
+  convertedPngFiles = unlist(lapply(seq_along(pdfFiles), function(i){
+    numberOfPages = qpdf::pdf_length(pdfFiles[[i]])
+    filenames = sapply(1:numberOfPages, function(page){
+     tempfile(pattern = paste0(names(pdfFiles)[i], "_scan", page, "_"), tmpdir = dir, fileext = ".png")
+    })
+    pdftools::pdf_convert(pdf=pdfFiles[[i]], filenames=filenames, pages=NULL, format='png', dpi=300, antialias=TRUE, verbose=FALSE)
+  }))
   
   scanFiles = c(pngFiles, convertedPngFiles)
 
