@@ -1313,13 +1313,12 @@ function taskExportAll() {
 	Shiny.onInputChange("taskExportAll", {taskNames:taskNames, taskCodes: taskCodes}, {priority: 'event'});	
 }
 
-Shiny.addCustomMessageHandler('taskExportAll', function(x) {
-	// TODO:
-	// does fire infinitely
-	// same as when calling shinyjs::runjs("$('#downloadData')[0].click();") in r
-	// works when copied into browser console
-	// $('#taskExportAll')[0].click();
-});
+// Shiny.addCustomMessageHandler('taskDownloadAll', function(x) {
+	// // TODO:
+	// // does fire infinitely
+	// // works when copied into browser console
+	// $('#taskDownloadAll')[0].click();
+// });
 
 getID = function() {
 	return(taskID_hook == -1 ? $('.taskItem.active').index('.taskItem') : taskID_hook);

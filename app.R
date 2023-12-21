@@ -450,7 +450,7 @@ evaluateExam = function(preparedEvaluation, collectWarnings){
           dir = dir,
           file = nops_evaluation_fileNames,
           language = fields$language,
-          interactive = FALSE
+          interactive = TRUE
         )
       })
       
@@ -609,10 +609,10 @@ ui = fluidPage(
 
     # TASKS -------------------------------------------------------------------
     numericInput_seedValue = numericInput("seedValue", label = NULL, value = initSeed, min = seedMin, max = seedMax),
+    button_taskExportAll = downloadButton('taskDownloadAll', 'Export'),
 
     # EXAM --------------------------------------------------------------------
       # CREATE ------------------------------------------------------------------
-      button_taskExportAll = downloadButton('taskExportAll', 'Export'),
       numericInput_seedValueExam = numericInput("seedValueExam", label = NULL, value = initSeed, min = seedMin, max = seedMax),
       numericInput_numberOfExams = numericInput("numberOfExams", label = NULL, value = 1, min = 1, step = 1),
       numericInput_numberOfTasks = numericInput("numberOfTasks", label = NULL, value = 0, step = 1),
@@ -704,12 +704,13 @@ server = function(input, output, session) {
     result = prepareExportAllTasks(isolate(input$taskExportAll))
     taskFiles(unlist(result$taskFiles, recursive = TRUE))
     if(length(taskFiles()) > 0) {
-      session$sendCustomMessage("taskExportAll", 1) #tried via js, same resulst
-      # shinyjs::runjs("$('#downloadData')[0].click();") #fires infinitely
+      # session$sendCustomMessage("taskDownloadAll", 1) #tried via js, same resulst
+      print(taskFiles())
+      # click("taskDownloadAll")
     }
   })
   
-  output$taskExportAll = downloadHandler(
+  output$taskDownloadAll = downloadHandler(
     filename = "tasks.zip",
     content = function(fname) {
       zip(zipfile=fname, files=isolate(taskFiles()), flags='-r9Xj')
