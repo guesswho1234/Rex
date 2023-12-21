@@ -22,6 +22,10 @@
 
   #TODO: button to clean / remove all additional files, or button with "new exam" and "new evaluation" that resets all fields
   
+  #TODO: find better names for rules, add explanation tooltip or something
+
+  #TODO: add explanations to partial points and negative points, maybe also for any other fields that require explanation (gray text below)
+
   
   # TODO VALIDATION ---------------------------------------------------------
   #TODO: field validation and helpers to fill in forms
@@ -54,17 +58,17 @@
 
   #TODO: export all tasks - download fires infinitely
 
-  #TODO: get package "staplr" running (for that need java on heroku)
-
   
   # TODO NEW FEATURES -------------------------------------------------------
   #TODO: add possibility to create pdf exam with open questions (can then be appended to nops)
   
-  #TODO: allow to include one png image file per editabel exercise (separate upload field, no drag & drop)
+  #TODO: allow to include one png image / pdf page per editabel exercise (separate upload field, no drag & drop)
   
   #TODO: allow to include one latex equation per editable exercise (separate input text field, multiline)
   
   #TODO: evaluate exams with faulty scans
+
+  #TODO: set fixed points for questions in evaluation
 
   
 # STARTUP -----------------------------------------------------------------
