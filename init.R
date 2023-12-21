@@ -10,7 +10,7 @@ helpers.installPackages(
   "png",
   "callr",
   "qpdf",
-  "pdftools",
+  "pdftools"
 )
 
 #install packages causing problems
