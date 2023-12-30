@@ -1,75 +1,5 @@
 # developed in r version 4.2.1
 
-# TODO -------------------------------------------------------------------
-# TODO PUBLISHING -----------------------------------------------------------
-  #TODO: minimize all client side files (js, css, ...)
-  
-  
-  # TODO IUF TASKS ----------------------------------------------------------
-  #TODO: change all iuf tasks by adding "library(exams)" and "library(iuftools)" and replacing "if(MAKEBSP) set.seed(1)" to "if(exists(MAKEBSP) && MAKEBSP) set.seed(1)"
-
-  
-  # TODO COSMETICS ----------------------------------------------------------
-  #TODO: refactor code (f.e. combine the three drag and drop setups to one, comment code, remove unneeded code, ...)
-  
-  #TODO: fix txt-file write (*.rnw, *.csv); empty row after each text row (affects task files and registered participants file)
-  
-  #TODO: change error, warning, success for popup: icon and optional "error codes" with small description hide/show textbox with code font
-
-  
-  # TODO USABILITY ----------------------------------------------------------
-  #TODO: enter key when editing fields of editable tasks accepts input, shift enter moves to the next line
-
-  #TODO: button to clean / remove all additional files, or button with "new exam" and "new evaluation" that resets all fields
-  
-  #TODO: find better names for rules, add explanation tooltip or something
-
-  #TODO: add explanations to partial points and negative points, maybe also for any other fields that require explanation (gray text below)
-
-  
-  # TODO VALIDATION ---------------------------------------------------------
-  #TODO: field validation and helpers to fill in forms
-  # for nops: all exam tasks require to have the same amount of choices
-  # for nops: all exam tasks need at least 2 choices
-  # for nops: all choices need to have unique values
-  # at least one exam task needs to be selected
-  
-  #TODO: allow only mchoice questions for nops exam
-
-  #TODO: produce own errors via stop("...")
-  
-  
-  # TODO CHECKS -----------------------------------------------------------
-  
-  
-  # TODO BUGS AND ERRORS ---------------------------------------------------------------
-  #TODO: parsing multiple tasks asyncronous does not work properly with new background processing (only last exercise is parsed); current workaround is sequential parsing
-  # in case of long parsing times, websocket connection might be closed when hosted on heroku since heartbeats are not received when not using async parsing
-  
-  #TODO: connections are not properly closed / files anre not properly unlinked
-  # unlink all files as soon as not needed anymore
-  # or on.exit(unlink(...)) right after creation of tempdir() or tmpfile()
-  # at thend end unlink all just to be sure?
-  
-  #TODO: shift+f moves to search fields even when editing fields of editable tasks
-
-  #TODO: evaluating the same exam (same name for solutions) is a problem due to duplicated names in temp dirs. not an error but incorrect files will be used
-
-  #TODO: export all tasks - download fires infinitely when click is simulated
-
-  
-  # TODO NEW FEATURES -------------------------------------------------------
-  #TODO: add possibility to create pdf exam with open questions (can then be appended to nops)
-  
-  #TODO: allow to include one png image / pdf page per editabel exercise (separate upload field, no drag & drop)
-  
-  #TODO: allow to include one latex equation per editable exercise (separate input text field, multiline)
-  
-  #TODO: evaluate exams with faulty scans
-
-  #TODO: set fixed points for questions in evaluation
-
-  
 # STARTUP -----------------------------------------------------------------
 rm(list = ls())
 cat("\f")
@@ -440,7 +370,7 @@ evaluateExam = function(preparedEvaluation, collectWarnings){
         exams::nops_eval(
           register = files$registeredParticipants,
           solutions = files$solution,
-          scans = nops_scan_file,
+          scans = nops_scan_file, # daten.txt and png files
           eval = exams::exams_eval(partial = fields$partial, negative = fields$negative, rule = fields$rule),
           # points = points,
           mark = fields$mark,
