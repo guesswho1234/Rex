@@ -766,6 +766,12 @@ main > * {
 	width: unset !important;
 }
 
+#marks tr > th:last-of-type,
+#marks tr > td:last-of-type {
+	margin-left: 10px;
+	display: block;
+}
+
 #additionalPdfContainer,
 #examScansContainer,
 #examSolutionsContainer,

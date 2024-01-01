@@ -20,6 +20,8 @@ library(pdftools) # pdftools_3.4.0
 library(qpdf) # qpdf_1.3.2
 library(openssl) # openssl_2.1.1
 
+library(DT)
+
 # FUNCTIONS ----------------------------------------------------------------
 collectWarnings = function(expr) {
   warnings = NULL
@@ -254,7 +256,7 @@ createExam = function(preparedExam, collectWarnings) {
 examCreationResponse = function(session, message, downloadable) {
   showModal(modalDialog(
     title = "exams2nops",
-    tags$span(id='responseMessage', class=message$key, paste0(message$key, ": ", gsub("%;%", "<br>", message$value))),
+    tags$span(id="responseMessage", class=message$key, paste0(message$key, ": ", gsub("%;%", "<br>", message$value))),
     footer = tagList(
       if (downloadable)
         downloadButton('downloadExamFiles', 'Download'),
@@ -341,46 +343,22 @@ prepareEvaluation = function(evaluation, rotate, input){
               files=list(solution=solutionFile, registeredParticipants=registeredParticipantsFile, scans=scanFiles)))
 }
 
-evaluateExam = function(preparedEvaluation, collectWarnings){
+evaluateExamScans = function(preparedEvaluation, collectWarnings){
   out = tryCatch({
     nops_scan_fileName = paste0(preparedEvaluation$examName, "_nops_scan", ".zip")
     nops_scan_file = paste0(preparedEvaluation$dir, "/", nops_scan_fileName)
-    nops_evaluation_fileNamePrefix = paste0(preparedEvaluation$examName, "_nops_eval")
-    nops_evaluation_files = paste0("evaluation", seq_along(preparedEvaluation$files$scans), ".html")
-    nops_evaluation_fileNames = "evaluation.html"
-    nops_evaluationCsv = paste0(preparedEvaluation$dir, "/", nops_evaluation_fileNamePrefix, ".csv")
-    nops_evaluationZip = paste0(preparedEvaluation$dir, "/", nops_evaluation_fileNamePrefix, ".zip")
+    scanData = NULL
 
     warnings = collectWarnings({
-      if(any(is.na(preparedEvaluation$fields$mark))){
-        stop("Clef is invalid.")
-      }
-      
-      if(!is.null(preparedEvaluation$fields$labels) && any(preparedEvaluation$fields$labels=="")){
-        stop("Clef is invalid.")
-      }
-      
       with(preparedEvaluation, {
         # process scans
         exams::nops_scan(images=files$scans,
                          file=nops_scan_fileName,
                          dir=dir)
         
-        # evaluate scans
-        exams::nops_eval(
-          register = files$registeredParticipants,
-          solutions = files$solution,
-          scans = nops_scan_file, # daten.txt and png files
-          eval = exams::exams_eval(partial = fields$partial, negative = fields$negative, rule = fields$rule),
-          # points = points,
-          mark = fields$mark,
-          labels = fields$abels,
-          results = nops_evaluation_fileNamePrefix,
-          dir = dir,
-          file = nops_evaluation_fileNames,
-          language = fields$language,
-          interactive = TRUE
-        )
+        scanData <<- read.table(unz(nops_scan_file, "Daten.txt"), colClasses = "character")
+        names(scanData)[c(1:6)] <<- c("Scan", "Sheet", "Scrambling", "Type", "Replacement", "ID")
+        names(scanData)[-c(1:6)] <<- (7:ncol(scanData)) - 6
       })
       
       NULL
@@ -388,36 +366,116 @@ evaluateExam = function(preparedEvaluation, collectWarnings){
     key = "Success"
     value = paste(unlist(warnings), collapse="%;%")
     if(value != "") key = "Warning"
-
+    
     return(list(message=list(key=key, value=value), 
                 examName=preparedEvaluation$examName, 
                 files=list(sourceFiles=preparedEvaluation$files, 
-                           scanFiles=nops_scan_file, 
-                           evaluationFiles=list(summary=nops_evaluationCsv, 
-                                                individualExams=nops_evaluationZip))))
+                           scanFiles=nops_scan_file),
+                scanData=scanData)) 
   },
   error = function(e){
     message = e$message
     message = gsub("\"", "'", message)
     message = gsub("[\r\n]", "%;%", message)
     
-    return(list(message=list(key="Error", value=message), examName=NULL, files=list()))
+    return(list(message=list(key="Error", value=message), examName=NULL, files=list(), scanData=NULL))
   })
   
   return(out)
 }
 
-examEvaluationResponse = function(session, message, downloadable) {
+examScanResponse = function(session, message, scanData) {
   showModal(modalDialog(
-    title = "nops_scan & nops_eval",
-    tags$span(id='responseMessage', class=message$key, paste0(message$key, ": ", gsub("%;%", "<br>", message$value))),
+    title = "nops_scan",
+    tags$span(id="responseMessage", class=message$key, paste0(message$key, ": ", gsub("%;%", "<br>", message$value))),
+    if (!is.null(dim(scanData)))
+      DT::dataTableOutput("scanDataTable"),
+      session$sendCustomMessage("debugMessage", scanData),
     footer = tagList(
-      if (downloadable)
-        downloadButton('downloadEvaluationFiles', 'Download'),
-      modalButton("OK")
+      modalButton("Cancle"),
+      if (!is.null(dim(scanData)))
+        actionButton("proceedEvaluation", "Proceed"),
     )
   ))
 }
+
+# evaluateExam = function(preparedEvaluation, collectWarnings){
+#   out = tryCatch({
+#     nops_scan_fileName = paste0(preparedEvaluation$examName, "_nops_scan", ".zip")
+#     nops_scan_file = paste0(preparedEvaluation$dir, "/", nops_scan_fileName)
+#     nops_evaluation_fileNamePrefix = paste0(preparedEvaluation$examName, "_nops_eval")
+#     nops_evaluation_files = paste0("evaluation", seq_along(preparedEvaluation$files$scans), ".html")
+#     nops_evaluation_fileNames = "evaluation.html"
+#     nops_evaluationCsv = paste0(preparedEvaluation$dir, "/", nops_evaluation_fileNamePrefix, ".csv")
+#     nops_evaluationZip = paste0(preparedEvaluation$dir, "/", nops_evaluation_fileNamePrefix, ".zip")
+# 
+#     warnings = collectWarnings({
+#       if(any(is.na(preparedEvaluation$fields$mark))){
+#         stop("Clef is invalid.")
+#       }
+#       
+#       if(!is.null(preparedEvaluation$fields$labels) && any(preparedEvaluation$fields$labels=="")){
+#         stop("Clef is invalid.")
+#       }
+#       
+#       with(preparedEvaluation, {
+#         # process scans
+#         exams::nops_scan(images=files$scans,
+#                          file=nops_scan_fileName,
+#                          dir=dir)
+#         
+#         # evaluate scans
+#         exams::nops_eval(
+#           register = files$registeredParticipants,
+#           solutions = files$solution,
+#           scans = nops_scan_file, # daten.txt and png files
+#           eval = exams::exams_eval(partial = fields$partial, negative = fields$negative, rule = fields$rule),
+#           # points = points,
+#           mark = fields$mark,
+#           labels = fields$abels,
+#           results = nops_evaluation_fileNamePrefix,
+#           dir = dir,
+#           file = nops_evaluation_fileNames,
+#           language = fields$language,
+#           interactive = TRUE
+#         )
+#       })
+#       
+#       NULL
+#     })
+#     key = "Success"
+#     value = paste(unlist(warnings), collapse="%;%")
+#     if(value != "") key = "Warning"
+# 
+#     return(list(message=list(key=key, value=value), 
+#                 examName=preparedEvaluation$examName, 
+#                 files=list(sourceFiles=preparedEvaluation$files, 
+#                            scanFiles=nops_scan_file, 
+#                            evaluationFiles=list(summary=nops_evaluationCsv, 
+#                                                 individualExams=nops_evaluationZip))))
+#   },
+#   error = function(e){
+#     message = e$message
+#     message = gsub("\"", "'", message)
+#     message = gsub("[\r\n]", "%;%", message)
+#     
+#     return(list(message=list(key="Error", value=message), examName=NULL, files=list()))
+#   })
+#   
+#   return(out)
+# }
+# 
+# examEvaluationResponse = function(session, message, downloadable) {
+#   showModal(modalDialog(
+#     title = "nops_scan & nops_eval",
+#     tags$span(id='responseMessage', class=message$key, paste0(message$key, ": ", gsub("%;%", "<br>", message$value))),
+#     footer = tagList(
+#       if (downloadable)
+#         downloadButton('downloadEvaluationFiles', 'Download'),
+#       modalButton("OK")
+#     )
+#   ))
+# }
 
 startWait = function(session){
   session$sendCustomMessage("wait", 0)
@@ -721,40 +779,72 @@ server = function(input, output, session) {
   # EVALUATE EXAM -------------------------------------------------------------
   
   # exam seed change
-  evaluationFiles = reactiveVal()
-
-  examEvaluation = eventReactive(input$evaluateExam, {
+  examScanEvaluationFiles = reactiveVal()
+  
+  examScanEvaluation = eventReactive(input$evaluateExam, {
     startWait(session)
     
     preparedEvaluation = prepareEvaluation(isolate(input$evaluateExam), isolate(input$rotateScans), isolate(input))
-
+    
     x = callr::r_bg(
-      func = evaluateExam,
+      func = evaluateExamScans,
       args = list(preparedEvaluation, collectWarnings),
       supervise = TRUE
     )
-
+    
     return(x)
   })
-
+  
   observe({
-    if (examEvaluation()$is_alive()) {
+    if (examScanEvaluation()$is_alive()) {
       invalidateLater(millis = 100, session = session)
     } else {
-      result = examEvaluation()$get_result()
-      evaluationFiles(c(result$examName, unlist(result$files, recursive = TRUE)))
-      examEvaluationResponse(session, result$message, length(evaluationFiles()) > 0)
+      result = examScanEvaluation()$get_result()
+      examScanEvaluationFiles(result)
+
+      examScanResponse(session, result$message, examScanEvaluationFiles()$scanData)
       stopWait(session)
     }
   })
 
-  output$downloadEvaluationFiles = downloadHandler(
-    filename = paste0(gsub("exam", "evaluation", evaluationFiles()[1]), ".zip"),
-    content = function(fname) {
-      zip(zipfile=fname, files=isolate(evaluationFiles()[-1]), flags='-r9Xj')
-    },
-    contentType = "application/zip"
-  )
+  output$scanDataTable = DT::renderDataTable({ 
+    examScanEvaluationFiles()$scanData[,c(1, 6, c(1:as.numeric(examScanEvaluationFiles()$scanData$Type))+6)] 
+  })
+
+  # evaluationFiles = reactiveVal()
+  #
+  # examEvaluation = eventReactive(input$evaluateExam, {
+  #   startWait(session)
+  #   
+  #   preparedEvaluation = prepareEvaluation(isolate(input$evaluateExam), isolate(input$rotateScans), isolate(input))
+  # 
+  #   x = callr::r_bg(
+  #     func = evaluateExam,
+  #     args = list(preparedEvaluation, collectWarnings),
+  #     supervise = TRUE
+  #   )
+  # 
+  #   return(x)
+  # })
+  # 
+  # observe({
+  #   if (examEvaluation()$is_alive()) {
+  #     invalidateLater(millis = 100, session = session)
+  #   } else {
+  #     result = examEvaluation()$get_result()
+  #     evaluationFiles(c(result$examName, unlist(result$files, recursive = TRUE)))
+  #     examEvaluationResponse(session, result$message, length(evaluationFiles()) > 0)
+  #     stopWait(session)
+  #   }
+  # })
+  # 
+  # output$downloadEvaluationFiles = downloadHandler(
+  #   filename = paste0(gsub("exam", "evaluation", evaluationFiles()[1]), ".zip"),
+  #   content = function(fname) {
+  #     zip(zipfile=fname, files=isolate(evaluationFiles()[-1]), flags='-r9Xj')
+  #   },
+  #   contentType = "application/zip"
+  # )
 }
 
 # RUN APP -----------------------------------------------------------------
