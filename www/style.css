@@ -750,6 +750,48 @@ main > * {
 /* --------------------------------------------------------------
  CREATE EXAMS 
 -------------------------------------------------------------- */
+#compareScanRegistrationDataTable {
+	margin: 1rem;
+}
+
+#compareScanRegistrationDataTable .compareListItem {
+	margin: 0.25rem;
+	display: flex;
+}
+
+#compareScanRegistrationDataTable .compareListItem.matched {
+	background: var(---tryCatch_success);
+}
+
+#compareScanRegistrationDataTable .compareListItem.notMatched {
+	background: var(---tryCatch_error);
+}
+
+#compareScanRegistrationDataTable .compareListItem:hover {
+	background: var(---background3);
+	cursor: pointer;
+}
+
+#compareScanRegistrationDataTable .compareListItem > span {
+	padding: 0.25rem;
+}
+
+#compareScanRegistrationDataTable .compareListItem .evalIndex {
+	display: none;
+}
+
+#compareScanRegistrationDataTable .compareListItem .evalName,
+#compareScanRegistrationDataTable .compareListItem .evalId {
+	margin-left: 0.5rem;
+	margin-right: 0.5rem;
+	width: 35%;
+}
+
+#compareScanRegistrationDataTable .compareListItem .evalInspect {
+	margin-right: 0;
+	margin-left: auto;
+}
+
 #marks {
 	width: 300px;
 }

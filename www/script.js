@@ -365,16 +365,7 @@ const languages = {en:["Englisch", "English"],
 				   sk:["Slowakisch", "Slovak"],
 				   sl:["Slowenisch", "Slovenian"],
 				   es:["Spansich", "Spanish"],
-				   tr:["Türkisch", "Turkish"]}
-	
-// not used anymore - can probably be removed	
-// Shiny.addCustomMessageHandler('setExamLanguageChoices', function(test) {
-    // $('#examLanguage').parent().find('.selectize-dropdown-content div').each(function (index, element) {	
-		// element.innerHTML = '<span lang="de">' + languages[element.attributes['data-value'].nodeValue][0] + '</span><span lang="en">' + languages[element.attributes['data-value'].nodeValue][1] + '</span>';
-	// });
-		
-	// f_langDeEn();
-// });			   
+				   tr:["Türkisch", "Turkish"]}		   
 
 /* --------------------------------------------------------------
  DATA 
@@ -1745,6 +1736,24 @@ async function evaluateExamEvent() {
 										 examScanPdfNames: examScanPdfNames, examScanPdfFiles: examScanPdfFiles, 
 										 examScanPngNames: examScanPngNames, examScanPngFiles: examScanPngFiles}, {priority: 'event'});
 }
+
+$('body').on('click', '.compareListItem', function() {
+	Shiny.onInputChange("inspectScan", {itemToInspect: iuf['examEvaluation']['scans_reg_fullJoinData'][parseInt($(this).find('.evalIndex').html())]}, {priority: 'event'});
+});
+
+Shiny.addCustomMessageHandler('compareScanRegistrationData', function(jsonData) {
+	iuf['examEvaluation']['scans_reg_fullJoinData'] = JSON.parse(jsonData);
+
+	iuf['examEvaluation']['scans_reg_fullJoinData'].forEach((element, index) => 
+		$('#compareScanRegistrationDataTable').append('<div class="compareListItem ' + (element.registration === 'XXXXXXX' ? 'notMatched' : 'matched') + '"><span class="evalIndex">' + index + '</span></span><span class="evalRegistration">' + element.registration + '</span><span class="evalName">' + element.name + '</span><span class="evalId">' + element.id + '</span><span class="evalInspect"><i class="fa-solid fa-magnifying-glass"></i></span></div>')
+	);
+});
+
+Shiny.addCustomMessageHandler('inspectScan', function(jsonData) {
+	const scanData = JSON.parse(jsonData);
+
+	// open modal and show scan + editable template
+});
 
 /* --------------------------------------------------------------
 HELP 
