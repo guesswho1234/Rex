@@ -763,11 +763,15 @@ main > * {
 	background: var(---tryCatch_success);
 }
 
-#compareScanRegistrationDataTable .compareListItem.notMatched {
+#compareScanRegistrationDataTable .compareListItem.noParticipation {
+	background: var(---tryCatch_warning);
+}
+
+#compareScanRegistrationDataTable .compareListItem.noRegistration {
 	background: var(---tryCatch_error);
 }
 
-#compareScanRegistrationDataTable .compareListItem:hover {
+#compareScanRegistrationDataTable .compareListItem:not(.noParticipation):hover {
 	background: var(---background3);
 	cursor: pointer;
 }
@@ -787,9 +791,36 @@ main > * {
 	width: 35%;
 }
 
+#compareScanRegistrationDataTable .compareListItem.noParticipation .evalInspect {
+	display:none;
+}
+
 #compareScanRegistrationDataTable .compareListItem .evalInspect {
 	margin-right: 0;
 	margin-left: auto;
+}
+
+#inspectScan img {
+	width: 100%;
+}
+
+#inspectScanButtons {
+	display: flex;
+	margin-right: 0px;
+	gap: 5px;
+	place-content: end;
+}
+
+.inspectScanButton {
+	border-radius: 5px;
+	padding: 0.25rem;
+	background: var(---background3);
+	border: 2px solid var(---transparent);
+}
+
+.inspectScanButton:hover {
+	border: 2px solid var(---main);
+	cursor: pointer;
 }
 
 #marks {

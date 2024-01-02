@@ -1737,22 +1737,32 @@ async function evaluateExamEvent() {
 										 examScanPngNames: examScanPngNames, examScanPngFiles: examScanPngFiles}, {priority: 'event'});
 }
 
-$('body').on('click', '.compareListItem', function() {
-	Shiny.onInputChange("inspectScan", {itemToInspect: iuf['examEvaluation']['scans_reg_fullJoinData'][parseInt($(this).find('.evalIndex').html())]}, {priority: 'event'});
+$('body').on('click', '.compareListItem:not(.noParticipation)', function() {
+	$('#inspectScan').empty();
+	$('#inspectScan').append('<span id="inspectScanImage"><img src="data:image/png;base64, ' + iuf['examEvaluation']['scans_reg_fullJoinData'][parseInt($(this).find('.evalIndex').html())].blob + '" alt="scan" /></span><span id="inspectScanTemplate"></span><span id="inspectScanButtons"><span class="cancleInspect inspectScanButton"><span lang="de">Abbrechen</span><span lang="en">Cancle</span></span><span class="applyInspect inspectScanButton"><span lang="de">Übernehmen</span><span lang="en">Apply</span></span></span>')
+	
+	f_langDeEn();
+	$('#inspectScan').show();
+});
+
+$('body').on('click', '.applyInspect', function() {
+	$('#inspectScan').hide();
+	$('#inspectScan').empty();
+});
+
+$('body').on('click', '.cancleInspect', function() {
+	$('#inspectScan').hide();
+	$('#inspectScan').empty();
 });
 
 Shiny.addCustomMessageHandler('compareScanRegistrationData', function(jsonData) {
 	iuf['examEvaluation']['scans_reg_fullJoinData'] = JSON.parse(jsonData);
 
-	iuf['examEvaluation']['scans_reg_fullJoinData'].forEach((element, index) => 
-		$('#compareScanRegistrationDataTable').append('<div class="compareListItem ' + (element.registration === 'XXXXXXX' ? 'notMatched' : 'matched') + '"><span class="evalIndex">' + index + '</span></span><span class="evalRegistration">' + element.registration + '</span><span class="evalName">' + element.name + '</span><span class="evalId">' + element.id + '</span><span class="evalInspect"><i class="fa-solid fa-magnifying-glass"></i></span></div>')
-	);
-});
+	iuf['examEvaluation']['scans_reg_fullJoinData'].forEach((element, index) => {	
+		const stateClass = (element.scan === 'NA' ? 'noParticipation' : (element.registration === 'XXXXXXX' ? 'noRegistration' : 'matched'))
 
-Shiny.addCustomMessageHandler('inspectScan', function(jsonData) {
-	const scanData = JSON.parse(jsonData);
-
-	// open modal and show scan + editable template
+		$('#compareScanRegistrationDataTable').append('<div class="compareListItem ' + stateClass + '"><span class="evalIndex">' + index + '</span></span><span class="evalRegistration">' + element.registration + '</span><span class="evalName">' + element.name + '</span><span class="evalId">' + element.id + '</span><span class="evalInspect"><i class="fa-solid fa-magnifying-glass"></i></span></div>')
+	});
 });
 
 /* --------------------------------------------------------------

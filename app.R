@@ -346,7 +346,6 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings){
     nops_scan_fileName = paste0(preparedEvaluation$examName, "_nops_scan", ".zip")
     nops_scan_file = paste0(preparedEvaluation$dir, "/", nops_scan_fileName)
     scanData = NULL
-    scanBlobs = NULL
     registeredParticipantData = NULL
 
     warnings = collectWarnings({
@@ -360,12 +359,13 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings){
         names(scanData)[c(1:6)] = c("scan", "sheet", "scrambling", "type", "replacement", "registration")
         names(scanData)[-c(1:6)] = (7:ncol(scanData)) - 6
         scanData = scanData[,1:(max(as.numeric(scanData$type)) + 6)] # remove unnecessary answer placeholder for non existing questions (steps of 5)
+        scanData$blob = lapply(scanData$scan, function(x) {
+          file = paste0(dir, "/", x)
+          blob = readBin(file, "raw", n=file.info(file)$size)
+          openssl::base64_encode(blob)
+        })
         scanData <<- scanData 
         
-        # TODO: not working yet
-        # scanBlobs <<- lapply(scanData$scan, function(x) readBin(unz(nops_scan_file, x), "raw"))
-        # scanBlobs <<- lapply(scanData$scan, function(x) png::readPNG(unz(nops_scan_file, x)))
-
         registeredParticipantData <<- read.csv2(files$registeredParticipants)
       })
       
@@ -381,7 +381,6 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings){
                 files=list(sourceFiles=preparedEvaluation$files, 
                            scanFiles=nops_scan_file), 
                 data=list(scanData=scanData,
-                          scanBlobs=scanBlobs,
                           registeredParticipantData=registeredParticipantData))) 
   },
   error = function(e){
@@ -400,6 +399,7 @@ examScanResponse = function(session, message, scans_reg_fullJoinData) {
     title = "nops_scan",
     tags$span(id="responseMessage", class=message$key, paste0(message$key, ": ", gsub("%;%", "<br>", message$value))),
     tags$div(id="compareScanRegistrationDataTable"),
+    tags$div(id="inspectScan"),
     footer = tagList(
       modalButton("Cancle"),
       if (nrow(scans_reg_fullJoinData) > 0) 
@@ -817,15 +817,10 @@ server = function(input, output, session) {
     } else {
       result = examScanEvaluation()$get_result()
       examScanEvaluationValues(result)
-      
-      print(examScanEvaluationValues())
-
-      # TODO: attempt to get all png files as base64 (here only to debug -> move to function when it works)
-      # scanBlobs <<- lapply(examScanEvaluationValues()$data$scanData$scan, function(x) png::readPNG(unz(examScanEvaluationValues()$files$scanFiles, x)))
 
       scans_reg_fullJoinData = merge(examScanEvaluationValues()$data$scanData, examScanEvaluationValues()$data$registeredParticipantData, by="registration", all=TRUE)
       scans_reg_fullJoinData$registration[is.na(scans_reg_fullJoinData$name) & is.na(scans_reg_fullJoinData$id)] = "XXXXXXX"
-
+      
       examScanResponse(session, 
                        result$message, 
                        scans_reg_fullJoinData)
@@ -833,41 +828,6 @@ server = function(input, output, session) {
     }
   })
   
-  # TODO: inspect scanned image (try to avoid and send all images as base64 to frontend)
-  observeEvent(input$inspectScan, {
-    # $itemToInspect
-    # $itemToInspect$`1`
-    # [1] "10000"
-    # $itemToInspect$`2`
-    # [1] "10000"
-    # $itemToInspect$`3`
-    # [1] "11000"
-    # $itemToInspect$`4`
-    # [1] "00000"
-    # $itemToInspect$`5`
-    # [1] "00000"
-    # $itemToInspect$registration
-    # [1] "1000000"
-    # $itemToInspect$scan
-    # [1] "testCase_clean_multipagePdfScan_scan1_4618583d721e.png"
-    # $itemToInspect$sheet
-    # [1] "23121500001"
-    # $itemToInspect$scrambling
-    # [1] "00"
-    # $itemToInspect$type
-    # [1] "005"
-    # $itemToInspect$replacement
-    # [1] "0"
-    # $itemToInspect$name
-    # [1] "test case1"
-    # $itemToInspect$id
-    # [1] "test_case1"
-    # scan = readBin(unz(isolate(examScanEvaluationValues()$files$scanFiles), input$inspectScan$itemToInspect$scan), "raw")
-    # print(scan)
-    
-    # session$sendCustomMessage("inspectScan", scans_reg_fullJoinData_json)
-  })
-
   # output$scanDataTable = DT::renderDataTable({ 
   #   examScanEvaluationValues()$scanData[,c(6, c(1:as.numeric(examScanEvaluationValues()$scanData$Type))+6)] 
   # })
