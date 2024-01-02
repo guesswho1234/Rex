@@ -752,6 +752,7 @@ main > * {
 -------------------------------------------------------------- */
 #compareScanRegistrationDataTable {
 	margin: 1rem;
+	overflow-y: auto;
 }
 
 #compareScanRegistrationDataTable .compareListItem {
@@ -800,12 +801,29 @@ main > * {
 	margin-left: auto;
 }
 
+#inspectScan {
+	display: block;
+	width: 100%;
+}
+
+#inspectScanContent {
+	display: flex;
+	width: 100%;
+}
+
+#inspectScanImage,
+#inspectScanTemplate {
+	width: 50%;
+}
+
 #inspectScan img {
 	width: 100%;
+	padding: 0.25rem;
 }
 
 #inspectScanButtons {
 	display: flex;
+	width: 100%;
 	margin-right: 0px;
 	gap: 5px;
 	place-content: end;

@@ -404,7 +404,8 @@ examScanResponse = function(session, message, scans_reg_fullJoinData) {
       modalButton("Cancle"),
       if (nrow(scans_reg_fullJoinData) > 0) 
         actionButton("proceedEvaluation", "Proceed"),
-    )
+    ),
+    size = "l"
   ))
   
   scans_reg_fullJoinData_json = rjs_vectorToJsonArray(

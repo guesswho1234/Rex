@@ -1739,7 +1739,13 @@ async function evaluateExamEvent() {
 
 $('body').on('click', '.compareListItem:not(.noParticipation)', function() {
 	$('#inspectScan').empty();
-	$('#inspectScan').append('<span id="inspectScanImage"><img src="data:image/png;base64, ' + iuf['examEvaluation']['scans_reg_fullJoinData'][parseInt($(this).find('.evalIndex').html())].blob + '" alt="scan" /></span><span id="inspectScanTemplate"></span><span id="inspectScanButtons"><span class="cancleInspect inspectScanButton"><span lang="de">Abbrechen</span><span lang="en">Cancle</span></span><span class="applyInspect inspectScanButton"><span lang="de">Übernehmen</span><span lang="en">Apply</span></span></span>')
+	$('#compareScanRegistrationDataTable').hide();
+	
+	const scanId = parseInt($(this).find('.evalIndex').html());
+	
+	// when editing, offer dropdown with unused registration ids
+	
+	$('#inspectScan').append('<div id="inspectScanContent"><div id="inspectScanImage"><img src="data:image/png;base64, ' + iuf['examEvaluation']['scans_reg_fullJoinData'][scanId].blob + '"/></div><div id="inspectScanTemplate"><span id="scannedRegistration"><span id="scannedRegistrationText"><span lang="de">Matrikelnummer</span><span lang="en">Registration Number</span></span><span id="scannedRegistrationValue" contenteditable="true">' + iuf['examEvaluation']['scans_reg_fullJoinData'][scanId].registration + '</span></span><span id="scannedAnswers"></span></div></div><div id="inspectScanButtons"><span class="cancleInspect inspectScanButton"><span lang="de">Abbrechen</span><span lang="en">Cancle</span></span><span class="applyInspect inspectScanButton"><span lang="de">Übernehmen</span><span lang="en">Apply</span></div>')
 	
 	f_langDeEn();
 	$('#inspectScan').show();
@@ -1748,11 +1754,13 @@ $('body').on('click', '.compareListItem:not(.noParticipation)', function() {
 $('body').on('click', '.applyInspect', function() {
 	$('#inspectScan').hide();
 	$('#inspectScan').empty();
+	$('#compareScanRegistrationDataTable').show();
 });
 
 $('body').on('click', '.cancleInspect', function() {
 	$('#inspectScan').hide();
 	$('#inspectScan').empty();
+	$('#compareScanRegistrationDataTable').show();
 });
 
 Shiny.addCustomMessageHandler('compareScanRegistrationData', function(jsonData) {
