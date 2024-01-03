@@ -876,6 +876,10 @@ main > * {
 	cursor: pointer;
 }
 
+#proceedEvaluation {
+	display: none;
+}
+
 #marks {
 	width: 300px;
 }

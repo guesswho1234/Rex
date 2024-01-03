@@ -1742,17 +1742,18 @@ $('body').on('click', '.compareListItem:not(.noParticipation)', function() {
 
 	const scanFocused = iuf['examEvaluation']['scans_reg_fullJoinData'][parseInt($(this).find('.evalIndex').html())];
 		
-	$('#inspectScan').append('<div id="focusedCompareListItem"></div><div id="inspectScanContent"><div id="inspectScanImage"><img src="data:image/png;base64, ' + scanFocused.blob + '"/></div><div id="inspectScanTemplate"><span id="scannedRegistration"><span id="scannedRegistrationText"><span lang="de">Matrikelnummer:</span><span lang="en">Registration Number:</span></span><select id="selectRegistration"><option>' + scanFocused.registration + '</option></select></span><table id="scannedAnswers"></table></div></div><div id="inspectScanButtons"><span class="cancleInspect inspectScanButton"><span lang="de">Abbrechen</span><span lang="en">Cancle</span></span><span class="applyInspect inspectScanButton"><span lang="de">Übernehmen</span><span lang="en">Apply</span></div>')
+	$('#inspectScan').append('<div id="focusedCompareListItem"></div><div id="inspectScanContent"><div id="inspectScanImage"><img src="data:image/png;base64, ' + scanFocused.blob + '"/></div><div id="inspectScanTemplate"><span id="scannedRegistration"><span id="scannedRegistrationText"><span lang="de">Matrikelnummer:</span><span lang="en">Registration Number:</span></span><select id="selectRegistration"></select></span><table id="scannedAnswers"></table></div></div><div id="inspectScanButtons"><span class="cancleInspect inspectScanButton"><span lang="de">Abbrechen</span><span lang="en">Cancle</span></span><span class="applyInspect inspectScanButton"><span lang="de">Übernehmen</span><span lang="en">Apply</span></div>')
 	
-	// TODO: show "proceed" button only when there are no more errors (red bars)
-	
-	const registrations = iuf['examEvaluation']['scans_reg_fullJoinData'].filter(x => x.scan === 'NA').map(x => x.registration);
+	let registrations = iuf['examEvaluation']['scans_reg_fullJoinData'].filter(x => x.scan === 'NA').map(x => x.registration);
+	if(scanFocused.registration !== 'XXXXXXX')
+		registrations.push('XXXXXXX');
+	registrations.sort();
+	registrations.unshift(scanFocused.registration);
 	
 	$.each(registrations, function (i, p) {
-			$('#selectRegistration').append($('<option></option>')
-				.val(p).html(p));
-		});
-		
+		$('#selectRegistration').append($('<option></option>').val(p).html(p));
+	});
+	
 	// add checkboxes for answers
 	const numExercises = parseInt(scanFocused.numExercises);
 	const numChoices = parseInt(scanFocused.numChoices);
@@ -1792,15 +1793,20 @@ $('body').on('click', '.compareListItem:not(.noParticipation)', function() {
 	$('#inspectScan').show();
 });
 
+
 function sortCompareListItems(){
-	let sort_by_index = function(a, b) {
-		a = parseInt($(a).find('.evalIndex').html());
-		b = parseInt($(b).find('.evalIndex').html());
+	let sortRegistrations = function(a, b) {
+		a = parseInt($(a).find('.evalRegistration').html());
+		b = parseInt($(b).find('.evalRegistration').html());
+		
+		a = (isNaN(a) ? -1 : a);
+		b = (isNaN(b) ? -1 : b);
+		
 		return a < b ? -1 : a > b ? 1 : 0;
-    }
+	}
 
     let list = $("#compareScanRegistrationDataTable .compareListItem").get();
-    list.sort(sort_by_index);
+    list.sort(sortRegistrations);
     for (let i = 0; i < list.length; i++) {
         list[i].parentNode.appendChild(list[i]);
     }
@@ -1809,26 +1815,96 @@ function sortCompareListItems(){
 function resetInspect(){
 	$('#inspectScan').hide();
 	$('#compareScanRegistrationDataTable').append($('#focusedCompareListItem .compareListItem'));
-	sortCompareListItems();
 	$('#inspectScan').empty();
 }
 
 $('body').on('click', '.applyInspect', function() {
+	const scanFocusedIndex = parseInt($('#focusedCompareListItem .evalIndex').html());
+	
+	if($('#selectRegistration').find(":selected").text() === iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].registration) {
+		resetInspect();
+		sortCompareListItems();
+		return;
+	}
+	
+	let itemsToAdd = null;
+	let itemsToRemove = null;
+	
+	if(iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].registration !== 'XXXXXXX') {
+		itemsToAdd = JSON.parse(JSON.stringify(iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex])); // clone byValue
+		Object.keys(itemsToAdd).forEach(x => itemsToAdd[x] = "NA");
+		itemsToAdd.registration = iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].registration;
+		itemsToAdd.name = iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].name;
+		itemsToAdd.id = iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].id;	
+	}
+	
+	if($('#selectRegistration').find(":selected").text() === 'XXXXXXX') {	
+		iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].name = "NA"
+		iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].id = "NA"
+	} else {
+		itemsToRemove = iuf['examEvaluation']['scans_reg_fullJoinData'].map(function(x) { return x.registration; }).indexOf($('#selectRegistration').find(":selected").text()); 
+		
+		iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].name = iuf['examEvaluation']['scans_reg_fullJoinData'][itemsToRemove].name
+		iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].id = iuf['examEvaluation']['scans_reg_fullJoinData'][itemsToRemove].id 
+	}
+	
+	iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].registration = $('#selectRegistration').find(":selected").text();	
+
+	$('#scannedAnswers .scannedAnswer').map(function (index) {
+        let exerciseAnswers = $(this).find('input').map(function () {
+            return $(this).prop('checked') ? "1" : "0";
+        }).get();
+		
+		if (exerciseAnswers.length < 5) {
+			for (let i = exerciseAnswers.length; i < 5; i++) {
+				exerciseAnswers.push("0");
+			}
+		}
+		
+		exerciseAnswers = exerciseAnswers.join('');
+		
+		iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex][index + 1] = exerciseAnswers;
+    });
+	
+	if(itemsToRemove !== null) 
+		iuf['examEvaluation']['scans_reg_fullJoinData'].splice(itemsToRemove, 1);
+	
+	if(itemsToAdd !== null)
+		iuf['examEvaluation']['scans_reg_fullJoinData'].push(itemsToAdd);
+	
 	resetInspect();
+	populateCompareTable();
+	sortCompareListItems();
 });
 
 $('body').on('click', '.cancleInspect', function() {
 	resetInspect();
+	sortCompareListItems();
 });
 
-Shiny.addCustomMessageHandler('compareScanRegistrationData', function(jsonData) {
-	iuf['examEvaluation']['scans_reg_fullJoinData'] = JSON.parse(jsonData);
-
+function populateCompareTable() {
+	$('#compareScanRegistrationDataTable').empty();
+	
+	let allowToProceed = true;
+	
 	iuf['examEvaluation']['scans_reg_fullJoinData'].forEach((element, index) => {	
 		const stateClass = (element.scan === 'NA' ? 'noParticipation' : (element.registration === 'XXXXXXX' ? 'noRegistration' : 'matched'))
 
 		$('#compareScanRegistrationDataTable').append('<div class="compareListItem ' + stateClass + '"><span class="evalIndex">' + index + '</span></span><span class="evalRegistration">' + element.registration + '</span><span class="evalName">' + element.name + '</span><span class="evalId">' + element.id + '</span><span class="evalInspect"><i class="fa-solid fa-magnifying-glass"></i></span></div>')
+		
+		allowToProceed = allowToProceed && (stateClass !== 'noRegistration');
 	});
+	
+	if(allowToProceed)
+		$('#proceedEvaluation').show();
+	
+	sortCompareListItems();
+}
+
+Shiny.addCustomMessageHandler('compareScanRegistrationData', function(jsonData) {
+	iuf['examEvaluation']['scans_reg_fullJoinData'] = JSON.parse(jsonData);
+
+	populateCompareTable();
 });
 
 /* --------------------------------------------------------------
