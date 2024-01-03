@@ -755,20 +755,35 @@ main > * {
 	overflow-y: auto;
 }
 
-#compareScanRegistrationDataTable .compareListItem {
-	margin: 0.25rem;
+#focusedCompareListItem {
+	margin-bottom: 0.5rem;
+}
+
+#compareScanRegistrationDataTable .compareListItem,
+#focusedCompareListItem .compareListItem {
 	display: flex;
 }
 
-#compareScanRegistrationDataTable .compareListItem.matched {
+#compareScanRegistrationDataTable .compareListItem {
+	margin: 0.25rem;
+}
+
+#focusedCompareListItem .compareListItem {
+	border-bottom: 2px solid var(---main);
+}
+
+#compareScanRegistrationDataTable .compareListItem.matched,
+#focusedCompareListItem .compareListItem.matched {
 	background: var(---tryCatch_success);
 }
 
-#compareScanRegistrationDataTable .compareListItem.noParticipation {
+#compareScanRegistrationDataTable .compareListItem.noParticipation,
+#focusedCompareListItem .compareListItem.noParticipation {
 	background: var(---tryCatch_warning);
 }
 
-#compareScanRegistrationDataTable .compareListItem.noRegistration {
+#compareScanRegistrationDataTable .compareListItem.noRegistration,
+#focusedCompareListItem .compareListItem.noRegistration {
 	background: var(---tryCatch_error);
 }
 
@@ -777,33 +792,40 @@ main > * {
 	cursor: pointer;
 }
 
-#compareScanRegistrationDataTable .compareListItem > span {
+#compareScanRegistrationDataTable .compareListItem > span,
+#focusedCompareListItem .compareListItem > span {
 	padding: 0.25rem;
 }
 
-#compareScanRegistrationDataTable .compareListItem .evalIndex {
+#compareScanRegistrationDataTable .compareListItem .evalIndex,
+#focusedCompareListItem .compareListItem .evalIndex {
 	display: none;
 }
 
 #compareScanRegistrationDataTable .compareListItem .evalName,
-#compareScanRegistrationDataTable .compareListItem .evalId {
+#compareScanRegistrationDataTable .compareListItem .evalId,
+#focusedCompareListItem .compareListItem .evalId,
+#focusedCompareListItem .compareListItem .evalName {
 	margin-left: 0.5rem;
 	margin-right: 0.5rem;
 	width: 35%;
 }
 
-#compareScanRegistrationDataTable .compareListItem.noParticipation .evalInspect {
+#compareScanRegistrationDataTable .compareListItem.noParticipation .evalInspect,
+#focusedCompareListItem .compareListItem .evalInspect {
 	display:none;
 }
 
-#compareScanRegistrationDataTable .compareListItem .evalInspect {
+#compareScanRegistrationDataTable .compareListItem .evalInspect,
+#focusedCompareListItem .compareListItem .evalInspect {
 	margin-right: 0;
 	margin-left: auto;
 }
 
 #inspectScan {
-	display: block;
-	width: 100%;
+	display: none;
+	margin: 1.25rem;
+	border: 2px solid var(---main);
 }
 
 #inspectScanContent {
@@ -821,10 +843,14 @@ main > * {
 	padding: 0.25rem;
 }
 
+#scannedRegistration {
+	display: flex;
+	gap: 10px;
+}
+
 #inspectScanButtons {
 	display: flex;
-	width: 100%;
-	margin-right: 0px;
+	margin: 0.25rem;
 	gap: 5px;
 	place-content: end;
 }
@@ -838,6 +864,7 @@ main > * {
 
 .inspectScanButton:hover {
 	border: 2px solid var(---main);
+	background: var(---background2);
 	cursor: pointer;
 }
 

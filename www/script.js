@@ -1738,29 +1738,55 @@ async function evaluateExamEvent() {
 }
 
 $('body').on('click', '.compareListItem:not(.noParticipation)', function() {
-	$('#inspectScan').empty();
-	$('#compareScanRegistrationDataTable').hide();
-	
+	resetInspect();
+
 	const scanId = parseInt($(this).find('.evalIndex').html());
+		
+	$('#inspectScan').append('<div id="focusedCompareListItem"></div><div id="inspectScanContent"><div id="inspectScanImage"><img src="data:image/png;base64, ' + iuf['examEvaluation']['scans_reg_fullJoinData'][scanId].blob + '"/></div><div id="inspectScanTemplate"><span id="scannedRegistration"><span id="scannedRegistrationText"><span lang="de">Matrikelnummer:</span><span lang="en">Registration Number:</span></span><select id="selectRegistration"><option>' + iuf['examEvaluation']['scans_reg_fullJoinData'][scanId].registration + '</option></select>	</span><span id="scannedAnswers"></span></div></div><div id="inspectScanButtons"><span class="cancleInspect inspectScanButton"><span lang="de">Abbrechen</span><span lang="en">Cancle</span></span><span class="applyInspect inspectScanButton"><span lang="de">Übernehmen</span><span lang="en">Apply</span></div>')
 	
-	// when editing, offer dropdown with unused registration ids
+	// add checkboxes for answers
+	// show "proceed" button only when there are no more errors (red bars)
 	
-	$('#inspectScan').append('<div id="inspectScanContent"><div id="inspectScanImage"><img src="data:image/png;base64, ' + iuf['examEvaluation']['scans_reg_fullJoinData'][scanId].blob + '"/></div><div id="inspectScanTemplate"><span id="scannedRegistration"><span id="scannedRegistrationText"><span lang="de">Matrikelnummer</span><span lang="en">Registration Number</span></span><span id="scannedRegistrationValue" contenteditable="true">' + iuf['examEvaluation']['scans_reg_fullJoinData'][scanId].registration + '</span></span><span id="scannedAnswers"></span></div></div><div id="inspectScanButtons"><span class="cancleInspect inspectScanButton"><span lang="de">Abbrechen</span><span lang="en">Cancle</span></span><span class="applyInspect inspectScanButton"><span lang="de">Übernehmen</span><span lang="en">Apply</span></div>')
+	const registrations = iuf['examEvaluation']['scans_reg_fullJoinData'].filter(x => x.scan === 'NA').map(x => x.registration);
+	
+	$.each(registrations, function (i, p) {
+			$('#selectRegistration').append($('<option></option>')
+				.val(p).html(p));
+		});
+	
+	$('#focusedCompareListItem').append($(this));
 	
 	f_langDeEn();
 	$('#inspectScan').show();
 });
 
-$('body').on('click', '.applyInspect', function() {
+function sortCompareListItems(){
+	let sort_by_index = function(a, b) {
+		a = parseInt($(a).find('.evalIndex').html());
+		b = parseInt($(b).find('.evalIndex').html());
+		return a < b ? -1 : a > b ? 1 : 0;
+    }
+
+    let list = $("#compareScanRegistrationDataTable .compareListItem").get();
+    list.sort(sort_by_index);
+    for (let i = 0; i < list.length; i++) {
+        list[i].parentNode.appendChild(list[i]);
+    }
+}
+
+function resetInspect(){
 	$('#inspectScan').hide();
+	$('#compareScanRegistrationDataTable').append($('#focusedCompareListItem .compareListItem'));
+	sortCompareListItems();
 	$('#inspectScan').empty();
-	$('#compareScanRegistrationDataTable').show();
+}
+
+$('body').on('click', '.applyInspect', function() {
+	resetInspect();
 });
 
 $('body').on('click', '.cancleInspect', function() {
-	$('#inspectScan').hide();
-	$('#inspectScan').empty();
-	$('#compareScanRegistrationDataTable').show();
+	resetInspect();
 });
 
 Shiny.addCustomMessageHandler('compareScanRegistrationData', function(jsonData) {
