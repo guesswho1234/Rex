@@ -848,6 +848,14 @@ main > * {
 	gap: 10px;
 }
 
+#scannedAnswersHeader th {
+	text-align: center;
+}
+
+#scannedAnswers td {
+	padding-left: 0.25rem;
+}
+
 #inspectScanButtons {
 	display: flex;
 	margin: 0.25rem;

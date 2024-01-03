@@ -1740,12 +1740,11 @@ async function evaluateExamEvent() {
 $('body').on('click', '.compareListItem:not(.noParticipation)', function() {
 	resetInspect();
 
-	const scanId = parseInt($(this).find('.evalIndex').html());
+	const scanFocused = iuf['examEvaluation']['scans_reg_fullJoinData'][parseInt($(this).find('.evalIndex').html())];
 		
-	$('#inspectScan').append('<div id="focusedCompareListItem"></div><div id="inspectScanContent"><div id="inspectScanImage"><img src="data:image/png;base64, ' + iuf['examEvaluation']['scans_reg_fullJoinData'][scanId].blob + '"/></div><div id="inspectScanTemplate"><span id="scannedRegistration"><span id="scannedRegistrationText"><span lang="de">Matrikelnummer:</span><span lang="en">Registration Number:</span></span><select id="selectRegistration"><option>' + iuf['examEvaluation']['scans_reg_fullJoinData'][scanId].registration + '</option></select>	</span><span id="scannedAnswers"></span></div></div><div id="inspectScanButtons"><span class="cancleInspect inspectScanButton"><span lang="de">Abbrechen</span><span lang="en">Cancle</span></span><span class="applyInspect inspectScanButton"><span lang="de">Übernehmen</span><span lang="en">Apply</span></div>')
+	$('#inspectScan').append('<div id="focusedCompareListItem"></div><div id="inspectScanContent"><div id="inspectScanImage"><img src="data:image/png;base64, ' + scanFocused.blob + '"/></div><div id="inspectScanTemplate"><span id="scannedRegistration"><span id="scannedRegistrationText"><span lang="de">Matrikelnummer:</span><span lang="en">Registration Number:</span></span><select id="selectRegistration"><option>' + scanFocused.registration + '</option></select></span><table id="scannedAnswers"></table></div></div><div id="inspectScanButtons"><span class="cancleInspect inspectScanButton"><span lang="de">Abbrechen</span><span lang="en">Cancle</span></span><span class="applyInspect inspectScanButton"><span lang="de">Übernehmen</span><span lang="en">Apply</span></div>')
 	
-	// add checkboxes for answers
-	// show "proceed" button only when there are no more errors (red bars)
+	// TODO: show "proceed" button only when there are no more errors (red bars)
 	
 	const registrations = iuf['examEvaluation']['scans_reg_fullJoinData'].filter(x => x.scan === 'NA').map(x => x.registration);
 	
@@ -1753,6 +1752,39 @@ $('body').on('click', '.compareListItem:not(.noParticipation)', function() {
 			$('#selectRegistration').append($('<option></option>')
 				.val(p).html(p));
 		});
+		
+	// add checkboxes for answers
+	const numExercises = parseInt(scanFocused.numExercises);
+	const numChoices = parseInt(scanFocused.numChoices);
+	
+	if(numExercises > 0){
+		let scannedAnswersHeader = '<tr id="scannedAnswersHeader"><th></th>'
+		
+		for (let i = 0; i < numChoices; i++) {
+			scannedAnswersHeader = scannedAnswersHeader + '<th>' + 'abcdefghijklmnopqrstuvwxyz'.split('')[i] + '</th>';
+		}
+		
+		scannedAnswersHeader = scannedAnswersHeader + '</tr>';
+		
+		let scannedAnswerItems;
+		
+		for (let i = 0; i < numExercises; i++) {
+			let scannedAnswer = '<tr class="scannedAnswer"><td class="scannedAnswerId">' + (i + 1) + '</td>';
+			
+			for (let j = 0; j < numChoices; j++) {
+				const checked = scanFocused[i + 1].split('')[j] === "1" ? ' checked="checked"' : '';
+				
+				let checkboxItem = '<input type="checkbox"' + checked + '>';
+				
+				scannedAnswer = scannedAnswer + '<td>' + checkboxItem + '</td>';
+			}
+			
+			scannedAnswerItems = scannedAnswerItems + scannedAnswer + '</tr>';
+		}
+		
+		$('#scannedAnswers').append(scannedAnswersHeader);
+		$('#scannedAnswers').append(scannedAnswerItems);
+	}
 	
 	$('#focusedCompareListItem').append($(this));
 	

@@ -355,10 +355,14 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings){
                          file=nops_scan_fileName,
                          dir=dir)
         
+        examExerciseMetaData = readRDS(files$solution)
+
         scanData = read.table(unz(nops_scan_file, "Daten.txt"), colClasses = "character", stringsAsFactors = F)
         names(scanData)[c(1:6)] = c("scan", "sheet", "scrambling", "type", "replacement", "registration")
         names(scanData)[-c(1:6)] = (7:ncol(scanData)) - 6
-        scanData = scanData[,1:(max(as.numeric(scanData$type)) + 6)] # remove unnecessary answer placeholder for non existing questions (steps of 5)
+        scanData = scanData[,-which(grepl("^[[:digit:]]+$", names(scanData)))[-c(1:length(examExerciseMetaData[[1]]))]] # remove unnecessary answer placeholders
+        scanData$numExercises = length(examExerciseMetaData[[1]])
+        scanData$numChoices = length(examExerciseMetaData[[1]][[1]]$questionlist)
         scanData$blob = lapply(scanData$scan, function(x) {
           file = paste0(dir, "/", x)
           blob = readBin(file, "raw", n=file.info(file)$size)
