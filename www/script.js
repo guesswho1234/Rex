@@ -29,16 +29,10 @@ RSHINY CONNECTION
 let connected = false;
 $(document).on('shiny:disconnected', function(event) {
    connected = false;
-   // $('#shiny_disconnected-overlay').remove();
-   console.log("disconnected");
-   $('#heart:before').css("background-image", "var(---heartBeforeDead)");
-   $('#heart:after').css("background-image", "var(---heartAfterDead");
+   $('#heart span').addClass('dead');
 }).on('shiny:connected', function(event) {
    connected = true;
-   console.log("connected");
 });
-
-
 
 /* --------------------------------------------------------------
 DEBUG 
@@ -1572,6 +1566,8 @@ async function createExamEvent() {
 /* --------------------------------------------------------------
  EVALUATE EXAM 
 -------------------------------------------------------------- */
+const d_registration = 'XXXXXXX'; 
+
 let dndExamEvaluation = {
 	hzone: null,
 	dzone: null,
@@ -1766,8 +1762,8 @@ $('body').on('click', '.compareListItem:not(.noParticipation)', function() {
 	$('#inspectScan').append('<div id="focusedCompareListItem"></div><div id="inspectScanContent"><div id="inspectScanImage"><img src="data:image/png;base64, ' + scanFocused.blob + '"/></div><div id="inspectScanTemplate"><span id="scannedRegistration"><span id="scannedRegistrationText"><span lang="de">Matrikelnummer:</span><span lang="en">Registration Number:</span></span><select id="selectRegistration" autocomplete="on"></select></span><table id="scannedAnswers"></table></div></div><div id="inspectScanButtons"><span class="cancleInspect inspectScanButton"><span lang="de">Abbrechen</span><span lang="en">Cancle</span></span><span class="applyInspect inspectScanButton"><span lang="de">Übernehmen</span><span lang="en">Apply</span></div>')
 	
 	let registrations = iuf['examEvaluation']['scans_reg_fullJoinData'].filter(x => x.scan === 'NA').map(x => x.registration);
-	if(scanFocused.registration !== 'XXXXXXX')
-		registrations.push('XXXXXXX');
+	if(scanFocused.registration !== d_registration)
+		registrations.push(d_registration);
 	registrations.sort();
 	registrations.unshift(scanFocused.registration);
 	
@@ -1817,18 +1813,11 @@ $('body').on('click', '.compareListItem:not(.noParticipation)', function() {
 function populateCompareTable() {
 	$('#compareScanRegistrationDataTable').empty();
 	
-	let allowToProceed = true;
-	
 	iuf['examEvaluation']['scans_reg_fullJoinData'].forEach((element, index) => {	
-		const stateClass = (element.scan === 'NA' ? 'noParticipation' : (element.registration === 'XXXXXXX' ? 'noRegistration' : 'matched'))
+		const stateClass = (element.scan === 'NA' ? 'noParticipation' : (element.registration === d_registration ? 'noRegistration' : 'matched'))
 
 		$('#compareScanRegistrationDataTable').append('<div class="compareListItem ' + stateClass + '"><span class="evalIndex">' + index + '</span></span><span class="evalRegistration">' + element.registration + '</span><span class="evalName">' + element.name + '</span><span class="evalId">' + element.id + '</span><span class="evalInspect"><i class="fa-solid fa-magnifying-glass"></i></span></div>')
-		
-		allowToProceed = allowToProceed && (stateClass !== 'noRegistration');
 	});
-	
-	if(allowToProceed)
-		$('#proceedEval').show();
 	
 	sortCompareListItems();
 }
@@ -1869,7 +1858,7 @@ $('body').on('click', '.applyInspect', function() {
 	let itemsToAdd = null;
 	let itemsToRemove = null;
 	
-	if(iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].registration !== 'XXXXXXX') {
+	if(iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].registration !== d_registration) {
 		itemsToAdd = JSON.parse(JSON.stringify(iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex])); // clone byValue
 		Object.keys(itemsToAdd).forEach(x => itemsToAdd[x] = "NA");
 		itemsToAdd.registration = iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].registration;
@@ -1877,7 +1866,7 @@ $('body').on('click', '.applyInspect', function() {
 		itemsToAdd.id = iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].id;	
 	}
 	
-	if($('#selectRegistration').find(":selected").text() === 'XXXXXXX') {	
+	if($('#selectRegistration').find(":selected").text() === d_registration) {	
 		iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].name = "NA"
 		iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].id = "NA"
 	} else {
@@ -1919,6 +1908,9 @@ $('body').on('click', '.applyInspect', function() {
 $('body').on('click', '.cancleInspect', function() {
 	resetInspect();
 	sortCompareListItems();
+});
+
+$('body').on('click', '#shiny-modal button[data-dismiss="modal"]', function() {
 	$('#disableOverlay').removeClass("active");
 });
 
@@ -1931,7 +1923,7 @@ Shiny.addCustomMessageHandler('compareScanRegistrationData', function(jsonData) 
 $('body').on('click', '#proceedEval', function() {
 	const properties = ['scan', 'sheet', 'scrambling', 'type', 'replacement', 'registration',].concat(new Array(45).fill(1).map( (_, i) => i+1 ));
 
-	const datenTxt = Object.assign({}, iuf['examEvaluation']['scans_reg_fullJoinData'].filter(x => x.scan !== 'NA').map(x => Object.assign({}, properties.map(y => x[y] === undefined ? "00000" : x[y], {}))));
+	const datenTxt = Object.assign({}, iuf['examEvaluation']['scans_reg_fullJoinData'].filter(x => x.scan !== 'NA' && x.registration !== d_registration).map(x => Object.assign({}, properties.map(y => x[y] === undefined ? "00000" : x[y], {}))));
 
 	Shiny.onInputChange("proceedEvaluation", datenTxt, {priority: 'event'});
 });

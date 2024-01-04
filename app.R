@@ -386,6 +386,12 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings){
         # full outer join of scanData and registeredParticipantData
         scans_reg_fullJoinData = merge(scanData, registeredParticipantData, by="registration", all=TRUE)
         
+        # in case of duplicates, set "XXXXXXX" as registration number and "NA" for name and id for every match following the first one
+        dups = duplicated(scans_reg_fullJoinData$registration)
+        scans_reg_fullJoinData$registration[dups] = "XXXXXXX"
+        scans_reg_fullJoinData$name[dups] = "NA"
+        scans_reg_fullJoinData$id[dups] = "NA"
+        
         # set "XXXXXXX" as registration number for scans which were not matched with any of the registered participants 
         scans_reg_fullJoinData$registration[is.na(scans_reg_fullJoinData$name) & is.na(scans_reg_fullJoinData$id)] = "XXXXXXX"
         
