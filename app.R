@@ -197,9 +197,11 @@ prepareExam = function(exam, seed, input) {
   examPdfFiles = paste0(dir, "/", name, 1:exam$numberOfExams, ".pdf")
   examRdsFile = paste0(dir, "/", name, ".rds")
   
-  logFile = paste0(dir, "/", name, 1:exam$numberOfExams, ".log")
+  # todo: debug latex on heroku (without tinytex.install)
+  # logFile = paste0(dir, "/", name, 1:exam$numberOfExams, ".log")
+  # return(list(examFields=examFields, examFiles=list(examHtmlFiles=examHtmlFiles, pdfFiles=examPdfFiles, rdsFile=examRdsFile, logFile=logFile), sourceFiles=list(taskFiles=taskFiles, additionalPdfFiles=additionalPdfFiles)))
   
-  return(list(examFields=examFields, examFiles=list(examHtmlFiles=examHtmlFiles, pdfFiles=examPdfFiles, rdsFile=examRdsFile, logFile=logFile), sourceFiles=list(taskFiles=taskFiles, additionalPdfFiles=additionalPdfFiles)))
+  return(list(examFields=examFields, examFiles=list(examHtmlFiles=examHtmlFiles, pdfFiles=examPdfFiles, rdsFile=examRdsFile), sourceFiles=list(taskFiles=taskFiles, additionalPdfFiles=additionalPdfFiles)))
 }
 
 createExam = function(preparedExam, collectWarnings) {
@@ -247,7 +249,9 @@ createExam = function(preparedExam, collectWarnings) {
     message = gsub("\"", "'", message)
     message = gsub("[\r\n]", "%;%", message)
     
-    return(list(message=list(key="Error", value=message), dir=preparedExam$examFields$dir, logFile=preparedExam$examFiles$logFile))
+    # todo: debug latex on heroku (without tinytex.install)
+    # return(list(message=list(key="Error", value=message), dir=preparedExam$examFields$dir, logFile=preparedExam$examFiles$logFile))
+    return(list(message=list(key="Error", value=message), files=list()))
   })
   
   return(out)
@@ -403,7 +407,7 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings){
     message = gsub("\"", "'", message)
     message = gsub("[\r\n]", "%;%", message)
     
-    return(list(message=list(key="Error", value=message), dir=NULL, examName=NULL, files=list(), data=list()))
+    return(list(message=list(key="Error", value=message), scans_reg_fullJoinData=NULL, dir=NULL, examName=NULL, files=list(), data=list()))
   })
   
   return(out)
@@ -417,19 +421,22 @@ evaluateExamScansResponse = function(session, message, scans_reg_fullJoinData) {
     tags$div(id="inspectScan"),
     footer = tagList(
       modalButton("Cancle"),
-      if (nrow(scans_reg_fullJoinData) > 0) 
+      if (!is.null(scans_reg_fullJoinData) && nrow(scans_reg_fullJoinData) > 0) 
         actionButton("proceedEval", "Proceed"),
     ),
     size = "l"
   ))
   
   # display scanData in modal
-  scans_reg_fullJoinData_json = rjs_vectorToJsonArray(
-    apply(scans_reg_fullJoinData, 1, function(x) {
-      rjs_keyValuePairsToJsonObject(names(scans_reg_fullJoinData), x)
-    })
-  )
-  session$sendCustomMessage("compareScanRegistrationData", scans_reg_fullJoinData_json)
+  if (!is.null(scans_reg_fullJoinData) && nrow(scans_reg_fullJoinData) > 0) {
+    scans_reg_fullJoinData_json = rjs_vectorToJsonArray(
+      apply(scans_reg_fullJoinData, 1, function(x) {
+        rjs_keyValuePairsToJsonObject(names(scans_reg_fullJoinData), x)
+      })
+    )
+    
+    session$sendCustomMessage("compareScanRegistrationData", scans_reg_fullJoinData_json)
+  }
 }
 
 evaluateExamFinalize = function(preparedEvaluation, collectWarnings){
@@ -783,12 +790,12 @@ server = function(input, output, session) {
       result = examCreation()$get_result()
       examFiles(unlist(result$files, recursive = TRUE))
       
-      print(result)
-      session$sendCustomMessage("debugMessage", result)
-      
-      logFile = readLines(result$logFile)
-      print(logFile)
-      session$sendCustomMessage("debugMessage", logFile)
+      # todo: debug latex on heroku (without tinytex.install)
+      # print(result)
+      # session$sendCustomMessage("debugMessage", result)
+      # logFile = readLines(result$logFile)
+      # print(logFile)
+      # session$sendCustomMessage("debugMessage", logFile)
       
       examCreationResponse(session, result$message, length(examFiles()) > 0)
       stopWait(session)
@@ -832,7 +839,7 @@ server = function(input, output, session) {
       invalidateLater(millis = 100, session = session)
     } else {
       result = examScanEvaluation()$get_result()
-      
+
       # save result in reactive value
       examEvaluationData(result$preparedEvaluation)
       
@@ -842,7 +849,6 @@ server = function(input, output, session) {
                        result$scans_reg_fullJoinData)
     }
   })
-  
 
   # finalizing evaluation - trigger
   examFinalizeEvaluation = eventReactive(input$proceedEvaluation, {
