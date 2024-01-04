@@ -844,12 +844,15 @@ server = function(input, output, session) {
     scanData = paste0(scanData, collapse="\n")
 
     # write scanData
-    scanDatafile = paste0(preparedEvaluation$dir, "\\", "Daten.txt")
+    scanDatafile = paste0(preparedEvaluation$dir, "/", "Daten.txt")
     writeLines(text = scanData, con = file(scanDatafile))
     
     # create *_nops_scan.zip file needed for exams::nops_eval
-    zipFile = paste0(preparedEvaluation$dir, "\\", preparedEvaluation$examName, "_nops_scan.zip")
+    zipFile = paste0(preparedEvaluation$dir, "/", preparedEvaluation$examName, "_nops_scan.zip")
     zip(zipFile, c(preparedEvaluation$files$scans, scanDatafile), flags='-r9Xj')
+    
+    print(zipFile)
+    session$sendCustomMessage("debugMessage", zipFile)
     
     # manage preparedEvaluation data
     preparedEvaluation$files$scanEvaluation = zipFile
