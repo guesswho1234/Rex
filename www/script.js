@@ -8,11 +8,12 @@
 -------------------------------------------------------------- */
 $(document).ready(function () {
 	iuf['tasks'] = new Array();
-	iuf['examAdditionalPdf'] = new Array();
+	iuf['examAdditionalPdf'] = new Array(); 
 	iuf['examEvaluation'] = new Array();
-	iuf['examEvaluation']['scans'] = new Array();
+	iuf['examEvaluation']['scans'] = new Array(); 
 	iuf['examEvaluation']['registeredParticipants'] = new Array();
 	iuf['examEvaluation']['solutions'] = new Array();
+	iuf['examEvaluation']['scans_reg_fullJoinData'] = new Array();
 	
 	$('#s_initialSeed').html(itemSingle($('#seedValue').val(), 'greenLabel'));
 	$('#s_numberOfExams').html(itemSingle($('#numberOfExams').val(), 'grayLabel'));
@@ -104,18 +105,16 @@ document.onkeydown = function(evt) {
 	const evtobj = window.event? event : evt
 	
 	// TASKS
-	if ($(evtobj.target).is('input') && evtobj.keyCode == 13) {
+	if( $('#tasks').hasClass('active') ) {
+		if ($(evtobj.target).is('input') && evtobj.keyCode == 13) {
 		$(evtobj.target).change();
 		$(evtobj.target).blur();
 	}
 	
-	if( $('#tasks').hasClass('active') ) {
 		if (evtobj.keyCode == 27) { // ESC
 			$('#searchTasks input').val("");
 			$('.taskItem').removeClass("filtered");
 		}
-		
-		
 		
 		const targetInput = $(evtobj.target).is('input');
 		const targetEditable = $(evtobj.target).attr('contenteditable');
@@ -193,6 +192,8 @@ document.onkeydown = function(evt) {
 			}
 		}
 	}
+	
+	// EXAMS
 };
 
 function sidebarMoveUp(parent) {
@@ -734,6 +735,9 @@ $('#searchTasks input').change(function () {
 	});
 });
 
+/* --------------------------------------------------------------
+ TASKS 
+-------------------------------------------------------------- */
 let dndTasks = {
 	hzone: null,
 	dzone: null,
@@ -1551,7 +1555,6 @@ async function createExamEvent() {
 /* --------------------------------------------------------------
  EVALUATE EXAM 
 -------------------------------------------------------------- */
-
 let dndExamEvaluation = {
 	hzone: null,
 	dzone: null,
@@ -1794,6 +1797,24 @@ $('body').on('click', '.compareListItem:not(.noParticipation)', function() {
 	$('#inspectScan').show();
 });
 
+function populateCompareTable() {
+	$('#compareScanRegistrationDataTable').empty();
+	
+	let allowToProceed = true;
+	
+	iuf['examEvaluation']['scans_reg_fullJoinData'].forEach((element, index) => {	
+		const stateClass = (element.scan === 'NA' ? 'noParticipation' : (element.registration === 'XXXXXXX' ? 'noRegistration' : 'matched'))
+
+		$('#compareScanRegistrationDataTable').append('<div class="compareListItem ' + stateClass + '"><span class="evalIndex">' + index + '</span></span><span class="evalRegistration">' + element.registration + '</span><span class="evalName">' + element.name + '</span><span class="evalId">' + element.id + '</span><span class="evalInspect"><i class="fa-solid fa-magnifying-glass"></i></span></div>')
+		
+		allowToProceed = allowToProceed && (stateClass !== 'noRegistration');
+	});
+	
+	if(allowToProceed)
+		$('#proceedEval').show();
+	
+	sortCompareListItems();
+}
 
 function sortCompareListItems(){
 	let sortRegistrations = function(a, b) {
@@ -1881,26 +1902,8 @@ $('body').on('click', '.applyInspect', function() {
 $('body').on('click', '.cancleInspect', function() {
 	resetInspect();
 	sortCompareListItems();
+	$('#disableOverlay').removeClass("active");
 });
-
-function populateCompareTable() {
-	$('#compareScanRegistrationDataTable').empty();
-	
-	let allowToProceed = true;
-	
-	iuf['examEvaluation']['scans_reg_fullJoinData'].forEach((element, index) => {	
-		const stateClass = (element.scan === 'NA' ? 'noParticipation' : (element.registration === 'XXXXXXX' ? 'noRegistration' : 'matched'))
-
-		$('#compareScanRegistrationDataTable').append('<div class="compareListItem ' + stateClass + '"><span class="evalIndex">' + index + '</span></span><span class="evalRegistration">' + element.registration + '</span><span class="evalName">' + element.name + '</span><span class="evalId">' + element.id + '</span><span class="evalInspect"><i class="fa-solid fa-magnifying-glass"></i></span></div>')
-		
-		allowToProceed = allowToProceed && (stateClass !== 'noRegistration');
-	});
-	
-	if(allowToProceed)
-		$('#proceedEval').show();
-	
-	sortCompareListItems();
-}
 
 Shiny.addCustomMessageHandler('compareScanRegistrationData', function(jsonData) {
 	iuf['examEvaluation']['scans_reg_fullJoinData'] = JSON.parse(jsonData);
@@ -1912,8 +1915,6 @@ $('body').on('click', '#proceedEval', function() {
 	const properties = ['scan', 'sheet', 'scrambling', 'type', 'replacement', 'registration',].concat(new Array(45).fill(1).map( (_, i) => i+1 ));
 
 	const datenTxt = Object.assign({}, iuf['examEvaluation']['scans_reg_fullJoinData'].filter(x => x.scan !== 'NA').map(x => Object.assign({}, properties.map(y => x[y] === undefined ? "00000" : x[y], {}))));
-
-	console.log(datenTxt);
 
 	Shiny.onInputChange("proceedEvaluation", datenTxt, {priority: 'event'});
 });
