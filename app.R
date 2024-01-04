@@ -247,7 +247,7 @@ createExam = function(preparedExam, collectWarnings) {
     message = gsub("\"", "'", message)
     message = gsub("[\r\n]", "%;%", message)
     
-    return(list(message=list(key="Error", value=message), files=list()))
+    return(list(message=list(key="Error", value=message), dir=preparedExam$examFields$dir, logFile=preparedExam$examFiles$logFile))
   })
   
   return(out)
@@ -786,7 +786,7 @@ server = function(input, output, session) {
       print(result)
       session$sendCustomMessage("debugMessage", result)
       
-      logFile = readLines(result$files$examFiles$logFile)
+      logFile = readLines(result$logFile)
       print(logFile)
       session$sendCustomMessage("debugMessage", logFile)
       
