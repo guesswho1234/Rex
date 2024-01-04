@@ -18,6 +18,10 @@
 	---tryCatch_warning: rgb(255, 211, 128);
 	---tryCatch_error: rgb(255, 128, 128);
 	---heart: hsl(0,50%,50%);
+	---heartBeforeAlive: linear-gradient( 180deg, rgb(255, 0, 0) 0%, rgb(255, 154, 0) 10%, rgb(208, 222, 33) 20%, rgb(79, 220, 74) 30%, rgb(63, 218, 216) 40%, rgb(47, 201, 226) 50%, rgb(28, 127, 238) 60%, rgb(95, 21, 242) 70%, rgb(186, 12, 248) 80%, rgb(251, 7, 217) 90%, rgb(255, 0, 0) 100% );
+	---heartBeforeDead: linear-gradient( 180deg, rgb(255, 255, 255) 0%, rgb(0, 0, 0) 10%, rgb(255, 255, 255) 20%, rgb(0, 0, 0) 30%, rgb(255, 255, 255) 40%, rgb(0, 0, 0) 50%, rgb(255, 255, 255) 60%, rgb(0, 0, 0) 70%, rgb(255, 255, 255) 80%, rgb(0, 0, 0) 90%, rgb(255, 255, 255) 100% );
+	---heartAfterAlive: linear-gradient( 90deg, rgb(255, 0, 0) 0%, rgb(255, 154, 0) 10%, rgb(208, 222, 33) 20%, rgb(79, 220, 74) 30%, rgb(63, 218, 216) 40%, rgb(47, 201, 226) 50%, rgb(28, 127, 238) 60%, rgb(95, 21, 242) 70%, rgb(186, 12, 248) 80%, rgb(251, 7, 217) 90%, rgb(255, 0, 0) 100% );
+	---heartAfterDead: linear-gradient( 90deg, rgb(255, 255, 255) 0%, rgb(0, 0, 0) 10%, rgb(255, 255, 255) 20%, rgb(0, 0, 0) 30%, rgb(255, 255, 255) 40%, rgb(0, 0, 0) 50%, rgb(255, 255, 255) 60%, rgb(0, 0, 0) 70%, rgb(255, 255, 255) 80%, rgb(0, 0, 0) 90%, rgb(255, 255, 255) 100% );
 }
 
 html {
@@ -169,18 +173,26 @@ body.textButtonMode .textButton {
   -o-transform-origin: 0 100%; 
   transform-origin: 0 100%; 
 } 
+
+#heart:before {
+	background-image: var(---heartBeforeAlive);
+}
+
 #heart:after { 
-  left: 0; 
-  -webkit-transform: rotate(45deg); 
-  -moz-transform: rotate(45deg); 
-  -ms-transform: rotate(45deg); 
-  -o-transform: rotate(45deg); 
-  transform: rotate(45deg); 
-  -webkit-transform-origin: 100% 100%; 
-  -moz-transform-origin: 100% 100%; 
-  -ms-transform-origin: 100% 100%; 
-  -o-transform-origin: 100% 100%; 
-  transform-origin :100% 100%; 
+	left: 0; 
+	-webkit-transform: rotate(45deg); 
+	-moz-transform: rotate(45deg); 
+	-ms-transform: rotate(45deg); 
+	-o-transform: rotate(45deg); 
+	transform: rotate(45deg); 
+	-webkit-transform-origin: 100% 100%; 
+	-moz-transform-origin: 100% 100%; 
+	-ms-transform-origin: 100% 100%; 
+	-o-transform-origin: 100% 100%; 
+	transform-origin :100% 100%; 
+	background-image: var(---heartAfterAlive);
+	background-position-x: 8px;
+	background-size: 12px;
 } 
 
 #heart.ping {

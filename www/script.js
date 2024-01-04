@@ -24,6 +24,23 @@ $(document).ready(function () {
 });
 
 /* --------------------------------------------------------------
+RSHINY CONNECTION 
+-------------------------------------------------------------- */
+let connected = false;
+$(document).on('shiny:disconnected', function(event) {
+   connected = false;
+   // $('#shiny_disconnected-overlay').remove();
+   console.log("disconnected");
+   $('#heart:before').css("background-image", "var(---heartBeforeDead)");
+   $('#heart:after').css("background-image", "var(---heartAfterDead");
+}).on('shiny:connected', function(event) {
+   connected = true;
+   console.log("connected");
+});
+
+
+
+/* --------------------------------------------------------------
 DEBUG 
 -------------------------------------------------------------- */
 Shiny.addCustomMessageHandler('debugMessage', function(message) {
