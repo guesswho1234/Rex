@@ -853,7 +853,7 @@ server = function(input, output, session) {
     
     # manage preparedEvaluation data
     preparedEvaluation$files$scanEvaluation = zipFile
-    preparedEvaluation$files = within(preparedEvaluation$files, rm(list=c("scans", "scanData")))
+    preparedEvaluation$files = within(preparedEvaluation$files, rm(list=c("scans")))
     examEvaluationData(preparedEvaluation)
     
     # background task
