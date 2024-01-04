@@ -851,9 +851,6 @@ server = function(input, output, session) {
     zipFile = paste0(preparedEvaluation$dir, "/", preparedEvaluation$examName, "_nops_scan.zip")
     zip(zipFile, c(preparedEvaluation$files$scans, scanDatafile), flags='-r9Xj')
     
-    print(zipFile)
-    session$sendCustomMessage("debugMessage", zipFile)
-    
     # manage preparedEvaluation data
     preparedEvaluation$files$scanEvaluation = zipFile
     preparedEvaluation$files = within(preparedEvaluation$files, rm(list=c("scans")))
