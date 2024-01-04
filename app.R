@@ -197,7 +197,9 @@ prepareExam = function(exam, seed, input) {
   examPdfFiles = paste0(dir, "/", name, 1:exam$numberOfExams, ".pdf")
   examRdsFile = paste0(dir, "/", name, ".rds")
   
-  return(list(examFields=examFields, examFiles=list(examHtmlFiles=examHtmlFiles, pdfFiles=examPdfFiles, rdsFile=examRdsFile), sourceFiles=list(taskFiles=taskFiles, additionalPdfFiles=additionalPdfFiles)))
+  logFile = paste0(dir, "/", name, 1:exam$numberOfExams, ".log")
+  
+  return(list(examFields=examFields, examFiles=list(examHtmlFiles=examHtmlFiles, pdfFiles=examPdfFiles, rdsFile=examRdsFile, logFile=logFile), sourceFiles=list(taskFiles=taskFiles, additionalPdfFiles=additionalPdfFiles)))
 }
 
 createExam = function(preparedExam, collectWarnings) {
@@ -238,7 +240,7 @@ createExam = function(preparedExam, collectWarnings) {
     value = paste(unlist(warnings), collapse="%;%")
     if(value != "") key = "Warning"
     
-    return(list(message=list(key=key, value=value), files=list(sourceFiles=preparedExam$sourceFiles, examFiles=preparedExam$examFiles)))
+    return(list(message=list(key=key, value=value), dir=preparedExam$examFields$dir, files=list(sourceFiles=preparedExam$sourceFiles, examFiles=preparedExam$examFiles)))
   },
   error = function(e){
     message = e$message
@@ -780,6 +782,14 @@ server = function(input, output, session) {
     } else {
       result = examCreation()$get_result()
       examFiles(unlist(result$files, recursive = TRUE))
+      
+      print(result)
+      session$sendCustomMessage("debugMessage", result)
+      
+      logFile = readLines(result$files$examFiles$logFile)
+      print(logFile)
+      session$sendCustomMessage("debugMessage", logFile)
+      
       examCreationResponse(session, result$message, length(examFiles()) > 0)
       stopWait(session)
     }
