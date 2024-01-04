@@ -8,11 +8,12 @@
 -------------------------------------------------------------- */
 $(document).ready(function () {
 	iuf['tasks'] = new Array();
-	iuf['examAdditionalPdf'] = new Array();
+	iuf['examAdditionalPdf'] = new Array(); 
 	iuf['examEvaluation'] = new Array();
-	iuf['examEvaluation']['scans'] = new Array();
+	iuf['examEvaluation']['scans'] = new Array(); 
 	iuf['examEvaluation']['registeredParticipants'] = new Array();
 	iuf['examEvaluation']['solutions'] = new Array();
+	iuf['examEvaluation']['scans_reg_fullJoinData'] = new Array();
 	
 	$('#s_initialSeed').html(itemSingle($('#seedValue').val(), 'greenLabel'));
 	$('#s_numberOfExams').html(itemSingle($('#numberOfExams').val(), 'grayLabel'));
@@ -104,18 +105,16 @@ document.onkeydown = function(evt) {
 	const evtobj = window.event? event : evt
 	
 	// TASKS
-	if ($(evtobj.target).is('input') && evtobj.keyCode == 13) {
+	if( $('#tasks').hasClass('active') ) {
+		if ($(evtobj.target).is('input') && evtobj.keyCode == 13) {
 		$(evtobj.target).change();
 		$(evtobj.target).blur();
 	}
 	
-	if( $('#tasks').hasClass('active') ) {
 		if (evtobj.keyCode == 27) { // ESC
 			$('#searchTasks input').val("");
 			$('.taskItem').removeClass("filtered");
 		}
-		
-		
 		
 		const targetInput = $(evtobj.target).is('input');
 		const targetEditable = $(evtobj.target).attr('contenteditable');
@@ -193,6 +192,8 @@ document.onkeydown = function(evt) {
 			}
 		}
 	}
+	
+	// EXAMS
 };
 
 function sidebarMoveUp(parent) {
@@ -365,16 +366,7 @@ const languages = {en:["Englisch", "English"],
 				   sk:["Slowakisch", "Slovak"],
 				   sl:["Slowenisch", "Slovenian"],
 				   es:["Spansich", "Spanish"],
-				   tr:["Türkisch", "Turkish"]}
-	
-// not used anymore - can probably be removed	
-// Shiny.addCustomMessageHandler('setExamLanguageChoices', function(test) {
-    // $('#examLanguage').parent().find('.selectize-dropdown-content div').each(function (index, element) {	
-		// element.innerHTML = '<span lang="de">' + languages[element.attributes['data-value'].nodeValue][0] + '</span><span lang="en">' + languages[element.attributes['data-value'].nodeValue][1] + '</span>';
-	// });
-		
-	// f_langDeEn();
-// });			   
+				   tr:["Türkisch", "Turkish"]}		   
 
 /* --------------------------------------------------------------
  DATA 
@@ -743,6 +735,9 @@ $('#searchTasks input').change(function () {
 	});
 });
 
+/* --------------------------------------------------------------
+ TASKS 
+-------------------------------------------------------------- */
 let dndTasks = {
 	hzone: null,
 	dzone: null,
@@ -1560,7 +1555,6 @@ async function createExamEvent() {
 /* --------------------------------------------------------------
  EVALUATE EXAM 
 -------------------------------------------------------------- */
-
 let dndExamEvaluation = {
 	hzone: null,
 	dzone: null,
@@ -1745,6 +1739,185 @@ async function evaluateExamEvent() {
 										 examScanPdfNames: examScanPdfNames, examScanPdfFiles: examScanPdfFiles, 
 										 examScanPngNames: examScanPngNames, examScanPngFiles: examScanPngFiles}, {priority: 'event'});
 }
+
+$('body').on('click', '.compareListItem:not(.noParticipation)', function() {
+	resetInspect();
+	sortCompareListItems();
+
+	const scanFocused = iuf['examEvaluation']['scans_reg_fullJoinData'][parseInt($(this).find('.evalIndex').html())];
+		
+	$('#inspectScan').append('<div id="focusedCompareListItem"></div><div id="inspectScanContent"><div id="inspectScanImage"><img src="data:image/png;base64, ' + scanFocused.blob + '"/></div><div id="inspectScanTemplate"><span id="scannedRegistration"><span id="scannedRegistrationText"><span lang="de">Matrikelnummer:</span><span lang="en">Registration Number:</span></span><select id="selectRegistration" autocomplete="on"></select></span><table id="scannedAnswers"></table></div></div><div id="inspectScanButtons"><span class="cancleInspect inspectScanButton"><span lang="de">Abbrechen</span><span lang="en">Cancle</span></span><span class="applyInspect inspectScanButton"><span lang="de">Übernehmen</span><span lang="en">Apply</span></div>')
+	
+	let registrations = iuf['examEvaluation']['scans_reg_fullJoinData'].filter(x => x.scan === 'NA').map(x => x.registration);
+	if(scanFocused.registration !== 'XXXXXXX')
+		registrations.push('XXXXXXX');
+	registrations.sort();
+	registrations.unshift(scanFocused.registration);
+	
+	$.each(registrations, function (i, p) {
+		$('#selectRegistration').append($('<option></option>').val(p).html(p));
+	});
+	
+	// add checkboxes for answers
+	const numExercises = parseInt(scanFocused.numExercises);
+	const numChoices = parseInt(scanFocused.numChoices);
+	
+	if(numExercises > 0){
+		let scannedAnswersHeader = '<tr id="scannedAnswersHeader"><th></th>'
+		
+		for (let i = 0; i < numChoices; i++) {
+			scannedAnswersHeader = scannedAnswersHeader + '<th>' + 'abcdefghijklmnopqrstuvwxyz'.split('')[i] + '</th>';
+		}
+		
+		scannedAnswersHeader = scannedAnswersHeader + '</tr>';
+		
+		let scannedAnswerItems;
+		
+		for (let i = 0; i < numExercises; i++) {
+			let scannedAnswer = '<tr class="scannedAnswer"><td class="scannedAnswerId">' + (i + 1) + '</td>';
+			
+			for (let j = 0; j < numChoices; j++) {
+				const checked = scanFocused[i + 1].split('')[j] === "1" ? ' checked="checked"' : '';
+				
+				let checkboxItem = '<input type="checkbox"' + checked + '>';
+				
+				scannedAnswer = scannedAnswer + '<td>' + checkboxItem + '</td>';
+			}
+			
+			scannedAnswerItems = scannedAnswerItems + scannedAnswer + '</tr>';
+		}
+		
+		$('#scannedAnswers').append(scannedAnswersHeader);
+		$('#scannedAnswers').append(scannedAnswerItems);
+	}
+	
+	$('#focusedCompareListItem').append($(this));
+	
+	f_langDeEn();
+	$('#inspectScan').show();
+});
+
+function populateCompareTable() {
+	$('#compareScanRegistrationDataTable').empty();
+	
+	let allowToProceed = true;
+	
+	iuf['examEvaluation']['scans_reg_fullJoinData'].forEach((element, index) => {	
+		const stateClass = (element.scan === 'NA' ? 'noParticipation' : (element.registration === 'XXXXXXX' ? 'noRegistration' : 'matched'))
+
+		$('#compareScanRegistrationDataTable').append('<div class="compareListItem ' + stateClass + '"><span class="evalIndex">' + index + '</span></span><span class="evalRegistration">' + element.registration + '</span><span class="evalName">' + element.name + '</span><span class="evalId">' + element.id + '</span><span class="evalInspect"><i class="fa-solid fa-magnifying-glass"></i></span></div>')
+		
+		allowToProceed = allowToProceed && (stateClass !== 'noRegistration');
+	});
+	
+	if(allowToProceed)
+		$('#proceedEval').show();
+	
+	sortCompareListItems();
+}
+
+function sortCompareListItems(){
+	let sortRegistrations = function(a, b) {
+		a = parseInt($(a).find('.evalRegistration').html());
+		b = parseInt($(b).find('.evalRegistration').html());
+		
+		a = (isNaN(a) ? -1 : a);
+		b = (isNaN(b) ? -1 : b);
+		
+		return a < b ? -1 : a > b ? 1 : 0;
+	}
+
+    let list = $("#compareScanRegistrationDataTable .compareListItem").get();
+    list.sort(sortRegistrations);
+    for (let i = 0; i < list.length; i++) {
+        list[i].parentNode.appendChild(list[i]);
+    }
+}
+
+function resetInspect(){
+	$('#inspectScan').hide();
+	$('#compareScanRegistrationDataTable').append($('#focusedCompareListItem .compareListItem'));
+	$('#inspectScan').empty();
+}
+
+$('body').on('click', '.applyInspect', function() {
+	const scanFocusedIndex = parseInt($('#focusedCompareListItem .evalIndex').html());
+	
+	if($('#selectRegistration').find(":selected").text() === iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].registration) {
+		resetInspect();
+		sortCompareListItems();
+		return;
+	}
+	
+	let itemsToAdd = null;
+	let itemsToRemove = null;
+	
+	if(iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].registration !== 'XXXXXXX') {
+		itemsToAdd = JSON.parse(JSON.stringify(iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex])); // clone byValue
+		Object.keys(itemsToAdd).forEach(x => itemsToAdd[x] = "NA");
+		itemsToAdd.registration = iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].registration;
+		itemsToAdd.name = iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].name;
+		itemsToAdd.id = iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].id;	
+	}
+	
+	if($('#selectRegistration').find(":selected").text() === 'XXXXXXX') {	
+		iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].name = "NA"
+		iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].id = "NA"
+	} else {
+		itemsToRemove = iuf['examEvaluation']['scans_reg_fullJoinData'].map(function(x) { return x.registration; }).indexOf($('#selectRegistration').find(":selected").text()); 
+		
+		iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].name = iuf['examEvaluation']['scans_reg_fullJoinData'][itemsToRemove].name
+		iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].id = iuf['examEvaluation']['scans_reg_fullJoinData'][itemsToRemove].id 
+	}
+	
+	iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].registration = $('#selectRegistration').find(":selected").text();	
+
+	$('#scannedAnswers .scannedAnswer').map(function (index) {
+        let exerciseAnswers = $(this).find('input').map(function () {
+            return $(this).prop('checked') ? "1" : "0";
+        }).get();
+		
+		if (exerciseAnswers.length < 5) {
+			for (let i = exerciseAnswers.length; i < 5; i++) {
+				exerciseAnswers.push("0");
+			}
+		}
+		
+		exerciseAnswers = exerciseAnswers.join('');
+		
+		iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex][index + 1] = exerciseAnswers;
+    });
+	
+	if(itemsToRemove !== null) 
+		iuf['examEvaluation']['scans_reg_fullJoinData'].splice(itemsToRemove, 1);
+	
+	if(itemsToAdd !== null)
+		iuf['examEvaluation']['scans_reg_fullJoinData'].push(itemsToAdd);
+	
+	resetInspect();
+	populateCompareTable();
+	sortCompareListItems();
+});
+
+$('body').on('click', '.cancleInspect', function() {
+	resetInspect();
+	sortCompareListItems();
+	$('#disableOverlay').removeClass("active");
+});
+
+Shiny.addCustomMessageHandler('compareScanRegistrationData', function(jsonData) {
+	iuf['examEvaluation']['scans_reg_fullJoinData'] = JSON.parse(jsonData);
+
+	populateCompareTable();
+});
+
+$('body').on('click', '#proceedEval', function() {
+	const properties = ['scan', 'sheet', 'scrambling', 'type', 'replacement', 'registration',].concat(new Array(45).fill(1).map( (_, i) => i+1 ));
+
+	const datenTxt = Object.assign({}, iuf['examEvaluation']['scans_reg_fullJoinData'].filter(x => x.scan !== 'NA').map(x => Object.assign({}, properties.map(y => x[y] === undefined ? "00000" : x[y], {}))));
+
+	Shiny.onInputChange("proceedEvaluation", datenTxt, {priority: 'event'});
+});
 
 /* --------------------------------------------------------------
 HELP 

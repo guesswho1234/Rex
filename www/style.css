@@ -32,6 +32,10 @@ body {
 	color: var(---main);
 }
 
+nav {
+	z-index: 998 !important;
+}
+
 #disableOverlay {
 	width: 100%;
 	height: 100%;
@@ -750,6 +754,136 @@ main > * {
 /* --------------------------------------------------------------
  CREATE EXAMS 
 -------------------------------------------------------------- */
+#compareScanRegistrationDataTable {
+	margin: 1rem;
+	overflow-y: auto;
+}
+
+#focusedCompareListItem {
+	margin-bottom: 0.5rem;
+}
+
+#compareScanRegistrationDataTable .compareListItem,
+#focusedCompareListItem .compareListItem {
+	display: flex;
+}
+
+#compareScanRegistrationDataTable .compareListItem {
+	margin: 0.25rem;
+}
+
+#focusedCompareListItem .compareListItem {
+	border-bottom: 2px solid var(---main);
+}
+
+#compareScanRegistrationDataTable .compareListItem.matched,
+#focusedCompareListItem .compareListItem.matched {
+	background: var(---tryCatch_success);
+}
+
+#compareScanRegistrationDataTable .compareListItem.noParticipation,
+#focusedCompareListItem .compareListItem.noParticipation {
+	background: var(---tryCatch_warning);
+}
+
+#compareScanRegistrationDataTable .compareListItem.noRegistration,
+#focusedCompareListItem .compareListItem.noRegistration {
+	background: var(---tryCatch_error);
+}
+
+#compareScanRegistrationDataTable .compareListItem:not(.noParticipation):hover {
+	background: var(---background3);
+	cursor: pointer;
+}
+
+#compareScanRegistrationDataTable .compareListItem > span,
+#focusedCompareListItem .compareListItem > span {
+	padding: 0.25rem;
+}
+
+#compareScanRegistrationDataTable .compareListItem .evalIndex,
+#focusedCompareListItem .compareListItem .evalIndex {
+	display: none;
+}
+
+#compareScanRegistrationDataTable .compareListItem .evalName,
+#compareScanRegistrationDataTable .compareListItem .evalId,
+#focusedCompareListItem .compareListItem .evalId,
+#focusedCompareListItem .compareListItem .evalName {
+	margin-left: 0.5rem;
+	margin-right: 0.5rem;
+	width: 35%;
+}
+
+#compareScanRegistrationDataTable .compareListItem.noParticipation .evalInspect,
+#focusedCompareListItem .compareListItem .evalInspect {
+	display:none;
+}
+
+#compareScanRegistrationDataTable .compareListItem .evalInspect,
+#focusedCompareListItem .compareListItem .evalInspect {
+	margin-right: 0;
+	margin-left: auto;
+}
+
+#inspectScan {
+	display: none;
+	margin: 1.25rem;
+	border: 2px solid var(---main);
+}
+
+#inspectScanContent {
+	display: flex;
+	width: 100%;
+}
+
+#inspectScanImage,
+#inspectScanTemplate {
+	width: 50%;
+}
+
+#inspectScan img {
+	width: 100%;
+	padding: 0.25rem;
+}
+
+#scannedRegistration {
+	display: flex;
+	gap: 10px;
+}
+
+#scannedAnswersHeader th {
+	text-align: center;
+}
+
+#scannedAnswers td {
+	padding-left: 0.25rem;
+}
+
+#inspectScanButtons {
+	display: flex;
+	margin: 0.25rem;
+	gap: 5px;
+	place-content: end;
+}
+
+.inspectScanButton {
+	border-radius: 5px;
+	padding: 0.25rem;
+	background: var(---background3);
+	border: 2px solid var(---transparent);
+}
+
+.inspectScanButton:hover {
+	border: 2px solid var(---main);
+	background: var(---background2);
+	cursor: pointer;
+}
+
+#proceedEval {
+	display: none;
+}
+
 #marks {
 	width: 300px;
 }
@@ -764,6 +898,12 @@ main > * {
 
 #marks td > * {
 	width: unset !important;
+}
+
+#marks tr > th:last-of-type,
+#marks tr > td:last-of-type {
+	margin-left: 10px;
+	display: block;
 }
 
 #additionalPdfContainer,
