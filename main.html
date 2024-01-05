@@ -175,12 +175,23 @@
 						
 						<label for="question"><span lang="de">Frage</span><span lang="en">Question</span></label>
 						<div id="question"></div>
-						
-						<label for="figure"><span lang="de">Grafik</span><span lang="en">Figure</span></label>
-						<div id="figure"></div>
-						
-						<label for="equation"><span lang="de">Formel</span><span lang="en">Equation</span></label>
-						<div id="equation"></div>
+												
+						<label for="figureUploadContainer"><span lang="de">Grafik</span><span lang="en">Figure</span></label>
+						<div id="figureUploadContainer">
+							<label class="taskFigureUpload" for="file-upload_taskFigure">
+								<div class="taskFigureButton">
+									<span class="iconButton"><i class="fa-solid fa-upload"></i></span>
+									<span class="textButton"><span lang="de">Importieren</span><span lang="en">Import</span></span>
+								</div>
+								<input type="file" id="file-upload_taskFigure" onchange='loadTaskFigureFileDialog(this.files);' multiple>
+							</label>
+							<div id="taskFigureFiles">
+								<div id="taskFigure_list" class="itemList">
+									<div id="taskFigure_list_items">
+									</div>
+								</div>
+							</div>
+						</div>
 						
 						<label for="result"><span lang="de">Ergebnis</span><span lang="en">Result</span></label>
 						<div id="result">

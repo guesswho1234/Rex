@@ -807,7 +807,7 @@ function loadTasksDnD(items) {
 function loadTasksFileDialog(items) {	
 	const blockNum = getBlockNum();
 	
-	items.forEach(function(file) {
+	Array.from(items).forEach(file => {	
 		loadTask(file, blockNum);
 	});
 }
@@ -883,7 +883,8 @@ function createTask(taskID, name='task',
 							authoredBy=null,
 							precision=null,
 							points=1,
-							tags=null){
+							tags=null,
+							figure=null){
 	iuf['tasks'][taskID]['file'] = file;
 	iuf['tasks'][taskID]['name'] = name;
 	iuf['tasks'][taskID]['seed'] = seed;
@@ -901,6 +902,7 @@ function createTask(taskID, name='task',
 	iuf['tasks'][taskID]['e'] = e;	
 	iuf['tasks'][taskID]['editable'] = editable;
 	iuf['tasks'][taskID]['block'] = block;
+	iuf['tasks'][taskID]['figure'] = figure;
 	
 	if( file === null) {
 		setSimpleTaskFileContents(taskID);
@@ -966,8 +968,6 @@ function resetOutputFields() {
 	
 	let fields = ['taskName',
 				  'question',
-				  'equation',
-				  'figure',
 			      'points',
 			      'type',
 			      'result',
@@ -1328,6 +1328,42 @@ function taskExportAll() {
 	// $('#taskDownloadAll')[0].click();
 // });
 
+function loadTaskFigureFileDialog(items) {+	
+	Array.from(items).forEach(file => {	
+		addTaskFigureFile(file);
+	});
+}
+
+function addTaskFigureFile(file) {
+	const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
+	
+	let fileReader;
+	let base64;
+	let fileName;
+	
+	fileReader = new FileReader();
+	fileName = file.name.split('.')[0];
+
+	fileReader.onload = function(fileLoadedEvent) {
+		base64 = fileLoadedEvent.target.result;
+		iuf['tasks'][getID()]['figure'] = [fileName, fileExt, base64.split(',')[1]];
+	};
+
+	fileReader.readAsDataURL(file);
+	
+	$('#taskFigure_list_items').empty();
+	$('#taskFigure_list_items').append('<div class="taskFigureItem"><span class="taskFigureName">' + fileName + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
+}
+
+function removeTaskFigure(element) {
+	iuf['tasks'][getID()]['figure'] = null;
+	element.remove();
+}
+
+$('#taskFigure_list_items').on('click', '.taskFigureItem', function() {
+	removeTaskFigure($(this));
+});
+
 getID = function() {
 	return(taskID_hook == -1 ? $('.taskItem.active').index('.taskItem') : taskID_hook);
 }
@@ -1489,7 +1525,7 @@ function loadAdditionalPdfDnD(items) {
 }
 
 function loadAdditionalPdfFileDialog(items) {
-	items.forEach(function(file) {
+	Array.from(items).forEach(file => {	
 		addAdditionalPdf(file);
 	});
 }
@@ -1624,9 +1660,9 @@ function loadExamEvaluation(items) {
 }
 
 function loadExamSolutionsFileDialog(items) {
-	items.forEach(function(file) {
+	Array.from(items).forEach(file => {	
 		fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
-		
+			
 		if(fileExt == 'rds') {
 			addExamEvaluationFile(file);
 		}
@@ -1634,9 +1670,9 @@ function loadExamSolutionsFileDialog(items) {
 }
 
 function loadExamRegisteredParticipantsFileDialog(items) {
-	items.forEach(function(file) {
+	Array.from(items).forEach(file => {	
 		fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
-		
+			
 		if(fileExt == 'csv') {
 			addExamEvaluationFile(file);
 		}
@@ -1644,9 +1680,9 @@ function loadExamRegisteredParticipantsFileDialog(items) {
 }
 
 function loadExamScansFileDialog(items) {
-	items.forEach(function(file) {
+	Array.from(items).forEach(file => {	
 		fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
-		
+			
 		if(fileExt == 'pdf' || fileExt == 'png') {
 			addExamEvaluationFile(file);
 		}

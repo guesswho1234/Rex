@@ -881,6 +881,7 @@ main > * {
 	display: block;
 }
 
+#figureUploadContainer,
 #additionalPdfContainer,
 #examScansContainer,
 #examSolutionsContainer,
@@ -889,6 +890,7 @@ main > * {
 	width: 300px;
 }
 
+#file-upload_taskFigure,
 #file-upload_addAdditionalPdf,
 #file-upload_examScans,
 #file-upload_examSolutions,
@@ -896,6 +898,7 @@ main > * {
     display: none;
 }
 
+.taskFigureUpload,
 .examFileUpload {
 	margin-right: 0.25rem;
 	cursor: pointer;
@@ -925,6 +928,7 @@ main > * {
 	cursor: pointer;
 }
 
+#taskFigureFiles,
 #additionalPdfFiles,
 #examScanFiles,
 #examSolutionsFile,
@@ -934,6 +938,7 @@ main > * {
 	background: var(---background3);
 }
 
+#taskFigure_list_items,
 #additionalPdf_list_items,
 #examScan_list_items,
 #examSolutions_list_items,
@@ -942,6 +947,7 @@ main > * {
 	padding: 0.25rem;
 }
 
+.taskFigureItem,
 .additionalPdfItem,
 .examScanItem,
 .examSolutionsItem,
@@ -952,6 +958,7 @@ main > * {
 	justify-content: space-between;
 }
 
+.taskFigureName,
 .additionalPdfName,
 .examScanName,
 .examSolutionsName,
@@ -961,6 +968,7 @@ main > * {
 	white-space: nowrap;
 }
 
+.taskFigureItem .removeText,
 .additionalPdfItem .removeText,
 .examScanItem .removeText,
 .examSolutionsItem .removeText,
@@ -968,6 +976,7 @@ main > * {
 	display: none;
 }
 
+.taskFigureItem:hover,
 .additionalPdfItem:hover,
 .examScanItem:hover,
 .examSolutionsItem:hover,
@@ -976,6 +985,7 @@ main > * {
 	cursor: pointer;
 }
 
+.taskFigureItem:hover .removeText,
 .additionalPdfItem:hover .removeText,
 .examScanItem:hover .removeText,
 .examSolutionsItem:hover .removeText,
@@ -983,6 +993,7 @@ main > * {
 	display: block;
 }
 
+.taskFigureButton,
 .examFileButton {
 	margin-top: 5px;
 	padding: 0.5rem;
@@ -991,6 +1002,7 @@ main > * {
 	border: 2px solid var(---background);
 }
 
+.taskFigureButton:hover,
 .examFileButton:hover {
 	border: 2px solid var(---main);
 }
