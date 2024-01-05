@@ -280,6 +280,7 @@ prepareEvaluation = function(evaluation, rotate, input){
     
     return(file)
   }))
+  examExerciseMetaData = readRDS(solutionFile)
   
   # registered participants
   registeredParticipantsFile = unlist(lapply(seq_along(evaluation$examRegisteredParticipantsnName), function(i){
@@ -322,8 +323,20 @@ prepareEvaluation = function(evaluation, rotate, input){
   }))
   
   scanFiles = c(pngFiles, convertedPngFiles)
-
+  
+  # meta data
+  examName = evaluation$examSolutionsName[[1]]
+  numExercises = length(examExerciseMetaData[[1]])
+  numChoices = length(examExerciseMetaData[[1]][[1]]$questionlist)
+  
   # additional settings
+  points = input$fixedPoints
+  if(is.numeric(points) && points > 0) {
+    points = rep(points, numExercises)
+  } else {
+    points = NULL
+  }
+  
   partial = input$partialPoints
   negative = input$negativePoints
   rule = input$rule
@@ -346,8 +359,8 @@ prepareEvaluation = function(evaluation, rotate, input){
   language = input$evaluationLanguage
 
   return(list(dir=dir, 
-              examName=evaluation$examSolutionsName[[1]], 
-              fields=list(partial=partial, negative=negative, rule=rule, mark=mark, labels=labels, language=language), 
+              meta=list(examName=examName, numExercises=numExercises, numChoices=numChoices),
+              fields=list(points=points, partial=partial, negative=negative, rule=rule, mark=mark, labels=labels, language=language), 
               files=list(solution=solutionFile, registeredParticipants=registeredParticipantsFile, scans=scanFiles)))
 }
 
@@ -370,8 +383,8 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings){
         
         # midify using additional data from exam to know how many questions and answer per question existed
         scanData = scanData[,-which(grepl("^[[:digit:]]+$", names(scanData)))[-c(1:length(examExerciseMetaData[[1]]))]] # remove unnecessary placeholders for unused questions
-        scanData$numExercises = length(examExerciseMetaData[[1]])
-        scanData$numChoices = length(examExerciseMetaData[[1]][[1]]$questionlist)
+        scanData$numExercises = meta$numExercises
+        scanData$numChoices = meta$numChoices
         
         # add scans as base64 to be displayed in browser
         scanData$blob = lapply(scanData$scan, function(x) {
@@ -449,7 +462,7 @@ evaluateExamFinalize = function(preparedEvaluation, collectWarnings){
   out = tryCatch({
     # file path and name settings
     nops_evaluation_fileNames = "evaluation.html"
-    nops_evaluation_fileNamePrefix = paste0(preparedEvaluation$examName, "_nops_eval")
+    nops_evaluation_fileNamePrefix = paste0(preparedEvaluation$meta$examName, "_nops_eval")
     preparedEvaluation$files$nops_evaluationCsv = paste0(preparedEvaluation$dir, "/", nops_evaluation_fileNamePrefix, ".csv")
     preparedEvaluation$files$nops_evaluationZip = paste0(preparedEvaluation$dir, "/", nops_evaluation_fileNamePrefix, ".zip")
 
@@ -469,7 +482,7 @@ evaluateExamFinalize = function(preparedEvaluation, collectWarnings){
           solutions = files$solution,
           scans = files$scanEvaluation,
           eval = exams::exams_eval(partial = fields$partial, negative = fields$negative, rule = fields$rule),
-          # points = points, # not implemented yet
+          points = fields$points,
           mark = fields$mark,
           labels = fields$abels,
           results = nops_evaluation_fileNamePrefix,
@@ -649,6 +662,7 @@ ui = fluidPage(
       checkboxInput_duplex = checkboxInput("duplex", label = NULL, value = NULL),
 
       # EVALUATE ----------------------------------------------------------------
+      numericInput_fixedPoints = numericInput("fixedPoints", label = NULL, value = NULL, min = 0),
       checkboxInput_partialPoints = checkboxInput("partialPoints", label = NULL, value = NULL),
       checkboxInput_negativePoints = checkboxInput("negativePoints", label = NULL, value = NULL),
       selectInput_rule = selectInput("rule", label = NULL, choices = rules, selected = NULL, multiple = FALSE),
@@ -870,7 +884,7 @@ server = function(input, output, session) {
     writeLines(text = scanData, con = file(scanDatafile))
     
     # create *_nops_scan.zip file needed for exams::nops_eval
-    zipFile = paste0(preparedEvaluation$dir, "/", preparedEvaluation$examName, "_nops_scan.zip")
+    zipFile = paste0(preparedEvaluation$dir, "/", preparedEvaluation$meta$examName, "_nops_scan.zip")
     zip(zipFile, c(preparedEvaluation$files$scans, scanDatafile), flags='-r9Xj')
     
     # manage preparedEvaluation data
@@ -906,7 +920,7 @@ server = function(input, output, session) {
 
   # finalizing evaluation - download
   output$downloadEvaluationFiles = downloadHandler(
-    filename = paste0(gsub("exam", "evaluation", examEvaluationData()$examName), ".zip"),
+    filename = paste0(gsub("exam", "evaluation", examEvaluationData()$meta$examName), ".zip"),
     content = function(fname) {
       zip(zipfile=fname, files=unlist(examEvaluationData()$files, recursive = TRUE), flags='-r9Xj')
     },

@@ -176,6 +176,12 @@
 						<label for="question"><span lang="de">Frage</span><span lang="en">Question</span></label>
 						<div id="question"></div>
 						
+						<label for="figure"><span lang="de">Grafik</span><span lang="en">Figure</span></label>
+						<div id="figure"></div>
+						
+						<label for="equation"><span lang="de">Formel</span><span lang="en">Equation</span></label>
+						<div id="equation"></div>
+						
 						<label for="result"><span lang="de">Ergebnis</span><span lang="en">Result</span></label>
 						<div id="result">
 						</div>
@@ -302,6 +308,10 @@
 						<div id="exam_evaluate" class="contentTab">
 							<h2><span lang="de">Prüfung Auswerten</span><span lang="en">Evaluate exam</span></h2>
 							<div>
+								<div>
+									<label for="fixedPoints"><span lang="de">Fixe Punkte pro Aufgabe</span><span lang="en">Fixed points per exercise</span></label>
+									{{ numericInput_fixedPoints }}
+								</div>
 								<div>
 									<label for="partialPoints"><span lang="de">Teilpunkte</span><span lang="en">Partial points</span></label>
 									{{ checkboxInput_partialPoints }}

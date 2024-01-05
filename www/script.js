@@ -966,6 +966,8 @@ function resetOutputFields() {
 	
 	let fields = ['taskName',
 				  'question',
+				  'equation',
+				  'figure',
 			      'points',
 			      'type',
 			      'result',

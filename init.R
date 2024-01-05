@@ -19,3 +19,5 @@ install.packages("./iuftools", repos = NULL, type="source")
 
 # tinytex setup
 tinytex::install_tinytex()
+# alternative to use installed tex distribution
+# options(exams_tex = "tools")
