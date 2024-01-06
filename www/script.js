@@ -968,6 +968,7 @@ function resetOutputFields() {
 	
 	let fields = ['taskName',
 				  'question',
+				  'figure',
 			      'points',
 			      'type',
 			      'result',
@@ -1057,11 +1058,21 @@ function loadTaskFromObject(taskID) {
 		const field = 'question'
 		let content = ''
 		
-		if(Array.isArray(iuf['tasks'][taskID]['question'])) {
-			content = '<span class="questionText" contenteditable="' + editable + '" spellcheck="false">' + iuf['tasks'][taskID]['question'].join('') + '</span>';
+		if(Array.isArray(iuf['tasks'][taskID][field])) {
+			content = '<span class="questionText" contenteditable="' + editable + '" spellcheck="false">' + iuf['tasks'][taskID][field].join('') + '</span>';
 		} else {
-			content = '<span class="questionText" contenteditable="' + editable + '" spellcheck="false">' + iuf['tasks'][taskID]['question'] + '</span>';
+			content = '<span class="questionText" contenteditable="' + editable + '" spellcheck="false">' + iuf['tasks'][taskID][field] + '</span>';
 		}
+		
+		setTaskFieldFromObject(field, content);
+	}
+	
+	if(editable) {
+		const field = 'figure'
+		
+		const imgContet = iuf['tasks'][taskID]['figure'] !== null ? '<div class="taskFigureItem"><span class="taskFigureName"><img src="data:image/png;base64, ' + iuf['tasks'][taskID][field][2] + '"/></span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>' : '';
+		
+		const content = '<label class="taskFigureUpload" for="file-upload_taskFigure"><div class="taskFigureButton"><span class="iconButton"><i class="fa-solid fa-upload"></i></span><span class="textButton"><span lang="de">Importieren</span><span lang="en" style="display: none;">Import</span></span></div><input type="file" id="file-upload_taskFigure" onchange="loadTaskFigureFileDialog(this.files);" multiple="" class="shiny-bound-input"></label><div id="taskFigureFiles"><div id="taskFigure_list" class="itemList"><div id="taskFigure_list_items">' + imgContet + '</div></div></div></div>';
 		
 		setTaskFieldFromObject(field, content);
 	}
@@ -1069,21 +1080,21 @@ function loadTaskFromObject(taskID) {
 	if(iuf['tasks'][taskID]['points'] !== null) {	
 		const field = 'points'
 				
-		const content = '<span class="points" contenteditable="' + editable + '" spellcheck="false">' + iuf['tasks'][taskID]['points'] + '</span>';
+		const content = '<span class="points" contenteditable="' + editable + '" spellcheck="false">' + iuf['tasks'][taskID][field] + '</span>';
 		
 		setTaskFieldFromObject(field, content);
 	}
 	
 	if(iuf['tasks'][taskID]['type'] !== null) {
 		const field = 'type'
-		const content = '<span>' + iuf['tasks'][taskID]['type'] + '</span>';
+		const content = '<span>' + iuf['tasks'][taskID][field] + '</span>';
 		
 		setTaskFieldFromObject(field, content);
 	}
 		
 	if(iuf['tasks'][taskID]['type'] === "mchoice" || iuf['tasks'][taskID]['editable']) {
 		const field = 'result'
-		const zip = iuf['tasks'][taskID]['result'].map((x, i) => [x, iuf['tasks'][taskID]['choices'][i]]);
+		const zip = iuf['tasks'][taskID][field].map((x, i) => [x, iuf['tasks'][taskID]['choices'][i]]);
 		let content = '<div id="resultContent">' + zip.map(i => '<p>' + (editable ? '<button type="button" class="removeAnswer btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></button>' : '') + '<span class=\"result mchoiceResult ' + (editable ? 'editTrueFalse' : '') + '\">' + getTrueFalseText(i[0]) + '</span><span class="choice"><span class="choiceText" contenteditable="' + editable + '" spellcheck="false">' + i[1] + '</span></span></p>').join('') + '</div>';
 		
 		if( iuf['tasks'][taskID]['editable'] ) {
@@ -1095,35 +1106,35 @@ function loadTaskFromObject(taskID) {
 	
 	if(iuf['tasks'][taskID]['examHistory'] !== null) {
 		const field = 'examHistory'
-		const content = iuf['tasks'][taskID]['examHistory'].map(i => '<span>' + i + '</span>').join('');
+		const content = iuf['tasks'][taskID][field].map(i => '<span>' + i + '</span>').join('');
 		
 		setTaskFieldFromObject(field, content);
 	}
 	
 	if(iuf['tasks'][taskID]['authoredBy'] !== null) {
 		const field = 'authoredBy'
-		const content = iuf['tasks'][taskID]['authoredBy'].map(i => '<span>' + i + '</span>').join('');
+		const content = iuf['tasks'][taskID][field].map(i => '<span>' + i + '</span>').join('');
 		
 		setTaskFieldFromObject(field, content);
 	}
 	
 	if(iuf['tasks'][taskID]['precision'] !== null) {
 		const field = 'precision'
-		const content = '<span>' + iuf['tasks'][taskID]['precision'] + '</span>';
+		const content = '<span>' + iuf['tasks'][taskID][field] + '</span>';
 		
 		setTaskFieldFromObject(field, content);
 	}
 
 	if(iuf['tasks'][taskID]['topic'] !== null) {
 		const field = 'topic'
-		const content = '<span class="topicText" contenteditable="' + editable + '" spellcheck="false">' + iuf['tasks'][taskID]['topic'] + '</span>';
+		const content = '<span class="topicText" contenteditable="' + editable + '" spellcheck="false">' + iuf['tasks'][taskID][field] + '</span>';
 		
 		setTaskFieldFromObject(field, content);
 	}
 	
 	if(iuf['tasks'][taskID]['tags'] !== null) {
 		const field = 'tags'
-		const content = iuf['tasks'][taskID]['tags'].map(i => '<span>' + i + '</span>').join('');
+		const content = iuf['tasks'][taskID][field].map(i => '<span>' + i + '</span>').join('');
 		
 		setTaskFieldFromObject(field, content);
 	}
@@ -1142,11 +1153,13 @@ function loadTaskFromObject(taskID) {
 
 function setSimpleTaskFileContents(taskID){
 	let fileText = rnwTemplate;
-	fileText = fileText.replace("?q", '"' + iuf['tasks'][taskID]['question'] + '"');
-	fileText = fileText.replace("?c", 'c(' + iuf['tasks'][taskID]['choices'].map(c=>'"' + c + '"').join(',') + ')');
-	fileText = fileText.replace("?s", 'c(' + iuf['tasks'][taskID]['result'].map(s=>s?"T":"F").join(',') + ')');
-	fileText = fileText.replace("?p", iuf['tasks'][taskID]['points']);
-	fileText = fileText.replace("?t", iuf['tasks'][taskID]['topic']);
+	fileText = fileText.replace("?rnwTemplate_q", '"' + iuf['tasks'][taskID]['question'] + '"');
+	fileText = fileText.replace("?rnwTemplate_c", 'c(' + iuf['tasks'][taskID]['choices'].map(c=>'"' + c + '"').join(',') + ')');
+	fileText = fileText.replace("?rnwTemplate_s", 'c(' + iuf['tasks'][taskID]['result'].map(s=>s?"T":"F").join(',') + ')');
+	fileText = fileText.replace("?rnwTemplate_p", iuf['tasks'][taskID]['points']);
+	fileText = fileText.replace("?rnwTemplate_t", iuf['tasks'][taskID]['topic']);
+	// fileText = fileText.replace("?rnwTemplate_f", '"' + iuf['tasks'][taskID]['figure'][2] + '"');
+	fileText = fileText.replace("?rnwTemplate_f", iuf['tasks'][taskID]['figure'] !== null ? 'c(' + iuf['tasks'][taskID]['figure'].map(c=>'"' + c + '"').join(',') + ')' : '""');
 	fileText = fileText.replaceAll("\n", "\r\n");
 
 	iuf['tasks'][taskID]['file'] = fileText;
@@ -1330,29 +1343,35 @@ function taskExportAll() {
 
 function loadTaskFigureFileDialog(items) {+	
 	Array.from(items).forEach(file => {	
-		addTaskFigureFile(file);
+		const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
+			
+		if( fileExt == 'png' ) {
+			addTaskFigureFile(file);
+		}
 	});
 }
 
 function addTaskFigureFile(file) {
 	const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
 	
-	let fileReader;
-	let base64;
-	let fileName;
-	
-	fileReader = new FileReader();
-	fileName = file.name.split('.')[0];
+	if ( fileExt == 'png' ) {
+		let fileReader;
+		let base64;
+		let fileName;
+		
+		fileReader = new FileReader();
+		fileName = file.name.split('.')[0];
 
-	fileReader.onload = function(fileLoadedEvent) {
-		base64 = fileLoadedEvent.target.result;
-		iuf['tasks'][getID()]['figure'] = [fileName, fileExt, base64.split(',')[1]];
-	};
+		fileReader.onload = function(fileLoadedEvent) {
+			base64 = fileLoadedEvent.target.result;
+			iuf['tasks'][getID()]['figure'] = [fileName, fileExt, base64.split(',')[1]];
+			
+			$('#figure').empty();
+			$('#figure').append('<label class="taskFigureUpload" for="file-upload_taskFigure"><div class="taskFigureButton"><span class="iconButton"><i class="fa-solid fa-upload"></i></span><span class="textButton"><span lang="de">Importieren</span><span lang="en" style="display: none;">Import</span></span></div><input type="file" id="file-upload_taskFigure" onchange="loadTaskFigureFileDialog(this.files);" multiple="" class="shiny-bound-input"></label><div id="taskFigureFiles"><div id="taskFigure_list" class="itemList"><div id="taskFigure_list_items"><div class="taskFigureItem"><span class="taskFigureName"><img src="data:image/png;base64, ' + iuf['tasks'][getID()]['figure'][2] + '"/></span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div></div></div></div></div>');
+		};
 
-	fileReader.readAsDataURL(file);
-	
-	$('#taskFigure_list_items').empty();
-	$('#taskFigure_list_items').append('<div class="taskFigureItem"><span class="taskFigureName">' + fileName + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
+		fileReader.readAsDataURL(file);
+	}
 }
 
 function removeTaskFigure(element) {
@@ -1360,7 +1379,7 @@ function removeTaskFigure(element) {
 	element.remove();
 }
 
-$('#taskFigure_list_items').on('click', '.taskFigureItem', function() {
+$('#figure').on('click', '.taskFigureItem', function() {
 	removeTaskFigure($(this));
 });
 
@@ -1409,6 +1428,12 @@ Shiny.addCustomMessageHandler('setTaskType', function(taskType) {
 
 Shiny.addCustomMessageHandler('setTaskQuestion', function(taskQuestion) {
 	iuf['tasks'][getID()]['question'] = taskQuestion;
+});
+
+Shiny.addCustomMessageHandler('setTaskFigure', function(jsonData) {
+	const figure = JSON.parse(jsonData);
+	
+	iuf['tasks'][getID()]['figure'] = figure;
 });
 
 Shiny.addCustomMessageHandler('setTaskChoices', function(jsonData) {
@@ -1526,12 +1551,18 @@ function loadAdditionalPdfDnD(items) {
 
 function loadAdditionalPdfFileDialog(items) {
 	Array.from(items).forEach(file => {	
-		addAdditionalPdf(file);
+		const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
+			
+		if( fileExt == 'pdf') {
+			addAdditionalPdf(file);
+		}
 	});
 }
 
 function addAdditionalPdf(file) {
-	if ( file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase() == 'pdf') {
+	const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
+	
+	if ( fileExt == 'pdf') {
 		let fileReader = new FileReader();
 		let base64;
 		fileName = file.name.split('.')[0];
@@ -1661,7 +1692,7 @@ function loadExamEvaluation(items) {
 
 function loadExamSolutionsFileDialog(items) {
 	Array.from(items).forEach(file => {	
-		fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
+		const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
 			
 		if(fileExt == 'rds') {
 			addExamEvaluationFile(file);
@@ -1671,7 +1702,7 @@ function loadExamSolutionsFileDialog(items) {
 
 function loadExamRegisteredParticipantsFileDialog(items) {
 	Array.from(items).forEach(file => {	
-		fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
+		const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
 			
 		if(fileExt == 'csv') {
 			addExamEvaluationFile(file);
@@ -1681,7 +1712,7 @@ function loadExamRegisteredParticipantsFileDialog(items) {
 
 function loadExamScansFileDialog(items) {
 	Array.from(items).forEach(file => {	
-		fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
+		const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
 			
 		if(fileExt == 'pdf' || fileExt == 'png') {
 			addExamEvaluationFile(file);

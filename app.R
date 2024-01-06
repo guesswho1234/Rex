@@ -49,22 +49,41 @@ prepareExportAllTasks = function(tasks){
 parseExercise = function(task, seed, collectWarnings){
   out = tryCatch({
     warnings = collectWarnings({
-      # show all possible choices in view mode
-      task$taskCode = gsub("maxChoices = 5", "maxChoices = NULL", task$taskCode)
+      # show all possible choices when viewing tasks (only relevant for editable tasks)
+      task$taskCode = sub("maxChoices = 5", "maxChoices = NULL", task$taskCode)
+      
+      # remove image from question when viewing tasks (only relevant for editable tasks)
+      task$taskCode = sub("\\\\\r\n\\includegraphics{\\Sexpr{rnwTemplate_figureFile}}\r\n", "", task$taskCode, fixed = T)
+      
+      # extract figure to display it in the respective field when viewing a task (only relevant for editable tasks)
+      figure = strsplit(task$taskCode, "rnwTemplate_figure=")[[1]][2]
+      figure = strsplit(figure, "rnwTemplate_maxChoices=")[[1]][1]
+      
+      figure_name = strsplit(figure,",")[[1]][1]
+      figure_name = sub("^[^\"]*\"([^\"]+)\".*", "\\1", figure_name)
+      
+      figure_fileExt = strsplit(figure,",")[[1]][2]
+      figure_fileExt = sub("^[^\"]*\"([^\"]+)\".*", "\\1", figure_fileExt)
+      
+      figure_blob = strsplit(figure,",")[[1]][3]
+      figure_blob = sub("^[^\"]*\"([^\"]+)\".*", "\\1", figure_blob)
+      
+      figure = list(name=figure_name, fileExt=figure_fileExt, blob=figure_blob)
 
       seed = if(is.na(seed)) NULL else seed
       file = tempfile(fileext = ".Rnw")
+      
       writeLines(text = task$taskCode, con = file)
 
       htmlTask = exams::exams2html(file, dir = tempdir(), seed = seed)
-      
+
       NULL
     })
     key = "Success"
     value = paste(unlist(warnings), collapse="%;%")
     if(value != "") key = "Warning"
 
-    return(list(id=task$taskID, seed=seed, html=htmlTask, e=c(key, value)))
+    return(list(id=task$taskID, seed=seed, html=htmlTask, figure=figure, e=c(key, value)))
   },
   error = function(e){
     message = e$message
@@ -77,7 +96,7 @@ parseExercise = function(task, seed, collectWarnings){
   return(out)
 }
 
-loadExercise = function(id, seed, html, e, session) {
+loadExercise = function(id, seed, html, figure, e, session) {
   session$sendCustomMessage("setTaskId", id)
   
   if(!is.null(html)) {
@@ -107,6 +126,7 @@ loadExercise = function(id, seed, html, e, session) {
     topic = html$exam1$exercise1$metainfo$topic
     type = html$exam1$exercise1$metainfo$type
     question = html$exam1$exercise1$question
+    figure = rjs_vectorToJsonStringArray(unlist(figure))
     editable = ifelse(html$exam1$exercise1$metainfo$editable == 1, 1, 0)
     
     session$sendCustomMessage("setTaskExamHistory", examHistory)
@@ -118,6 +138,7 @@ loadExercise = function(id, seed, html, e, session) {
     session$sendCustomMessage("setTaskTags", tags)
     session$sendCustomMessage("setTaskSeed", seed)
     session$sendCustomMessage("setTaskQuestion", question)
+    session$sendCustomMessage("setTaskFigure", figure)
     session$sendCustomMessage("setTaskEditable", editable)
     
     if(type == c("mchoice")) {
@@ -779,7 +800,7 @@ server = function(input, output, session) {
       invalidateLater(millis = 10, session = session)
     } else {
       result = exerciseParsing()$get_result()
-      loadExercise(result$id, result$seed, result$html, result$e, session)
+      loadExercise(result$id, result$seed, result$html, result$figure, result$e, session)
       stopWait(session)
     }
   })
