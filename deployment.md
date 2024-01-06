@@ -24,6 +24,7 @@ allows to install additional packages with "helpers.installPackages" allowing ca
 - http://archive.ubuntu.com/ubuntu/pool/main/p/poppler/libpoppler-cpp0v5_22.02.0-2_amd64.deb
 - http://archive.ubuntu.com/ubuntu/pool/main/p/poppler/libpoppler-dev_22.02.0-2_amd64.deb
 - http://archive.ubuntu.com/ubuntu/pool/main/p/poppler/libpoppler-cpp-dev_22.02.0-2_amd64.deb
+- http://archive.ubuntu.com/ubuntu/pool/universe/t/texlive-base/texlive-base_2021.20220204-1_all.deb
 
 ## set heroku environment variables (to find via dpkg installed packages)
 `heroku config:set LIB_DIR=/app/.dpkg/usr/lib/x86_64-linux-gnu/ --app rexams`
