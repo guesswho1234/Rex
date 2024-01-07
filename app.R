@@ -21,6 +21,15 @@ library(qpdf) # qpdf_1.3.2
 library(openssl) # openssl_2.1.1
 
 # FUNCTIONS ----------------------------------------------------------------
+removeRuntimeFiles = function() {
+  temfiles = list.files(dir)
+  filesToRemove = temfiles[!(temfiles %in% keep)]
+
+  if(length(filesToRemove) > 0) {
+    unlink(paste0(dir, "/", filesToRemove), recursive = TRUE)
+  }
+}
+
 collectWarnings = function(expr) {
   warnings = NULL
   wHandler = function(w) {
@@ -34,26 +43,25 @@ collectWarnings = function(expr) {
 }
 
 prepareExportAllTasks = function(tasks){
-  dir = tempdir()
-  
   taskFiles = unlist(lapply(setNames(seq_along(tasks$taskNames), tasks$taskNames), function(i){
     file = tempfile(pattern = paste0(tasks$taskNames[[i]], "_"), tmpdir = dir, fileext = ".rnw")
     writeLines(text = tasks$taskCodes[[i]], con = file)
-    
+
     return(file)
   }))
   
   return(list(taskFiles=taskFiles))
 }
 
-parseExercise = function(task, seed, collectWarnings){
+parseExercise = function(task, seed, collectWarnings, dir){
   out = tryCatch({
     warnings = collectWarnings({
       # show all possible choices when viewing tasks (only relevant for editable tasks)
       task$taskCode = sub("maxChoices = 5", "maxChoices = NULL", task$taskCode)
       
       # remove image from question when viewing tasks (only relevant for editable tasks)
-      task$taskCode = sub("\\\\\r\n\\includegraphics{\\Sexpr{rnwTemplate_figureFile}}\r\n", "", task$taskCode, fixed = T)
+      task$taskCode = sub("rnwTemplate_showFigure = TRUE", "rnwTemplate_showFigure = FALSE", task$taskCode)
+      # task$taskCode = sub("\\\\\r\n\\includegraphics{\\Sexpr{rnwTemplate_figureFile}}\r\n", "", task$taskCode, fixed = T)
       
       # extract figure to display it in the respective field when viewing a task (only relevant for editable tasks)
       figure = strsplit(task$taskCode, "rnwTemplate_figure=")[[1]][2]
@@ -71,11 +79,11 @@ parseExercise = function(task, seed, collectWarnings){
       figure = list(name=figure_name, fileExt=figure_fileExt, blob=figure_blob)
 
       seed = if(is.na(seed)) NULL else seed
-      file = tempfile(fileext = ".Rnw")
       
+      file = tempfile(fileext = ".Rnw")
       writeLines(text = task$taskCode, con = file)
 
-      htmlTask = exams::exams2html(file, dir = tempdir(), seed = seed)
+      htmlTask = exams::exams2html(file, dir = dir, seed = seed, base64 = TRUE)
 
       NULL
     })
@@ -156,12 +164,10 @@ loadExercise = function(id, seed, html, figure, e, session) {
 }
 
 prepareExam = function(exam, seed, input) {
-  dir = tempdir()
-  
   taskFiles = unlist(lapply(setNames(seq_along(exam$taskNames), exam$taskNames), function(i){
     file = tempfile(pattern = paste0(exam$taskNames[[i]], "_"), tmpdir = dir, fileext = ".rnw")
     writeLines(text = exam$taskCodes[[i]], con = file)
-    
+
     return(file)
   }))
   
@@ -169,7 +175,7 @@ prepareExam = function(exam, seed, input) {
     file = tempfile(pattern = paste0(exam$additionalPdfNames[[i]], "_"), tmpdir = dir, fileext = ".pdf")
     raw = openssl::base64_decode(exam$additionalPdfFiles[[i]])
     writeBin(raw, con = file)
-    
+
     return(file)
   }))
 
@@ -199,7 +205,6 @@ prepareExam = function(exam, seed, input) {
     file = tasks,
     n = numberOfExams,
     nsamp = tasksPerBlock,
-    dir = dir,
     name = name,
     language = input$examLanguage,
     title = title,
@@ -218,14 +223,10 @@ prepareExam = function(exam, seed, input) {
   examPdfFiles = paste0(dir, "/", name, 1:exam$numberOfExams, ".pdf")
   examRdsFile = paste0(dir, "/", name, ".rds")
   
-  # todo: debug latex on heroku (without tinytex.install)
-  # logFile = paste0(dir, "/", name, 1:exam$numberOfExams, ".log")
-  # return(list(examFields=examFields, examFiles=list(examHtmlFiles=examHtmlFiles, pdfFiles=examPdfFiles, rdsFile=examRdsFile, logFile=logFile), sourceFiles=list(taskFiles=taskFiles, additionalPdfFiles=additionalPdfFiles)))
-  
   return(list(examFields=examFields, examFiles=list(examHtmlFiles=examHtmlFiles, pdfFiles=examPdfFiles, rdsFile=examRdsFile), sourceFiles=list(taskFiles=taskFiles, additionalPdfFiles=additionalPdfFiles)))
 }
 
-createExam = function(preparedExam, collectWarnings) {
+createExam = function(preparedExam, collectWarnings, dir) {
   out = tryCatch({
     warnings = collectWarnings({
         with(preparedExam$examFields, {
@@ -263,15 +264,13 @@ createExam = function(preparedExam, collectWarnings) {
     value = paste(unlist(warnings), collapse="%;%")
     if(value != "") key = "Warning"
     
-    return(list(message=list(key=key, value=value), dir=preparedExam$examFields$dir, files=list(sourceFiles=preparedExam$sourceFiles, examFiles=preparedExam$examFiles)))
+    return(list(message=list(key=key, value=value), files=list(sourceFiles=preparedExam$sourceFiles, examFiles=preparedExam$examFiles)))
   },
   error = function(e){
     message = e$message
     message = gsub("\"", "'", message)
     message = gsub("[\r\n]", "%;%", message)
     
-    # todo: debug latex on heroku (without tinytex.install)
-    # return(list(message=list(key="Error", value=message), dir=preparedExam$examFields$dir, logFile=preparedExam$examFiles$logFile))
     return(list(message=list(key="Error", value=message), files=list()))
   })
   
@@ -285,20 +284,18 @@ examCreationResponse = function(session, message, downloadable) {
     footer = tagList(
       if (downloadable)
         downloadButton('downloadExamFiles', 'Download'),
-      modalButton("OK")
+      actionButton("dismiss_examCreationResponse", label = "OK")
     )
   ))
 }
 
 prepareEvaluation = function(evaluation, rotate, input){
-  dir = tempdir()
-
   # exam
   solutionFile = unlist(lapply(seq_along(evaluation$examSolutionsName), function(i){
     file = tempfile(pattern = paste0(evaluation$examSolutionsName[[i]], "_"), tmpdir = dir, fileext = ".rds")
     raw = openssl::base64_decode(evaluation$examSolutionsFile[[i]])
     writeBin(raw, con = file)
-    
+
     return(file)
   }))
   examExerciseMetaData = readRDS(solutionFile)
@@ -307,7 +304,7 @@ prepareEvaluation = function(evaluation, rotate, input){
   registeredParticipantsFile = unlist(lapply(seq_along(evaluation$examRegisteredParticipantsnName), function(i){
     file = tempfile(pattern = paste0(evaluation$examRegisteredParticipantsnName[[i]], "_"), tmpdir = dir, fileext = ".csv")
     writeLines(text = evaluation$examRegisteredParticipantsnFile[[i]], con = file)
-    
+
     return(file)
   }))
   
@@ -316,7 +313,7 @@ prepareEvaluation = function(evaluation, rotate, input){
     file = tempfile(pattern = paste0(evaluation$examScanPngNames[[i]], "_"), tmpdir = dir, fileext = ".png")
     raw = openssl::base64_decode(evaluation$examScanPngFiles[[i]])
     writeBin(raw, con = file)
-    
+
     return(file)
   }))
   
@@ -329,6 +326,7 @@ prepareEvaluation = function(evaluation, rotate, input){
       output = tempfile(pattern = paste0(evaluation$examScanPdfNames[[i]], "_"), tmpdir = dir, fileext = ".pdf")
       numberOfPages = qpdf::pdf_length(file)
       qpdf::pdf_rotate_pages(input=file, output=output, pages=1:numberOfPages, angle=ifelse(rotate, 180, 0))
+
       file = output
     }
     
@@ -340,7 +338,8 @@ prepareEvaluation = function(evaluation, rotate, input){
     filenames = sapply(1:numberOfPages, function(page){
      tempfile(pattern = paste0(names(pdfFiles)[i], "_scan", page, "_"), tmpdir = dir, fileext = ".png")
     })
-    pdftools::pdf_convert(pdf=pdfFiles[[i]], filenames=filenames, pages=NULL, format='png', dpi=300, antialias=TRUE, verbose=FALSE)
+    
+    convertedFiles = pdftools::pdf_convert(pdf=pdfFiles[[i]], filenames=filenames, pages=NULL, format='png', dpi=300, antialias=TRUE, verbose=FALSE)
   }))
   
   scanFiles = c(pngFiles, convertedPngFiles)
@@ -379,13 +378,12 @@ prepareEvaluation = function(evaluation, rotate, input){
 
   language = input$evaluationLanguage
 
-  return(list(dir=dir, 
-              meta=list(examName=examName, numExercises=numExercises, numChoices=numChoices),
+  return(list(meta=list(examName=examName, numExercises=numExercises, numChoices=numChoices),
               fields=list(points=points, partial=partial, negative=negative, rule=rule, mark=mark, labels=labels, language=language), 
               files=list(solution=solutionFile, registeredParticipants=registeredParticipantsFile, scans=scanFiles)))
 }
 
-evaluateExamScans = function(preparedEvaluation, collectWarnings){
+evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
   out = tryCatch({
     scans_reg_fullJoinData = NULL
 
@@ -402,7 +400,7 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings){
         names(scanData)[-c(1:6)] = (7:ncol(scanData)) - 6
         
         # midify using additional data from exam to know how many questions and answer per question existed
-        scanData = scanData[,-which(grepl("^[[:digit:]]+$", names(scanData)))[-c(1:length(examExerciseMetaData[[1]]))]] # remove unnecessary placeholders for unused questions
+        scanData = scanData[,-which(grepl("^[[:digit:]]+$", names(scanData)))[-c(1:meta$numExercises)]] # remove unnecessary placeholders for unused questions
         scanData$numExercises = meta$numExercises
         scanData$numChoices = meta$numChoices
         
@@ -446,7 +444,7 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings){
     message = gsub("\"", "'", message)
     message = gsub("[\r\n]", "%;%", message)
     
-    return(list(message=list(key="Error", value=message), scans_reg_fullJoinData=NULL, dir=NULL, examName=NULL, files=list(), data=list()))
+    return(list(message=list(key="Error", value=message), scans_reg_fullJoinData=NULL, examName=NULL, files=list(), data=list()))
   })
   
   return(out)
@@ -459,7 +457,7 @@ evaluateExamScansResponse = function(session, message, scans_reg_fullJoinData) {
     tags$div(id="compareScanRegistrationDataTable"),
     tags$div(id="inspectScan"),
     footer = tagList(
-      modalButton("Cancle"),
+      actionButton("dismiss_evaluateExamScansResponse", label = "Cancle"),
       if (!is.null(scans_reg_fullJoinData) && nrow(scans_reg_fullJoinData) > 0) 
         actionButton("proceedEval", "Proceed"),
     ),
@@ -478,13 +476,13 @@ evaluateExamScansResponse = function(session, message, scans_reg_fullJoinData) {
   }
 }
 
-evaluateExamFinalize = function(preparedEvaluation, collectWarnings){
+evaluateExamFinalize = function(preparedEvaluation, collectWarnings, dir){
   out = tryCatch({
     # file path and name settings
     nops_evaluation_fileNames = "evaluation.html"
     nops_evaluation_fileNamePrefix = paste0(preparedEvaluation$meta$examName, "_nops_eval")
-    preparedEvaluation$files$nops_evaluationCsv = paste0(preparedEvaluation$dir, "/", nops_evaluation_fileNamePrefix, ".csv")
-    preparedEvaluation$files$nops_evaluationZip = paste0(preparedEvaluation$dir, "/", nops_evaluation_fileNamePrefix, ".zip")
+    preparedEvaluation$files$nops_evaluationCsv = paste0(dir, "/", nops_evaluation_fileNamePrefix, ".csv")
+    preparedEvaluation$files$nops_evaluationZip = paste0(dir, "/", nops_evaluation_fileNamePrefix, ".zip")
 
     warnings = collectWarnings({
       if(any(is.na(preparedEvaluation$fields$mark))){
@@ -540,7 +538,7 @@ evaluateExamFinalizeResponse = function(session, message, downloadable) {
     footer = tagList(
       if (downloadable)
         downloadButton('downloadEvaluationFiles', 'Download'),
-      modalButton("OK")
+      actionButton("dismiss_evaluateExamFinalizeResponse", label = "OK")
     )
   ))
 }
@@ -550,6 +548,7 @@ startWait = function(session){
 }
 
 stopWait = function(session){
+  removeRuntimeFiles()
   session$sendCustomMessage("wait", 1)
 }
 
@@ -628,6 +627,8 @@ checkPosNumber = function(numberField){
 }
 
 # PARAMETERS --------------------------------------------------------------
+dir = tempdir()
+keep = list.files(dir)
 seedMin = 1
 seedMax = 999999999999
 initSeed = as.numeric(gsub("-", "", Sys.Date()))
@@ -706,6 +707,10 @@ ui = fluidPage(
 
 # SERVER -----------------------------------------------------------------
 server = function(input, output, session) {
+  # CLEANUP
+  onStop(function() {
+    removeRuntimeFiles()
+  })
   # HEARTBEAT -------------------------------------------------------------
   initialState = TRUE
 
@@ -780,7 +785,7 @@ server = function(input, output, session) {
     
     x = callr::r_bg(
       func = parseExercise,
-      args = list(isolate(input$parseExercise), isolate(input$seedValue), collectWarnings),
+      args = list(isolate(input$parseExercise), isolate(input$seedValue), collectWarnings, dir),
       supervise = TRUE
       # env = c(callr::rcmd_safe_env(), MAKEBSP = FALSE)
     )
@@ -816,7 +821,7 @@ server = function(input, output, session) {
 
     x = callr::r_bg(
       func = createExam,
-      args = list(preparedExam, collectWarnings),
+      args = list(preparedExam, collectWarnings, dir),
       supervise = TRUE
     )
 
@@ -829,16 +834,8 @@ server = function(input, output, session) {
     } else {
       result = examCreation()$get_result()
       examFiles(unlist(result$files, recursive = TRUE))
-      
-      # todo: debug latex on heroku (without tinytex.install)
-      # print(result)
-      # session$sendCustomMessage("debugMessage", result)
-      # logFile = readLines(result$logFile)
-      # print(logFile)
-      # session$sendCustomMessage("debugMessage", logFile)
-      
+
       examCreationResponse(session, result$message, length(examFiles()) > 0)
-      stopWait(session)
     }
   })
 
@@ -853,6 +850,12 @@ server = function(input, output, session) {
     contentType = "application/zip"
   )
   
+  # observe final modal close
+  observeEvent(input$dismiss_examCreationResponse, {
+    removeModal()
+    stopWait(session)
+  })
+  
   # EVALUATE EXAM -------------------------------------------------------------
   examEvaluationData = reactiveVal()
   
@@ -866,7 +869,7 @@ server = function(input, output, session) {
     # background task
     x = callr::r_bg(
       func = evaluateExamScans,
-      args = list(examEvaluationData(), collectWarnings),
+      args = list(examEvaluationData(), collectWarnings, dir),
       supervise = TRUE
     )
     
@@ -900,11 +903,11 @@ server = function(input, output, session) {
     scanData = paste0(scanData, collapse="\n")
 
     # write scanData
-    scanDatafile = paste0(preparedEvaluation$dir, "/", "Daten.txt")
-    writeLines(text = scanData, con = file(scanDatafile))
+    scanDatafile = paste0(dir, "/", "Daten.txt")
+    writeLines(text = scanData, con = scanDatafile)
     
     # create *_nops_scan.zip file needed for exams::nops_eval
-    zipFile = paste0(preparedEvaluation$dir, "/", preparedEvaluation$meta$examName, "_nops_scan.zip")
+    zipFile = paste0(dir, "/", preparedEvaluation$meta$examName, "_nops_scan.zip")
     zip(zipFile, c(preparedEvaluation$files$scans, scanDatafile), flags='-r9XjFS')
     
     # manage preparedEvaluation data
@@ -915,7 +918,7 @@ server = function(input, output, session) {
     # background task
     x = callr::r_bg(
       func = evaluateExamFinalize,
-      args = list(examEvaluationData(), collectWarnings),
+      args = list(examEvaluationData(), collectWarnings, dir),
       supervise = TRUE
     )
     
@@ -934,7 +937,6 @@ server = function(input, output, session) {
 
       # open modal
       evaluateExamFinalizeResponse(session, result$message, length(unlist(result$preparedEvaluation$files, recursive = TRUE)) > 0)
-      stopWait(session)
     }
   })
 
@@ -946,6 +948,12 @@ server = function(input, output, session) {
     },
     contentType = "application/zip"
   )
+  
+  # observe final modal close
+  observeEvent(input$dismiss_evaluateExamFinalizeResponse, {
+    removeModal()
+    stopWait(session)
+  })
 }
 
 # RUN APP -----------------------------------------------------------------

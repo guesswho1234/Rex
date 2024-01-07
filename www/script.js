@@ -1160,6 +1160,7 @@ function setSimpleTaskFileContents(taskID){
 	fileText = fileText.replace("?rnwTemplate_t", iuf['tasks'][taskID]['topic']);
 	// fileText = fileText.replace("?rnwTemplate_f", '"' + iuf['tasks'][taskID]['figure'][2] + '"');
 	fileText = fileText.replace("?rnwTemplate_f", iuf['tasks'][taskID]['figure'] !== null ? 'c(' + iuf['tasks'][taskID]['figure'].map(c=>'"' + c + '"').join(',') + ')' : '""');
+	// console.log(fileText);
 	fileText = fileText.replaceAll("\n", "\r\n");
 
 	iuf['tasks'][taskID]['file'] = fileText;
@@ -1355,6 +1356,8 @@ function addTaskFigureFile(file) {
 	const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
 	
 	if ( fileExt == 'png' ) {
+		const taskID = getID();
+		
 		let fileReader;
 		let base64;
 		let fileName;
@@ -1364,10 +1367,13 @@ function addTaskFigureFile(file) {
 
 		fileReader.onload = function(fileLoadedEvent) {
 			base64 = fileLoadedEvent.target.result;
-			iuf['tasks'][getID()]['figure'] = [fileName, fileExt, base64.split(',')[1]];
+			iuf['tasks'][taskID]['figure'] = [fileName, fileExt, base64.split(',')[1]];
 			
 			$('#figure').empty();
 			$('#figure').append('<label class="taskFigureUpload" for="file-upload_taskFigure"><div class="taskFigureButton"><span class="iconButton"><i class="fa-solid fa-upload"></i></span><span class="textButton"><span lang="de">Importieren</span><span lang="en" style="display: none;">Import</span></span></div><input type="file" id="file-upload_taskFigure" onchange="loadTaskFigureFileDialog(this.files);" multiple="" class="shiny-bound-input"></label><div id="taskFigureFiles"><div id="taskFigure_list" class="itemList"><div id="taskFigure_list_items"><div class="taskFigureItem"><span class="taskFigureName"><img src="data:image/png;base64, ' + iuf['tasks'][getID()]['figure'][2] + '"/></span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div></div></div></div></div>');
+			
+			setSimpleTaskFileContents(taskID);
+			loadTaskFromObject(taskID);
 		};
 
 		fileReader.readAsDataURL(file);
@@ -1375,8 +1381,13 @@ function addTaskFigureFile(file) {
 }
 
 function removeTaskFigure(element) {
-	iuf['tasks'][getID()]['figure'] = null;
+	const taskID = getID();
+	
+	iuf['tasks'][taskID]['figure'] = null;
 	element.remove();
+	
+	setSimpleTaskFileContents(taskID);
+	loadTaskFromObject(taskID);
 }
 
 $('#figure').on('click', '.taskFigureItem', function() {

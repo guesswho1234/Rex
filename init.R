@@ -21,8 +21,7 @@ install.packages("./iuftools", repos = NULL, type="source")
 # tex setup
 tinytex::install_tinytex()
 options(tinytex.verbose = TRUE)
-tinytex::tlmgr_update()
-
+# tinytex::tlmgr_update()
 # tinytex::tlmgr_update()+
 # tinytex::reinstall_tinytex()
 # options(exams_tex = "tools") # what is this for?
