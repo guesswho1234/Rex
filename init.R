@@ -23,8 +23,7 @@ tinytex::install_tinytex()
 options(tinytex.verbose = TRUE)
 tinytex::tlmgr_update()
 
-# update.packages(ask = FALSE, checkBuilt = TRUE)
 # tinytex::tlmgr_update()+
 # tinytex::reinstall_tinytex()
-# options(exams_tex = "tools")
+# options(exams_tex = "tools") # what is this for?
 
