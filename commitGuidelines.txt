@@ -5,4 +5,4 @@
 [optional footer(s)]
 
 
-types: fix, feat, build, chore, ci, docs, stysle, refactor, test
+types: fix, feat, build, chore, ci, docs, style, refactor, test

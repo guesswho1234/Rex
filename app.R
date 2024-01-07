@@ -707,7 +707,7 @@ ui = fluidPage(
 
 # SERVER -----------------------------------------------------------------
 server = function(input, output, session) {
-  # CLEANUP
+  # CLEANUP -------------------------------------------------------------
   onStop(function() {
     removeRuntimeFiles()
   })
@@ -759,27 +759,32 @@ server = function(input, output, session) {
   })
   
   # EXPORT ALL TASKS ------------------------------------------------------
-  taskFiles = reactiveVal()
-  
-  observeEvent(input$taskExportAll, {
-    result = prepareExportAllTasks(isolate(input$taskExportAll))
-    taskFiles(unlist(result$taskFiles, recursive = TRUE))
-    if(length(taskFiles()) > 0) {
-      # session$sendCustomMessage("taskDownloadAll", 1) #tried via js, same resulst
-      # print(taskFiles())
-      # click("taskDownloadAll")
-    }
-  })
-  
-  output$taskDownloadAll = downloadHandler(
-    filename = "tasks.zip",
-    content = function(fname) {
-      zip(zipfile=fname, files=isolate(taskFiles()), flags='-r9XjFS') #r9x: default, j: remove folder, FS: delete old files from zip if already exists
-    },
-    contentType = "application/zip"
-  )
-  
+  # TODO: implement async with popup like exam create / evaluate, ...
+  # taskFiles = reactiveVal()
+  # 
+  # observeEvent(input$taskExportAllProxy, {
+  #   result = prepareExportAllTasks(isolate(input$taskExportAllProxy))
+  #   taskFiles(unlist(result$taskFiles, recursive = TRUE))
+  #   if(length(isolate(taskFiles())) > 0) {
+  #     # session$sendCustomMessage("taskDownloadAll", 1) #tried via js, same resulst
+  #     print(isolate(taskFiles()))
+  #     # click("taskDownloadAll")
+  #   }
+  # })
+  # 
+  # output$taskDownloadAll = downloadHandler(
+  #   filename = "tasks.zip",
+  #   content = function(fname) {
+  #     zip(zipfile=fname, files=isolate(taskFiles()), flags='-r9XjFS')
+  #   },
+  #   contentType = "application/zip"
+  # )
+
   # PARSE TASKS -------------------------------------------------------------
+  # TODO: (sync, prepare function) send list of tasks with javascript taskID and taskCode; 
+  # (sync, prepare function) store all files in temp; 
+  # (a sync, parse function) parse all tasks ans store results as one list and add to taskID;
+  # (sync, send values to frontend and load into dom)
   exerciseParsing = eventReactive(input$parseExercise, {
     startWait(session)
     
@@ -810,7 +815,6 @@ server = function(input, output, session) {
   })
   
   # CREATE EXAM -------------------------------------------------------------
-  
   # exam seed change
   examFiles = reactiveVal()
 
@@ -835,17 +839,17 @@ server = function(input, output, session) {
       result = examCreation()$get_result()
       examFiles(unlist(result$files, recursive = TRUE))
 
-      examCreationResponse(session, result$message, length(examFiles()) > 0)
+      examCreationResponse(session, result$message, length(isolate(examFiles())) > 0)
     }
   })
 
   output$downloadExamFiles = downloadHandler(
-    filename = paste0(paste0(c("exam", isolate(input$examTitle),
-                               isolate(input$examCourse),
-                               as.character(isolate(input$examDate)),
-                               isolate(input$seedValue)), collapse="_"), ".zip"),
+    filename = paste0(paste0(c("exam", input$examTitle,
+                               input$examCourse,
+                               as.character(input$examDate),
+                               input$seedValue), collapse="_"), ".zip"),
     content = function(fname) {
-      zip(zipfile=fname, files=isolate(examFiles()), flags='-r9Xj')
+      zip(zipfile=fname, files=isolate(examFiles()), flags='-r9XjFS')
     },
     contentType = "application/zip"
   )
@@ -869,7 +873,7 @@ server = function(input, output, session) {
     # background task
     x = callr::r_bg(
       func = evaluateExamScans,
-      args = list(examEvaluationData(), collectWarnings, dir),
+      args = list(isolate(examEvaluationData()), collectWarnings, dir),
       supervise = TRUE
     )
     
@@ -896,7 +900,7 @@ server = function(input, output, session) {
   # finalizing evaluation - trigger
   examFinalizeEvaluation = eventReactive(input$proceedEvaluation, {
     removeModal()
-    preparedEvaluation = examEvaluationData()
+    preparedEvaluation = isolate(examEvaluationData())
     
     # process scanData
     scanData = Reduce(c, lapply(input$proceedEvaluation, function(x) paste0(unlist(unname(x)), collapse=" ")))
@@ -918,7 +922,7 @@ server = function(input, output, session) {
     # background task
     x = callr::r_bg(
       func = evaluateExamFinalize,
-      args = list(examEvaluationData(), collectWarnings, dir),
+      args = list(isolate(examEvaluationData()), collectWarnings, dir),
       supervise = TRUE
     )
     
@@ -942,9 +946,9 @@ server = function(input, output, session) {
 
   # finalizing evaluation - download
   output$downloadEvaluationFiles = downloadHandler(
-    filename = paste0(gsub("exam", "evaluation", examEvaluationData()$meta$examName), ".zip"),
+    filename = paste0(gsub("exam", "evaluation", isolate(examEvaluationData()$meta$examName)), ".zip"),
     content = function(fname) {
-      zip(zipfile=fname, files=unlist(examEvaluationData()$files, recursive = TRUE), flags='-r9XjFS')
+      zip(zipfile=fname, files=unlist(isolate(examEvaluationData()$files), recursive = TRUE), flags='-r9XjFS')
     },
     contentType = "application/zip"
   )

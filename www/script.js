@@ -548,7 +548,7 @@ $('#newTask').click(function () {
 });
 
 $('#taskExportAllProxy').click(function () {
-	taskExportAll();
+	taskExportAllProxy();
 });
 
 $('#examTaskAll').click(function () {
@@ -1328,11 +1328,11 @@ function download(content, fileName, contentType) {
 	a.remove();
 }
 
-function taskExportAll() {	
+function taskExportAllProxy() {	
 	const taskNames = iuf['tasks'].map(task => task.name);
 	const taskCodes = iuf['tasks'].map(task => task.file);
 	
-	Shiny.onInputChange("taskExportAll", {taskNames:taskNames, taskCodes: taskCodes}, {priority: 'event'});	
+	Shiny.onInputChange("taskExportAllProxy", {taskNames:taskNames, taskCodes: taskCodes}, {priority: 'event'});	
 }
 
 // Shiny.addCustomMessageHandler('taskDownloadAll', function(x) {
