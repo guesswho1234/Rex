@@ -344,7 +344,7 @@ prepareEvaluation = function(evaluation, rotate, input){
   }))
   
   scanFiles = c(pngFiles, convertedPngFiles)
-  
+
   # meta data
   examName = evaluation$examSolutionsName[[1]]
   numExercises = length(examExerciseMetaData[[1]])
@@ -392,7 +392,6 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings){
     warnings = collectWarnings({
       with(preparedEvaluation, {
         # read exam data
-        examExerciseMetaData = readRDS(files$solution)
         
         # process scans
         scanData = exams::nops_scan(images=files$scans,
@@ -770,7 +769,7 @@ server = function(input, output, session) {
   output$taskDownloadAll = downloadHandler(
     filename = "tasks.zip",
     content = function(fname) {
-      zip(zipfile=fname, files=isolate(taskFiles()), flags='-r9Xj')
+      zip(zipfile=fname, files=isolate(taskFiles()), flags='-r9XjFS') #r9x: default, j: remove folder, FS: delete old files from zip if already exists
     },
     contentType = "application/zip"
   )
@@ -906,7 +905,7 @@ server = function(input, output, session) {
     
     # create *_nops_scan.zip file needed for exams::nops_eval
     zipFile = paste0(preparedEvaluation$dir, "/", preparedEvaluation$meta$examName, "_nops_scan.zip")
-    zip(zipFile, c(preparedEvaluation$files$scans, scanDatafile), flags='-r9Xj')
+    zip(zipFile, c(preparedEvaluation$files$scans, scanDatafile), flags='-r9XjFS')
     
     # manage preparedEvaluation data
     preparedEvaluation$files$scanEvaluation = zipFile
@@ -943,7 +942,7 @@ server = function(input, output, session) {
   output$downloadEvaluationFiles = downloadHandler(
     filename = paste0(gsub("exam", "evaluation", examEvaluationData()$meta$examName), ".zip"),
     content = function(fname) {
-      zip(zipfile=fname, files=unlist(examEvaluationData()$files, recursive = TRUE), flags='-r9Xj')
+      zip(zipfile=fname, files=unlist(examEvaluationData()$files, recursive = TRUE), flags='-r9XjFS')
     },
     contentType = "application/zip"
   )
