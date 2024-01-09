@@ -412,7 +412,8 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
         scanData = exams::nops_scan(images=files$scans,
                          file=FALSE,
                          dir=dir)
-        scanData = as.data.frame(Reduce(rbind, lapply(scanData, function(x) strsplit(x, " ")[[1]])))
+        scanData = as.data.frame(matrix(Reduce(rbind, lapply(scanData, function(x) strsplit(x, " ")[[1]])), nrow=length(scanData)))
+        # stop(scanData)
         names(scanData)[c(1:6)] = c("scan", "sheet", "scrambling", "type", "replacement", "registration")
         names(scanData)[-c(1:6)] = (7:ncol(scanData)) - 6
         
@@ -457,7 +458,7 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
                 preparedEvaluation=preparedEvaluation))
   },
   error = function(e){
-    message = e$message
+    message = e #e$message
     message = gsub("\"", "'", message)
     message = gsub("[\r\n]", "%;%", message)
     
@@ -474,10 +475,8 @@ evaluateExamScansResponse = function(session, message, scans_reg_fullJoinData) {
     tags$div(id="compareScanRegistrationDataTable"),
     tags$div(id="inspectScan"),
     footer = tagList(
-      # actionButton("dismiss_evaluateExamScansResponse", label = tags$span(HTML('<span lang="de">Abbrechen</span><span lang="en">Cancle</span>'))),
       myActionButton("dismiss_evaluateExamScansResponse", "Abbrechen", "Cancle", "fa-solid fa-xmark"),
       if (!is.null(scans_reg_fullJoinData) && nrow(scans_reg_fullJoinData) > 0) 
-        # actionButton("proceedEval", tags$span(HTML('<span lang="de">Fortfahren</span><span lang="en">Weiter</span>'))),
         myActionButton("proceedEval", "Weiter", "Proceed", "fa-solid fa-circle-right"),
     ),
     size = "l"
@@ -876,7 +875,7 @@ server = function(input, output, session) {
     contentType = "application/zip"
   )
   
-  # observe final modal close
+  # modal close
   observeEvent(input$dismiss_examCreationResponse, {
     removeModal()
     stopWait(session)
@@ -923,7 +922,7 @@ server = function(input, output, session) {
   examFinalizeEvaluation = eventReactive(input$proceedEvaluation, {
     removeModal()
     preparedEvaluation = isolate(examEvaluationData())
-    
+
     # process scanData
     scanData = Reduce(c, lapply(input$proceedEvaluation, function(x) paste0(unlist(unname(x)), collapse=" ")))
     scanData = paste0(scanData, collapse="\n")
@@ -975,7 +974,12 @@ server = function(input, output, session) {
     contentType = "application/zip"
   )
   
-  # observe final modal close
+  # modal close
+  observeEvent(input$dismiss_evaluateExamScansResponse, {
+    removeModal()
+    stopWait(session)
+  })
+  
   observeEvent(input$dismiss_evaluateExamFinalizeResponse, {
     removeModal()
     stopWait(session)
