@@ -1,8 +1,0 @@
-<type>[optional scope]: <description>
-
-[optional body]
-
-[optional footer(s)]
-
-
-types: fix, feat, build, chore, ci, docs, style, refactor, test
