@@ -592,6 +592,10 @@ rjs_vectorToJsonNumericArray = function(vector, rounding=0){
 }
 
 rjs_keyValuePairsToJsonObject = function(keys, values){
+  values = gsub("\"", "\\\\\"", values)
+  values = gsub(":", "\\:", values)
+  values = gsub("\\n", " ", values)
+
   x = paste0("\"", keys, "\":")
   y = paste0("\"", gsub(":", "\\:", values), "\"")
   x = paste0(x, y, collapse=", ")

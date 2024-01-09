@@ -823,6 +823,14 @@ main > * {
 	width: 50%;
 }
 
+#inspectScanTemplate span {
+	display: block;
+}
+
+#inspectScanTemplate > span {
+	margin-bottom: 0.5rem;
+}
+
 #inspectScan img {
 	width: 100%;
 	padding: 0.25rem;

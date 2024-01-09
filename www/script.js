@@ -138,10 +138,6 @@ document.onkeydown = function(evt) {
 		const targetInput = $(evtobj.target).is('input');
 		const targetEditable = $(evtobj.target).attr('contenteditable');
 		const itemsExist = $('.taskItem').length > 0;
-		
-		if (!targetInput && !targetEditable && evtobj.keyCode == 67) { // c
-			newSimpleTask();
-		}
 			
 		if (!targetInput && !targetEditable && itemsExist) {
 			let updateView = false;
@@ -158,7 +154,9 @@ document.onkeydown = function(evt) {
 						taskParseAll()
 						break;
 				}
-			} else {
+			} 
+			
+			if(!evtobj.shiftKey && !evtobj.ctrlKey) {
 				switch (evtobj.keyCode) {
 					case 65: // a
 						if ($('.taskItem.active:not(.filtered)').length > 0 && !$('.taskItem.active:not(.filtered) .examTask').hasClass('disabled')) {
@@ -189,6 +187,9 @@ document.onkeydown = function(evt) {
 						break;
 					case 82: // r 
 						viewTask($('.taskItem.active:not(.filtered)').first().index('.taskItem'));
+						break;
+					case 67: // c
+						newSimpleTask();
 						break;
 				}
 			}
@@ -1020,32 +1021,35 @@ function getTrueFalseText(value) {
 }
 
 $('body').on('focus', '[contenteditable]', function() {
-    const $this = $(this);	
+    const $this = $(this);
     $this.data('before', $this.html());
 }).on('blur', '[contenteditable]', function() {
     const $this = $(this);
     if ($this.data('before') !== $this.html()) {
-		const taskID = getID();
+		const taskID = getID();	
+		const newText = $this.text().replace(/(<([^>]+)>)/gi, "");
+		
+		$this.html(newText);
 			
 		if ($this.hasClass('taskNameText')) {
-			$('.taskItem:nth-child(' + (taskID + 1) + ') .taskName').text($this.text());
-			iuf['tasks'][taskID]['name'] = $this.text();
+			$('.taskItem:nth-child(' + (taskID + 1) + ') .taskName').text(newText);
+			iuf['tasks'][taskID]['name'] = newText;
 		}
 		
 		if ($this.hasClass('questionText')) {
-			iuf['tasks'][taskID]['question'] = $this.text();
+			iuf['tasks'][taskID]['question'] = newText;
 		}
 		
 		if ($this.hasClass('choiceText')) {
-			iuf['tasks'][taskID]['choices'][$this.index('.choiceText')] = $this.text();
+			iuf['tasks'][taskID]['choices'][$this.index('.choiceText')] = newText;
 		}
 		
 		if ($this.hasClass('points')) {
-			iuf['tasks'][taskID]['points'] = parseInt($this.text());
+			iuf['tasks'][taskID]['points'] = parseInt(newText);
 		}
 		
 		if ($this.hasClass('topicText')) {
-			iuf['tasks'][taskID]['topic'] = $this.text();
+			iuf['tasks'][taskID]['topic'] = newText;
 		}
 
 		setSimpleTaskFileContents(taskID);
@@ -1175,9 +1179,7 @@ function setSimpleTaskFileContents(taskID){
 	fileText = fileText.replace("?rnwTemplate_s", 'c(' + iuf['tasks'][taskID]['result'].map(s=>s?"T":"F").join(',') + ')');
 	fileText = fileText.replace("?rnwTemplate_p", iuf['tasks'][taskID]['points']);
 	fileText = fileText.replace("?rnwTemplate_t", iuf['tasks'][taskID]['topic']);
-	// fileText = fileText.replace("?rnwTemplate_f", '"' + iuf['tasks'][taskID]['figure'][2] + '"');
 	fileText = fileText.replace("?rnwTemplate_f", iuf['tasks'][taskID]['figure'] !== null ? 'c(' + iuf['tasks'][taskID]['figure'].map(c=>'"' + c + '"').join(',') + ')' : '""');
-	// console.log(fileText);
 	fileText = fileText.replaceAll("\n", "\r\n");
 
 	iuf['tasks'][taskID]['file'] = fileText;
@@ -1492,7 +1494,7 @@ Shiny.addCustomMessageHandler('setTaskE', function(jsonData) {
 	$('.taskItem:nth-child(' + (taskID + 1) + ') .examTask').removeClass('disabled');
 	$('.taskItem:nth-child(' + (taskID + 1) + ') .taskTryCatchText').text('');
 	
-	const message = e.value.replaceAll('%;%', '<br>');
+	const message = e.value.replaceAll('%;%', '<br><br>');
 	
 	switch(e.key) {
 		case "Success": 
@@ -1847,17 +1849,23 @@ $('body').on('click', '.compareListItem:not(.noParticipation)', function() {
 
 	const scanFocused = iuf['examEvaluation']['scans_reg_fullJoinData'][parseInt($(this).find('.evalIndex').html())];
 		
-	$('#inspectScan').append('<div id="focusedCompareListItem"></div><div id="inspectScanContent"><div id="inspectScanImage"><img src="data:image/png;base64, ' + scanFocused.blob + '"/></div><div id="inspectScanTemplate"><span id="scannedRegistration"><span id="scannedRegistrationText"><span lang="de">Matrikelnummer:</span><span lang="en">Registration Number:</span></span><select id="selectRegistration" autocomplete="on"></select></span><table id="scannedAnswers"></table></div></div><div id="inspectScanButtons"><button id="cancleInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-xmark"></i></span><span class="textButton"><span lang="de">Abbrechen</span><span lang="en">Cancle</span></span></button><button id="applyInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-check"></i></span><span class="textButton"><span lang="de">Übernehmen</span><span lang="en">Apply</span></span></button></div>')
+	$('#inspectScan').append('<div id="focusedCompareListItem"></div><div id="inspectScanContent"><div id="inspectScanImage"><img src="data:image/png;base64, ' + scanFocused.blob + '"/></div><div id="inspectScanTemplate"><span id="scannedRegistration"><span id="scannedRegistrationText"><span lang="de">Matrikelnummer:</span><span lang="en">Registration Number:</span></span><select id="selectRegistration" autocomplete="on"></select></span><span id="scannedSheetID"><span id="scannedSheetIDText"><span lang="de">Klausur-ID:</span><span lang="en">Exam ID:</span></span><input id="inputSheetID" type="number" min="0" max="99999999999" step="1"/></span><span id="scannedScramblingID"><span id="scannedScramblingIDText"><span lang="de">Variante:</span><span lang="en">Scrambling:</span></span><input id="inputScramblingID" type="number" min="0" max="99"  step="1"/></span><span id="scannedTypeID"><span id="scannedTypeIDText"><span lang="de">Belegart:</span><span lang="en">Type:</span></span><input id="inputTypeID" type="number" min="0" max="999" step="1"/></span>	<table id="scannedAnswers"></table></div></div><div id="inspectScanButtons"><button id="cancleInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-xmark"></i></span><span class="textButton"><span lang="de">Abbrechen</span><span lang="en">Cancle</span></span></button><button id="applyInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-check"></i></span><span class="textButton"><span lang="de">Übernehmen</span><span lang="en">Apply</span></span></button></div>')
 	
+	// populate input fields
 	let registrations = iuf['examEvaluation']['scans_reg_fullJoinData'].filter(x => x.scan === 'NA').map(x => x.registration);
 	if(scanFocused.registration !== d_registration)
 		registrations.push(d_registration);
+	
 	registrations.sort();
 	registrations.unshift(scanFocused.registration);
 	
 	$.each(registrations, function (i, p) {
 		$('#selectRegistration').append($('<option></option>').val(p).html(p));
 	});
+	
+	$('#inputSheetID').val(parseInt(scanFocused.sheet));	
+	$('#inputScramblingID').val(parseInt(scanFocused.scrambling));	
+	$('#inputTypeID').val(parseInt(scanFocused.type));	
 	
 	// add checkboxes for answers
 	const numExercises = parseInt(scanFocused.numExercises);
@@ -1936,8 +1944,29 @@ function resetInspect(){
 
 $('body').on('click', '#applyInspect', function() {
 	const scanFocusedIndex = parseInt($('#focusedCompareListItem .evalIndex').html());
+	const zeroPad = (num, places) => String(num).padStart(places, '0')
 	
-	if($('#selectRegistration').find(":selected").text() === iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].registration) {
+	const registrationUnchanged = $('#selectRegistration').find(":selected").text() === iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].registration
+	const inputSheetIDUnchanged = zeroPad($('#inputSheetID').val(), 11) === iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].sheet;
+	const scramblingIDUnchanged = zeroPad($('#inputScramblingID').val(), 2) === iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].scrambling;
+	const inputTypeIDUnchanged = zeroPad($('#inputTypeID').val(), 3) === iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].type;
+	const answersUnchanged = $('#scannedAnswers .scannedAnswer').map(function (index) {
+        let exerciseAnswers = $(this).find('input').map(function () {
+            return $(this).prop('checked') ? "1" : "0";
+        }).get();
+		
+		if (exerciseAnswers.length < 5) {
+			for (let i = exerciseAnswers.length; i < 5; i++) {
+				exerciseAnswers.push("0");
+			}
+		}
+		
+		exerciseAnswers = exerciseAnswers.join('');
+		
+		return iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex][index + 1] === exerciseAnswers;
+    }).get().every(x => x === true);
+	
+	if(registrationUnchanged && inputSheetIDUnchanged && scramblingIDUnchanged && inputTypeIDUnchanged && answersUnchanged) {
 		resetInspect();
 		sortCompareListItems();
 		return;
@@ -1946,26 +1975,31 @@ $('body').on('click', '#applyInspect', function() {
 	let itemsToAdd = null;
 	let itemsToRemove = null;
 	
-	if(iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].registration !== d_registration) {
-		itemsToAdd = JSON.parse(JSON.stringify(iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex])); // clone byValue
-		Object.keys(itemsToAdd).forEach(x => itemsToAdd[x] = "NA");
-		itemsToAdd.registration = iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].registration;
-		itemsToAdd.name = iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].name;
-		itemsToAdd.id = iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].id;	
-	}
-	
-	if($('#selectRegistration').find(":selected").text() === d_registration) {	
-		iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].name = "NA"
-		iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].id = "NA"
-	} else {
-		itemsToRemove = iuf['examEvaluation']['scans_reg_fullJoinData'].map(function(x) { return x.registration; }).indexOf($('#selectRegistration').find(":selected").text()); 
+	if(!registrationUnchanged) {
+		if(iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].registration !== d_registration) {
+			itemsToAdd = JSON.parse(JSON.stringify(iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex])); // clone byValue
+			Object.keys(itemsToAdd).forEach(x => itemsToAdd[x] = "NA");
+			itemsToAdd.registration = iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].registration;
+			itemsToAdd.name = iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].name;
+			itemsToAdd.id = iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].id;	
+		}
 		
-		iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].name = iuf['examEvaluation']['scans_reg_fullJoinData'][itemsToRemove].name
-		iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].id = iuf['examEvaluation']['scans_reg_fullJoinData'][itemsToRemove].id 
+		if($('#selectRegistration').find(":selected").text() === d_registration) {	
+			iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].name = "NA"
+			iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].id = "NA"
+		} else {
+			itemsToRemove = iuf['examEvaluation']['scans_reg_fullJoinData'].map(function(x) { return x.registration; }).indexOf($('#selectRegistration').find(":selected").text()); 
+			
+			iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].name = iuf['examEvaluation']['scans_reg_fullJoinData'][itemsToRemove].name
+			iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].id = iuf['examEvaluation']['scans_reg_fullJoinData'][itemsToRemove].id 
+		}
 	}
 	
 	iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].registration = $('#selectRegistration').find(":selected").text();	
-
+	iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].sheet = zeroPad($('#inputSheetID').val(), 11);	
+	iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].scrambling = zeroPad($('#inputScramblingID').val(), 2);	
+	iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].type = zeroPad($('#inputTypeID').val(), 3);	
+	
 	$('#scannedAnswers .scannedAnswer').map(function (index) {
         let exerciseAnswers = $(this).find('input').map(function () {
             return $(this).prop('checked') ? "1" : "0";
