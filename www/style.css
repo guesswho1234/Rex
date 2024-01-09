@@ -144,6 +144,7 @@ body.textButtonMode .textButton {
 #heart { 
 	opacity: 0.3;
 	transform: scale(1);
+	cursor: pointer;
 } 
 
 #heart span { 
@@ -398,6 +399,7 @@ main > * {
 
 #taskExportAllProxy {
 	font-weight: normal !important;
+	color: var(---tryCatch_error);
 }
 
 #taskDownloadAll {

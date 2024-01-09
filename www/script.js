@@ -60,6 +60,10 @@ function pong(){
 	$('#heart').removeClass("ping");
 }
 
+$('body').on('click', '#heart.ping', function(e) {
+	alert("Hey, stop that!");
+});
+
 /* --------------------------------------------------------------
  KEY EVENTS 
 -------------------------------------------------------------- */
@@ -76,6 +80,10 @@ function f_hotKeys() {
 	
 	$('#hotkeysActiveContainer span').removeClass('active');
 }
+
+Shiny.addCustomMessageHandler('f_hotKeys', function(x) {
+	f_hotKeys();
+});
 
 function setHotkeysCookie(hotkeysActive) {
     document.cookie = 'REX_JS_hotkeys=' + hotkeysActive + ';path=/;SameSite=Lax';
@@ -286,12 +294,16 @@ function f_buttonMode() {
 	
 	buttonMode = getButtonModeCookie()
 	
-	if (buttonMode === 'textbuttons') {
-		$('body').addClass("textButtonMode");
-	} else {
+	if (buttonMode === 'iconbuttons') {
 		$('body').addClass("iconButtonMode");
+	} else {
+		$('body').addClass("textButtonMode");
 	}
 }
+
+Shiny.addCustomMessageHandler('f_buttonMode', function(x) {
+	f_buttonMode();
+});
 
 function setButtonModeCookie(buttonMode) {
     document.cookie = 'REX_JS_buttonMode=' + buttonMode + ';path=/;SameSite=Lax';
@@ -340,6 +352,10 @@ function f_langDeEn() {
 		$('[lang="de"]').show();
 	}
 }
+
+Shiny.addCustomMessageHandler('f_langDeEn', function(x) {
+	f_langDeEn();
+});
 
 function setLanguageCookie(lang) {
     document.cookie = 'REX_JS_lang=' + lang + ';path=/;SameSite=Lax';
@@ -548,7 +564,8 @@ $('#newTask').click(function () {
 });
 
 $('#taskExportAllProxy').click(function () {
-	taskExportAllProxy();
+	alert("Oops - This button does not work yet");
+	// taskExportAllProxy();
 });
 
 $('#examTaskAll').click(function () {
@@ -1072,7 +1089,7 @@ function loadTaskFromObject(taskID) {
 		
 		const imgContet = iuf['tasks'][taskID]['figure'] !== null ? '<div class="taskFigureItem"><span class="taskFigureName"><img src="data:image/png;base64, ' + iuf['tasks'][taskID][field][2] + '"/></span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>' : '';
 		
-		const content = '<label class="taskFigureUpload" for="file-upload_taskFigure"><div class="taskFigureButton"><span class="iconButton"><i class="fa-solid fa-upload"></i></span><span class="textButton"><span lang="de">Importieren</span><span lang="en" style="display: none;">Import</span></span></div><input type="file" id="file-upload_taskFigure" onchange="loadTaskFigureFileDialog(this.files);" multiple="" class="shiny-bound-input"></label><div id="taskFigureFiles"><div id="taskFigure_list" class="itemList"><div id="taskFigure_list_items">' + imgContet + '</div></div></div></div>';
+		const content = '<label class="taskFigureUpload" for="file-upload_taskFigure"><div class="taskFigureButton"><span class="iconButton"><i class="fa-solid fa-upload"></i></span><span class="textButton"><span lang="de">Importieren</span><span lang="en">Import</span></span></div><input type="file" id="file-upload_taskFigure" onchange="loadTaskFigureFileDialog(this.files);" multiple="" class="shiny-bound-input"></label><div id="taskFigureFiles"><div id="taskFigure_list" class="itemList"><div id="taskFigure_list_items">' + imgContet + '</div></div></div></div>';
 		
 		setTaskFieldFromObject(field, content);
 	}
@@ -1370,7 +1387,7 @@ function addTaskFigureFile(file) {
 			iuf['tasks'][taskID]['figure'] = [fileName, fileExt, base64.split(',')[1]];
 			
 			$('#figure').empty();
-			$('#figure').append('<label class="taskFigureUpload" for="file-upload_taskFigure"><div class="taskFigureButton"><span class="iconButton"><i class="fa-solid fa-upload"></i></span><span class="textButton"><span lang="de">Importieren</span><span lang="en" style="display: none;">Import</span></span></div><input type="file" id="file-upload_taskFigure" onchange="loadTaskFigureFileDialog(this.files);" multiple="" class="shiny-bound-input"></label><div id="taskFigureFiles"><div id="taskFigure_list" class="itemList"><div id="taskFigure_list_items"><div class="taskFigureItem"><span class="taskFigureName"><img src="data:image/png;base64, ' + iuf['tasks'][getID()]['figure'][2] + '"/></span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div></div></div></div></div>');
+			$('#figure').append('<label class="taskFigureUpload" for="file-upload_taskFigure"><div class="taskFigureButton"><span class="iconButton"><i class="fa-solid fa-upload"></i></span><span class="textButton"><span lang="de">Importieren</span><span lang="en">Import</span></span></div><input type="file" id="file-upload_taskFigure" onchange="loadTaskFigureFileDialog(this.files);" multiple="" class="shiny-bound-input"></label><div id="taskFigureFiles"><div id="taskFigure_list" class="itemList"><div id="taskFigure_list_items"><div class="taskFigureItem"><span class="taskFigureName"><img src="data:image/png;base64, ' + iuf['tasks'][getID()]['figure'][2] + '"/></span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div></div></div></div></div>');
 			
 			setSimpleTaskFileContents(taskID);
 			loadTaskFromObject(taskID);
@@ -1610,27 +1627,15 @@ $("#autofillSeed").click(function(){
 $("#numberOfFixedPoints").change(function(){
 	const text = $('#s_numberOfTasks span').text();
 	$('#s_numberOfTasks span').text(text.replace(/^.+\//, $('#numberOfTasks').val() + '/' ));
-	calcTotalFixedPoints();
 }); 
-
-$("#numberOfTasks").change(function(){
-	calcTotalFixedPoints();
-});
 
 $("#autofillNumberOfTasks").click(function(){
 	$('#numberOfTasks').val(getNumberOfExamTasks());
-	calcTotalFixedPoints();
 }); 
 
-function calcTotalFixedPoints(){
-	const totalFixedPointsValue = parseInt($('#numberOfTasks').val()) * parseInt($('#numberOfFixedPoints').val());
-	
-	if (isNaN(totalFixedPointsValue)) {
-		$('#totalPointsValue').text("");
-	} else {
-		$('#totalPointsValue').text(totalFixedPointsValue);
-	}
-}
+$("#createExamEvent").click(function(){
+	createExamEvent();
+}); 
 
 async function createExamEvent() {
 	const examTasks = iuf['tasks'].filter((task) => task.exam & task.file !== null);
@@ -1812,6 +1817,9 @@ $('#examRegisteredParticipants_list_items').on('click', '.examRegisteredParticip
 	removeRegisteredParticipants($(this));
 });
 
+$('#evaluateExamEvent').click(function () {
+	evaluateExamEvent();
+});
 async function evaluateExamEvent() {
 	const examSolutionsName = iuf['examEvaluation']['solutions'][0];
 	const examSolutionsFile = iuf['examEvaluation']['solutions'][2];
@@ -1839,7 +1847,7 @@ $('body').on('click', '.compareListItem:not(.noParticipation)', function() {
 
 	const scanFocused = iuf['examEvaluation']['scans_reg_fullJoinData'][parseInt($(this).find('.evalIndex').html())];
 		
-	$('#inspectScan').append('<div id="focusedCompareListItem"></div><div id="inspectScanContent"><div id="inspectScanImage"><img src="data:image/png;base64, ' + scanFocused.blob + '"/></div><div id="inspectScanTemplate"><span id="scannedRegistration"><span id="scannedRegistrationText"><span lang="de">Matrikelnummer:</span><span lang="en">Registration Number:</span></span><select id="selectRegistration" autocomplete="on"></select></span><table id="scannedAnswers"></table></div></div><div id="inspectScanButtons"><span class="cancleInspect inspectScanButton"><span lang="de">Abbrechen</span><span lang="en">Cancle</span></span><span class="applyInspect inspectScanButton"><span lang="de">Übernehmen</span><span lang="en">Apply</span></div>')
+	$('#inspectScan').append('<div id="focusedCompareListItem"></div><div id="inspectScanContent"><div id="inspectScanImage"><img src="data:image/png;base64, ' + scanFocused.blob + '"/></div><div id="inspectScanTemplate"><span id="scannedRegistration"><span id="scannedRegistrationText"><span lang="de">Matrikelnummer:</span><span lang="en">Registration Number:</span></span><select id="selectRegistration" autocomplete="on"></select></span><table id="scannedAnswers"></table></div></div><div id="inspectScanButtons"><button id="cancleInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-xmark"></i></span><span class="textButton"><span lang="de">Abbrechen</span><span lang="en">Cancle</span></span></button><button id="applyInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-check"></i></span><span class="textButton"><span lang="de">Übernehmen</span><span lang="en">Apply</span></span></button></div>')
 	
 	let registrations = iuf['examEvaluation']['scans_reg_fullJoinData'].filter(x => x.scan === 'NA').map(x => x.registration);
 	if(scanFocused.registration !== d_registration)
@@ -1926,7 +1934,7 @@ function resetInspect(){
 	$('#inspectScan').empty();
 }
 
-$('body').on('click', '.applyInspect', function() {
+$('body').on('click', '#applyInspect', function() {
 	const scanFocusedIndex = parseInt($('#focusedCompareListItem .evalIndex').html());
 	
 	if($('#selectRegistration').find(":selected").text() === iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].registration) {
@@ -1985,7 +1993,7 @@ $('body').on('click', '.applyInspect', function() {
 	sortCompareListItems();
 });
 
-$('body').on('click', '.cancleInspect', function() {
+$('body').on('click', '#cancleInspect', function() {
 	resetInspect();
 	sortCompareListItems();
 });

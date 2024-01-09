@@ -30,6 +30,22 @@ removeRuntimeFiles = function() {
   }
 }
 
+myActionButton = function(id, deText, enText, icon){
+  tags$button(id = id, class = "btn btn-default action-button shiny-bound-input", type="button", myButtonStyle(deText, enText, icon))
+}
+
+myDownloadButton = function(id){
+  tags$a(id = id, class = "btn btn-default shiny-download-link", href = "", 
+         target = "_blank", type = "button", download = NA, NULL, myButtonStyle("Speichern", "Save", "fa-solid fa-download"))
+}
+
+myButtonStyle = function(deText, enText, icon) {
+  icon = paste0('<span class="iconButton"><i class="', icon, '"></i></span>')
+  text = paste0('<span class="textButton"><span lang="de">', deText, '</span><span lang="en">', enText, '</span></span>')
+  
+  return(tags$span(HTML(paste0(icon, text, collapse=""))))
+}
+
 collectWarnings = function(expr) {
   warnings = NULL
   wHandler = function(w) {
@@ -279,14 +295,15 @@ createExam = function(preparedExam, collectWarnings, dir) {
 
 examCreationResponse = function(session, message, downloadable) {
   showModal(modalDialog(
-    title = "CREATE EXAM",
+    title = tags$span(HTML('<span lang="de">Prüfung erstellen</span><span lang="en">Create exam</span>')),
     tags$span(id="responseMessage", class=message$key, paste0(message$key, ": ", gsub("%;%", "<br>", message$value))),
     footer = tagList(
       if (downloadable)
-        downloadButton('downloadExamFiles', 'Download'),
-      actionButton("dismiss_examCreationResponse", label = "OK")
+        myDownloadButton('downloadExamFiles'),
+      myActionButton("dismiss_examCreationResponse", "Schließen", "Close", "fa-solid fa-xmark")
     )
   ))
+  session$sendCustomMessage("f_langDeEn", 1)
 }
 
 prepareEvaluation = function(evaluation, rotate, input){
@@ -452,17 +469,20 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
 
 evaluateExamScansResponse = function(session, message, scans_reg_fullJoinData) {
   showModal(modalDialog(
-    title = "CHECK SCANS",
+    title = tags$span(HTML('<span lang="de">Scans überprüfen</span><span lang="en">Check scans</span>')),
     tags$span(id="responseMessage", class=message$key, paste0(message$key, ": ", gsub("%;%", "<br>", message$value))),
     tags$div(id="compareScanRegistrationDataTable"),
     tags$div(id="inspectScan"),
     footer = tagList(
-      actionButton("dismiss_evaluateExamScansResponse", label = "Cancle"),
+      # actionButton("dismiss_evaluateExamScansResponse", label = tags$span(HTML('<span lang="de">Abbrechen</span><span lang="en">Cancle</span>'))),
+      myActionButton("dismiss_evaluateExamScansResponse", "Abbrechen", "Cancle", "fa-solid fa-xmark"),
       if (!is.null(scans_reg_fullJoinData) && nrow(scans_reg_fullJoinData) > 0) 
-        actionButton("proceedEval", "Proceed"),
+        # actionButton("proceedEval", tags$span(HTML('<span lang="de">Fortfahren</span><span lang="en">Weiter</span>'))),
+        myActionButton("proceedEval", "Weiter", "Proceed", "fa-solid fa-circle-right"),
     ),
     size = "l"
   ))
+  session$sendCustomMessage("f_langDeEn", 1)
   
   # display scanData in modal
   if (!is.null(scans_reg_fullJoinData) && nrow(scans_reg_fullJoinData) > 0) {
@@ -533,14 +553,16 @@ evaluateExamFinalize = function(preparedEvaluation, collectWarnings, dir){
 
 evaluateExamFinalizeResponse = function(session, message, downloadable) {
   showModal(modalDialog(
-    title = "EVALUATE EXAM",
+    title = tags$span(HTML('<span lang="de">Prüfung auswerten</span><span lang="en">Evaluate exam</span>')),
     tags$span(id='responseMessage', class=message$key, paste0(message$key, ": ", gsub("%;%", "<br>", message$value))),
     footer = tagList(
       if (downloadable)
-        downloadButton('downloadEvaluationFiles', 'Download'),
-      actionButton("dismiss_evaluateExamFinalizeResponse", label = "OK")
+        myDownloadButton('downloadEvaluationFiles'),
+      # actionButton("dismiss_evaluateExamFinalizeResponse", label = "OK")
+      myActionButton("dismiss_evaluateExamFinalizeResponse", "Schließen", "Close", "fa-solid fa-xmark")
     )
   ))
+  session$sendCustomMessage("f_langDeEn", 1)
 }
 
 startWait = function(session){
@@ -665,7 +687,7 @@ ui = fluidPage(
 
     # TASKS -------------------------------------------------------------------
     numericInput_seedValue = numericInput("seedValue", label = NULL, value = initSeed, min = seedMin, max = seedMax),
-    button_taskExportAll = downloadButton('taskDownloadAll', 'Export'),
+    button_taskExportAll = myDownloadButton('taskDownloadAll'),
 
     # EXAM --------------------------------------------------------------------
       # CREATE ------------------------------------------------------------------

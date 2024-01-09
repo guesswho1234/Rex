@@ -10,11 +10,11 @@
 		<script src="script.js" defer></script>	
 		<script src="rnwTemplate.js" defer></script>	
 	</head>
-	<body class="color-theme iconButtonMode">
+	<body class="color-theme textButtonMode">
 		<div id="disableOverlay">
 			<div id="disableOverlay">
 				<span lang="de">BITTE WARTEN...</span>
-				<span lang="en">PLEASE Wait...</span>
+				<span lang="en">PLEASE WAIT...</span>
 			</div>
 		</div>
 		<nav class="navbar navbar-default navbar-static-top" role="navigation">
@@ -246,8 +246,6 @@
 								</div>
 								<div>
 									<label for="numberOfFixedPoints"><span lang="de">Fixe Punkte pro Aufgabe</span><span lang="en">Fixed points per exercise</span></label>
-									</br>
-									<span id="infoTotalPoints" class="infoField"><span lang="de">Fixierte Gesamtpunkte: </span><span lang="en">Fixed total points:</span><span id="totalPointsValue"></span></span>
 									{{ numericInput_numberOfFixedPoints }}
 								</div>
 								<div>
@@ -260,6 +258,8 @@
 								</div>
 								<div>
 									<label for="examLanguage"><span lang="de">Sprache</span><span lang="en">Language</span></label>
+									</br>
+									<span id="infoExamLanguage" class="infoField"><span lang="de">Nur für allgemeine Texte im Dokument</span><span lang="en">Only for general document texts</span></span>
 									{{ selectInput_examLanguage }}
 								</div>
 								<div>
@@ -280,10 +280,14 @@
 								</div>
 								<div>
 									<label for="numberOfBlanks"><span lang="de">Anzahl leeren Seiten</span><span lang="en">Number of blank pages</span></label>
+									</br>
+									<span id="infoNumberOfBlanks" class="infoField"><span lang="de">Werden am Ende der Prüfung angehängt</span><span lang="en">Are appended to the end of the exam</span></span>
 									{{ numericInput_numberOfBlanks }}
 								</div>
 								<div>
 									<label><span lang="de">Zusatz Pdf-Seiten</span><span lang="en">Additional Pdf pages</span></label>
+									</br>
+									<span id="infoAddAdditionalPdf" class="infoField"><span lang="de">Werden am Ende der Prüfung angehängt</span><span lang="en">Are appended to the end of the exam</span></span>
 									<div id="additionalPdfContainer">
 										<label class="examFileUpload" for="file-upload_addAdditionalPdf">
 											<div class="examFileButton">
@@ -306,9 +310,10 @@
 										</div>
 									</div>
 								</div>
-								<div>
-									<button id="createExamEvent" type="button" class="btn btn-default action-button shiny-bound-input" onclick='createExamEvent();'><span lang="de">Prüfung erstellen</span><span lang="en">Create exam</span></button>
-								</div>
+								<button id="createExamEvent" type="button" class="btn btn-default action-button shiny-bound-input">
+									<span class="iconButton"><i class="fa-solid fa-file-lines"></i></span>
+									<span class="textButton"><span lang="de">Prüfung erstellen</span><span lang="en">Create exam</span></span>
+								</button>
 							</div>
 						</div>
 						<div id="exam_modify" class="contentTab">
@@ -334,13 +339,13 @@
 								<div>
 									<label for="rule"><span lang="de">Regel</span><span lang="en">Rule</span></label>
 									</br>
-									<span id="infoRules" class="infoField"><span lang="de">Regel für Abzugspunkte bei Flaschantworten</span><span lang="en">Rule for point deductions for wrong answers</span></span>
+									<span id="infoRules" class="infoField"><span lang="de">Regel für Abzugspunkte bei falschen Antworten</span><span lang="en">Point deductions rules for incorrect answers</span></span>
 									{{ selectInput_rule }}
 								</div>
 								<div>
 									<label for="marks"><span lang="de">Notenschlüssel</span><span lang="en">Clef</span></label>
 									</br>
-									<span id="infoMark" class="infoField"><span lang="de">Zahlen von 0 bis 1 werden als 0% bis 100% interpretiert</span><span lang="en">Numbers between 0 and 1 are interpreted as 0% to 100%</span></span>
+									<span id="infoMark" class="infoField"><span lang="de">Zahlen von 0 bis 1 werden als 0% bis 100% gewertet</span><span lang="en">Numbers between 0 and 1 are evaluated as 0% to 100%</span></span>
 									<table id="marks">
 										<tr>
 											<th><span lang="de">Punkte</span><span lang="en">Points</span></th>
@@ -370,16 +375,20 @@
 								</div>
 								<div>
 									<label for="evaluationLanguage"><span lang="de">Sprache</span><span lang="en">Language</span></label>
+									</br>
+									<span id="infoEvaluationLanguage" class="infoField"><span lang="de">Nur für allgemeine Texte im Dokument</span><span lang="en">Only for general document texts</span></span>
 									{{ selectInput_evaluationLanguage }}
 								</div>
 								<div>
 									<label for="rotateScans"><span lang="de">Scans drehen</span><span lang="en">Rotate scans</span></label>
 									</br>
-									<span id="infoRules" class="infoField"><span lang="de">Dreht alle PDF-Seiten um 180 Grad</span><span lang="en">Rotates all PDF pages by 180 degrees</span></span>
+									<span id="infoRules" class="infoField"><span lang="de">Dreht alle PDF-Seiten um 180 Grad.</span><span lang="en">Rotates all PDF pages by 180 degrees.</span></span>
 									{{ checkboxInput_rotateScans }}
 								</div>
 								<div>
 									<label><span lang="de">Lösungen</span><span lang="en">Solutions</span></label>
+									</br>
+									<span id="infoExamSolutions" class="infoField"><span lang="de">Bei der Prüfungserellung gespeicherte RDS-Datei.</span><span lang="en">RDS file saved when creating the exam.</span></span>
 									<div id="examSolutionsContainer">
 										<label class="examFileUpload" for="file-upload_examSolutions">
 											<div class="examFileButton">
@@ -396,6 +405,8 @@
 										</div>
 									</div>
 									<label><span lang="de">Registrierte Teilnehmer</span><span lang="en">Registered participants</span></label>
+									</br>
+									<span id="infoExamRegisteredParticipants" class="infoField"><span lang="de">Teilnehmerliste als CSV-Datei mit den Spalten "registration", "name" und "id".</span><span lang="en">Registered participants as CSV file with columns "registration", "name", and "id".</span></span>
 									<div id="examRegisteredParticipantsContainer">
 										<label class="examFileUpload" for="file-upload_examRegisteredParticipants">
 											<div class="examFileButton">
@@ -412,6 +423,8 @@
 										</div>
 									</div>
 									<label><span lang="de">Bewertungs-Scans</span><span lang="en">Evaluation scans</span></label>
+									</br>
+									<span id="infoExamScans" class="infoField"><span lang="de">Scans als PDF- oder PNG-Dateien.</span><span lang="en">Scans ans PDF or PNG files.</span></span>
 									<div id="examScansContainer">
 										<label class="examFileUpload" for="file-upload_examScans">
 											<div class="examFileButton">
@@ -434,9 +447,10 @@
 										</div>
 									</div>
 								</div>
-								<div>
-									<button id="evaluateExamEvent" type="button" class="btn btn-default action-button shiny-bound-input" onclick='evaluateExamEvent();'><span lang="de">Prüfung bewerten</span><span lang="en">Evaluate exam</span></button>
-								</div>
+								<button id="evaluateExamEvent" type="button" class="btn btn-default action-button shiny-bound-input">
+									<span class="iconButton"><i class="fa-solid fa-check-double"></i></span>
+									<span class="textButton"><span lang="de">Prüfung bewerten</span><span lang="en">Evaluate exam</span></span>
+								</button>
 							</div>
 						</div>
 					</div>
