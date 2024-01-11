@@ -1,0 +1,35 @@
+<<echo=FALSE, results=hide>>=
+@
+%% \exextra[editable,numeric]{1}
+%% \exextra[examHistory,character]{}
+%% \exextra[authoredBy,character]{}
+%% \exextra[topic,character]{Text}
+%% \exextra[tags,character]{}
+<<echo=FALSE, results=tex>>=
+question="Frage 1"
+choices=c("Text1","Text2")
+solutions=c(F,F)
+points=1
+maxChoices = 5
+if(!is.null(maxChoices)){
+	limit=min(length(choices), maxChoices)
+	sel=sample(1:length(choices), limit)
+	choices=choices[sel]
+	solutions=solutions[sel]
+}
+@
+\begin{question}
+\Sexpr{question}
+<<echo=FALSE, results=tex>>=
+exams::answerlist(choices)
+@
+\end{question}
+\begin{solution}
+<<echo=FALSE, results=tex>>=
+exams::answerlist(ifelse(solutions, "Richtig", "Falsch"))
+@
+\end{solution}
+%% META-INFORMATION
+%% \extype{mchoice}
+%% \exsolution{\Sexpr{exams::mchoice2string(solutions)}}
+%% \expoints{\Sexpr{points}}

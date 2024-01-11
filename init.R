@@ -20,4 +20,4 @@ install.packages("./iuftools", repos = NULL, type="source")
 
 # tex setup
 tinytex::install_tinytex()
-tlmgr_install("babel")
+tinytex::tlmgr_install("babel-german")

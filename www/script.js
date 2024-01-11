@@ -109,11 +109,16 @@ document.onkeyup = function(evt) {
 	
 	const evtobj = window.event? event : evt
 	
-	if (evtobj.shiftKey && evtobj.keyCode == 70) {
-		const searchField = $('#searchTasks').find('input');
-		const searchValLength = searchField.val().length;
-		searchField.focus();
-		searchField[0].setSelectionRange(searchValLength, searchValLength);
+	if( $('#tasks').hasClass('active') ) {
+		const targetEditable = $(evtobj.target).attr('contenteditable');
+
+		if (evtobj.shiftKey && evtobj.keyCode == 70 && !targetEditable) {
+			const searchField = $('#searchTasks').find('input');
+			const searchValLength = searchField.val().length;
+			
+			searchField.focus();
+			searchField[0].setSelectionRange(searchValLength, searchValLength);
+		}
 	}
 }
 
@@ -126,17 +131,22 @@ document.onkeydown = function(evt) {
 	// TASKS
 	if( $('#tasks').hasClass('active') ) {
 		if ($(evtobj.target).is('input') && evtobj.keyCode == 13) {
-		$(evtobj.target).change();
-		$(evtobj.target).blur();
-	}
+			$(evtobj.target).change();
+			$(evtobj.target).blur();
+		}
+		
+		const targetEditable = $(evtobj.target).attr('contenteditable');
 	
 		if (evtobj.keyCode == 27) { // ESC
-			$('#searchTasks input').val("");
-			$('.taskItem').removeClass("filtered");
+			if(targetEditable) {
+				$(evtobj.target).blur();
+			} else {
+				$('#searchTasks input').val("");
+				$('.taskItem').removeClass("filtered");
+			}
 		}
 		
 		const targetInput = $(evtobj.target).is('input');
-		const targetEditable = $(evtobj.target).attr('contenteditable');
 		const itemsExist = $('.taskItem').length > 0;
 			
 		if (!targetInput && !targetEditable && itemsExist) {
@@ -788,6 +798,9 @@ let dndTasks = {
 			dndTasks.hzone.addEventListener('dragenter', function (e) {
 				e.preventDefault();
 				e.stopPropagation();
+				
+				if($('#disableOverlay').hasClass("active")) return;
+				
 				if( $('#tasks').hasClass('active') ) {
 					dndTasks.dzone.classList.add('drag');
 				}
@@ -811,6 +824,8 @@ let dndTasks = {
 				e.preventDefault();
 				e.stopPropagation();
 				dndTasks.dzone.classList.remove('drag');
+				
+				if($('#disableOverlay').hasClass("active")) return;
 				
 				loadTasksDnD(e.dataTransfer.items);
 			});
@@ -1028,6 +1043,33 @@ function getTrueFalseText(value) {
 	return '<span lang="de">' + textDe[+value] + '</span><span lang="en">' + textEn[+value] + '</span>'
 }
 
+Array.fromList = function(list) {
+    var array= new Array(list.length);
+    for (var i= 0, n= list.length; i<n; i++)
+        array[i]= list[i];
+    return array;
+};
+
+function filterNodes(element, allow) {
+    Array.fromList(element.childNodes).forEach(function(child) {
+        if (child.nodeType === 1) {
+            filterNodes(child, allow);
+            let tag = child.tagName.toLowerCase();
+            if (tag in allow) {
+
+                 Array.fromList(child.attributes).forEach(function(attr) {
+                    if (allow[tag].indexOf(attr.name.toLowerCase()) === -1)
+                       child.removeAttributeNode(attr);
+                });
+            } else {
+                while (child.firstChild)
+                    element.insertBefore(child.firstChild, child);
+                element.removeChild(child);
+            }
+        }
+    });
+}
+
 $('body').on('focus', '[contenteditable]', function() {
     const $this = $(this);
     $this.data('before', $this.html());
@@ -1035,29 +1077,29 @@ $('body').on('focus', '[contenteditable]', function() {
     const $this = $(this);
     if ($this.data('before') !== $this.html()) {
 		const taskID = getID();	
-		const newText = $this.text().replace(/(<([^>]+)>)/gi, "");
-		
-		$this.html(newText);
+		const content = filterNodes($this.get(0), {p: [], br: [], a: ['href']});
+
+		$this.html(content);
 			
 		if ($this.hasClass('taskNameText')) {
-			$('.taskItem:nth-child(' + (taskID + 1) + ') .taskName').text(newText);
-			iuf['tasks'][taskID]['name'] = newText;
+			$('.taskItem:nth-child(' + (taskID + 1) + ') .taskName').text(content);
+			iuf['tasks'][taskID]['name'] = content;
 		}
 		
 		if ($this.hasClass('questionText')) {
-			iuf['tasks'][taskID]['question'] = newText;
+			iuf['tasks'][taskID]['question'] = content;
 		}
 		
 		if ($this.hasClass('choiceText')) {
-			iuf['tasks'][taskID]['choices'][$this.index('.choiceText')] = newText;
+			iuf['tasks'][taskID]['choices'][$this.index('.choiceText')] = content;
 		}
 		
 		if ($this.hasClass('points')) {
-			iuf['tasks'][taskID]['points'] = parseInt(newText);
+			iuf['tasks'][taskID]['points'] = parseInt(content);
 		}
 		
 		if ($this.hasClass('topicText')) {
-			iuf['tasks'][taskID]['topic'] = newText;
+			iuf['tasks'][taskID]['topic'] = content;
 		}
 
 		setSimpleTaskFileContents(taskID);
@@ -1547,6 +1589,8 @@ let dndAdditionalPdf = {
 			dndAdditionalPdf.hzone.addEventListener('dragenter', function (e) {
 				e.preventDefault();
 				e.stopPropagation();
+				if($('#disableOverlay').hasClass("active")) return;
+				
 				if( $('#exam').hasClass('active') && $('#createExamTab').hasClass('active')) {
 					dndAdditionalPdf.dzone.classList.add('drag');
 				}
@@ -1570,6 +1614,8 @@ let dndAdditionalPdf = {
 				e.preventDefault();
 				e.stopPropagation();
 				dndAdditionalPdf.dzone.classList.remove('drag');
+				
+				if($('#disableOverlay').hasClass("active")) return;
 				
 				loadAdditionalPdfDnD(e.dataTransfer.items);
 			});
@@ -1676,6 +1722,9 @@ let dndExamEvaluation = {
 			dndExamEvaluation.hzone.addEventListener('dragenter', function (e) {
 				e.preventDefault();
 				e.stopPropagation();
+				
+				if($('#disableOverlay').hasClass("active")) return;
+				
 				if( $('#exam').hasClass('active') && $('#evaluateExamTab').hasClass('active')) {
 					dndExamEvaluation.dzone.classList.add('drag');
 				}
@@ -1699,6 +1748,8 @@ let dndExamEvaluation = {
 				e.preventDefault();
 				e.stopPropagation();
 				dndExamEvaluation.dzone.classList.remove('drag');
+				
+				if($('#disableOverlay').hasClass("active")) return;
 				
 				loadExamEvaluation(e.dataTransfer.items);
 			});
