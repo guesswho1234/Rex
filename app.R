@@ -660,25 +660,27 @@ initSeed = as.numeric(gsub("-", "", Sys.Date()))
 numberOfTaskBlocks = 1
 maxNumberOfExamTasks = 0
 languages = c("en",
-              "hr",
-              "da",
-              "nl",
-              "fi",
-              "fr",
-              "de",
-              "hu",
-              "it",
-              "ja",
-              "ko",
-              "no",
-              "pt",
-              "ro",
-              "ru",
-              "sr",
-              "sk",
-              "sl",
-              "es",
-              "tr")
+              "de")
+# languages = c("en",
+#               "hr",
+#               "da",
+#               "nl",
+#               "fi",
+#               "fr",
+#               "de",
+#               "hu",
+#               "it",
+#               "ja",
+#               "ko",
+#               "no",
+#               "pt",
+#               "ro",
+#               "ru",
+#               "sr",
+#               "sk",
+#               "sl",
+#               "es",
+#               "tr")
 rules = list("- 1/max(nwrong, 2)"="false2", "- 1/nwrong"="false", "- 1/ncorrect"="true", "- 1"="all", "- 0"="none")
 
 # UI -----------------------------------------------------------------
