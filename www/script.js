@@ -252,8 +252,10 @@ function sidebarMoveDown(parent) {
 Shiny.addCustomMessageHandler('wait', function(status) {
 	if(status === 0) {
 		$('#disableOverlay').addClass("active");
+		$('nav .nav.navbar-nav li').addClass("disabled");
 	} else {
 		$('#disableOverlay').removeClass("active");
+		$('nav .nav.navbar-nav li').removeClass("disabled");
 	}
 });
 
@@ -261,16 +263,22 @@ Shiny.addCustomMessageHandler('wait', function(status) {
  NAV 
 -------------------------------------------------------------- */
 $('#tasksNav').parent().click(function () {	
+	if( $(this).parent().hasClass('disabled') ) return;
+	
 	$('.mainSection').removeClass('active');
 	$('#tasks').addClass('active');
 });
 
 $('#examNav').parent().click(function () {	
+	if( $(this).parent().hasClass('disabled') ) return;
+	
 	$('.mainSection').removeClass('active');
 	$('#exam').addClass('active');
 });
 
 $('#helpNav').parent().click(function () {	
+	if( $(this).parent().hasClass('disabled') ) return;
+	
 	$('.mainSection').removeClass('active');
 	$('#help').addClass('active');
 });
