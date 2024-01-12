@@ -61,7 +61,7 @@ collectWarnings = function(expr) {
 prepareExportAllTasks = function(tasks){
   taskFiles = unlist(lapply(setNames(seq_along(tasks$taskNames), tasks$taskNames), function(i){
     file = tempfile(pattern = paste0(tasks$taskNames[[i]], "_"), tmpdir = dir, fileext = ".rnw")
-    writeLines(text = tasks$taskCodes[[i]], con = file)
+    writeLines(text = gsub("\r\n", "\n", tasks$taskCodes[[i]]), con = file)
 
     return(file)
   }))
@@ -77,8 +77,7 @@ parseExercise = function(task, seed, collectWarnings, dir){
       
       # remove image from question when viewing tasks (only relevant for editable tasks)
       task$taskCode = sub("rnwTemplate_showFigure = TRUE", "rnwTemplate_showFigure = FALSE", task$taskCode)
-      # task$taskCode = sub("\\\\\r\n\\includegraphics{\\Sexpr{rnwTemplate_figureFile}}\r\n", "", task$taskCode, fixed = T)
-      
+
       # extract figure to display it in the respective field when viewing a task (only relevant for editable tasks)
       figure = strsplit(task$taskCode, "rnwTemplate_figure=")[[1]][2]
       figure = strsplit(figure, "rnwTemplate_maxChoices=")[[1]][1]
@@ -97,7 +96,7 @@ parseExercise = function(task, seed, collectWarnings, dir){
       seed = if(is.na(seed)) NULL else seed
       
       file = tempfile(fileext = ".Rnw")
-      writeLines(text = task$taskCode, con = file)
+      writeLines(text = gsub("\r\n", "\n", task$taskCode), con = file)
 
       htmlTask = exams::exams2html(file, dir = dir, seed = seed, base64 = TRUE)
 
@@ -182,7 +181,7 @@ loadExercise = function(id, seed, html, figure, e, session) {
 prepareExam = function(exam, seed, input) {
   taskFiles = unlist(lapply(setNames(seq_along(exam$taskNames), exam$taskNames), function(i){
     file = tempfile(pattern = paste0(exam$taskNames[[i]], "_"), tmpdir = dir, fileext = ".rnw")
-    writeLines(text = exam$taskCodes[[i]], con = file)
+    writeLines(text = gsub("\r\n", "\n", exam$taskCodes[[i]]), con = file, sep="")
 
     return(file)
   }))
@@ -320,7 +319,7 @@ prepareEvaluation = function(evaluation, rotate, input){
   # registered participants
   registeredParticipantsFile = unlist(lapply(seq_along(evaluation$examRegisteredParticipantsnName), function(i){
     file = tempfile(pattern = paste0(evaluation$examRegisteredParticipantsnName[[i]], "_"), tmpdir = dir, fileext = ".csv")
-    writeLines(text = evaluation$examRegisteredParticipantsnFile[[i]], con = file)
+    writeLines(text = gsub("\r\n", "\n", evaluation$examRegisteredParticipantsnFile[[i]]), con = file)
 
     return(file)
   }))
