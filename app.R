@@ -30,6 +30,13 @@ removeRuntimeFiles = function() {
   }
 }
 
+myMessage = function(message) {
+  # message = gsub("\"", "'", message)
+  # message = gsub("[\r\n]", "%;%", message)
+  print(message)
+  HTML(paste0(message$key, ": ", gsub("%;%", "<br>", message$value)))
+}
+
 myActionButton = function(id, deText, enText, icon){
   tags$button(id = id, class = "btn btn-default action-button shiny-bound-input", type="button", myButtonStyle(deText, enText, icon))
 }
@@ -103,23 +110,19 @@ parseExercise = function(task, seed, collectWarnings, dir){
       NULL
     })
     key = "Success"
-    value = paste(unlist(warnings), collapse="%;%")
+    value = paste(unique(unlist(warnings)), collapse="%;%")
     if(value != "") key = "Warning"
 
-    return(list(id=task$taskID, seed=seed, html=htmlTask, figure=figure, e=c(key, value)))
+    return(list(message=list(key=key, value=value), id=task$taskID, seed=seed, html=htmlTask, figure=figure))
   },
   error = function(e){
-    message = e # e$message
-    message = gsub("\"", "'", message)
-    message = gsub("[\r\n]", "%;%", message)
-    
-    return(list(id=task$taskID, seed=NULL, html=NULL, e=c("Error", message)))
+    return(list(id=task$taskID, seed=NULL, html=NULL, message=list(key="Error", value=e)))
   })
   
   return(out)
 }
 
-loadExercise = function(id, seed, html, figure, e, session) {
+loadExercise = function(id, seed, html, figure, message, session) {
   session$sendCustomMessage("setTaskId", id)
   
   if(!is.null(html)) {
@@ -174,7 +177,7 @@ loadExercise = function(id, seed, html, figure, e, session) {
     }
   }
 
-  session$sendCustomMessage("setTaskE", rjs_keyValuePairsToJsonObject(c("key", "value"), e))
+  session$sendCustomMessage("setTaskE", rjs_keyValuePairsToJsonObject(c("key", "value"), message))
   session$sendCustomMessage("setTaskId", -1)
 }
 
@@ -276,17 +279,13 @@ createExam = function(preparedExam, collectWarnings, dir) {
     NULL
     })
     key = "Success"
-    value = paste(unlist(warnings), collapse="%;%")
+    value = paste(unique(unlist(warnings)), collapse="%;%")
     if(value != "") key = "Warning"
     
     return(list(message=list(key=key, value=value), files=list(sourceFiles=preparedExam$sourceFiles, examFiles=preparedExam$examFiles)))
   },
   error = function(e){
-    message = e # e$message
-    message = gsub("\"", "'", message)
-    message = gsub("[\r\n]", "%;%", message)
-    
-    return(list(message=list(key="Error", value=message), files=list()))
+    return(list(message=list(key="Error", value=e), files=list()))
   })
   
   return(out)
@@ -295,7 +294,7 @@ createExam = function(preparedExam, collectWarnings, dir) {
 examCreationResponse = function(session, message, downloadable) {
   showModal(modalDialog(
     title = tags$span(HTML('<span lang="de">Prüfung erstellen</span><span lang="en">Create exam</span>')),
-    tags$span(id="responseMessage", class=message$key, paste0(message$key, ": ", gsub("%;%", "<br>", message$value))),
+    tags$span(id="responseMessage", class=message$key, myMessage(message)),
     footer = tagList(
       if (downloadable)
         myDownloadButton('downloadExamFiles'),
@@ -446,7 +445,7 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
       NULL
     })
     key = "Success"
-    value = paste(unlist(warnings), collapse="%;%")
+    value = paste(unique(unlist(warnings)), collapse="%;%")
     if(value != "") key = "Warning"
 
     return(list(message=list(key=key, value=value), 
@@ -454,11 +453,7 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
                 preparedEvaluation=preparedEvaluation))
   },
   error = function(e){
-    message = e # e$message
-    message = gsub("\"", "'", message)
-    message = gsub("[\r\n]", "%;%", message)
-    
-    return(list(message=list(key="Error", value=message), scans_reg_fullJoinData=NULL, examName=NULL, files=list(), data=list()))
+    return(list(message=list(key="Error", value=e), scans_reg_fullJoinData=NULL, examName=NULL, files=list(), data=list()))
   })
   
   return(out)
@@ -467,7 +462,7 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
 evaluateExamScansResponse = function(session, message, scans_reg_fullJoinData) {
   showModal(modalDialog(
     title = tags$span(HTML('<span lang="de">Scans überprüfen</span><span lang="en">Check scans</span>')),
-    tags$span(id="responseMessage", class=message$key, paste0(message$key, ": ", gsub("%;%", "<br>", message$value))),
+    tags$span(id="responseMessage", class=message$key, myMessage(message)),
     tags$div(id="compareScanRegistrationDataTable"),
     tags$div(id="inspectScan"),
     footer = tagList(
@@ -529,18 +524,14 @@ evaluateExamFinalize = function(preparedEvaluation, collectWarnings, dir){
       NULL
     })
     key = "Success"
-    value = paste(unlist(warnings), collapse="%;%")
+    value = paste(unique(unlist(warnings)), collapse="%;%")
     if(value != "") key = "Warning"
     
     return(list(message=list(key=key, value=value), 
                 preparedEvaluation=preparedEvaluation))
   },
   error = function(e){
-    message = e # e$message
-    message = gsub("\"", "'", message)
-    message = gsub("[\r\n]", "%;%", message)
-
-    return(list(message=list(key="Error", value=message), examName=NULL, files=list()))
+    return(list(message=list(key="Error", value=e), examName=NULL, files=list()))
   })
 
   return(out)
@@ -549,7 +540,7 @@ evaluateExamFinalize = function(preparedEvaluation, collectWarnings, dir){
 evaluateExamFinalizeResponse = function(session, message, downloadable) {
   showModal(modalDialog(
     title = tags$span(HTML('<span lang="de">Prüfung auswerten</span><span lang="en">Evaluate exam</span>')),
-    tags$span(id='responseMessage', class=message$key, paste0(message$key, ": ", gsub("%;%", "<br>", message$value))),
+    tags$span(id='responseMessage', class=message$key, myMessage(message)),
     footer = tagList(
       if (downloadable)
         myDownloadButton('downloadEvaluationFiles'),
@@ -832,7 +823,7 @@ server = function(input, output, session) {
       invalidateLater(millis = 10, session = session)
     } else {
       result = exerciseParsing()$get_result()
-      loadExercise(result$id, result$seed, result$html, result$figure, result$e, session)
+      loadExercise(result$id, result$seed, result$html, result$figure, result$message, session)
       stopWait(session)
     }
   })

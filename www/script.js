@@ -1543,6 +1543,8 @@ Shiny.addCustomMessageHandler('setTaskEditable', function(editable) {
 });
 
 Shiny.addCustomMessageHandler('setTaskE', function(jsonData) {
+	console.log(jsonData)
+	
 	e = JSON.parse(jsonData);
 		
 	const taskID = getID();
