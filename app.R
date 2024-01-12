@@ -109,7 +109,7 @@ parseExercise = function(task, seed, collectWarnings, dir){
     return(list(id=task$taskID, seed=seed, html=htmlTask, figure=figure, e=c(key, value)))
   },
   error = function(e){
-    message = e$message
+    message = e # e$message
     message = gsub("\"", "'", message)
     message = gsub("[\r\n]", "%;%", message)
     
@@ -282,7 +282,7 @@ createExam = function(preparedExam, collectWarnings, dir) {
     return(list(message=list(key=key, value=value), files=list(sourceFiles=preparedExam$sourceFiles, examFiles=preparedExam$examFiles)))
   },
   error = function(e){
-    message = e$message
+    message = e # e$message
     message = gsub("\"", "'", message)
     message = gsub("[\r\n]", "%;%", message)
     
@@ -454,7 +454,7 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
                 preparedEvaluation=preparedEvaluation))
   },
   error = function(e){
-    message = e$message
+    message = e # e$message
     message = gsub("\"", "'", message)
     message = gsub("[\r\n]", "%;%", message)
     
@@ -536,7 +536,7 @@ evaluateExamFinalize = function(preparedEvaluation, collectWarnings, dir){
                 preparedEvaluation=preparedEvaluation))
   },
   error = function(e){
-    message = e$message
+    message = e # e$message
     message = gsub("\"", "'", message)
     message = gsub("[\r\n]", "%;%", message)
 
