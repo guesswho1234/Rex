@@ -1068,6 +1068,8 @@ function filterNodes(element, allow) {
             }
         }
     });
+
+	return element;
 }
 
 $('body').on('focus', '[contenteditable]', function() {
@@ -1077,8 +1079,14 @@ $('body').on('focus', '[contenteditable]', function() {
     const $this = $(this);
     if ($this.data('before') !== $this.html()) {
 		const taskID = getID();	
-		const content = filterNodes($this.get(0), {p: [], br: [], a: ['href']});
-
+		let content = $this.get(0);
+				
+		if(content.childNodes.length === 1 && content.childNodes[0].nodeType === 3) {
+			content = content.textContent;
+		} else {
+			content = filterNodes($this.get(0), {p: [], br: [], a: ['href']}).innerHTML;
+		}
+		
 		$this.html(content);
 			
 		if ($this.hasClass('taskNameText')) {
