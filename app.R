@@ -405,14 +405,11 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
 
     warnings = collectWarnings({
       with(preparedEvaluation, {
-        # read exam data
-        
         # process scans
         scanData = exams::nops_scan(images=files$scans,
                          file=FALSE,
                          dir=dir)
         scanData = as.data.frame(matrix(Reduce(rbind, lapply(scanData, function(x) strsplit(x, " ")[[1]])), nrow=length(scanData)))
-        # stop(scanData)
         names(scanData)[c(1:6)] = c("scan", "sheet", "scrambling", "type", "replacement", "registration")
         names(scanData)[-c(1:6)] = (7:ncol(scanData)) - 6
         
