@@ -454,7 +454,7 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
                 preparedEvaluation=preparedEvaluation))
   },
   error = function(e){
-    message = e #e$message
+    message = e$message
     message = gsub("\"", "'", message)
     message = gsub("[\r\n]", "%;%", message)
     
