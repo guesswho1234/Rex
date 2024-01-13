@@ -1076,6 +1076,7 @@ $('body').on('focus', '[contenteditable]', function() {
     if ($this.data('before') !== $this.html()) {
 		const taskID = getID();	
 		
+		setExamTask(taskID, false);
 		iuf['tasks'][taskID]['e'] = 2;
 		iuf['tasks'][taskID]['message'] = '<span class="taskTryCatch Error"><span class="responseSign ErrorSign"><i class="fa-solid fa-circle-exclamation"></i></span><span class="taskTryCatchText">Task needs to be parsed again.</span></span>';
 		
@@ -1269,6 +1270,7 @@ function changeTaskBlock(taskID, b) {
 }
 
 function setExamTask(taskID, b) {
+	$('.taskItem').eq(taskID).toggleClass('exam');	
 	iuf['tasks'][taskID]['exam'] = b;
 	
 	examTasksSummary();
@@ -1294,8 +1296,7 @@ $('#task_list_items').on('click', '.examTask', function(e) {
 	e.preventDefault();
 	e.stopPropagation();
 	
-	$(this).closest('.taskItem').toggleClass('exam');	
-	setExamTask($(this).closest('.taskItem').index('.taskItem'), $(this).closest('.taskItem').hasClass('exam'));
+	setExamTask($(this).closest('.taskItem').index('.taskItem'), !$(this).closest('.taskItem').hasClass('exam'));
 });
 
 $('#task_list_items').on('click', '.taskRemove', function(e) {

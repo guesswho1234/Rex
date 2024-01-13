@@ -243,6 +243,7 @@ prepareExam = function(exam, seed, input) {
   
   examFields = list(
     file = tasks,
+    fileBoundaries = c(1, 45),
     n = numberOfExams,
     nsamp = tasksPerBlock,
     name = name,
@@ -256,13 +257,14 @@ prepareExam = function(exam, seed, input) {
     pages = pages,
     points = points,
     showpoints = input$showPoints,
-    seed = seedList
+    seed = seedList,
+    seedBoundaries = c(seedMin, seedMax)
   )
   
   examHtmlFiles = paste0(dir, "/", name, 1:exam$numberOfExams, ".html")
   examPdfFiles = paste0(dir, "/", name, 1:exam$numberOfExams, ".pdf")
   examRdsFile = paste0(dir, "/", name, ".rds")
-  
+
   return(list(examFields=examFields, examFiles=list(examHtmlFiles=examHtmlFiles, pdfFiles=examPdfFiles, rdsFile=examRdsFile), sourceFiles=list(taskFiles=taskFiles, additionalPdfFiles=additionalPdfFiles)))
 }
 
@@ -270,6 +272,16 @@ createExam = function(preparedExam, collectWarnings, dir) {
   out = tryCatch({
     warnings = collectWarnings({
         with(preparedExam$examFields, {
+          # if(length(file) < fileBoundaries[1] || length(file) > fileBoundaries[2]){
+          #   message = "Number of exam tasks is not valid."
+          #   stop(message)
+          # }
+          # 
+          # if(!is.numeric(seed) || (seed < seedBoundaries[1] && seed > seedBoundaries[2])){
+          #   message = "Seed value is not valid."
+          #   stop(message)
+          # }
+          
           # create exam html preview with solutions
           exams::exams2html(file = file,
                             n = n,
@@ -517,13 +529,13 @@ evaluateExamFinalize = function(preparedEvaluation, collectWarnings, dir){
     preparedEvaluation$files$nops_evaluationZip = paste0(dir, "/", nops_evaluation_fileNamePrefix, ".zip")
 
     warnings = collectWarnings({
-      if(any(is.na(preparedEvaluation$fields$mark))){
-        stop("Clef is invalid.")
-      }
-
-      if(!is.null(preparedEvaluation$fields$labels) && any(preparedEvaluation$fields$labels=="")){
-        stop("Clef is invalid.")
-      }
+      # if(any(is.na(preparedEvaluation$fields$mark))){
+      #   stop("Clef is invalid.")
+      # }
+      # 
+      # if(!is.null(preparedEvaluation$fields$labels) && any(preparedEvaluation$fields$labels=="")){
+      #   stop("Clef is invalid.")
+      # }
 
       with(preparedEvaluation, {
         # finalize evaluation
@@ -612,53 +624,54 @@ rjs_keyValuePairsToJsonObject = function(keys, values){
   return(x)
 }
 
-checkSeed = function(seed) {
-  if(!(is.numeric(seed)) || is.null(seed) || is.na(seed)) {
-    return("")
-  } 
-  
-  if(seed < seedMin) {
-    return(seedMin)
-  } 
-  
-  if(seed > seedMax) {
-    return(seedMax)
-  } 
-
-  return(isolate(seed))
-}
-
-checkNumberOfExamTasks = function(numberOfExamTasks){
-  if(!(is.numeric(numberOfExamTasks)) || is.null(numberOfExamTasks) || is.na(numberOfExamTasks)) {
-    return(0)
-  } 
-  
-  if(numberOfExamTasks < 0) {
-    return(0)
-  } 
-  
-  if(numberOfExamTasks > maxNumberOfExamTasks){
-    return(maxNumberOfExamTasks)
-  } 
-  
-  if(numberOfExamTasks %% numberOfTaskBlocks != 0){
-    return(numberOfTaskBlocks)
-  } 
-  
-  return(isolate(numberOfExamTasks))
-}
-
-checkPosNumber = function(numberField){
-  if(!(is.numeric(numberField)) || is.null(numberField) || is.na(numberField)) {
-    return("")
-  } 
-  
-  if(numberField < 0) {
-    return("")
-  } 
-  
-  return(isolate(numberField))
-}
+# checkSeed = function(seed) {
+#   if(!(is.numeric(seed)) || is.null(seed) || is.na(seed)) {
+#     return("")
+#   } 
+#   
+#   if(seed < seedMin) {
+#     return(seedMin)
+#   } 
+#   
+#   if(seed > seedMax) {
+#     return(seedMax)
+#   } 
+# 
+#   return(isolate(seed))
+# }
+# 
+# checkNumberOfExamTasks = function(numberOfExamTasks){
+#   if(!(is.numeric(numberOfExamTasks)) || is.null(numberOfExamTasks) || is.na(numberOfExamTasks)) {
+#     return(0)
+#   } 
+#   
+#   if(numberOfExamTasks < 0) {
+#     return(0)
+#   } 
+#   
+#   if(numberOfExamTasks > maxNumberOfExamTasks){
+#     return(maxNumberOfExamTasks)
+#   } 
+#   
+#   if(numberOfExamTasks %% numberOfTaskBlocks != 0){
+#     return(numberOfTaskBlocks)
+#   } 
+#   
+#   return(isolate(numberOfExamTasks))
+# }
+# 
+# checkPosNumber = function(numberField){
+#   if(!(is.numeric(numberField)) || is.null(numberField) || is.na(numberField)) {
+#     print(isolate(numberField))
+#     return("")
+#   } 
+#   
+#   if(numberField < 0) {
+#     return("")
+#   } 
+#   
+#   return(isolate(numberField))
+# }
 
 # PARAMETERS --------------------------------------------------------------
 dir = tempdir()
@@ -702,14 +715,13 @@ ui = fluidPage(
 
     # TASKS -------------------------------------------------------------------
     numericInput_seedValue = numericInput("seedValue", label = NULL, value = initSeed, min = seedMin, max = seedMax),
-    checkboxInput_useBlocks = checkboxInput("useBlocks", label = NULL, value = NULL),
     button_taskExportAll = myDownloadButton('taskDownloadAll'),
 
     # EXAM --------------------------------------------------------------------
       # CREATE ------------------------------------------------------------------
       numericInput_seedValueExam = numericInput("seedValueExam", label = NULL, value = initSeed, min = seedMin, max = seedMax),
       numericInput_numberOfExams = numericInput("numberOfExams", label = NULL, value = 1, min = 1, step = 1),
-      numericInput_numberOfTasks = numericInput("numberOfTasks", label = NULL, value = 0, step = 1),
+      numericInput_numberOfTasks = numericInput("numberOfTasks", label = NULL, value = 0, min = 0, max = 45, step = 1),
       selectInput_examLanguage = selectInput("examLanguage", label = NULL, choices = languages, selected = NULL, multiple = FALSE),
       textInput_examTitle = textInput("examTitle", label = NULL, value = NULL),
       textInput_examCourse = textInput("examCourse", label = NULL, value = NULL),
@@ -761,40 +773,41 @@ server = function(input, output, session) {
   })
   
   # INPUT VALUE CHANGES -------------------------------------------------------------
-  # seed change
-  observeEvent(input$seedValue, {
-    updateNumericInput(session, "seedValue", value = checkSeed(input$seedValue))
-  })
-  
-  # exam seed change
-  observeEvent(input$seedValueExam, {
-    updateNumericInput(session, "seedValueExam", value = checkSeed(input$seedValueExam))
-  })
-  
-  # number of exam tasks input change
-  observeEvent(input$numberOfTasks, {
-    updateNumericInput(session, "numberOfTasks", value = checkNumberOfExamTasks(input$numberOfTasks))
-  })
-  
-  # number of blank pages
-  observeEvent(input$numberOfBlanks, {
-    updateNumericInput(session, "numberOfBlanks", value = checkPosNumber(input$numberOfBlanks))
-  })
-  
-  # number of fixed points per task
-  observeEvent(input$numberOfFixedPoints, {
-    updateNumericInput(session, "numberOfFixedPoints", value = checkPosNumber(input$numberOfFixedPoints))
-  })
-  
-  # set max number of exam tasks
-  observeEvent(input$setNumberOfExamTasks, {
-    maxNumberOfExamTasks <<- input$setNumberOfExamTasks
-  })
-  
-  # set number of task blocks
-  observeEvent(input$setNumberOfTaskBlocks, {
-    numberOfTaskBlocks <<- input$setNumberOfTaskBlocks
-  })
+  # # seed change
+  # observeEvent(input$seedValue, {
+  #   updateNumericInput(session, "seedValue", value = checkSeed(input$seedValue))
+  # })
+  # 
+  # # exam seed change
+  # observeEvent(input$seedValueExam, {
+  #   updateNumericInput(session, "seedValueExam", value = checkSeed(input$seedValueExam))
+  # })
+  # 
+  # # number of exam tasks input change
+  # observeEvent(input$numberOfTasks, {
+  #   updateNumericInput(session, "numberOfTasks", value = checkNumberOfExamTasks(input$numberOfTasks))
+  # })
+  # 
+  # # number of blank pages
+  # observeEvent(input$numberOfBlanks, {
+  #   print("test")
+  #   updateNumericInput(session, "numberOfBlanks", value = checkPosNumber(input$numberOfBlanks))
+  # })
+  # 
+  # # number of fixed points per task
+  # observeEvent(input$numberOfFixedPoints, {
+  #   updateNumericInput(session, "numberOfFixedPoints", value = checkPosNumber(input$numberOfBlanks))
+  # })
+  # 
+  # # set max number of exam tasks
+  # observeEvent(input$setNumberOfExamTasks, {
+  #   maxNumberOfExamTasks <<- input$setNumberOfExamTasks
+  # })
+  # 
+  # # set number of task blocks
+  # observeEvent(input$setNumberOfTaskBlocks, {
+  #   numberOfTaskBlocks <<- input$setNumberOfTaskBlocks
+  # })
   
   # EXPORT ALL TASKS ------------------------------------------------------
   # TODO: implement async with popup like exam create / evaluate, ...
