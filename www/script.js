@@ -483,7 +483,6 @@ function examTasksSummary() {
 		$('#s_numberOfTasks').html("");
 		$('#s_totalPoints').html("");
 		$('#s_topicsTable').html("");
-		$('#s_typeTable').html("");
 		
 		return;
 	}
@@ -491,21 +490,18 @@ function examTasksSummary() {
 	let numberOfExamTasksCounter = 0;
 	let totalPoints = 0;
 	let topics = [];
-	let types = [];
 		
 	iuf['tasks'].forEach((item, index) => {
 		if(item.exam) {
 			numberOfExamTasksCounter++;
 			totalPoints += Number(item.points);
 			if (item.topic !== null) topics.push(item.topic);
-			Array.isArray(item.result) ? types.push("mc") : types.push("num");
 		}
 	})
 	
 	$('#s_numberOfTasks').html(itemSingle(numberOfExamTasksCounter, 'grayLabel'));
 	$('#s_totalPoints').html(itemSingle(totalPoints, 'yellowLabel'));
 	$('#s_topicsTable').html(itemTable(topics));
-	$('#s_typeTable').html(itemTable(types));
 }
 
 function itemSingle(item, className) {

@@ -621,8 +621,7 @@ main > * {
 #difficulty span,
 #points span,
 #topic span,
-#tags span,
-#type span {
+#tags span {
 	margin: 5px;
 	padding: 3px;
 	background: #fbeec8;
