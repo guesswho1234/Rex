@@ -882,6 +882,7 @@ function newSimpleTask(file = '', block = 1) {
 					       [d_answerText + '1', d_answerText + '2'],
 					       [d_result, d_result],
 					       null,
+						   null,
 					       true,
 						   "mchoice",
 						   block,
@@ -901,6 +902,7 @@ async function newComplexTask(file, block) {
 					   [],
 					   [],
 					   null,
+					   null,
 					   false,
 					   null,
 					   block);
@@ -913,6 +915,7 @@ function createTask(taskID, name='task',
 						    question='',
 						    choices=[],
 							result=[],
+							message=null,
 							e=null,
 							editable=false,
 							type=null,
@@ -940,6 +943,7 @@ function createTask(taskID, name='task',
 	iuf['tasks'][taskID]['topic'] = topic;
 	iuf['tasks'][taskID]['tags'] = tags;
 	iuf['tasks'][taskID]['type'] = type;
+	iuf['tasks'][taskID]['message'] = message;	
 	iuf['tasks'][taskID]['e'] = e;	
 	iuf['tasks'][taskID]['editable'] = editable;
 	iuf['tasks'][taskID]['block'] = block;
@@ -949,7 +953,7 @@ function createTask(taskID, name='task',
 		setSimpleTaskFileContents(taskID);
 	}
 	
-	$('#task_list_items').append('<div class="taskItem sidebarListItem"><span class="taskTryCatch"><i class="fa-solid fa-triangle-exclamation"></i><span class="taskTryCatchText"></span></span><span class="taskName">' + name + '</span></span><span class="taskBlock disabled"><span lang="de">Block:</span><span lang="en">Block:</span><input type="number" value="' + block + '"/></span><span class="taskButtons"><span class="examTask taskButton ' + (editable ? '' : 'disabled') + '"><span class="iconButton"><i class="fa-solid fa-circle-check"></i></span><span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span></span><span class="taskRemove taskButton"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></span></span></div>');
+	$('#task_list_items').append('<div class="taskItem sidebarListItem"><span class="taskName">' + name + '</span></span><span class="taskBlock disabled"><span lang="de">Block:</span><span lang="en">Block:</span><input type="number" value="' + block + '"/></span><span class="taskButtons"><span class="taskParse taskButton disabled"><i class="fa-solid fa-rotate"></i></span><span class="examTask taskButton ' + (editable ? '' : 'disabled') + '"><span class="iconButton"><i class="fa-solid fa-star"></i></span><span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span></span><span class="taskRemove taskButton"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></span></span></div>');
 }
 
 function parseTask(taskID) {	
@@ -984,9 +988,6 @@ function getNumberOfExamTasks() {
 
 function viewTask(taskID) {
 	resetOutputFields();
-	
-	const error = iuf['tasks'][taskID]['e'] !== null && iuf['tasks'][taskID]['e'].includes('Error:');
-	if(error) return;
 		
 	if(taskShouldbeParsed(taskID)) {
 		parseTask(taskID);	
@@ -998,10 +999,10 @@ function viewTask(taskID) {
 }
 
 function taskShouldbeParsed(taskID){
-	const editable = iuf['tasks'][taskID]['editable'] 
 	const seedChanged = iuf['tasks'][taskID]['seed'] == "" || iuf['tasks'][taskID]['seed'] != $("#seedValue").val();
+	const error = iuf['tasks'][taskID]['e'] === 2;
 	
-	return !editable && seedChanged;
+	return seedChanged || error;
 }
 
 function resetOutputFields() {
@@ -1011,7 +1012,6 @@ function resetOutputFields() {
 				  'question',
 				  'figure',
 			      'points',
-			      'type',
 			      'result',
 			      'examHistory',
 			      'authoredBy',
@@ -1079,6 +1079,14 @@ $('body').on('focus', '[contenteditable]', function() {
     const $this = $(this);
     if ($this.data('before') !== $this.html()) {
 		const taskID = getID();	
+		
+		iuf['tasks'][taskID]['e'] = 2;
+		iuf['tasks'][taskID]['message'] = '<span class="taskTryCatch Error"><span class="responseSign ErrorSign"><i class="fa-solid fa-circle-exclamation"></i></span><span class="taskTryCatchText">Task needs to be parsed again.</span></span>';
+		
+		$('.taskItem:nth-child(' + (taskID + 1) + ') .examTask').addClass('disabled');
+		$('.taskItem:nth-child(' + (taskID + 1) + ') .taskTryCatch').remove();
+		$('.taskItem:nth-child(' + (taskID + 1) + ')').prepend(iuf['tasks'][taskID]['message']);
+		
 		let content = $this.get(0);
 				
 		if(content.childNodes.length === 1 && content.childNodes[0].nodeType === 3) {
@@ -1110,8 +1118,7 @@ $('body').on('focus', '[contenteditable]', function() {
 			iuf['tasks'][taskID]['topic'] = content;
 		}
 
-		setSimpleTaskFileContents(taskID);
-		
+		setSimpleTaskFileContents(taskID);	
 		examTasksSummary();
     }
 });
@@ -1121,6 +1128,7 @@ document.addEventListener('dblclick', (event) => {
 })
 
 function loadTaskFromObject(taskID) {
+	const e = iuf['tasks'][taskID]['e']; 
 	const editable = iuf['tasks'][taskID]['editable']; 
 	
 	$('.taskItem:nth-child(' + (taskID + 1) + ')').removeClass("editable");
@@ -1163,14 +1171,7 @@ function loadTaskFromObject(taskID) {
 		
 		setTaskFieldFromObject(field, content);
 	}
-	
-	if(iuf['tasks'][taskID]['type'] !== null) {
-		const field = 'type'
-		const content = '<span>' + iuf['tasks'][taskID][field] + '</span>';
-		
-		setTaskFieldFromObject(field, content);
-	}
-		
+			
 	if(iuf['tasks'][taskID]['type'] === "mchoice" || iuf['tasks'][taskID]['editable']) {
 		const field = 'result'
 		const zip = iuf['tasks'][taskID][field].map((x, i) => [x, iuf['tasks'][taskID]['choices'][i]]);
@@ -1218,10 +1219,8 @@ function loadTaskFromObject(taskID) {
 		setTaskFieldFromObject(field, content);
 	}
 	
-	if(editable) {
+	if(editable)
 		$('.taskItem:nth-child(' + (taskID + 1) + ')').addClass("editable");
-		$('.taskItem:nth-child(' + (taskID + 1) + ') .taskParse').addClass("disabled");
-	} 
 		
 	$('.taskItem.active').removeClass('active');
 	$('.taskItem:nth-child(' + (taskID + 1) + ')').addClass('active');
@@ -1520,8 +1519,7 @@ Shiny.addCustomMessageHandler('setTaskQuestion', function(taskQuestion) {
 
 Shiny.addCustomMessageHandler('setTaskFigure', function(jsonData) {
 	const figure = JSON.parse(jsonData);
-	
-	iuf['tasks'][getID()]['figure'] = figure;
+	iuf['tasks'][getID()]['figure'] = figure[0] === "" ? null : figure;
 });
 
 Shiny.addCustomMessageHandler('setTaskChoices', function(jsonData) {
@@ -1542,38 +1540,23 @@ Shiny.addCustomMessageHandler('setTaskEditable', function(editable) {
 	iuf['tasks'][getID()]['editable'] = (editable === 1);
 });
 
-Shiny.addCustomMessageHandler('setTaskE', function(jsonData) {
-	console.log(jsonData)
-	
-	e = JSON.parse(jsonData);
-		
+Shiny.addCustomMessageHandler('setTaskMessage', function(message) {
 	const taskID = getID();
 	
-	$('.taskItem:nth-child(' + (taskID + 1) + ') .taskTryCatch').removeClass('Warning');
-	$('.taskItem:nth-child(' + (taskID + 1) + ') .taskTryCatch').removeClass('Error');
-	$('.taskItem:nth-child(' + (taskID + 1) + ') .examTask').removeClass('disabled');
-	$('.taskItem:nth-child(' + (taskID + 1) + ') .taskTryCatchText').text('');
+	$('.taskItem:nth-child(' + (taskID + 1) + ') .taskTryCatch').remove();
+	$('.taskItem:nth-child(' + (taskID + 1) + ')').prepend(message);
 	
-	const message = e.value.replaceAll('%;%', '<br><br>');
+	iuf['tasks'][taskID]['message'] = message;
+});
+
+Shiny.addCustomMessageHandler('setTaskE', function(e) {
+	const taskID = getID();
 	
-	switch(e.key) {
-		case "Success": 
-			iuf['tasks'][taskID]['e'] = e.key;
-			loadTaskFromObject(taskID); 
-			break;
-		case "Warning": 
-			iuf['tasks'][taskID]['e'] = e.key + ':<br>' + message;
-			$('.taskItem:nth-child(' + (taskID + 1) + ') .taskTryCatch').addClass('Warning');
-			$('.taskItem:nth-child(' + (taskID + 1) + ') .taskTryCatchText').html(iuf['tasks'][taskID]['e']);
-			loadTaskFromObject(taskID); 
-			break;
-		case "Error": 
-			iuf['tasks'][taskID]['e'] = e.key + ':<br>' + message;
-			$('.taskItem:nth-child(' + (taskID + 1) + ') .taskTryCatch').addClass('Error');
-			$('.taskItem:nth-child(' + (taskID + 1) + ') .examTask').addClass('disabled');
-			$('.taskItem:nth-child(' + (taskID + 1) + ') .taskTryCatchText').html(iuf['tasks'][taskID]['e']);
-			break;
-	}
+	iuf['tasks'][taskID]['e'] = e;
+	
+	if(e !== 2)
+		$('.taskItem:nth-child(' + (taskID + 1) + ') .examTask').removeClass('disabled');
+		loadTaskFromObject(taskID);
 });
 
 /* --------------------------------------------------------------

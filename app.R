@@ -30,11 +30,28 @@ removeRuntimeFiles = function() {
   }
 }
 
+getMessageType = function(message){
+  which(message$key==c("Success", "Warning", "Error")) - 1
+}
+
 myMessage = function(message) {
-  # message = gsub("\"", "'", message)
-  # message = gsub("[\r\n]", "%;%", message)
-  print(message)
-  HTML(paste0(message$key, ": ", gsub("%;%", "<br>", message$value)))
+  type = getMessageType(message)
+  
+  if(type == 2) {
+    message$value = message$value$message
+  }
+  
+  message$value = gsub("\"", "'", message$value)
+  message$value = gsub("[\r\n]", "<br>", trimws(message$value))
+  message$value = gsub("[\r]", "",message$value)
+  message$value = gsub("[\n]", "", message$value)
+  
+
+  messageSign = paste0('<span class="responseSign ', message$key, 'Sign">', messageSymbols[type + 1], '</span>')
+  messageText = paste0('<span class="taskTryCatchText">', message$value , '</span>')
+  messageObject = paste0('<span class="taskTryCatch ', message$key, '">', messageSign, messageText, '</span>')
+  
+  HTML(messageObject)
 }
 
 myActionButton = function(id, deText, enText, icon){
@@ -87,36 +104,40 @@ parseExercise = function(task, seed, collectWarnings, dir){
 
       # extract figure to display it in the respective field when viewing a task (only relevant for editable tasks)
       figure = strsplit(task$taskCode, "rnwTemplate_figure=")[[1]][2]
-      figure = strsplit(figure, "rnwTemplate_maxChoices=")[[1]][1]
+      figure = strsplit(figure, "rnwTemplate_maxChoices")[[1]][1]
       
-      figure_name = strsplit(figure,",")[[1]][1]
-      figure_name = sub("^[^\"]*\"([^\"]+)\".*", "\\1", figure_name)
+      figure_split = strsplit(figure,",")[[1]]
+      figure = ""
       
-      figure_fileExt = strsplit(figure,",")[[1]][2]
-      figure_fileExt = sub("^[^\"]*\"([^\"]+)\".*", "\\1", figure_fileExt)
+      if(length(figure_split) == 3) {
+        figure_name = sub("^[^\"]*\"([^\"]+)\".*", "\\1", figure_split[1])
+        figure_fileExt = sub("^[^\"]*\"([^\"]+)\".*", "\\1", figure_split[2])
+        figure_blob = sub("^[^\"]*\"([^\"]+)\".*", "\\1", figure_split[3])
+        
+        figure = list(name=figure_name, fileExt=figure_fileExt, blob=figure_blob)
+      }
       
-      figure_blob = strsplit(figure,",")[[1]][3]
-      figure_blob = sub("^[^\"]*\"([^\"]+)\".*", "\\1", figure_blob)
-      
-      figure = list(name=figure_name, fileExt=figure_fileExt, blob=figure_blob)
-
       seed = if(is.na(seed)) NULL else seed
       
       file = tempfile(fileext = ".Rnw")
       writeLines(text = gsub("\r\n", "\n", task$taskCode), con = file)
 
       htmlTask = exams::exams2html(file, dir = dir, seed = seed, base64 = TRUE)
+      
+      if (htmlTask$exam1$exercise1$metainfo$type != "mchoice") {
+        stop("Question type is not 'mchoice'.")
+      }
 
       NULL
     })
     key = "Success"
-    value = paste(unique(unlist(warnings)), collapse="%;%")
+    value = paste(unique(unlist(warnings)), collapse="<br>")
     if(value != "") key = "Warning"
 
     return(list(message=list(key=key, value=value), id=task$taskID, seed=seed, html=htmlTask, figure=figure))
   },
   error = function(e){
-    return(list(id=task$taskID, seed=NULL, html=NULL, message=list(key="Error", value=e)))
+    return(list(message=list(key="Error", value=e), id=task$taskID, seed=NULL, html=NULL))
   })
   
   return(out)
@@ -177,7 +198,8 @@ loadExercise = function(id, seed, html, figure, message, session) {
     }
   }
 
-  session$sendCustomMessage("setTaskE", rjs_keyValuePairsToJsonObject(c("key", "value"), message))
+  session$sendCustomMessage("setTaskMessage", myMessage(message))
+  session$sendCustomMessage("setTaskE", getMessageType(message))
   session$sendCustomMessage("setTaskId", -1)
 }
 
@@ -279,7 +301,7 @@ createExam = function(preparedExam, collectWarnings, dir) {
     NULL
     })
     key = "Success"
-    value = paste(unique(unlist(warnings)), collapse="%;%")
+    value = paste(unique(unlist(warnings)), collapse="<br>")
     if(value != "") key = "Warning"
     
     return(list(message=list(key=key, value=value), files=list(sourceFiles=preparedExam$sourceFiles, examFiles=preparedExam$examFiles)))
@@ -294,7 +316,7 @@ createExam = function(preparedExam, collectWarnings, dir) {
 examCreationResponse = function(session, message, downloadable) {
   showModal(modalDialog(
     title = tags$span(HTML('<span lang="de">Prüfung erstellen</span><span lang="en">Create exam</span>')),
-    tags$span(id="responseMessage", class=message$key, myMessage(message)),
+    tags$span(id="responseMessage", myMessage(message)),
     footer = tagList(
       if (downloadable)
         myDownloadButton('downloadExamFiles'),
@@ -445,7 +467,7 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
       NULL
     })
     key = "Success"
-    value = paste(unique(unlist(warnings)), collapse="%;%")
+    value = paste(unique(unlist(warnings)), collapse="<br>")
     if(value != "") key = "Warning"
 
     return(list(message=list(key=key, value=value), 
@@ -462,7 +484,7 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
 evaluateExamScansResponse = function(session, message, scans_reg_fullJoinData) {
   showModal(modalDialog(
     title = tags$span(HTML('<span lang="de">Scans überprüfen</span><span lang="en">Check scans</span>')),
-    tags$span(id="responseMessage", class=message$key, myMessage(message)),
+    tags$span(id="responseMessage", myMessage(message)),
     tags$div(id="compareScanRegistrationDataTable"),
     tags$div(id="inspectScan"),
     footer = tagList(
@@ -524,7 +546,7 @@ evaluateExamFinalize = function(preparedEvaluation, collectWarnings, dir){
       NULL
     })
     key = "Success"
-    value = paste(unique(unlist(warnings)), collapse="%;%")
+    value = paste(unique(unlist(warnings)), collapse="<br>")
     if(value != "") key = "Warning"
     
     return(list(message=list(key=key, value=value), 
@@ -540,7 +562,7 @@ evaluateExamFinalize = function(preparedEvaluation, collectWarnings, dir){
 evaluateExamFinalizeResponse = function(session, message, downloadable) {
   showModal(modalDialog(
     title = tags$span(HTML('<span lang="de">Prüfung auswerten</span><span lang="en">Evaluate exam</span>')),
-    tags$span(id='responseMessage', class=message$key, myMessage(message)),
+    tags$span(id='responseMessage', myMessage(message)),
     footer = tagList(
       if (downloadable)
         myDownloadButton('downloadEvaluationFiles'),
@@ -669,6 +691,7 @@ languages = c("en",
 #               "es",
 #               "tr")
 rules = list("- 1/max(nwrong, 2)"="false2", "- 1/nwrong"="false", "- 1/ncorrect"="true", "- 1"="all", "- 0"="none")
+messageSymbols = c('<i class=\"fa-solid fa-circle-check\"></i>', '<i class=\"fa-solid fa-triangle-exclamation\"></i>', '<i class=\"fa-solid fa-circle-exclamation\"></i>')
 
 # UI -----------------------------------------------------------------
 ui = fluidPage(
@@ -679,6 +702,7 @@ ui = fluidPage(
 
     # TASKS -------------------------------------------------------------------
     numericInput_seedValue = numericInput("seedValue", label = NULL, value = initSeed, min = seedMin, max = seedMax),
+    checkboxInput_useBlocks = checkboxInput("useBlocks", label = NULL, value = NULL),
     button_taskExportAll = myDownloadButton('taskDownloadAll'),
 
     # EXAM --------------------------------------------------------------------
