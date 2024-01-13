@@ -3,7 +3,7 @@ helpers.installPackages(
   "shinyjs",
   "shinyWidgets",
   "shinycssloaders",
-  "exams",
+  # "exams",
   "xtable",
   "tth",
   "png",
@@ -14,8 +14,9 @@ helpers.installPackages(
   "tinytex"
 )
 
-# install packages from source
-install.packages("./iuftools", repos = NULL, type="source")
+# special install packages
+install.packages("./iuftools", repos=NULL, type="source")
+install.packages("exams", repos="http://R-Forge.R-project.org")
 
 # tex setup
 tinytex::install_tinytex()
