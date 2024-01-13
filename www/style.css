@@ -753,6 +753,19 @@ main > * {
 	margin: 0.25rem;
 }
 
+#compareScanRegistrationDataTable .compareListItem {
+	border: 2px solid var(---transparent);
+}
+
+#compareScanRegistrationDataTable .compareListItem.focus {
+	border: 2px solid var(---main);
+	background: var(---highlight_values);
+}
+
+#compareScanRegistrationDataTable .compareListItem.blur {
+	filter: opacity(0.6);
+}
+
 #focusedCompareListItem .compareListItem {
 	border-bottom: 2px solid var(---main);
 }
@@ -772,8 +785,10 @@ main > * {
 	background: var(---tryCatch_error);
 }
 
-#compareScanRegistrationDataTable .compareListItem:not(.noParticipation):hover {
+#compareScanRegistrationDataTable .compareListItem:not(.noParticipation):not(.focus):hover {
+	filter: unset;
 	background: var(---background3);
+	border: 2px solid var(---main);
 	cursor: pointer;
 }
 

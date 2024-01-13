@@ -1949,7 +1949,9 @@ $('body').on('click', '.compareListItem:not(.noParticipation)', function() {
 		$('#scannedAnswers').append(scannedAnswerItems);
 	}
 	
-	$('#focusedCompareListItem').append($(this));
+	$(this).addClass('focus');
+	$('.compareListItem:not(.focus)').addClass('blur');
+	$(this).clone().appendTo('#focusedCompareListItem')
 	
 	f_langDeEn();
 	$('#inspectScan').show();
@@ -1987,7 +1989,8 @@ function sortCompareListItems(){
 
 function resetInspect(){
 	$('#inspectScan').hide();
-	$('#compareScanRegistrationDataTable').append($('#focusedCompareListItem .compareListItem'));
+	$('.compareListItem').removeClass('blur');
+	$('.compareListItem').removeClass('focus');
 	$('#inspectScan').empty();
 }
 
