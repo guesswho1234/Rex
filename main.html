@@ -2,9 +2,16 @@
 <!-- main.html -->
 <html xmlns="http://www.w3.org/1999/xhtml" lang="de" xml:lang="de">
 	<head>
-		<meta charset="utf-8">
 		<title>Rex</title>	
+		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+		<link rel="manifest" href="/site.webmanifest">
+		<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+		<meta name="msapplication-TileColor" content="#da532c">
+		<meta name="theme-color" content="#ffffff">
 		<link rel="stylesheet" href="style.css">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">	
 		<script src="script.js" defer></script>	
@@ -85,14 +92,12 @@
 								<th><span lang="de">Aufgaben</span><span lang="en">Tasks</span></th>
 								<th><span lang="de">Punkte</span><span lang="en">Points</span></th>
 								<th><span lang="de">Themen</span><span lang="en">Topics</span></th>
-								<th><span lang="de">Typen</span><span lang="en">Types</span></th>
 							</tr>
 							<tr>
 								<td id="s_initialSeed"></td>					
 								<td id="s_numberOfTasks"></td>			
 								<td id="s_totalPoints"></td>		
-								<td id="s_topicsTable"></td>						
-								<td id="s_typeTable"></td>				
+								<td id="s_topicsTable"></td>									
 							</tr>
 						</table>
 					</div>
@@ -124,7 +129,7 @@
 								</label>
 								<div id="examTaskAll" class="listButton">
 									<div class="list_butttonIcon">
-										<span class="iconButton"><i class="fa-solid fa-circle-check"></i></span>
+										<span class="iconButton"><i class="fa-solid fa-star"></i></span>
 										<span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span>
 									</div>
 								</div>								
@@ -169,10 +174,7 @@
 						
 						<label for="tags"><span lang="de">Tags</span><span lang="en">Tags</span></label>
 						<div id="tags"></div>
-						
-						<label for="type"><span lang="de">Typ</span><span lang="en">Type</span></label>
-						<div id="type"></div>
-						
+												
 						<label for="question"><span lang="de">Frage</span><span lang="en">Question</span></label>
 						<div id="question"></div>
 												
