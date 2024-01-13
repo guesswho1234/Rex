@@ -1,5 +1,4 @@
-# tell the buildpack to install the required packages:
-# using the helper caches the installed packages between deployments afaik.
+# install packages
 helpers.installPackages(
   "shinyjs",
   "shinyWidgets",
@@ -15,7 +14,7 @@ helpers.installPackages(
   "tinytex"
 )
 
-# special case of installing iuftools from source
+# install packages from source
 install.packages("./iuftools", repos = NULL, type="source")
 
 # tex setup
