@@ -949,7 +949,7 @@ function createTask(taskID, name='task',
 		setSimpleTaskFileContents(taskID);
 	}
 	
-	$('#task_list_items').append('<div class="taskItem sidebarListItem"><span class="taskName">' + name + '</span></span><span class="taskBlock disabled"><span lang="de">Block:</span><span lang="en">Block:</span><input type="number" value="' + block + '"/></span><span class="taskButtons"><span class="taskParse taskButton disabled"><i class="fa-solid fa-rotate"></i></span><span class="examTask taskButton ' + (editable ? '' : 'disabled') + '"><span class="iconButton"><i class="fa-solid fa-star"></i></span><span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span></span><span class="taskRemove taskButton"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></span></span></div>');
+	$('#task_list_items').append('<div class="taskItem sidebarListItem"><span class="taskName">' + name + '</span></span><span class="taskBlock"><span lang="de">Block:</span><span lang="en">Block:</span><input type="number" value="' + block + '"/></span><span class="taskButtons"><span class="taskParse taskButton disabled"><i class="fa-solid fa-rotate"></i></span><span class="examTask taskButton ' + (editable ? '' : 'disabled') + '"><span class="iconButton"><i class="fa-solid fa-star"></i></span><span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span></span><span class="taskRemove taskButton"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></span></span></div>');
 }
 
 function parseTask(taskID) {	
@@ -1068,6 +1068,16 @@ function filterNodes(element, allow) {
 	return element;
 }
 
+function invalidateAfterEdit(taskID) {
+	setExamTask(taskID, false);
+	iuf['tasks'][taskID]['e'] = 2;
+	iuf['tasks'][taskID]['message'] = '<span class="taskTryCatch Error"><span class="responseSign ErrorSign"><i class="fa-solid fa-circle-exclamation"></i></span><span class="taskTryCatchText">Task needs to be parsed again.</span></span>';
+	
+	$('.taskItem:nth-child(' + (taskID + 1) + ') .examTask').addClass('disabled');
+	$('.taskItem:nth-child(' + (taskID + 1) + ') .taskTryCatch').remove();
+	$('.taskItem:nth-child(' + (taskID + 1) + ')').prepend(iuf['tasks'][taskID]['message']);
+}
+
 $('body').on('focus', '[contenteditable]', function() {
     const $this = $(this);
     $this.data('before', $this.html());
@@ -1076,13 +1086,7 @@ $('body').on('focus', '[contenteditable]', function() {
     if ($this.data('before') !== $this.html()) {
 		const taskID = getID();	
 		
-		setExamTask(taskID, false);
-		iuf['tasks'][taskID]['e'] = 2;
-		iuf['tasks'][taskID]['message'] = '<span class="taskTryCatch Error"><span class="responseSign ErrorSign"><i class="fa-solid fa-circle-exclamation"></i></span><span class="taskTryCatchText">Task needs to be parsed again.</span></span>';
-		
-		$('.taskItem:nth-child(' + (taskID + 1) + ') .examTask').addClass('disabled');
-		$('.taskItem:nth-child(' + (taskID + 1) + ') .taskTryCatch').remove();
-		$('.taskItem:nth-child(' + (taskID + 1) + ')').prepend(iuf['tasks'][taskID]['message']);
+		invalidateAfterEdit(taskID);
 		
 		let content = $this.get(0);
 				
@@ -1270,7 +1274,11 @@ function changeTaskBlock(taskID, b) {
 }
 
 function setExamTask(taskID, b) {
-	$('.taskItem').eq(taskID).toggleClass('exam');	
+	if(b)	
+		$('.taskItem').eq(taskID).addClass('exam');	
+	else
+		$('.taskItem').eq(taskID).removeClass('exam');	
+	
 	iuf['tasks'][taskID]['exam'] = b;
 	
 	examTasksSummary();
@@ -1333,6 +1341,7 @@ $('#task_info').on('click', '#addNewAnswer', function() {
 	iuf['tasks'][taskID]['choices'].push(d_answerText);
 	iuf['tasks'][taskID]['result'].push(d_result);
 	
+	invalidateAfterEdit(taskID);
 	setSimpleTaskFileContents(taskID);
 	loadTaskFromObject(taskID);
 	
@@ -1348,6 +1357,7 @@ $('#task_info').on('click', '.removeAnswer', function() {
 		iuf['tasks'][taskID]['result'].splice(choicesID, 1);
 	} 
 	
+	invalidateAfterEdit(taskID);
 	setSimpleTaskFileContents(taskID);
 	loadTaskFromObject(taskID);
 });

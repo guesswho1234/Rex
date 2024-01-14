@@ -530,6 +530,7 @@ main > * {
 	gap: 5px;
 }
 
+.taskItem:not(.exam) .taskBlock,
 .taskItem:not(.exam) .taskBlock.disabled,
 .taskButton.disabled { 
 	pointer-events: none; 

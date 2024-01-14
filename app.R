@@ -440,6 +440,10 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
       with(preparedEvaluation, {
         # process scans
         scanData = exams::nops_scan(images=files$scans,
+                                    file="test",
+                                    dir=dir)
+        
+        scanData = exams::nops_scan(images=files$scans,
                          file=FALSE,
                          dir=dir)
         scanData = as.data.frame(matrix(Reduce(rbind, lapply(scanData, function(x) strsplit(x, " ")[[1]])), nrow=length(scanData)))
@@ -472,6 +476,9 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
         
         # set "XXXXXXX" as registration number for scans which were not matched with any of the registered participants 
         scans_reg_fullJoinData$registration[is.na(scans_reg_fullJoinData$name) & is.na(scans_reg_fullJoinData$id)] = "XXXXXXX"
+        
+        # set "XXXXXXX" as registration number for scans which show "ERROR" in any field
+        scans_reg_fullJoinData$registration[apply(scans_reg_fullJoinData, 1, function(x) any(x=="ERROR"))] = "XXXXXXX"
         
         scans_reg_fullJoinData <<- scans_reg_fullJoinData
       })
@@ -629,7 +636,7 @@ dir = ""
 # keep = list.files(dir)
 seedMin = 1
 seedMax = 999999999999
-initSeed = NULL
+initSeed = 1
 numberOfTaskBlocks = 1
 maxNumberOfExamTasks = 0
 languages = c("en",
@@ -719,28 +726,7 @@ server = function(input, output, session) {
   session$sendCustomMessage("debugMessage", tempdir())
   session$sendCustomMessage("debugMessage", list.files(tempdir()))
   session$sendCustomMessage("debugMessage", initSeed)
-  
-  # print(tempdir())
-  # dir <<- paste0(dir, "/", session$token)
-  # unlink(tempdir(), recursive = TRUE)
-  # 
-  # dir.create(dir, recursive = TRUE)
-  # Sys.setenv(TMPDIR = tools::file_path_as_absolute(dir))
-  # 
-  # print(tempdir())
-  
-  # dir.create(dir)
-  # Sys.setenv(TMPDIR = tools::file_path_as_absolute(dir))
-  # print(tempdir())
 
-  # print(tempdir())
-  # newtmp <- dir
-  # print(newtmp)
-  # dir.create(newtmp)
-  # Sys.setenv(TMPDIR = tools::file_path_as_absolute(newtmp))
-  # # unlink(tempdir(), recursive = TRUE)
-  # print(tempdir(check=TRUE))
-  
   # CLEANUP -------------------------------------------------------------
   onStop(function() {
     unlink(dir, recursive = TRUE)
