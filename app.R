@@ -624,55 +624,6 @@ rjs_keyValuePairsToJsonObject = function(keys, values){
   return(x)
 }
 
-# checkSeed = function(seed) {
-#   if(!(is.numeric(seed)) || is.null(seed) || is.na(seed)) {
-#     return("")
-#   } 
-#   
-#   if(seed < seedMin) {
-#     return(seedMin)
-#   } 
-#   
-#   if(seed > seedMax) {
-#     return(seedMax)
-#   } 
-# 
-#   return(isolate(seed))
-# }
-# 
-# checkNumberOfExamTasks = function(numberOfExamTasks){
-#   if(!(is.numeric(numberOfExamTasks)) || is.null(numberOfExamTasks) || is.na(numberOfExamTasks)) {
-#     return(0)
-#   } 
-#   
-#   if(numberOfExamTasks < 0) {
-#     return(0)
-#   } 
-#   
-#   if(numberOfExamTasks > maxNumberOfExamTasks){
-#     return(maxNumberOfExamTasks)
-#   } 
-#   
-#   if(numberOfExamTasks %% numberOfTaskBlocks != 0){
-#     return(numberOfTaskBlocks)
-#   } 
-#   
-#   return(isolate(numberOfExamTasks))
-# }
-# 
-# checkPosNumber = function(numberField){
-#   if(!(is.numeric(numberField)) || is.null(numberField) || is.na(numberField)) {
-#     print(isolate(numberField))
-#     return("")
-#   } 
-#   
-#   if(numberField < 0) {
-#     return("")
-#   } 
-#   
-#   return(isolate(numberField))
-# }
-
 # PARAMETERS --------------------------------------------------------------
 dir = tempdir()
 keep = list.files(dir)
@@ -757,9 +708,38 @@ ui = fluidPage(
 
 # SERVER -----------------------------------------------------------------
 server = function(input, output, session) {
+  # STARTUP -------------------------------------------------------------
+  session$sendCustomMessage("debugMessage", session$token)
+  session$sendCustomMessage("debugMessage", dir)
+  
+  dir <<- paste0(dir, "/", session$token)
+  dir.create(dir)
+  removeRuntimeFiles()
+  
+  # print(tempdir())
+  # dir <<- paste0(dir, "/", session$token)
+  # unlink(tempdir(), recursive = TRUE)
+  # 
+  # dir.create(dir, recursive = TRUE)
+  # Sys.setenv(TMPDIR = tools::file_path_as_absolute(dir))
+  # 
+  # print(tempdir())
+  
+  # dir.create(dir)
+  # Sys.setenv(TMPDIR = tools::file_path_as_absolute(dir))
+  # print(tempdir())
+
+  # print(tempdir())
+  # newtmp <- dir
+  # print(newtmp)
+  # dir.create(newtmp)
+  # Sys.setenv(TMPDIR = tools::file_path_as_absolute(newtmp))
+  # # unlink(tempdir(), recursive = TRUE)
+  # print(tempdir(check=TRUE))
+  
   # CLEANUP -------------------------------------------------------------
   onStop(function() {
-    removeRuntimeFiles()
+    unlink(dir, recursive = TRUE)
   })
   # HEARTBEAT -------------------------------------------------------------
   initialState = TRUE
@@ -771,43 +751,6 @@ server = function(input, output, session) {
     }
     initialState <<- FALSE
   })
-  
-  # INPUT VALUE CHANGES -------------------------------------------------------------
-  # # seed change
-  # observeEvent(input$seedValue, {
-  #   updateNumericInput(session, "seedValue", value = checkSeed(input$seedValue))
-  # })
-  # 
-  # # exam seed change
-  # observeEvent(input$seedValueExam, {
-  #   updateNumericInput(session, "seedValueExam", value = checkSeed(input$seedValueExam))
-  # })
-  # 
-  # # number of exam tasks input change
-  # observeEvent(input$numberOfTasks, {
-  #   updateNumericInput(session, "numberOfTasks", value = checkNumberOfExamTasks(input$numberOfTasks))
-  # })
-  # 
-  # # number of blank pages
-  # observeEvent(input$numberOfBlanks, {
-  #   print("test")
-  #   updateNumericInput(session, "numberOfBlanks", value = checkPosNumber(input$numberOfBlanks))
-  # })
-  # 
-  # # number of fixed points per task
-  # observeEvent(input$numberOfFixedPoints, {
-  #   updateNumericInput(session, "numberOfFixedPoints", value = checkPosNumber(input$numberOfBlanks))
-  # })
-  # 
-  # # set max number of exam tasks
-  # observeEvent(input$setNumberOfExamTasks, {
-  #   maxNumberOfExamTasks <<- input$setNumberOfExamTasks
-  # })
-  # 
-  # # set number of task blocks
-  # observeEvent(input$setNumberOfTaskBlocks, {
-  #   numberOfTaskBlocks <<- input$setNumberOfTaskBlocks
-  # })
   
   # EXPORT ALL TASKS ------------------------------------------------------
   # TODO: implement async with popup like exam create / evaluate, ...
