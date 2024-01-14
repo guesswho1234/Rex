@@ -23,7 +23,7 @@ library(openssl) # openssl_2.1.1
 # FUNCTIONS ----------------------------------------------------------------
 removeRuntimeFiles = function() {
   temfiles = list.files(dir)
-  filesToRemove = temfiles[!(temfiles %in% keep)]
+  filesToRemove = temfiles#[!(temfiles %in% keep)]
 
   if(length(filesToRemove) > 0) {
     unlink(paste0(dir, "/", filesToRemove), recursive = TRUE)
@@ -625,11 +625,11 @@ rjs_keyValuePairsToJsonObject = function(keys, values){
 }
 
 # PARAMETERS --------------------------------------------------------------
-dir = tempdir()
-keep = list.files(dir)
+dir = ""
+# keep = list.files(dir)
 seedMin = 1
 seedMax = 999999999999
-initSeed = as.numeric(gsub("-", "", Sys.Date()))
+initSeed = NULL
 numberOfTaskBlocks = 1
 maxNumberOfExamTasks = 0
 languages = c("en",
@@ -709,12 +709,16 @@ ui = fluidPage(
 # SERVER -----------------------------------------------------------------
 server = function(input, output, session) {
   # STARTUP -------------------------------------------------------------
-  session$sendCustomMessage("debugMessage", session$token)
-  session$sendCustomMessage("debugMessage", dir)
-  
-  dir <<- paste0(dir, "/", session$token)
+  dir <<- paste0(tempdir(), "/", session$token)
   dir.create(dir)
   removeRuntimeFiles()
+  
+  initSeed <<- as.numeric(gsub("-", "", Sys.Date()))
+  
+  session$sendCustomMessage("debugMessage", session$token)
+  session$sendCustomMessage("debugMessage", tempdir())
+  session$sendCustomMessage("debugMessage", dir)
+  session$sendCustomMessage("debugMessage", initSeed)
   
   # print(tempdir())
   # dir <<- paste0(dir, "/", session$token)
