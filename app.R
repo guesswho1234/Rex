@@ -717,7 +717,7 @@ server = function(input, output, session) {
   
   session$sendCustomMessage("debugMessage", session$token)
   session$sendCustomMessage("debugMessage", tempdir())
-  session$sendCustomMessage("debugMessage", dir)
+  session$sendCustomMessage("debugMessage", list.files(tempdir()))
   session$sendCustomMessage("debugMessage", initSeed)
   
   # print(tempdir())
