@@ -183,8 +183,30 @@ body.textButtonMode .textButton {
 }
 
 /* -------------------------------------------------------------- */
-/* SECTIONS  */
+/* TOOLTIP  */
 /* -------------------------------------------------------------- */
+/* .tooltip { */
+	/* display: flex; */
+	/* justify-content: center; */
+	/* margin-left: 20px; */
+/* } */
+
+/* .tooltip .tooltiptext { */
+	/* visibility: hidden; */
+	/* z-index: 1; */
+	/* opacity: 0; */
+	/* transition: opacity 0.3s; */
+/* } */
+
+/* #hotkeysActiveContainer:hover .tooltiptext, */
+/* .tooltip:hover .tooltiptext { */
+	/* visibility: visible; */
+	/* opacity: 1; */
+/* } */
+
+--------------------------------------------------------------
+SECTIONS 
+--------------------------------------------------------------
 main > * {
 	margin: 1rem;
 }

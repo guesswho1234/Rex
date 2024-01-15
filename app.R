@@ -722,10 +722,10 @@ server = function(input, output, session) {
   
   initSeed <<- as.numeric(gsub("-", "", Sys.Date()))
   
-  session$sendCustomMessage("debugMessage", session$token)
-  session$sendCustomMessage("debugMessage", tempdir())
-  session$sendCustomMessage("debugMessage", list.files(tempdir()))
-  session$sendCustomMessage("debugMessage", initSeed)
+  # session$sendCustomMessage("debugMessage", session$token)
+  # session$sendCustomMessage("debugMessage", tempdir())
+  # session$sendCustomMessage("debugMessage", list.files(tempdir()))
+  # session$sendCustomMessage("debugMessage", initSeed)
 
   # CLEANUP -------------------------------------------------------------
   onStop(function() {
