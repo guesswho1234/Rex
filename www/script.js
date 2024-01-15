@@ -123,14 +123,26 @@ document.onkeyup = function(evt) {
 }
 
 document.onkeydown = function(evt) {
-	if($('#disableOverlay').hasClass("active")) return;
 	if(!getHotkeysCookie()) return;
 	
 	const evtobj = window.event? event : evt
 	
+	// INSPECT SCAN
+	if( $('#inspectScanButtons').length == 1 ) {
+		switch (evtobj.keyCode) {
+			case 13: // enter
+				applyInspect();
+				break;
+			case 27: // ESC
+				cancleInspect();
+				break;
+		}
+	} 
+	
 	// TASKS
-	if( $('#tasks').hasClass('active') ) {
-		if ($(evtobj.target).is('input') && evtobj.keyCode == 13) {
+	if($('#disableOverlay').hasClass("active")) return;
+	if( $('#tasks').hasClass('active') ) {	
+		if ($(evtobj.target).is('input') && evtobj.keyCode == 13) { // enter
 			$(evtobj.target).change();
 			$(evtobj.target).blur();
 		}
@@ -149,63 +161,66 @@ document.onkeydown = function(evt) {
 		const targetInput = $(evtobj.target).is('input');
 		const itemsExist = $('.taskItem').length > 0;
 			
-		if (!targetInput && !targetEditable && itemsExist) {
-			let updateView = false;
-			
-			if (evtobj.shiftKey) {
-				switch (evtobj.keyCode) {
-					case 65: // shift+a
-						examTaskAll();
-						break;
-					case 68: // shift+d
-						taskRemoveAll();
-						break;
-					case 82: // shift+r 
-						taskParseAll()
-						break;
+		if (!targetInput && !targetEditable) {
+			if(itemsExist){
+				let updateView = false;
+				
+				if (evtobj.shiftKey) {
+					switch (evtobj.keyCode) {
+						case 65: // shift+a
+							examTaskAll();
+							break;
+						case 68: // shift+d
+							taskRemoveAll();
+							break;
+						case 82: // shift+r 
+							taskParseAll()
+							break;
+					}
+				} 
+							
+				if(!evtobj.shiftKey && !evtobj.ctrlKey) {
+					switch (evtobj.keyCode) {
+						case 65: // a
+							if ($('.taskItem.active:not(.filtered)').length > 0 && !$('.taskItem.active:not(.filtered) .examTask').hasClass('disabled')) {
+								$('.taskItem.active:not(.filtered)').closest('.taskItem:not(.filtered)').toggleClass('exam');	
+								setExamTask($('.taskItem.active:not(.filtered)').closest('.taskItem:not(.filtered)').index('.taskItem:not(.filtered)'), $('.taskItem.active:not(.filtered)').closest('.taskItem:not(.filtered)').hasClass('exam'));
+							}
+							break;
+						case 87: // w
+							sidebarMoveUp($('.mainSection.active'));
+							updateView = true;
+							break;
+						case 83: // s
+							sidebarMoveDown($('.mainSection.active'));
+							updateView = true;
+							break;
+						case 68: // d
+							resetOutputFields();	
+							
+							const taskID = $('.taskItem.active:not(.filtered)').closest('.taskItem:not(.filtered)').index('.taskItem:not(.filtered)')
+							removeTask(taskID);
+							$('.taskItem.active:not(.filtered)').closest('.taskItem:not(.filtered)').remove();
+							
+							if($('.taskItem:not(.filtered)').length > 0) {
+								$('.taskItem.active:not(.filtered)').removeClass('active');
+								$('.taskItem:not(.filtered)').eq(Math.min(taskID, $('.taskItem:not(.filtered)').length - 1)).addClass('active');
+							}
+							updateView = true;
+							break;
+						case 82: // r 
+							viewTask($('.taskItem.active:not(.filtered)').first().index('.taskItem'));
+							break;
+
+					}
 				}
-			} 
-			
-			if(!evtobj.shiftKey && !evtobj.ctrlKey) {
-				switch (evtobj.keyCode) {
-					case 65: // a
-						if ($('.taskItem.active:not(.filtered)').length > 0 && !$('.taskItem.active:not(.filtered) .examTask').hasClass('disabled')) {
-							$('.taskItem.active:not(.filtered)').closest('.taskItem:not(.filtered)').toggleClass('exam');	
-							setExamTask($('.taskItem.active:not(.filtered)').closest('.taskItem:not(.filtered)').index('.taskItem:not(.filtered)'), $('.taskItem.active:not(.filtered)').closest('.taskItem:not(.filtered)').hasClass('exam'));
-						}
-						break;
-					case 87: // w
-						sidebarMoveUp($('.mainSection.active'));
-						updateView = true;
-						break;
-					case 83: // s
-						sidebarMoveDown($('.mainSection.active'));
-						updateView = true;
-						break;
-					case 68: // d
-						resetOutputFields();	
-						
-						const taskID = $('.taskItem.active:not(.filtered)').closest('.taskItem:not(.filtered)').index('.taskItem:not(.filtered)')
-						removeTask(taskID);
-						$('.taskItem.active:not(.filtered)').closest('.taskItem:not(.filtered)').remove();
-						
-						if($('.taskItem:not(.filtered)').length > 0) {
-							$('.taskItem.active:not(.filtered)').removeClass('active');
-							$('.taskItem:not(.filtered)').eq(Math.min(taskID, $('.taskItem:not(.filtered)').length - 1)).addClass('active');
-						}
-						updateView = true;
-						break;
-					case 82: // r 
-						viewTask($('.taskItem.active:not(.filtered)').first().index('.taskItem'));
-						break;
-					case 67: // c
-						newSimpleTask();
-						break;
+				
+				if (updateView && $('.taskItem.active:not(.filtered)').length > 0) {
+					viewTask($('.taskItem.active:not(.filtered)').first().index('.taskItem'));
 				}
-			}
-			
-			if (updateView && $('.taskItem.active:not(.filtered)').length > 0) {
-				viewTask($('.taskItem.active:not(.filtered)').first().index('.taskItem'));
+			} else {
+				if (evtobj.keyCode == 67) // c
+					newSimpleTask();
 			}
 		}
 	} else {
@@ -222,8 +237,6 @@ document.onkeydown = function(evt) {
 			}
 		}
 	}
-	
-	// EXAMS
 };
 
 function sidebarMoveUp(parent) {
@@ -2005,6 +2018,10 @@ function resetInspect(){
 }
 
 $('body').on('click', '#applyInspect', function() {
+	applyInspect();
+});
+
+function applyInspect(){
 	const scanFocusedIndex = parseInt($('#focusedCompareListItem .evalIndex').html());
 	const zeroPad = (num, places) => String(num).padStart(places, '0')
 	
@@ -2087,12 +2104,16 @@ $('body').on('click', '#applyInspect', function() {
 	resetInspect();
 	populateCompareTable();
 	sortCompareListItems();
-});
+}
 
 $('body').on('click', '#cancleInspect', function() {
+	cancleInspect();
+});
+
+function cancleInspect(){
 	resetInspect();
 	sortCompareListItems();
-});
+}
 
 $('body').on('click', '#shiny-modal button[data-dismiss="modal"]', function() {
 	$('#disableOverlay').removeClass("active");
