@@ -1363,7 +1363,9 @@ $('#task_info').on('click', '#addNewAnswer', function() {
 
 $('#task_info').on('click', '.removeAnswer', function() {
 	const taskID = getID();
-	const choicesID = $('.removeAnswer').index('.removeAnswer');
+	const choicesID = $(this).index('.removeAnswer');
+	
+	console.log(choicesID);
 	
 	if( iuf['tasks'][taskID]['choices'].length > 0 ) {	
 		iuf['tasks'][taskID]['choices'].splice(choicesID, 1);
