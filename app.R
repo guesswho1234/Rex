@@ -664,6 +664,9 @@ languages = c("en",
 rules = list("- 1/max(nwrong, 2)"="false2", "- 1/nwrong"="false", "- 1/ncorrect"="true", "- 1"="all", "- 0"="none")
 messageSymbols = c('<i class=\"fa-solid fa-circle-check\"></i>', '<i class=\"fa-solid fa-triangle-exclamation\"></i>', '<i class=\"fa-solid fa-circle-exclamation\"></i>')
 
+errorCodes = read.csv("errorCodes.csv")
+errorCodes = setNames(apply(errorCodes[,-1], 1, FUN=as.list), errorCodes[,1])
+
 # UI -----------------------------------------------------------------
 ui = fluidPage(
   shinyjs::useShinyjs(),
