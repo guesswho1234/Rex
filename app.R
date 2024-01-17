@@ -30,6 +30,26 @@ removeRuntimeFiles = function() {
   }
 }
 
+getErrorCodeMessage = function(errorCode) {
+  errorMessage = lapply(names(errorCodes[[errorCode]]), function(lang){
+    paste0("<span lang=\"", lang, "\">", errorCodes[[errorCode]][[lang]], "</span>")  
+  })
+  errorMessage = paste0(errorMessage, collapse="")
+  errorMessage = paste0("<span class=\"errorMessage\">", errorCode, ": ", errorMessage, "</span>", collapse="")
+
+  errorMessage
+}
+
+getWarningCodeMessage = function(warningCode) {
+  warningMessage = lapply(names(warningCodes[[warningCode]]), function(lang){
+    paste0("<span lang=\"", lang, "\">", warningCodes[[warningCode]][[lang]], "</span>")  
+  })
+  warningMessage = paste0(warningMessage, collapse="")
+  warningMessage = paste0("<span class=\"warningMessage\">", warningCode, ": ", warningMessage, "</span>", collapse="")
+  
+  warningMessage
+}
+
 getMessageType = function(message){
   which(message$key==c("Success", "Warning", "Error")) - 1
 }
@@ -38,7 +58,19 @@ myMessage = function(message) {
   type = getMessageType(message)
   
   if(type == 2) {
-    message$value = message$value$message
+    if (message$value$message %in% names(errorCodes)) {
+      message$value = getErrorCodeMessage(message$value$message)
+    } else {
+      message$value = getErrorCodeMessage("E1000")
+    }
+  }
+  
+  if(type == 1) {
+    if (message$value %in% names(warningCodes)) {
+      message$value = getWarningCodeMessage(message$value)
+    } else {
+      message$value = getWarningCodeMessage("W1000")
+    }
   }
   
   message$value = gsub("\"", "'", message$value)
@@ -125,18 +157,33 @@ parseExercise = function(task, seed, collectWarnings, dir){
       htmlTask = exams::exams2html(file, dir = dir, seed = seed, base64 = TRUE)
       
       if (htmlTask$exam1$exercise1$metainfo$type != "mchoice") {
-        stop("Question type is not 'mchoice'.")
+        stop("E1005")
+      }
+      
+      if (length(htmlTask$exam1$exercise1$questionlist) < 2) {
+        stop("E1006")
+      }
+      
+      if (any(duplicated(htmlTask$exam1$exercise1$questionlist))) {
+        stop("E1007")
       }
 
       NULL
     })
     key = "Success"
     value = paste(unique(unlist(warnings)), collapse="<br>")
-    if(value != "") key = "Warning"
+    if(value != "") {
+      key = "Warning"
+      value = "W1001"
+    }
 
     return(list(message=list(key=key, value=value), id=task$taskID, seed=seed, html=htmlTask, figure=figure))
   },
   error = function(e){
+    if(!grepl("E\\d{4}", e$message)){
+      e$message = "E1001"
+    }
+    
     return(list(message=list(key="Error", value=e), id=task$taskID, seed=NULL, html=NULL))
   })
   
@@ -243,7 +290,7 @@ prepareExam = function(exam, seed, input) {
   
   examFields = list(
     file = tasks,
-    fileBoundaries = c(1, 45),
+    fileBoundaries = c(exerciseMin, exerciseMax),
     n = numberOfExams,
     nsamp = tasksPerBlock,
     name = name,
@@ -261,6 +308,9 @@ prepareExam = function(exam, seed, input) {
     seedBoundaries = c(seedMin, seedMax)
   )
   
+  print(seed)
+  print(points)
+  
   examHtmlFiles = paste0(dir, "/", name, 1:exam$numberOfExams, ".html")
   examPdfFiles = paste0(dir, "/", name, 1:exam$numberOfExams, ".pdf")
   examRdsFile = paste0(dir, "/", name, ".rds")
@@ -272,15 +322,23 @@ createExam = function(preparedExam, collectWarnings, dir) {
   out = tryCatch({
     warnings = collectWarnings({
         with(preparedExam$examFields, {
-          # if(length(file) < fileBoundaries[1] || length(file) > fileBoundaries[2]){
-          #   message = "Number of exam tasks is not valid."
-          #   stop(message)
-          # }
-          # 
-          # if(!is.numeric(seed) || (seed < seedBoundaries[1] && seed > seedBoundaries[2])){
-          #   message = "Seed value is not valid."
-          #   stop(message)
-          # }
+
+          if(seed < seedBoundaries[1]){
+            stop("E1008")
+          }
+          
+          if(seed > seedBoundaries[2]){
+            stop("E1009")
+          }
+          
+          if(length(file) < fileBoundaries[1]){
+            stop("E1010")
+          }
+          
+          if(length(file) > fileBoundaries[2]){
+            stop("E1011")
+          }
+          
           
           # create exam html preview with solutions
           exams::exams2html(file = file,
@@ -314,11 +372,18 @@ createExam = function(preparedExam, collectWarnings, dir) {
     })
     key = "Success"
     value = paste(unique(unlist(warnings)), collapse="<br>")
-    if(value != "") key = "Warning"
+    if(value != "") {
+      key = "Warning"
+      value = "W1002"
+    }
     
     return(list(message=list(key=key, value=value), files=list(sourceFiles=preparedExam$sourceFiles, examFiles=preparedExam$examFiles)))
   },
   error = function(e){
+    if(!grepl("E\\d{4}", e$message)){
+      e$message = "E1002"
+    }
+    
     return(list(message=list(key="Error", value=e), files=list()))
   })
   
@@ -438,6 +503,18 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
 
     warnings = collectWarnings({
       with(preparedEvaluation, {
+        if(length(files$scans) < 1){
+          stop("E1012")
+        }
+        
+        if(length(files$registeredParticipants) != 1){
+          stop("E1013")
+        }
+        
+        if(length(files$solution) != 1){
+          stop("E1014")
+        }
+
         # process scans
         scanData = exams::nops_scan(images=files$scans,
                                     file="test",
@@ -487,13 +564,20 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
     })
     key = "Success"
     value = paste(unique(unlist(warnings)), collapse="<br>")
-    if(value != "") key = "Warning"
+    if(value != "") {
+      key = "Warning"
+      value = "W1003"
+    }
 
     return(list(message=list(key=key, value=value), 
                 scans_reg_fullJoinData=scans_reg_fullJoinData, 
                 preparedEvaluation=preparedEvaluation))
   },
   error = function(e){
+    if(!grepl("E\\d{4}", e$message)){
+      e$message = "E1003"
+    }
+    
     return(list(message=list(key="Error", value=e), scans_reg_fullJoinData=NULL, examName=NULL, files=list(), data=list()))
   })
   
@@ -536,14 +620,6 @@ evaluateExamFinalize = function(preparedEvaluation, collectWarnings, dir){
     preparedEvaluation$files$nops_evaluationZip = paste0(dir, "/", nops_evaluation_fileNamePrefix, ".zip")
 
     warnings = collectWarnings({
-      # if(any(is.na(preparedEvaluation$fields$mark))){
-      #   stop("Clef is invalid.")
-      # }
-      # 
-      # if(!is.null(preparedEvaluation$fields$labels) && any(preparedEvaluation$fields$labels=="")){
-      #   stop("Clef is invalid.")
-      # }
-
       with(preparedEvaluation, {
         # finalize evaluation
         exams::nops_eval(
@@ -566,12 +642,19 @@ evaluateExamFinalize = function(preparedEvaluation, collectWarnings, dir){
     })
     key = "Success"
     value = paste(unique(unlist(warnings)), collapse="<br>")
-    if(value != "") key = "Warning"
+    if(value != "") {
+      key = "Warning"
+      value = "W1004"
+    }
     
     return(list(message=list(key=key, value=value), 
                 preparedEvaluation=preparedEvaluation))
   },
   error = function(e){
+    if(!grepl("E\\d{4}", e$message)){
+      e$message = "E1004"
+    }
+    
     return(list(message=list(key="Error", value=e), examName=NULL, files=list()))
   })
 
@@ -633,7 +716,8 @@ rjs_keyValuePairsToJsonObject = function(keys, values){
 
 # PARAMETERS --------------------------------------------------------------
 dir = ""
-# keep = list.files(dir)
+exerciseMin = 1
+exerciseMax = 45
 seedMin = 1
 seedMax = 999999999999
 initSeed = 1
@@ -666,6 +750,9 @@ messageSymbols = c('<i class=\"fa-solid fa-circle-check\"></i>', '<i class=\"fa-
 
 errorCodes = read.csv("errorCodes.csv")
 errorCodes = setNames(apply(errorCodes[,-1], 1, FUN=as.list), errorCodes[,1])
+
+warningCodes = read.csv("warningCodes.csv")
+warningCodes = setNames(apply(warningCodes[,-1], 1, FUN=as.list), warningCodes[,1])
 
 # UI -----------------------------------------------------------------
 ui = fluidPage(
@@ -725,10 +812,9 @@ server = function(input, output, session) {
   
   initSeed <<- as.numeric(gsub("-", "", Sys.Date()))
   
-  # session$sendCustomMessage("debugMessage", session$token)
-  # session$sendCustomMessage("debugMessage", tempdir())
-  # session$sendCustomMessage("debugMessage", list.files(tempdir()))
-  # session$sendCustomMessage("debugMessage", initSeed)
+  session$sendCustomMessage("debugMessage", session$token)
+  session$sendCustomMessage("debugMessage", tempdir())
+  session$sendCustomMessage("debugMessage", list.files(tempdir()))
 
   # CLEANUP -------------------------------------------------------------
   onStop(function() {

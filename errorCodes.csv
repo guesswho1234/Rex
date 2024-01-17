@@ -1,4 +1,16 @@
-code,message_en,message_de
-E1000,test0,test0
-E1001,test1,test1
-E1002,test2,test2
+code,en,de
+E1000,"Unknown error.","Unbekannter Fehler."
+E1001,"Unknown error.","Unbekannter Fehler."
+E1002,"Unknown error.","Unbekannter Fehler."
+E1003,"Unknown error.","Unbekannter Fehler."
+E1004,"Unknown error.","Unbekannter Fehler."
+E1005,Exercise type is not 'mchoice'., Aufgabentyp ist nicht 'mchoice'.
+E1006,Exercise needs at least two choices., Aufgabe benötigt mindestens zwei Antwortmöglichkeiten.
+E1007,Exercise has indentical choices.,Aufgabe hat identische Antwortmöglichkeiten.
+E1008,Seed must at least be one.,Anzahl an Prüfungsaufgaben muss mindestens eins sein.
+E1009,Exam seed must not exceed 99999999.,Prüfungs-Seed darf nicht größer als 99999999 sein.
+E1010,Number of exam tasks must at least be one.,Anzahl an Prüfungsaufgaben muss mindestens eins sein.
+E1011,Number of exam tasks must not exceed 45.,Anzahl an Prüfungsaufgaben darf nicht größer als 45 sein.
+E1012,Number of scanned evaluation sheets must at least be one.,Anzahl an gescannten Antwortbögen muss mindestens eins sein.
+E1013,Number of registered participant files must be one.,Anzahl an Dateien für die angemeldete Teilnehmerinnen und Teilnehmer muss eins sein.
+E1014,Number of exam solution files must be one.,Anzahl an Dateien für die Prüfungslösungen muss eins sein.
