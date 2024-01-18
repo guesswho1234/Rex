@@ -115,8 +115,10 @@ collectWarnings = function(expr) {
 }
 
 prepareExerciseDownloadFiles = function(exercises){
+  exercises$exerciseNames = as.list(make.unique(unlist(exercises$exerciseNames), sep="_"))
+  
   exerciseFiles = unlist(lapply(setNames(seq_along(exercises$exerciseNames), exercises$exerciseNames), function(i){
-    file = tempfile(pattern = paste0(exercises$exerciseNames[[i]], "_"), tmpdir = dir, fileext = ".rnw")
+    file = paste0(dir, "/", exercises$exerciseNames[[i]], ".rnw")
     writeLines(text=gsub("\r\n", "\n", exercises$exerciseCodes[[i]]), con=file)
 
     return(file)
@@ -251,21 +253,14 @@ loadExercise = function(id, seed, html, figure, message, session) {
 }
 
 prepareExam = function(exam, seed, input) {
+  exam$exerciseNames = as.list(make.unique(unlist(exam$exerciseNames), sep="_"))
   exerciseFiles = unlist(lapply(setNames(seq_along(exam$exerciseNames), exam$exerciseNames), function(i){
-    file = tempfile(pattern = paste0(exam$exerciseNames[[i]], "_"), tmpdir = dir, fileext = ".rnw")
+    file = paste0(dir, "/", exam$exerciseNames[[i]], ".rnw")
     writeLines(text=gsub("\r\n", "\n", exam$exerciseCodes[[i]]), con=file, sep="")
 
     return(file)
   }))
   
-  additionalPdfFiles = unlist(lapply(setNames(seq_along(exam$additionalPdfNames), exam$additionalPdfNames), function(i){
-    file = tempfile(pattern = paste0(exam$additionalPdfNames[[i]], "_"), tmpdir = dir, fileext = ".pdf")
-    raw = openssl::base64_decode(exam$additionalPdfFiles[[i]])
-    writeBin(raw, con = file)
-
-    return(file)
-  }))
-
   numberOfExams = as.numeric(exam$numberOfExams)
   blocks = as.numeric(exam$blocks)
   uniqueBlocks = unique(blocks)
@@ -277,8 +272,18 @@ prepareExam = function(exam, seed, input) {
   seedList = seedList * as.numeric(paste0(if(is.na(exam$examSeed)) NULL else exam$examSeed, 1:numberOfExams))
   
   pages = NULL
+  additionalPdfFiles = list()
   
-  if(length(additionalPdfFiles) > 0) {
+  if(length(exam$additionalPdfNames) > 0) {
+    exam$additionalPdfNames = as.list(make.unique(unlist(exam$additionalPdfNames), sep="_"))
+    additionalPdfFiles = unlist(lapply(setNames(seq_along(exam$additionalPdfNames), exam$additionalPdfNames), function(i){
+      file = paste0(dir, "/", exam$additionalPdfNames[[i]], ".pdf")
+      raw = openssl::base64_decode(exam$additionalPdfFiles[[i]])
+      writeBin(raw, con = file)
+      
+      return(file)
+    }))
+    
     pages = additionalPdfFiles
   }
   
@@ -308,9 +313,6 @@ prepareExam = function(exam, seed, input) {
     seedBoundaries = c(seedMin, seedMax)
   )
   
-  print(seed)
-  print(points)
-  
   examHtmlFiles = paste0(dir, "/", name, 1:exam$numberOfExams, ".html")
   examPdfFiles = paste0(dir, "/", name, 1:exam$numberOfExams, ".pdf")
   examRdsFile = paste0(dir, "/", name, ".rds")
@@ -323,11 +325,11 @@ createExam = function(preparedExam, collectWarnings, dir) {
     warnings = collectWarnings({
         with(preparedExam$examFields, {
 
-          if(seed < seedBoundaries[1]){
+          if(any(seed < seedBoundaries[1])){
             stop("E1008")
           }
           
-          if(seed > seedBoundaries[2]){
+          if(any(seed > seedBoundaries[2])){
             stop("E1009")
           }
           
@@ -338,7 +340,6 @@ createExam = function(preparedExam, collectWarnings, dir) {
           if(length(file) > fileBoundaries[2]){
             stop("E1011")
           }
-          
           
           # create exam html preview with solutions
           exams::exams2html(file = file,
@@ -405,8 +406,10 @@ examCreationResponse = function(session, message, downloadable) {
 
 prepareEvaluation = function(evaluation, rotate, input){
   # exam
+  evaluation$examSolutionsName = as.list(make.unique(unlist(evaluation$examSolutionsName), sep="_"))
+  
   solutionFile = unlist(lapply(seq_along(evaluation$examSolutionsName), function(i){
-    file = tempfile(pattern = paste0(evaluation$examSolutionsName[[i]], "_"), tmpdir = dir, fileext = ".rds")
+    file = paste0(dir, "/", evaluation$examSolutionsName[[i]], ".rds")
     raw = openssl::base64_decode(evaluation$examSolutionsFile[[i]])
     writeBin(raw, con = file)
 
@@ -415,48 +418,68 @@ prepareEvaluation = function(evaluation, rotate, input){
   examExerciseMetaData = readRDS(solutionFile)
   
   # registered participants
+  evaluation$examRegisteredParticipantsnName = as.list(make.unique(unlist(evaluation$examRegisteredParticipantsnName), sep="_"))
+  
   registeredParticipantsFile = unlist(lapply(seq_along(evaluation$examRegisteredParticipantsnName), function(i){
-    file = tempfile(pattern = paste0(evaluation$examRegisteredParticipantsnName[[i]], "_"), tmpdir = dir, fileext = ".csv")
+    file = paste0(dir, "/", evaluation$examRegisteredParticipantsnName[[i]], ".csv")
     writeLines(text=gsub("\r\n", "\n", evaluation$examRegisteredParticipantsnFile[[i]]), con=file)
 
     return(file)
   }))
   
   # process scans to end up with only png files at the end
-  pngFiles = unlist(lapply(seq_along(evaluation$examScanPngNames), function(i){
-    file = tempfile(pattern = paste0(evaluation$examScanPngNames[[i]], "_"), tmpdir = dir, fileext = ".png")
-    raw = openssl::base64_decode(evaluation$examScanPngFiles[[i]])
-    writeBin(raw, con = file)
-
-    return(file)
-  }))
+  pngFiles = NULL
+  pdfFiles = NULL
+  convertedPngFiles = NULL
   
-  pdfFiles = lapply(setNames(seq_along(evaluation$examScanPdfNames), evaluation$examScanPdfNames), function(i){
-    file = tempfile(pattern = paste0(evaluation$examScanPdfNames[[i]], "_"), tmpdir = dir, fileext = ".pdf")
-    raw = openssl::base64_decode(evaluation$examScanPdfFiles[[i]])
-    writeBin(raw, con = file)
-
-    if(rotate){
-      output = tempfile(pattern = paste0(evaluation$examScanPdfNames[[i]], "_"), tmpdir = dir, fileext = ".pdf")
-      numberOfPages = qpdf::pdf_length(file)
-      qpdf::pdf_rotate_pages(input=file, output=output, pages=1:numberOfPages, angle=ifelse(rotate, 180, 0))
-
-      file = output
-    }
-    
-    return(file)
-  })
+  if(length(evaluation$examScanPdfNames) > 0){
+    evaluation$examScanPdfNames = as.list(make.unique(unlist(evaluation$examScanPdfNames), sep="_"))
+    pdfFiles = lapply(setNames(seq_along(evaluation$examScanPdfNames), evaluation$examScanPdfNames), function(i){
+      file = paste0(dir, "/", evaluation$examScanPdfNames[[i]], ".pdf")
+      raw = openssl::base64_decode(evaluation$examScanPdfFiles[[i]])
   
-  convertedPngFiles = unlist(lapply(seq_along(pdfFiles), function(i){
-    numberOfPages = qpdf::pdf_length(pdfFiles[[i]])
-    filenames = sapply(1:numberOfPages, function(page){
-     tempfile(pattern = paste0(names(pdfFiles)[i], "_scan", page, "_"), tmpdir = dir, fileext = ".png")
+      if(rotate){
+        file = gsub(".pdf", "_.pdf", file)
+        writeBin(raw, con = file)
+        output = paste0(dir, "/", evaluation$examScanPdfNames[[i]], ".pdf")
+        numberOfPages = qpdf::pdf_length(file)
+        qpdf::pdf_rotate_pages(input=file, output=output, pages=1:numberOfPages, angle=ifelse(rotate, 180, 0))
+  
+        file = output
+      } else {
+        writeBin(raw, con = file)
+      }
+      
+      
+      return(file)
     })
     
-    convertedFiles = pdftools::pdf_convert(pdf=pdfFiles[[i]], filenames=filenames, pages=NULL, format='png', dpi=300, antialias=TRUE, verbose=FALSE)
-  }))
+    convertedPngFiles = unlist(lapply(seq_along(pdfFiles), function(i){
+      numberOfPages = qpdf::pdf_length(pdfFiles[[i]])
+      
+      filenames = sapply(1:numberOfPages, function(page){
+        paste0(dir, "/", names(pdfFiles)[i], "_scan", page, ".png")
+      })
+      
+      convertedFiles = pdftools::pdf_convert(pdf=pdfFiles[[i]], filenames=filenames, pages=NULL, format='png', dpi=300, antialias=TRUE, verbose=FALSE)
+    }))
+  }
   
-  scanFiles = c(pngFiles, convertedPngFiles)
+  if(length(evaluation$examScanPngNames) > 0){
+    namesToConsider = c(sub("(.*\\/)([^.]+)(\\.[[:alnum:]]+$)", "\\2", convertedPngFiles), unlist(evaluation$examScanPngNames))
+    namesToConsider_idx = (length(namesToConsider)-length(evaluation$examScanPngNames) + 1):length(namesToConsider)
+
+    evaluation$examScanPngNames = as.list(make.unique(namesToConsider, sep="_"))[namesToConsider_idx]
+    pngFiles = unlist(lapply(seq_along(evaluation$examScanPngNames), function(i){
+      file = paste0(dir, "/", evaluation$examScanPngNames[[i]], ".png")
+      raw = openssl::base64_decode(evaluation$examScanPngFiles[[i]])
+      writeBin(raw, con = file)
+      
+      return(file)
+    }))
+  }
+  
+  scanFiles = c(convertedPngFiles, pngFiles)
 
   # meta data
   examName = evaluation$examSolutionsName[[1]]
