@@ -54,6 +54,21 @@ getMessageType = function(message){
   which(message$key==c("Success", "Warning", "Error")) - 1
 }
 
+getMessageCode = function(message){
+  type = getMessageType(message)
+  code = NULL
+  
+  if(type == 2) {
+    code = ifelse(message$value$message %in% names(errorCodes), message$value$message, "E1000")
+  }
+  
+  if(type == 1) {
+    code = ifelse(message$value %in% names(errorCodes), message$value$message, "W1000")
+  }
+  
+  code
+}
+
 myMessage = function(message) {
   type = getMessageType(message)
   
@@ -247,8 +262,9 @@ loadExercise = function(id, seed, html, figure, message, session) {
     }
   }
 
-  session$sendCustomMessage("setExerciseMessage", myMessage(message))
-  session$sendCustomMessage("setExerciseE", getMessageType(message))
+  exerciseMessage = myMessage(message)
+  session$sendCustomMessage("setExerciseMessage", exerciseMessage)
+  session$sendCustomMessage("setExerciseE", getMessageCode(message))
   session$sendCustomMessage("setExerciseId", -1)
 }
 
