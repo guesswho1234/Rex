@@ -80,8 +80,8 @@ myMessage = function(message) {
   
 
   messageSign = paste0('<span class="responseSign ', message$key, 'Sign">', messageSymbols[type + 1], '</span>')
-  messageText = paste0('<span class="taskTryCatchText">', message$value , '</span>')
-  messageObject = paste0('<span class="taskTryCatch ', message$key, '">', messageSign, messageText, '</span>')
+  messageText = paste0('<span class="exerciseTryCatchText">', message$value , '</span>')
+  messageObject = paste0('<span class="exerciseTryCatch ', message$key, '">', messageSign, messageText, '</span>')
   
   HTML(messageObject)
 }
@@ -114,28 +114,28 @@ collectWarnings = function(expr) {
   return(warnings)
 }
 
-prepareExportAllTasks = function(tasks){
-  taskFiles = unlist(lapply(setNames(seq_along(tasks$taskNames), tasks$taskNames), function(i){
-    file = tempfile(pattern = paste0(tasks$taskNames[[i]], "_"), tmpdir = dir, fileext = ".rnw")
-    writeLines(text = gsub("\r\n", "\n", tasks$taskCodes[[i]]), con = file)
+prepareExerciseDownloadFiles = function(exercises){
+  exerciseFiles = unlist(lapply(setNames(seq_along(exercises$exerciseNames), exercises$exerciseNames), function(i){
+    file = tempfile(pattern = paste0(exercises$exerciseNames[[i]], "_"), tmpdir = dir, fileext = ".rnw")
+    writeLines(text = gsub("\r\n", "\n", exercises$exerciseCodes[[i]]), con = file)
 
     return(file)
   }))
   
-  return(list(taskFiles=taskFiles))
+  return(list(exerciseFiles=exerciseFiles))
 }
 
-parseExercise = function(task, seed, collectWarnings, dir){
+parseExercise = function(exercise, seed, collectWarnings, dir){
   out = tryCatch({
     warnings = collectWarnings({
-      # show all possible choices when viewing tasks (only relevant for editable tasks)
-      task$taskCode = sub("maxChoices = 5", "maxChoices = NULL", task$taskCode)
+      # show all possible choices when viewing exercises (only relevant for editable exercises)
+      exercise$exerciseCode = sub("maxChoices = 5", "maxChoices = NULL", exercise$exerciseCode)
       
-      # remove image from question when viewing tasks (only relevant for editable tasks)
-      task$taskCode = sub("rnwTemplate_showFigure = TRUE", "rnwTemplate_showFigure = FALSE", task$taskCode)
+      # remove image from question when viewing exercises (only relevant for editable exercises)
+      exercise$exerciseCode = sub("rnwTemplate_showFigure = TRUE", "rnwTemplate_showFigure = FALSE", exercise$exerciseCode)
 
-      # extract figure to display it in the respective field when viewing a task (only relevant for editable tasks)
-      figure = strsplit(task$taskCode, "rnwTemplate_figure=")[[1]][2]
+      # extract figure to display it in the respective field when viewing a exercise (only relevant for editable exercises)
+      figure = strsplit(exercise$exerciseCode, "rnwTemplate_figure=")[[1]][2]
       figure = strsplit(figure, "rnwTemplate_maxChoices")[[1]][1]
       
       figure_split = strsplit(figure,",")[[1]]
@@ -152,19 +152,19 @@ parseExercise = function(task, seed, collectWarnings, dir){
       seed = if(is.na(seed)) NULL else seed
       
       file = tempfile(fileext = ".Rnw")
-      writeLines(text = gsub("\r\n", "\n", task$taskCode), con = file)
+      writeLines(text = gsub("\r\n", "\n", exercise$exerciseCode), con = file)
 
-      htmlTask = exams::exams2html(file, dir = dir, seed = seed, base64 = TRUE)
+      htmlPreview = exams::exams2html(file, dir = dir, seed = seed, base64 = TRUE)
       
-      if (htmlTask$exam1$exercise1$metainfo$type != "mchoice") {
+      if (htmlPreview$exam1$exercise1$metainfo$type != "mchoice") {
         stop("E1005")
       }
       
-      if (length(htmlTask$exam1$exercise1$questionlist) < 2) {
+      if (length(htmlPreview$exam1$exercise1$questionlist) < 2) {
         stop("E1006")
       }
       
-      if (any(duplicated(htmlTask$exam1$exercise1$questionlist))) {
+      if (any(duplicated(htmlPreview$exam1$exercise1$questionlist))) {
         stop("E1007")
       }
 
@@ -177,21 +177,21 @@ parseExercise = function(task, seed, collectWarnings, dir){
       value = "W1001"
     }
 
-    return(list(message=list(key=key, value=value), id=task$taskID, seed=seed, html=htmlTask, figure=figure))
+    return(list(message=list(key=key, value=value), id=exercise$exerciseID, seed=seed, html=htmlPreview, figure=figure))
   },
   error = function(e){
     if(!grepl("E\\d{4}", e$message)){
       e$message = "E1001"
     }
     
-    return(list(message=list(key="Error", value=e), id=task$taskID, seed=NULL, html=NULL))
+    return(list(message=list(key="Error", value=e), id=exercise$exerciseID, seed=NULL, html=NULL))
   })
   
   return(out)
 }
 
 loadExercise = function(id, seed, html, figure, message, session) {
-  session$sendCustomMessage("setTaskId", id)
+  session$sendCustomMessage("setExerciseId", id)
   
   if(!is.null(html)) {
     examHistory = c() 
@@ -223,37 +223,37 @@ loadExercise = function(id, seed, html, figure, message, session) {
     figure = rjs_vectorToJsonStringArray(unlist(figure))
     editable = ifelse(html$exam1$exercise1$metainfo$editable == 1, 1, 0)
     
-    session$sendCustomMessage("setTaskExamHistory", examHistory)
-    session$sendCustomMessage("setTaskAuthoredBy", authoredBy)
-    session$sendCustomMessage("setTaskPrecision", precision)
-    session$sendCustomMessage("setTaskPoints", points)
-    session$sendCustomMessage("setTaskTopic", topic)
-    session$sendCustomMessage("setTaskType", type)
-    session$sendCustomMessage("setTaskTags", tags)
-    session$sendCustomMessage("setTaskSeed", seed)
-    session$sendCustomMessage("setTaskQuestion", question)
-    session$sendCustomMessage("setTaskFigure", figure)
-    session$sendCustomMessage("setTaskEditable", editable)
+    session$sendCustomMessage("setExerciseExamHistory", examHistory)
+    session$sendCustomMessage("setExerciseAuthoredBy", authoredBy)
+    session$sendCustomMessage("setExercisePrecision", precision)
+    session$sendCustomMessage("setExercisePoints", points)
+    session$sendCustomMessage("setExerciseTopic", topic)
+    session$sendCustomMessage("setExerciseType", type)
+    session$sendCustomMessage("setExerciseTags", tags)
+    session$sendCustomMessage("setExerciseSeed", seed)
+    session$sendCustomMessage("setExerciseQuestion", question)
+    session$sendCustomMessage("setExerciseFigure", figure)
+    session$sendCustomMessage("setExerciseEditable", editable)
     
     if(type == c("mchoice")) {
-      session$sendCustomMessage("setTaskChoices", rjs_vectorToJsonStringArray(html$exam1$exercise1$questionlist))
-      session$sendCustomMessage("setTaskResultMchoice", rjs_vectorToJsonArray(tolower(as.character(html$exam1$exercise1$metainfo$solution))))
+      session$sendCustomMessage("setExerciseChoices", rjs_vectorToJsonStringArray(html$exam1$exercise1$questionlist))
+      session$sendCustomMessage("setExerciseResultMchoice", rjs_vectorToJsonArray(tolower(as.character(html$exam1$exercise1$metainfo$solution))))
     } 
     
     if(type == "num") {
-      session$sendCustomMessage("setTaskResultNumeric", result)
+      session$sendCustomMessage("setExerciseResultNumeric", result)
     }
   }
 
-  session$sendCustomMessage("setTaskMessage", myMessage(message))
-  session$sendCustomMessage("setTaskE", getMessageType(message))
-  session$sendCustomMessage("setTaskId", -1)
+  session$sendCustomMessage("setExerciseMessage", myMessage(message))
+  session$sendCustomMessage("setExerciseE", getMessageType(message))
+  session$sendCustomMessage("setExerciseId", -1)
 }
 
 prepareExam = function(exam, seed, input) {
-  taskFiles = unlist(lapply(setNames(seq_along(exam$taskNames), exam$taskNames), function(i){
-    file = tempfile(pattern = paste0(exam$taskNames[[i]], "_"), tmpdir = dir, fileext = ".rnw")
-    writeLines(text = gsub("\r\n", "\n", exam$taskCodes[[i]]), con = file, sep="")
+  exerciseFiles = unlist(lapply(setNames(seq_along(exam$exerciseNames), exam$exerciseNames), function(i){
+    file = tempfile(pattern = paste0(exam$exerciseNames[[i]], "_"), tmpdir = dir, fileext = ".rnw")
+    writeLines(text = gsub("\r\n", "\n", exam$exerciseCodes[[i]]), con = file, sep="")
 
     return(file)
   }))
@@ -269,11 +269,11 @@ prepareExam = function(exam, seed, input) {
   numberOfExams = as.numeric(exam$numberOfExams)
   blocks = as.numeric(exam$blocks)
   uniqueBlocks = unique(blocks)
-  numberOfTasks = as.numeric(exam$numberOfTasks)
-  tasksPerBlock = numberOfTasks / length(uniqueBlocks)
-  tasks = lapply(uniqueBlocks, function(x) taskFiles[blocks==x])
+  numberOfExercises = as.numeric(exam$numberOfExercises)
+  exercisesPerBlock = numberOfExercises / length(uniqueBlocks)
+  exercises = lapply(uniqueBlocks, function(x) exerciseFiles[blocks==x])
 
-  seedList = matrix(1, nrow=numberOfExams, ncol=length(exam$taskNames))
+  seedList = matrix(1, nrow=numberOfExams, ncol=length(exam$exerciseNames))
   seedList = seedList * as.numeric(paste0(if(is.na(exam$examSeed)) NULL else exam$examSeed, 1:numberOfExams))
   
   pages = NULL
@@ -289,10 +289,10 @@ prepareExam = function(exam, seed, input) {
   name = paste0(c("exam", title, course, as.character(date), exam$examSeed, ""), collapse="_")
   
   examFields = list(
-    file = tasks,
+    file = exercises,
     fileBoundaries = c(exerciseMin, exerciseMax),
     n = numberOfExams,
-    nsamp = tasksPerBlock,
+    nsamp = exercisesPerBlock,
     name = name,
     language = input$examLanguage,
     title = title,
@@ -315,7 +315,7 @@ prepareExam = function(exam, seed, input) {
   examPdfFiles = paste0(dir, "/", name, 1:exam$numberOfExams, ".pdf")
   examRdsFile = paste0(dir, "/", name, ".rds")
 
-  return(list(examFields=examFields, examFiles=list(examHtmlFiles=examHtmlFiles, pdfFiles=examPdfFiles, rdsFile=examRdsFile), sourceFiles=list(taskFiles=taskFiles, additionalPdfFiles=additionalPdfFiles)))
+  return(list(examFields=examFields, examFiles=list(examHtmlFiles=examHtmlFiles, pdfFiles=examPdfFiles, rdsFile=examRdsFile), sourceFiles=list(exerciseFiles=exerciseFiles, additionalPdfFiles=additionalPdfFiles)))
 }
 
 createExam = function(preparedExam, collectWarnings, dir) {
@@ -721,8 +721,8 @@ exerciseMax = 45
 seedMin = 1
 seedMax = 999999999999
 initSeed = 1
-numberOfTaskBlocks = 1
-maxNumberOfExamTasks = 0
+numberOfExerciseBlocks = 1
+maxNumberOfExamExercises = 0
 languages = c("en",
               "de")
 # languages = c("en",
@@ -761,15 +761,16 @@ ui = fluidPage(
   htmlTemplate(
     filename = "main.html",
 
-    # TASKS -------------------------------------------------------------------
+    # EXERCISES -------------------------------------------------------------------
     numericInput_seedValue = numericInput("seedValue", label = NULL, value = initSeed, min = seedMin, max = seedMax),
-    button_taskExportAll = myDownloadButton('taskDownloadAll'),
+    button_downloadExercises = myDownloadButton('downloadExercises'),
+    button_downloadExercise = myDownloadButton('downloadExercise'),
 
     # EXAM --------------------------------------------------------------------
       # CREATE ------------------------------------------------------------------
       numericInput_seedValueExam = numericInput("seedValueExam", label = NULL, value = initSeed, min = seedMin, max = seedMax),
       numericInput_numberOfExams = numericInput("numberOfExams", label = NULL, value = 1, min = 1, step = 1),
-      numericInput_numberOfTasks = numericInput("numberOfTasks", label = NULL, value = 0, min = 0, max = 45, step = 1),
+      numericInput_numberOfExercises = numericInput("numberOfExercises", label = NULL, value = 0, min = 0, max = 45, step = 1),
       selectInput_examLanguage = selectInput("examLanguage", label = NULL, choices = languages, selected = NULL, multiple = FALSE),
       textInput_examTitle = textInput("examTitle", label = NULL, value = NULL),
       textInput_examCourse = textInput("examCourse", label = NULL, value = NULL),
@@ -831,32 +832,31 @@ server = function(input, output, session) {
     initialState <<- FALSE
   })
   
-  # EXPORT ALL TASKS ------------------------------------------------------
-  # TODO: implement async with popup like exam create / evaluate, ...
-  # taskFiles = reactiveVal()
-  # 
-  # observeEvent(input$taskExportAllProxy, {
-  #   result = prepareExportAllTasks(isolate(input$taskExportAllProxy))
-  #   taskFiles(unlist(result$taskFiles, recursive = TRUE))
-  #   if(length(isolate(taskFiles())) > 0) {
-  #     # session$sendCustomMessage("taskDownloadAll", 1) #tried via js, same resulst
-  #     print(isolate(taskFiles()))
-  #     # click("taskDownloadAll")
-  #   }
-  # })
-  # 
-  # output$taskDownloadAll = downloadHandler(
-  #   filename = "tasks.zip",
-  #   content = function(fname) {
-  #     zip(zipfile=fname, files=isolate(taskFiles()), flags='-r9XjFS')
-  #   },
-  #   contentType = "application/zip"
-  # )
+  # EXPORT SINGLE EXERCISES ------------------------------------------------------
+  output$downloadExercise = downloadHandler(
+    filename = paste0(isolate(input$exerciseToDownload$exerciseName), ".rnw"),
+    content = function(fname) {
+      writeLines(isolate(input$exerciseToDownload$exerciseCodes), fname)
+    },
+    contentType = "text/rnw"
+  )
+  
+  # EXPORT ALL EXERCISES ------------------------------------------------------
+  output$downloadExercises = downloadHandler(
+    filename = "exercises.zip",
+    content = function(fname) {
+      result = prepareExerciseDownloadFiles(isolate(input$exercisesToDownload))
+      exerciseFiles = unlist(result$exerciseFiles, recursive = TRUE)
 
-  # PARSE TASKS -------------------------------------------------------------
-  # TODO: (sync, prepare function) send list of tasks with javascript taskID and taskCode; 
+      zip(zipfile=fname, files=exerciseFiles, flags='-r9XjFS')
+    },
+    contentType = "application/zip"
+  )
+
+  # PARSE EXERCISES -------------------------------------------------------------
+  # TODO: (sync, prepare function) send list of exercises with javascript exerciseID and exerciseCode; 
   # (sync, prepare function) store all files in temp; 
-  # (a sync, parse function) parse all tasks ans store results as one list and add to taskID;
+  # (a sync, parse function) parse all exercises ans store results as one list and add to exerciseID;
   # (sync, send values to frontend and load into dom)
   exerciseParsing = eventReactive(input$parseExercise, {
     startWait(session)
@@ -868,10 +868,10 @@ server = function(input, output, session) {
       # env = c(callr::rcmd_safe_env(), MAKEBSP = FALSE)
     )
     
-    # x$wait() makes it a sync task again - not what we want, but for now lets do this
-    # in the future maybe send tasks to parse as batch from javascript
-    # then async parse all tasks with one "long" wait screen
-    # fill fields sync by looping through reponses (list of reponses, one for each task parsed)
+    # x$wait() makes it a sync exercise again - not what we want, but for now lets do this
+    # in the future maybe send exercises to parse as batch from javascript
+    # then async parse all exercises with one "long" wait screen
+    # fill fields sync by looping through reponses (list of reponses, one for each exercise parsed)
     x$wait()
     
     return(x)
@@ -943,7 +943,7 @@ server = function(input, output, session) {
     # save input data in reactive value
     examEvaluationData(prepareEvaluation(isolate(input$evaluateExam), isolate(input$rotateScans), isolate(input)))
 
-    # background task
+    # background exercise
     x = callr::r_bg(
       func = evaluateExamScans,
       args = list(isolate(examEvaluationData()), collectWarnings, dir),
@@ -992,7 +992,7 @@ server = function(input, output, session) {
     preparedEvaluation$files = within(preparedEvaluation$files, rm(list=c("scans")))
     examEvaluationData(preparedEvaluation)
     
-    # background task
+    # background exercise
     x = callr::r_bg(
       func = evaluateExamFinalize,
       args = list(isolate(examEvaluationData()), collectWarnings, dir),

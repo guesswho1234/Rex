@@ -94,7 +94,7 @@ nav .nav.navbar-nav a.disabled {
 }
 
 #responseMessage,
-.taskTryCatch .taskTryCatchText {
+.exerciseTryCatch .exerciseTryCatchText {
 	font-family: Consolas;
 	color: #000000cf;
 	border-radius: 3px;
@@ -103,7 +103,7 @@ nav .nav.navbar-nav a.disabled {
 	text-align: left;
 }
 
-#taskUpload {
+#exerciseUpload {
 	font-weight: unset;
 }
 
@@ -414,16 +414,14 @@ main > * {
 	border-radius: 5px;
 }
 
-#taskExportAllProxy {
-	font-weight: normal !important;
-	color: var(---tryCatch_error);
+#downloadExercises {
+	border: none;
+	margin: 0;
+	padding: 0;
+	background: transparent;
 }
 
-#taskDownloadAll {
-	display: none;
-}
-
-#searchTasks input {
+#searchExercises input {
 	width: 100%;
 }
 
@@ -473,51 +471,51 @@ main > * {
 	margin-left: 1.5rem;
 }
 
-#searchTasks {
+#searchExercises {
 	min-width: 150px;
 }
 
 /* --------------------------------------------------------------
- TASKS LIST
+ EXERCISES LIST
 -------------------------------------------------------------- */
-#file-upload_tasks {
+#file-upload_exercises {
     display: none;
 }
 
-#task_list_items {
+#exercise_list_items {
 	display: block;
 }
 
-.taskTryCatch {
+.exerciseTryCatch {
 	position: relative;
 	display: flex;
 	align-items: first baseline;
 }
 
-.taskTryCatch .responseSign {
+.exerciseTryCatch .responseSign {
 	height: 100%;
 	display: flex;
 	place-items: center;
 }
 
-.taskTryCatch.Success {
+.exerciseTryCatch.Success {
 	color: var(---tryCatch_success);
 }
 
-.taskTryCatch.Warning {
+.exerciseTryCatch.Warning {
 	color: var(---tryCatch_warning);
 }
 
-.taskTryCatch.Error {
+.exerciseTryCatch.Error {
 	color: var(---tryCatch_error);
 }
 
-.sidebarListItem.exam .examTask {
+.sidebarListItem.exam .examExercise {
 	color: var(---tryCatch_success);
 	font-weight: bold;
 }
 
-.taskName {
+.exerciseName {
 	max-width: 350px;
 	overflow-wrap: anywhere;
 	height: 100%;
@@ -527,13 +525,13 @@ main > * {
 	margin-left: 0px;
 }
 
-.taskBlock  {
+.exerciseBlock  {
 	margin-right: 0px;
 	margin-left: auto;
 	width: auto;
 }
 
-.taskBlock input {
+.exerciseBlock input {
 	width: 50px;
 	margin-right: 0px;
 	margin-left: auto;
@@ -541,52 +539,52 @@ main > * {
 	font-weight: bold;
 }
 
-.taskBlock span:first-of-type {
+.exerciseBlock span:first-of-type {
 	margin-right: 0.25rem;
 	font-weight: bold;
 }
 
-.taskButtons {
+.exerciseButtons {
 	display: flex;
 	margin-right: 0px;
 	gap: 5px;
 }
 
-.taskItem:not(.exam) .taskBlock,
-.taskItem:not(.exam) .taskBlock.disabled,
-.taskButton.disabled { 
+.exerciseItem:not(.exam) .exerciseBlock,
+.exerciseItem:not(.exam) .exerciseBlock.disabled,
+.exerciseButton.disabled { 
 	pointer-events: none; 
 	filter: opacity(0.2);
 }
 
-.taskParse,
-.examTask,
-.taskRemove {
+.exerciseParse,
+.examExercise,
+.exerciseRemove {
 	padding: 0.25rem;
 }
 
-.taskButton {
+.exerciseButton {
 	border-radius: 5px;
 }
 
-.taskItem.active .taskButton,
-.taskItem:hover .taskButton {
+.exerciseItem.active .exerciseButton,
+.exerciseItem:hover .exerciseButton {
 	background: var(---background);
 	border-radius: 5px;
 	border: 2px solid var(---background);
 }
 
-.taskItem:not(.active):not(:hover) .taskButton {
+.exerciseItem:not(.active):not(:hover) .exerciseButton {
 	background: var(---background3);
 	border-radius: 5px;
 	border: 2px solid var(---background3);
 }
 
-.taskButton:hover {
+.exerciseButton:hover {
 	border: 2px solid var(---main) !important;
 }
 
-.taskTryCatch .taskTryCatchText {
+.exerciseTryCatch .exerciseTryCatchText {
 	visibility: hidden;
 	width: max-content;
 	position: absolute;
@@ -594,39 +592,39 @@ main > * {
 	margin-left: 20px
 }
 
-.taskTryCatch.Success .taskTryCatchText {
+.exerciseTryCatch.Success .exerciseTryCatchText {
 	display: none;
 }
 
-.taskTryCatch.Warning .taskTryCatchText {
+.exerciseTryCatch.Warning .exerciseTryCatchText {
 	background-color: var(---tryCatch_warning);
 }
 	
-.taskTryCatch.Error .taskTryCatchText {
+.exerciseTryCatch.Error .exerciseTryCatchText {
 	background-color: var(---tryCatch_error);
 }
 
-.taskTryCatch:hover .taskTryCatchText {
+.exerciseTryCatch:hover .exerciseTryCatchText {
 	visibility: visible;
 }
 
 /* --------------------------------------------------------------
- TASKS INFO
+ EXERCISES INFO
 -------------------------------------------------------------- */
-#task_info {
+#exercise_info {
 	display: grid;
 	width: 100%;
 }
 
-#task_info.hidden {
+#exercise_info.hidden {
 	display: none !important;
 }
 
-#task_info label {
+#exercise_info label {
 	font-weight: bold;
 }
 
-#task_info > * {
+#exercise_info > * {
 	margin-bottom: 0px;
 	margin-left: 1rem;
 }
@@ -651,7 +649,7 @@ main > * {
 	border-radius: 3px;
 }
 
-#task_info .val {
+#exercise_info .val {
 	color: var(---highlight_values);
 	font-weight: bold;
 }
@@ -731,7 +729,7 @@ main > * {
 	cursor: pointer;
 }
 
-*[contenteditable="true"]:not(.taskName),
+*[contenteditable="true"]:not(.exerciseName),
 .editTrueFalse {
 	padding: 2px;
 }
@@ -750,7 +748,7 @@ main > * {
 	background-color: var(---highlight_values) !important;
 }
 
-#task_info_buttons {
+#exercise_info_buttons {
 	display: flex;
 	gap: 10px;
 }
@@ -938,7 +936,7 @@ main > * {
 	width: 300px;
 }
 
-#file-upload_taskFigure,
+#file-upload_exerciseFigure,
 #file-upload_addAdditionalPdf,
 #file-upload_examScans,
 #file-upload_examSolutions,
@@ -946,7 +944,7 @@ main > * {
     display: none;
 }
 
-.taskFigureUpload,
+.exerciseFigureUpload,
 .examFileUpload {
 	margin-right: 0.25rem;
 	cursor: pointer;
@@ -976,13 +974,13 @@ main > * {
 	cursor: pointer;
 }
 
-#taskFigureFiles img {
+#exerciseFigureFiles img {
 	object-fit: contain;
 	width: 100%;
 	height: 100%;
 }
 
-#taskFigureFiles,
+#exerciseFigureFiles,
 #additionalPdfFiles,
 #examScanFiles,
 #examSolutionsFile,
@@ -992,7 +990,7 @@ main > * {
 	background: var(---background3);
 }
 
-#taskFigure_list_items,
+#exerciseFigure_list_items,
 #additionalPdf_list_items,
 #examScan_list_items,
 #examSolutions_list_items,
@@ -1001,7 +999,7 @@ main > * {
 	padding: 0.25rem;
 }
 
-.taskFigureItem,
+.exerciseFigureItem,
 .additionalPdfItem,
 .examScanItem,
 .examSolutionsItem,
@@ -1012,7 +1010,7 @@ main > * {
 	justify-content: space-between;
 }
 
-.taskFigureName,
+.exerciseFigureName,
 .additionalPdfName,
 .examScanName,
 .examSolutionsName,
@@ -1022,7 +1020,7 @@ main > * {
 	white-space: nowrap;
 }
 
-.taskFigureItem .removeText,
+.exerciseFigureItem .removeText,
 .additionalPdfItem .removeText,
 .examScanItem .removeText,
 .examSolutionsItem .removeText,
@@ -1030,7 +1028,7 @@ main > * {
 	display: none;
 }
 
-.taskFigureItem:hover,
+.exerciseFigureItem:hover,
 .additionalPdfItem:hover,
 .examScanItem:hover,
 .examSolutionsItem:hover,
@@ -1039,7 +1037,7 @@ main > * {
 	cursor: pointer;
 }
 
-.taskFigureItem:hover .removeText,
+.exerciseFigureItem:hover .removeText,
 .additionalPdfItem:hover .removeText,
 .examScanItem:hover .removeText,
 .examSolutionsItem:hover .removeText,
@@ -1047,7 +1045,7 @@ main > * {
 	display: block;
 }
 
-.taskFigureButton,
+.exerciseFigureButton,
 .examFileButton {
 	margin-top: 5px;
 	padding: 0.5rem;
@@ -1056,7 +1054,7 @@ main > * {
 	border: 2px solid var(---background);
 }
 
-.taskFigureButton:hover,
+.exerciseFigureButton:hover,
 .examFileButton:hover {
 	border: 2px solid var(---main);
 }

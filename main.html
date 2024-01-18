@@ -27,10 +27,10 @@
 		<nav class="navbar navbar-default navbar-static-top" role="navigation">
 			<ul class="nav navbar-nav" data-tabsetid="9289">
 				<li class="active">
-					<a href="#tab-9289-1" data-toggle="tab" data-bs-toggle="tab" data-value="tasks">
-						<div id="tasksNav">
+					<a href="#tab-9289-1" data-toggle="tab" data-bs-toggle="tab" data-value="exercises">
+						<div id="exercisesNav">
 							<span lang="de">AUFGABEN</span>
-							<span lang="en">TASKS</span>
+							<span lang="en">EXERCISES</span>
 						</div>
 					</a>
 				</li>
@@ -73,7 +73,7 @@
 			</div>
 		</nav>
 		<main>
-			<div id="tasks" class="mainSection active">
+			<div id="exercises" class="mainSection active">
 				<div class="sectionHeader">
 					<div class="settings">
 						<h1><span lang="de">Einstellungen</span><span lang="en">Settings</span></h1>
@@ -89,74 +89,70 @@
 						<table>
 							<tr>
 								<th><span lang="de">Seed</span><span lang="en">Seed</span></th>
-								<th><span lang="de">Aufgaben</span><span lang="en">Tasks</span></th>
+								<th><span lang="de">Aufgaben</span><span lang="en">Exercises</span></th>
 								<th><span lang="de">Punkte</span><span lang="en">Points</span></th>
 								<th><span lang="de">Themen</span><span lang="en">Topics</span></th>
 							</tr>
 							<tr>
 								<td id="s_initialSeed"></td>					
-								<td id="s_numberOfTasks"></td>			
+								<td id="s_numberOfExercises"></td>			
 								<td id="s_totalPoints"></td>		
 								<td id="s_topicsTable"></td>									
 							</tr>
 						</table>
 					</div>
 				</div>
-				<h1><span lang="de">Aufgaben</span><span lang="en">Tasks</span></h1>
+				<h1><span lang="de">Aufgaben</span><span lang="en">Exercises</span></h1>
 				<div class="contentWrapper">
 					<div class="sidebar">
-						<div id="task_list" class="itemList">
-							<div id="taskListButtons" class="listButtons">
-								<div id="newTask" class="listButton">
+						<div id="exercise_list" class="itemList">
+							<div id="exerciseListButtons" class="listButtons">
+								<div id="newExercise" class="listButton">
 									<div class="list_butttonIcon">
 										<span class="iconButton"><i class="fa-solid fa-plus"></i></span>
 										<span class="textButton"><span lang="de">Neu</span><span lang="en">New</span></span>
 									</div>
 								</div>	
-								<label id="taskUpload" class="listButton" for="file-upload_tasks">
+								<label id="exerciseUpload" class="listButton" for="file-upload_exercises">
 									<div class="list_butttonIcon">
 										<span class="iconButton"><i class="fa-solid fa-upload"></i></span>
 										<span class="textButton"><span lang="de">Importieren</span><span lang="en">Import</span></span>
 									</div>
-									<input type="file" id="file-upload_tasks" onchange='loadTasksFileDialog(this.files);' multiple>
+									<input type="file" id="file-upload_exercises" onchange='loadExercisesFileDialog(this.files);' multiple>
 								</label>
-								<label id="taskExportAllProxy" class="listButton" for="taskExportAll">
-									<div class="list_butttonIcon">
-										<span class="iconButton"><i class="fa-solid fa-download"></i></span>
-										<span class="textButton"><span lang="de">Exportieren</span><span lang="en">Export</span></span>
-									</div>
-									{{ button_taskExportAll }}
+								<label id="exerciseDownloadAll" class="listButton" for="downloadExercises">
+									{{ button_downloadExercises }} 
 								</label>
-								<div id="examTaskAll" class="listButton">
+								<div id="examExerciseAll" class="listButton">
 									<div class="list_butttonIcon">
 										<span class="iconButton"><i class="fa-solid fa-star"></i></span>
 										<span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span>
 									</div>
 								</div>								
-								<div id="taskRemoveAll" class="listButton">
+								<div id="exerciseRemoveAll" class="listButton">
 									<div class="list_butttonIcon">
 										<span class="iconButton"><i class="fa-solid fa-trash"></i></span>
 										<span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span>
 									</div>
 								</div>
-								<div id="taskParseAll" class="listButton">
+								<div id="exerciseParseAll" class="listButton">
 									<div class="list_butttonIcon">
 										<span class="iconButton"><i class="fa-solid fa-rotate"></i></span>
 										<span class="textButton"><span lang="de">Berechnen</span><span lang="en">Parse</span></span>
 									</div>
 								</div>
-								<div id="searchTasks" class="listButton">
+								<div id="searchExercises" class="listButton">
 									<div class="list_butttonIcon">
 										<input type="text"/>
 									</div>
 								</div>
 							</div>
-							<div id="task_list_items">
+							<div id="exercise_list_items">
 							</div>
 						</div>
 					</div>
-					<div id="task_info" class="content hidden">
-						<h2 id="taskName"></h2>
+					<div id="exercise_info" class="content hidden">
+						<h2 id="exerciseName"></h2>
 						<label for="examHistory"><span lang="de">Prüfungshistorie</span><span lang="en">Exam history</span></label>
 						<div id="examHistory"></div>
 						
@@ -180,16 +176,16 @@
 												
 						<label for="figure"><span lang="de">Grafik</span><span lang="en">Figure</span></label>
 						<div id="figure">
-							<label class="taskFigureUpload" for="file-upload_taskFigure">
-								<div class="taskFigureButton">
+							<label class="exerciseFigureUpload" for="file-upload_exerciseFigure">
+								<div class="exerciseFigureButton">
 									<span class="iconButton"><i class="fa-solid fa-upload"></i></span>
 									<span class="textButton"><span lang="de">Importieren</span><span lang="en">Import</span></span>
 								</div>
-								<input type="file" id="file-upload_taskFigure" onchange='loadTaskFigureFileDialog(this.files);' multiple>
+								<input type="file" id="file-upload_exerciseFigure" onchange='loadExerciseFigureFileDialog(this.files);' multiple>
 							</label>
-							<div id="taskFigureFiles">
-								<div id="taskFigure_list" class="itemList">
-									<div id="taskFigure_list_items">
+							<div id="exerciseFigureFiles">
+								<div id="exerciseFigure_list" class="itemList">
+									<div id="exerciseFigure_list_items">
 									</div>
 								</div>
 							</div>
@@ -199,17 +195,16 @@
 						<div id="result">
 						</div>
 						
-						<div id="task_info_buttons">
-							<button id="exportTask" type="button" class="btn btn-default action-button shiny-bound-input">
-								<span class="iconButton"><i class="fa-solid fa-download"></i></span>
-								<span class="textButton"><span lang="de">Exportieren</span><span lang="en">Export</span></span>
-							</button>
+						<div id="exercise_info_buttons">
+							<label id="exerciseDownload" for="downloadExercise">
+								{{ button_downloadExercise }}  
+							</label>
 						</div>
 					</div>	
 				</div>	
-				<div id="dnd_tasks" class="dnd">
+				<div id="dnd_exercises" class="dnd">
 					<div class="dndInfo">
-						<div class="title"><span lang="de">DRAG & DROP</br></br>AUFGABEN (*.rnw)</span><span lang="en">DRAG & DROP</br></br>TASKS (*.rnw)</span></div>
+						<div class="title"><span lang="de">DRAG & DROP</br></br>AUFGABEN (*.rnw)</span><span lang="en">DRAG & DROP</br></br>EXERCISES (*.rnw)</span></div>
 						<div class="dndIcon"><i class="fas fa-file-upload"></i></div>
 					</div>
 				</div>
@@ -232,7 +227,7 @@
 								<div>
 									<label for="seedValueExam"><span lang="de">Seed</span><span lang="en">Seed</span></label>
 									</br>
-									<span id="autofillSeed" class="autofillField"><span lang="de">Seed aus Aufgaben-Bereich kopieren</span><span lang="en">Copy seed from task section</span></span>
+									<span id="autofillSeed" class="autofillField"><span lang="de">Seed aus Aufgaben-Bereich kopieren</span><span lang="en">Copy seed from exercise section</span></span>
 									{{ numericInput_seedValueExam }}
 								</div>
 								<div>
@@ -240,10 +235,10 @@
 									{{ numericInput_numberOfExams }}
 								</div>
 								<div>
-									<label for="numberOfTasks"><span lang="de">Anzahl Aufgaben</span><span lang="en">Number of tasks</span></label>
+									<label for="numberOfExercises"><span lang="de">Anzahl Aufgaben</span><span lang="en">Number of exercises</span></label>
 									</br>
-									<span id="autofillNumberOfTasks" class="autofillField"><span lang="de">Alle markierten Aufgaben</span><span lang="en">All marked tasks</span></span>
-									{{ numericInput_numberOfTasks }}
+									<span id="autofillNumberOfExercises" class="autofillField"><span lang="de">Alle markierten Aufgaben</span><span lang="en">All marked exercises</span></span>
+									{{ numericInput_numberOfExercises }}
 								</div>
 								<div>
 									<label for="numberOfFixedPoints"><span lang="de">Fixe Punkte pro Aufgabe</span><span lang="en">Fixed points per exercise</span></label>
@@ -458,14 +453,14 @@
 					<div class="sidebar">
 						<div id="help_list" class="itemList">
 							<div id="help_list_items">
-								<div class="helpItem sidebarListItem active"><span lang="de">Aufgaben</span><span lang="en">Tasks</span></div>
+								<div class="helpItem sidebarListItem active"><span lang="de">Aufgaben</span><span lang="en">Exercises</span></div>
 								<div class="helpItem sidebarListItem"><span lang="de">Prüfung</span><span lang="en">Exam</span></div>
 							</div>
 						</div>
 					</div>
 					<div class="content">
-						<div id="help_tasks" class="contentTab active">
-							<h2><span lang="de">Aufgaben</span><span lang="en">Tasks</span></h2>
+						<div id="help_exercises" class="contentTab active">
+							<h2><span lang="de">Aufgaben</span><span lang="en">Exercises</span></h2>
 						</div>
 						<div id="help_exam" class="contentTab">
 							<h2><span lang="de">Prüfung</span><span lang="en">Prüfung</span></h2>
