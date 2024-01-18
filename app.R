@@ -23,7 +23,7 @@ library(openssl) # openssl_2.1.1
 # FUNCTIONS ----------------------------------------------------------------
 removeRuntimeFiles = function() {
   temfiles = list.files(dir)
-  filesToRemove = temfiles#[!(temfiles %in% keep)]
+  filesToRemove = temfiles
 
   if(length(filesToRemove) > 0) {
     unlink(paste0(dir, "/", filesToRemove), recursive = TRUE)
