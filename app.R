@@ -117,7 +117,7 @@ collectWarnings = function(expr) {
 prepareExerciseDownloadFiles = function(exercises){
   exerciseFiles = unlist(lapply(setNames(seq_along(exercises$exerciseNames), exercises$exerciseNames), function(i){
     file = tempfile(pattern = paste0(exercises$exerciseNames[[i]], "_"), tmpdir = dir, fileext = ".rnw")
-    writeLines(text = gsub("\r\n", "\n", exercises$exerciseCodes[[i]]), con = file)
+    writeLines(text=gsub("\r\n", "\n", exercises$exerciseCodes[[i]]), con=file)
 
     return(file)
   }))
@@ -152,7 +152,7 @@ parseExercise = function(exercise, seed, collectWarnings, dir){
       seed = if(is.na(seed)) NULL else seed
       
       file = tempfile(fileext = ".Rnw")
-      writeLines(text = gsub("\r\n", "\n", exercise$exerciseCode), con = file)
+      writeLines(text=gsub("\r\n", "\n", exercise$exerciseCode), con=file)
 
       htmlPreview = exams::exams2html(file, dir = dir, seed = seed, base64 = TRUE)
       
@@ -253,7 +253,7 @@ loadExercise = function(id, seed, html, figure, message, session) {
 prepareExam = function(exam, seed, input) {
   exerciseFiles = unlist(lapply(setNames(seq_along(exam$exerciseNames), exam$exerciseNames), function(i){
     file = tempfile(pattern = paste0(exam$exerciseNames[[i]], "_"), tmpdir = dir, fileext = ".rnw")
-    writeLines(text = gsub("\r\n", "\n", exam$exerciseCodes[[i]]), con = file, sep="")
+    writeLines(text=gsub("\r\n", "\n", exam$exerciseCodes[[i]]), con=file, sep="")
 
     return(file)
   }))
@@ -417,7 +417,7 @@ prepareEvaluation = function(evaluation, rotate, input){
   # registered participants
   registeredParticipantsFile = unlist(lapply(seq_along(evaluation$examRegisteredParticipantsnName), function(i){
     file = tempfile(pattern = paste0(evaluation$examRegisteredParticipantsnName[[i]], "_"), tmpdir = dir, fileext = ".csv")
-    writeLines(text = gsub("\r\n", "\n", evaluation$examRegisteredParticipantsnFile[[i]]), con = file)
+    writeLines(text=gsub("\r\n", "\n", evaluation$examRegisteredParticipantsnFile[[i]]), con=file)
 
     return(file)
   }))
@@ -832,11 +832,13 @@ server = function(input, output, session) {
     initialState <<- FALSE
   })
   
-  # EXPORT SINGLE EXERCISES ------------------------------------------------------
+  # EXPORT SINGLE EXERCISE ------------------------------------------------------
   output$downloadExercise = downloadHandler(
-    filename = paste0(isolate(input$exerciseToDownload$exerciseName), ".rnw"),
+    filename = function() {
+      paste0(isolate(input$exerciseToDownload$exerciseName), ".rnw")
+    },
     content = function(fname) {
-      writeLines(isolate(input$exerciseToDownload$exerciseCodes), fname)
+      writeLines(text=gsub("\r\n", "\n", isolate(input$exerciseToDownload$exerciseCode)), con=fname)
     },
     contentType = "text/rnw"
   )
@@ -981,7 +983,7 @@ server = function(input, output, session) {
 
     # write scanData
     scanDatafile = paste0(dir, "/", "Daten.txt")
-    writeLines(text = scanData, con = scanDatafile)
+    writeLines(text=scanData, con=scanDatafile)
     
     # create *_nops_scan.zip file needed for exams::nops_eval
     zipFile = paste0(dir, "/", preparedEvaluation$meta$examName, "_nops_scan.zip")

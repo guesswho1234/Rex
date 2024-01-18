@@ -14,13 +14,6 @@ $(document).ready(function () {
 	iuf['examEvaluation']['registeredParticipants'] = new Array();
 	iuf['examEvaluation']['solutions'] = new Array();
 	iuf['examEvaluation']['scans_reg_fullJoinData'] = new Array();
-	
-	$('#s_initialSeed').html(itemSingle($('#seedValue').val(), 'greenLabel'));
-	$('#s_numberOfExams').html(itemSingle($('#numberOfExams').val(), 'grayLabel'));
-	
-	f_hotKeys();
-	f_buttonMode();
-	f_langDeEn();
 });
 
 /* --------------------------------------------------------------
@@ -32,6 +25,19 @@ $(document).on('shiny:disconnected', function(event) {
    $('#heart span').addClass('dead');
 }).on('shiny:connected', function(event) {
    connected = true;
+});
+
+/* --------------------------------------------------------------
+RSHINY SESSION 
+-------------------------------------------------------------- */
+$(document).on('shiny:sessioninitialized', function(event) {
+	$('#s_initialSeed').html(itemSingle($('#seedValue').val(), 'greenLabel'));
+	$('#s_numberOfExams').html(itemSingle($('#numberOfExams').val(), 'grayLabel'));
+	
+	f_hotKeys();
+	f_buttonMode();
+	f_langDeEn();
+	resetOutputFields();
 });
 
 /* --------------------------------------------------------------
