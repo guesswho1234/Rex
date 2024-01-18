@@ -56,7 +56,7 @@ getMessageType = function(message){
 
 getMessageCode = function(message){
   type = getMessageType(message)
-  code = NULL
+  code = 0
   
   if(type == 2) {
     code = ifelse(message$value$message %in% names(errorCodes), message$value$message, "E1000")
@@ -262,8 +262,7 @@ loadExercise = function(id, seed, html, figure, message, session) {
     }
   }
 
-  exerciseMessage = myMessage(message)
-  session$sendCustomMessage("setExerciseMessage", exerciseMessage)
+  session$sendCustomMessage("setExerciseMessage", myMessage(message))
   session$sendCustomMessage("setExerciseE", getMessageCode(message))
   session$sendCustomMessage("setExerciseId", -1)
 }
@@ -878,8 +877,9 @@ server = function(input, output, session) {
     },
     content = function(fname) {
       writeLines(text=gsub("\r\n", "\n", isolate(input$exerciseToDownload$exerciseCode)), con=fname)
+      removeRuntimeFiles()
     },
-    contentType = "text/rnw"
+    contentType = "text/rnw",
   )
   
   # EXPORT ALL EXERCISES ------------------------------------------------------
@@ -890,8 +890,9 @@ server = function(input, output, session) {
       exerciseFiles = unlist(result$exerciseFiles, recursive = TRUE)
 
       zip(zipfile=fname, files=exerciseFiles, flags='-r9XjFS')
+      removeRuntimeFiles()
     },
-    contentType = "application/zip"
+    contentType = "application/zip",
   )
 
   # PARSE EXERCISES -------------------------------------------------------------

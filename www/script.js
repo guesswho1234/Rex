@@ -1541,8 +1541,8 @@ Shiny.addCustomMessageHandler('setExerciseE', function(e) {
 	const exerciseID = getID();
 	
 	iuf['exercises'][exerciseID]['e'] = e;
-	//TODO disable parse for warnings
-	if(e === null)
+
+	if(e === 0)
 		$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .examExercise').removeClass('disabled');
 		loadExerciseFromObject(exerciseID);
 });
