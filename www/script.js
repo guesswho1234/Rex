@@ -483,7 +483,8 @@ function getFilesDataTransferItems(dataTransferItems) {
  EXERCISES SETTINGS 
 -------------------------------------------------------------- */
 $("#seedValue").change(function(){
-	const seed = $(this).val();
+	const seed = getIntegerInput(1, 999999999999, null, $(this).val());
+	$(this).val(seed);
 	$('#s_initialSeed').html(itemSingle(seed, 'greenLabel'));
 	
 	if(iuf.exercises.length > 0) viewExercise(getID());
@@ -991,7 +992,7 @@ function createExercise(exerciseID, name='exercise',
 		setSimpleExerciseFileContents(exerciseID);
 	}
 	
-	$('#exercise_list_items').append('<div class="exerciseItem sidebarListItem"><span class="exerciseName">' + name + '</span></span><span class="exerciseBlock"><span lang="de">Block:</span><span lang="en">Block:</span><input type="number" value="' + block + '"/></span><span class="exerciseButtons"><span class="exerciseParse exerciseButton disabled"><i class="fa-solid fa-rotate"></i></span><span class="examExercise exerciseButton ' + (editable ? '' : 'disabled') + '"><span class="iconButton"><i class="fa-solid fa-star"></i></span><span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span></span><span class="exerciseRemove exerciseButton"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></span></span></div>');
+	$('#exercise_list_items').append('<div class="exerciseItem sidebarListItem"><span class="exerciseName">' + name + '</span></span><span class="exerciseBlock"><span lang="de">Block:</span><span lang="en">Block:</span><input value="' + block + '"/></span><span class="exerciseButtons"><span class="exerciseParse exerciseButton disabled"><i class="fa-solid fa-rotate"></i></span><span class="examExercise exerciseButton ' + (editable ? '' : 'disabled') + '"><span class="iconButton"><i class="fa-solid fa-star"></i></span><span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span></span><span class="exerciseRemove exerciseButton"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></span></span></div>');
 }
 
 function parseExercise(exerciseID) {	
@@ -1154,13 +1155,15 @@ $('body').on('focus', '[contenteditable]', function() {
 		}
 		
 		if ($this.hasClass('points')) {
-			iuf['exercises'][exerciseID]['points'] = parseInt(content);
+			content = getIntegerInput(0, null, 1, points);
+			iuf['exercises'][exerciseID]['points'] = content;
 		}
 		
 		if ($this.hasClass('topicText')) {
 			iuf['exercises'][exerciseID]['topic'] = content;
 		}
 
+		$this.html(content);
 		setSimpleExerciseFileContents(exerciseID);	
 		examExercisesSummary();
     }
@@ -1304,15 +1307,24 @@ function removeExercise(exerciseID) {
 }
 
 function changeExerciseBlock(exerciseID, b) {
-	b_ = 1;
-	
-	if(Number(b) != NaN) {
-		b_ = Math.max(1, Number(b));
-		iuf['exercises'][exerciseID]['block'] = b_;
-		examExercisesSummary();
-	} 
+	const b_ = getIntegerInput(1, null, 1, b)
+	iuf['exercises'][exerciseID]['block'] = b_;
+	examExercisesSummary();
 	
 	return b_;
+}
+
+function getIntegerInput(min, max, defaultValue, value) {
+	let value_ = defaultValue;
+	
+	if(!isNaN(Number(value)) && value !== null && value !== "") {
+		value = min === null ? value : Math.max(min, Number(value));
+		value = max === null ? value : Math.min(max, Number(value));
+		
+		value_ = parseInt(value)
+	} 
+	
+	return value_;
 }
 
 function setExamExercise(exerciseID, b) {
