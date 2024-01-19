@@ -304,7 +304,7 @@ prepareExam = function(exam, seed, input) {
   
   title = input$examTitle
   course = input$examCourse
-  points = if(!is.na(input$numberOfFixedPoints) && is.numeric(input$numberOfFixedPoints)) input$numberOfFixedPoints else NULL
+  points = if(!is.na(input$fixedPointsExamCreate) && is.numeric(input$fixedPointsExamCreate)) input$fixedPointsExamCreate else NULL
   date = input$examDate
   name = paste0(c("exam", title, course, as.character(date), exam$examSeed, ""), collapse="_")
   
@@ -502,7 +502,7 @@ prepareEvaluation = function(evaluation, rotate, input){
   numChoices = length(examExerciseMetaData[[1]][[1]]$questionlist)
   
   # additional settings
-  points = input$fixedPoints
+  points = input$fixedPointsExamEvaluate
   if(is.numeric(points) && points > 0) {
     points = rep(points, numExercises)
   } else {
@@ -800,36 +800,36 @@ ui = fluidPage(
     filename = "main.html",
 
     # EXERCISES -------------------------------------------------------------------
-    numericInput_seedValue = numericInput("seedValue", label = NULL, value = initSeed, min = seedMin, max = seedMax),
+    textInput_seedValue = textInput("seedValue", label = NULL, value = initSeed),
     button_downloadExercises = myDownloadButton('downloadExercises'),
     button_downloadExercise = myDownloadButton('downloadExercise'),
 
     # EXAM --------------------------------------------------------------------
       # CREATE ------------------------------------------------------------------
-      numericInput_seedValueExam = numericInput("seedValueExam", label = NULL, value = initSeed, min = seedMin, max = seedMax),
-      numericInput_numberOfExams = numericInput("numberOfExams", label = NULL, value = 1, min = 1, step = 1),
-      numericInput_numberOfExercises = numericInput("numberOfExercises", label = NULL, value = 0, min = 0, max = 45, step = 1),
+      textInput_seedValueExam = textInput("seedValueExam", label = NULL, value = initSeed),
+      textInput_numberOfExams = textInput("numberOfExams", label = NULL, value = 1),
+      textInput_numberOfExercises = textInput("numberOfExercises", label = NULL, value = 0),
       selectInput_examLanguage = selectInput("examLanguage", label = NULL, choices = languages, selected = NULL, multiple = FALSE),
       textInput_examTitle = textInput("examTitle", label = NULL, value = NULL),
       textInput_examCourse = textInput("examCourse", label = NULL, value = NULL),
       textInput_examInstitution = textInput("examInstitution", label = NULL, value = NULL),
       dateInput_examDate = dateInput("examDate", label = NULL, value = NULL, format = "yyyy-mm-dd"),
-      numericInput_numberOfBlanks = numericInput("numberOfBlanks", label = NULL, value = 0, min = 0),
-      numericInput_numberOfFixedPoints = numericInput("numberOfFixedPoints", label = NULL, value = NULL, min = 1),
+      textInput_numberOfBlanks = textInput("numberOfBlanks", label = NULL, value = 0),
+      textInput_fixedPointsExamCreate = textInput("fixedPointsExamCreate", label = NULL, value = NULL),
       checkboxInput_showPoints = checkboxInput("showPoints", label = NULL, value = NULL),
       checkboxInput_duplex = checkboxInput("duplex", label = NULL, value = NULL),
 
       # EVALUATE ----------------------------------------------------------------
-      numericInput_fixedPoints = numericInput("fixedPoints", label = NULL, value = NULL, min = 0),
+      textInput_fixedPointsExamEvaluate = textInput("fixedPointsExamEvaluate", label = NULL, value = NULL),
       checkboxInput_partialPoints = checkboxInput("partialPoints", label = NULL, value = NULL),
       checkboxInput_negativePoints = checkboxInput("negativePoints", label = NULL, value = NULL),
       selectInput_rule = selectInput("rule", label = NULL, choices = rules, selected = NULL, multiple = FALSE),
     
-      numericInput_markThreshold1 = numericInput("markThreshold1", label = NULL, value = 0, min = 0),
-      numericInput_markThreshold2 = numericInput("markThreshold2", label = NULL, value = 0.5, min = 0),
-      numericInput_markThreshold3 = numericInput("markThreshold3", label = NULL, value = 0.6, min = 0),
-      numericInput_markThreshold4 = numericInput("markThreshold4", label = NULL, value = 0.75, min = 0),
-      numericInput_markThreshold5 = numericInput("markThreshold5", label = NULL, value = 0.85, min = 0),
+      textInput_markThreshold1 = textInput("markThreshold1", label = NULL, value = 0),
+      textInput_markThreshold2 = textInput("markThreshold2", label = NULL, value = 0.5),
+      textInput_markThreshold3 = textInput("markThreshold3", label = NULL, value = 0.6),
+      textInput_markThreshold4 = textInput("markThreshold4", label = NULL, value = 0.75),
+      textInput_markThreshold5 = textInput("markThreshold5", label = NULL, value = 0.85),
       
       textInput_markLabel1 = textInput("markLabel1", label = NULL, value = NULL),
       textInput_markLabe12 = textInput("markLabe12", label = NULL, value = NULL),

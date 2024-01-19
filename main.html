@@ -80,7 +80,7 @@
 						<div>
 							<div>
 								<label for="seedValue"><span lang="de">Seed</span><span lang="en">Seed</span></label>
-								{{ numericInput_seedValue }}
+								{{ textInput_seedValue }}
 							</div>
 						</div>
 					</div>
@@ -228,21 +228,21 @@
 									<label for="seedValueExam"><span lang="de">Seed</span><span lang="en">Seed</span></label>
 									</br>
 									<span id="autofillSeed" class="autofillField"><span lang="de">Seed aus Aufgaben-Bereich kopieren</span><span lang="en">Copy seed from exercise section</span></span>
-									{{ numericInput_seedValueExam }}
+									{{ textInput_seedValueExam }}
 								</div>
 								<div>
 									<label for="numberOfExams"><span lang="de">Anzahl Varianten</span><span lang="en">Number of scramblings</span></label>
-									{{ numericInput_numberOfExams }}
+									{{ textInput_numberOfExams }}
 								</div>
 								<div>
 									<label for="numberOfExercises"><span lang="de">Anzahl Aufgaben</span><span lang="en">Number of exercises</span></label>
 									</br>
 									<span id="autofillNumberOfExercises" class="autofillField"><span lang="de">Alle markierten Aufgaben</span><span lang="en">All marked exercises</span></span>
-									{{ numericInput_numberOfExercises }}
+									{{ textInput_numberOfExercises }}
 								</div>
 								<div>
-									<label for="numberOfFixedPoints"><span lang="de">Fixe Punkte pro Aufgabe</span><span lang="en">Fixed points per exercise</span></label>
-									{{ numericInput_numberOfFixedPoints }}
+									<label for="fixedPointsExamCreate"><span lang="de">Fixe Punkte pro Aufgabe</span><span lang="en">Fixed points per exercise</span></label>
+									{{ textInput_fixedPointsExamCreate }}
 								</div>
 								<div>
 									<label for="showPoints"><span lang="de">Punkte anzeigen</span><span lang="en">Show points</span></label>
@@ -278,7 +278,7 @@
 									<label for="numberOfBlanks"><span lang="de">Anzahl leeren Seiten</span><span lang="en">Number of blank pages</span></label>
 									</br>
 									<span id="infoNumberOfBlanks" class="infoField"><span lang="de">Werden am Ende der Prüfung angehängt</span><span lang="en">Are appended to the end of the exam</span></span>
-									{{ numericInput_numberOfBlanks }}
+									{{ textInput_numberOfBlanks }}
 								</div>
 								<div>
 									<label><span lang="de">Zusatz Pdf-Seiten</span><span lang="en">Additional Pdf pages</span></label>
@@ -316,8 +316,8 @@
 							<h2><span lang="de">Prüfung Auswerten</span><span lang="en">Evaluate exam</span></h2>
 							<div>
 								<div>
-									<label for="fixedPoints"><span lang="de">Fixe Punkte pro Aufgabe</span><span lang="en">Fixed points per exercise</span></label>
-									{{ numericInput_fixedPoints }}
+									<label for="fixedPointsExamEvaluate"><span lang="de">Fixe Punkte pro Aufgabe</span><span lang="en">Fixed points per exercise</span></label>
+									{{ textInput_fixedPointsExamEvaluate }}
 								</div>
 								<div>
 									<label for="partialPoints"><span lang="de">Teilpunkte</span><span lang="en">Partial points</span></label>
@@ -343,23 +343,23 @@
 											<th><span lang="de">Note</span><span lang="en">Mark</span></th>
 										</tr>
 										<tr>
-											<td>{{ numericInput_markThreshold1 }}</td>
+											<td>{{ textInput_markThreshold1 }}</td>
 											<td>{{ textInput_markLabel1 }}</td>
 										</tr>
 										<tr>
-											<td>{{ numericInput_markThreshold2 }}</td>
+											<td>{{ textInput_markThreshold2 }}</td>
 											<td>{{ textInput_markLabe12 }}</td>
 										</tr>
 										<tr>
-											<td>{{ numericInput_markThreshold3 }}</td>
+											<td>{{ textInput_markThreshold3 }}</td>
 											<td>{{ textInput_markLabel3 }}</td>
 										</tr>
 										<tr>
-											<td>{{ numericInput_markThreshold4 }}</td>
+											<td>{{ textInput_markThreshold4 }}</td>
 											<td>{{ textInput_markLabel4 }}</td>
 										</tr>
 										<tr>
-											<td>{{ numericInput_markThreshold5 }}</td>
+											<td>{{ textInput_markThreshold5 }}</td>
 											<td>{{ textInput_markLabel5 }}</td>
 										</tr>
 									</table>

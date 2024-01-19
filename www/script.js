@@ -1327,6 +1327,19 @@ function getIntegerInput(min, max, defaultValue, value) {
 	return value_;
 }
 
+function getFloatInput(min, max, defaultValue, value) {
+	let value_ = defaultValue;
+	
+	if(!isNaN(Number(value)) && value !== null && value !== "") {
+		value = min === null ? value : Math.max(min, Number(value));
+		value = max === null ? value : Math.min(max, Number(value));
+		
+		value_ = parseFloat(value)
+	} 
+	
+	return value_;
+}
+
 function setExamExercise(exerciseID, b) {
 	if(b)	
 		$('.exerciseItem').eq(exerciseID).addClass('exam');	
@@ -1661,25 +1674,38 @@ function removeAdditionalPdf(element) {
 	element.remove();
 }
 
+$('#seedValueExam').change(function(){
+	$(this).val(getIntegerInput(1, 99999999, 1, $(this).val()));
+}); 
+
 $('#additionalPdf_list_items').on('click', '.additionalPdfItem', function() {
 	removeAdditionalPdf($(this));
 });
 
 $("#numberOfExams").change(function(){
+	$(this).val(getIntegerInput(1, null, 1, $(this).val()));
 	$('#s_numberOfExams').html(itemSingle($(this).val(), 'grayLabel'));
 }); 
 
 $("#autofillSeed").click(function(){
-	$('#seedValueExam').val($('#seedValue').val());
+	const seed = $(this).val(getIntegerInput(1, 99999999, 1, $(this).val()));
+	$('#seedValueExam').val(seed);
 }); 
 
-$("#numberOfFixedPoints").change(function(){
-	const text = $('#s_numberOfExercises span').text();
-	$('#s_numberOfExercises span').text(text.replace(/^.+\//, $('#numberOfExercises').val() + '/' ));
+$("#fixedPointsExamCreate").change(function(){
+	$(this).val(getIntegerInput(1, null, null, $(this).val()));
+}); 
+
+$("#numberOfExercises").change(function(){
+	$(this).val(getIntegerInput(0, 45, 0, $(this).val()));
+}); 
+
+$("#numberOfBlanks").change(function(){
+	$(this).val(getIntegerInput(0, null, 0, $(this).val()));
 }); 
 
 $("#autofillNumberOfExercises").click(function(){
-	$('#numberOfExercises').val(getNumberOfExamExercises());
+	$('#numberOfExercises').val(getIntegerInput(0, 45, 0, getNumberOfExamExercises()));
 }); 
 
 $("#createExamEvent").click(function(){
@@ -1862,6 +1888,43 @@ $('#examSolutions_list_items').on('click', '.examSolutionsItem', function() {
 	removeSolutions($(this));
 });
 
+$("#fixedPointsExamEvaluate").change(function(){
+	$(this).val(getIntegerInput(1, null, null, $(this).val()));
+}); 
+
+$("#markThreshold1").change(function(){
+	$(this).val(getFloatInput(0, null, 0, $(this).val()));
+}); 
+
+$("#markThreshold2").change(function(){
+	$(this).val(getFloatInput(0, null, 0.5, $(this).val()));
+}); 
+
+$("#markThreshold3").change(function(){
+	$(this).val(getFloatInput(0, null, 0.6, $(this).val()));
+}); 
+
+$("#markThreshold4").change(function(){
+	$(this).val(getFloatInput(0, null, 0.75, $(this).val()));
+}); 
+
+$("#markThreshold5").change(function(){
+	$(this).val(getFloatInput(0, null, 0.85, $(this).val()));
+}); 
+
+
+$('body').on('change', '#inputSheetID', function() {
+	$(this).val(getIntegerInput(0, 99999999999, 0, $(this).val()));
+});
+
+$('body').on('change', '#inputScramblingID', function() {
+	$(this).val(getIntegerInput(0, 99, 0, $(this).val()));
+});
+
+$('body').on('change', '#inputTypeID', function() {
+	$(this).val(getIntegerInput(0, 999, 5, $(this).val()));
+});
+
 function removeRegisteredParticipants(element) {
 	iuf['examEvaluation']['registeredParticipants'] = [];
 	element.remove();
@@ -1899,9 +1962,13 @@ $('body').on('click', '.compareListItem:not(.noParticipation)', function() {
 	resetInspect();
 	sortCompareListItems();
 
+	// inputSheetID type="number" min="0" max="99999999999" step="1"
+	// inputSheetID type="number" min="0" max="99"  step="1"
+	// inputTypeID type="number" min="0" max="999" step="1"
+	
 	const scanFocused = iuf['examEvaluation']['scans_reg_fullJoinData'][parseInt($(this).find('.evalIndex').html())];
 		
-	$('#inspectScan').append('<div id="focusedCompareListItem"></div><div id="inspectScanContent"><div id="inspectScanImage"><img src="data:image/png;base64, ' + scanFocused.blob + '"/></div><div id="inspectScanTemplate"><span id="scannedRegistration"><span id="scannedRegistrationText"><span lang="de">Matrikelnummer:</span><span lang="en">Registration Number:</span></span><select id="selectRegistration" autocomplete="on"></select></span><span id="scannedSheetID"><span id="scannedSheetIDText"><span lang="de">Klausur-ID:</span><span lang="en">Exam ID:</span></span><input id="inputSheetID" type="number" min="0" max="99999999999" step="1"/></span><span id="scannedScramblingID"><span id="scannedScramblingIDText"><span lang="de">Variante:</span><span lang="en">Scrambling:</span></span><input id="inputScramblingID" type="number" min="0" max="99"  step="1"/></span><span id="scannedTypeID"><span id="scannedTypeIDText"><span lang="de">Belegart:</span><span lang="en">Type:</span></span><input id="inputTypeID" type="number" min="0" max="999" step="1"/></span>	<table id="scannedAnswers"></table></div></div><div id="inspectScanButtons"><button id="cancleInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-xmark"></i></span><span class="textButton"><span lang="de">Abbrechen</span><span lang="en">Cancle</span></span></button><button id="applyInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-check"></i></span><span class="textButton"><span lang="de">Übernehmen</span><span lang="en">Apply</span></span></button></div>')
+	$('#inspectScan').append('<div id="focusedCompareListItem"></div><div id="inspectScanContent"><div id="inspectScanImage"><img src="data:image/png;base64, ' + scanFocused.blob + '"/></div><div id="inspectScanTemplate"><span id="scannedRegistration"><span id="scannedRegistrationText"><span lang="de">Matrikelnummer:</span><span lang="en">Registration Number:</span></span><select id="selectRegistration" autocomplete="on"></select></span><span id="scannedSheetID"><span id="scannedSheetIDText"><span lang="de">Klausur-ID:</span><span lang="en">Exam ID:</span></span><input id="inputSheetID"/></span><span id="scannedScramblingID"><span id="scannedScramblingIDText"><span lang="de">Variante:</span><span lang="en">Scrambling:</span></span><input id="inputScramblingID"/></span><span id="scannedTypeID"><span id="scannedTypeIDText"><span lang="de">Belegart:</span><span lang="en">Type:</span></span><input id="inputTypeID"/></span>	<table id="scannedAnswers"></table></div></div><div id="inspectScanButtons"><button id="cancleInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-xmark"></i></span><span class="textButton"><span lang="de">Abbrechen</span><span lang="en">Cancle</span></span></button><button id="applyInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-check"></i></span><span class="textButton"><span lang="de">Übernehmen</span><span lang="en">Apply</span></span></button></div>')
 	
 	// populate input fields
 	let registrations = iuf['examEvaluation']['scans_reg_fullJoinData'].filter(x => x.scan === 'NA').map(x => x.registration);
