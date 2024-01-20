@@ -415,6 +415,9 @@ main > * {
 }
 
 #downloadExercises {
+	height: 26px;
+	display: flex;
+	place-items: center;
 	border: none;
 	margin: 0;
 	padding: 0;

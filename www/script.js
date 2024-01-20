@@ -31,7 +31,7 @@ $(document).on('shiny:disconnected', function(event) {
 RSHINY SESSION 
 -------------------------------------------------------------- */
 $(document).on('shiny:sessioninitialized', function(event) {
-	$('#s_initialSeed').html(itemSingle($('#seedValue').val(), 'greenLabel'));
+	$('#s_initialSeed').html(itemSingle($('#seedValueExercises').val(), 'greenLabel'));
 	$('#s_numberOfExams').html(itemSingle($('#numberOfExams').val(), 'grayLabel'));
 	
 	f_hotKeys();
@@ -482,7 +482,7 @@ function getFilesDataTransferItems(dataTransferItems) {
 /* --------------------------------------------------------------
  EXERCISES SETTINGS 
 -------------------------------------------------------------- */
-$("#seedValue").change(function(){
+$("#seedValueExercises").change(function(){
 	const seed = getIntegerInput(1, 999999999999, null, $(this).val());
 	$(this).val(seed);
 	$('#s_initialSeed').html(itemSingle(seed, 'greenLabel'));
@@ -497,7 +497,7 @@ function examExercisesSummary() {
 	numberOfExamExercises();
 	numberOfExerciseBlocks();
 	 
-	$('#s_initialSeed').html(itemSingle($('#seedValue').val(), 'greenLabel'));
+	$('#s_initialSeed').html(itemSingle($('#seedValueExercises').val(), 'greenLabel'));
 	
 	if($('.exerciseItem.exam').length == 0) { 
 		$('#s_numberOfExercises').html("");
@@ -1038,7 +1038,7 @@ function viewExercise(exerciseID) {
 }
 
 function exerciseShouldbeParsed(exerciseID){
-	const seedChanged = iuf['exercises'][exerciseID]['seed'] == "" || iuf['exercises'][exerciseID]['seed'] != $("#seedValue").val();
+	const seedChanged = iuf['exercises'][exerciseID]['seed'] == "" || iuf['exercises'][exerciseID]['seed'] != $("#seedValueExercises").val();
 	const error = iuf['exercises'][exerciseID]['e'] === 2;
 	
 	return seedChanged || error;
@@ -1688,7 +1688,7 @@ $("#numberOfExams").change(function(){
 }); 
 
 $("#autofillSeed").click(function(){
-	const seed = $(this).val(getIntegerInput(1, 99999999, 1, $(this).val()));
+	const seed = getIntegerInput(1, 99999999, 1, $('#seedValueExercises').val());
 	$('#seedValueExam').val(seed);
 }); 
 

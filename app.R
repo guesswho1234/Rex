@@ -800,7 +800,7 @@ ui = fluidPage(
     filename = "main.html",
 
     # EXERCISES -------------------------------------------------------------------
-    textInput_seedValue = textInput("seedValue", label = NULL, value = initSeed),
+    textInput_seedValueExercises = textInput("seedValueExercises", label = NULL, value = initSeed),
     button_downloadExercises = myDownloadButton('downloadExercises'),
     button_downloadExercise = myDownloadButton('downloadExercise'),
 
@@ -905,7 +905,7 @@ server = function(input, output, session) {
     
     x = callr::r_bg(
       func = parseExercise,
-      args = list(isolate(input$parseExercise), isolate(input$seedValue), collectWarnings, dir),
+      args = list(isolate(input$parseExercise), isolate(input$seedValueExercises), collectWarnings, dir),
       supervise = TRUE
       # env = c(callr::rcmd_safe_env(), MAKEBSP = FALSE)
     )
@@ -936,7 +936,7 @@ server = function(input, output, session) {
   examCreation = eventReactive(input$createExam, {
     startWait(session)
 
-    preparedExam = prepareExam(isolate(input$createExam), isolate(input$seedValue), isolate(input))
+    preparedExam = prepareExam(isolate(input$createExam), isolate(input$seedValueExercises), isolate(input))
 
     x = callr::r_bg(
       func = createExam,
@@ -962,7 +962,7 @@ server = function(input, output, session) {
     filename = paste0(paste0(c("exam", input$examTitle,
                                input$examCourse,
                                as.character(input$examDate),
-                               input$seedValue), collapse="_"), ".zip"),
+                               input$seedValueExercises), collapse="_"), ".zip"),
     content = function(fname) {
       zip(zipfile=fname, files=isolate(examFiles()), flags='-r9XjFS')
     },
