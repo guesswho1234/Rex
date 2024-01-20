@@ -24,6 +24,9 @@ library(openssl) # openssl_2.1.1
 removeRuntimeFiles = function() {
   temfiles = list.files(dir)
   filesToRemove = temfiles
+  
+  session$sendCustomMessage("debugMessage", dir)
+  session$sendCustomMessage("debugMessage", filesToRemove)
 
   if(length(filesToRemove) > 0) {
     unlink(paste0(dir, "/", filesToRemove), recursive = TRUE)
