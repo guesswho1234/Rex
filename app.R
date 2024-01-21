@@ -21,7 +21,13 @@ library(qpdf) # qpdf_1.3.2
 library(openssl) # openssl_2.1.1
 
 # FUNCTIONS ----------------------------------------------------------------
+getDir = function(session) {
+  paste0(tempdir(), "/", session$token)
+}
+
 removeRuntimeFiles = function(session) {
+  dir = getDir(session)
+  
   temfiles = list.files(dir)
   filesToRemove = temfiles
   
@@ -132,7 +138,9 @@ collectWarnings = function(expr) {
   return(warnings)
 }
 
-prepareExerciseDownloadFiles = function(exercises){
+prepareExerciseDownloadFiles = function(session, exercises){
+  dir = getDir(session)
+  
   exercises$exerciseNames = as.list(make.unique(unlist(exercises$exerciseNames), sep="_"))
   
   exerciseFiles = unlist(lapply(setNames(seq_along(exercises$exerciseNames), exercises$exerciseNames), function(i){
@@ -270,7 +278,9 @@ loadExercise = function(id, seed, html, figure, message, session) {
   session$sendCustomMessage("setExerciseId", -1)
 }
 
-prepareExam = function(exam, seed, input) {
+prepareExam = function(session, exam, seed, input) {
+  dir = getDir(session)
+  
   exam$exerciseNames = as.list(make.unique(unlist(exam$exerciseNames), sep="_"))
   exerciseFiles = unlist(lapply(setNames(seq_along(exam$exerciseNames), exam$exerciseNames), function(i){
     file = paste0(dir, "/", exam$exerciseNames[[i]], ".rnw")
@@ -422,7 +432,9 @@ examCreationResponse = function(session, message, downloadable) {
   session$sendCustomMessage("f_langDeEn", 1)
 }
 
-prepareEvaluation = function(evaluation, rotate, input){
+prepareEvaluation = function(session, evaluation, rotate, input){
+  dir = getDir(session)
+  
   # exam
   evaluation$examSolutionsName = as.list(make.unique(unlist(evaluation$examSolutionsName), sep="_"))
   
@@ -756,7 +768,6 @@ rjs_keyValuePairsToJsonObject = function(keys, values){
 }
 
 # PARAMETERS --------------------------------------------------------------
-dir = ""
 exerciseMin = 1
 exerciseMax = 45
 seedMin = 1
@@ -848,8 +859,7 @@ ui = fluidPage(
 # SERVER -----------------------------------------------------------------
 server = function(input, output, session) {
   # STARTUP -------------------------------------------------------------
-  dir <<- paste0(tempdir(), "/", session$token)
-  dir.create(dir)
+  dir.create(getDir(session))
   removeRuntimeFiles(session)
   
   initSeed <<- as.numeric(gsub("-", "", Sys.Date()))
@@ -860,7 +870,7 @@ server = function(input, output, session) {
 
   # CLEANUP -------------------------------------------------------------
   onStop(function() {
-    unlink(dir, recursive = TRUE)
+    unlink(getdir(session), recursive = TRUE)
   })
   # HEARTBEAT -------------------------------------------------------------
   initialState = TRUE
@@ -908,7 +918,7 @@ server = function(input, output, session) {
     
     x = callr::r_bg(
       func = parseExercise,
-      args = list(isolate(input$parseExercise), isolate(input$seedValueExercises), collectWarnings, dir),
+      args = list(isolate(input$parseExercise), isolate(input$seedValueExercises), collectWarnings, getdir(session)),
       supervise = TRUE
       # env = c(callr::rcmd_safe_env(), MAKEBSP = FALSE)
     )
@@ -943,7 +953,7 @@ server = function(input, output, session) {
 
     x = callr::r_bg(
       func = createExam,
-      args = list(preparedExam, collectWarnings, dir),
+      args = list(preparedExam, collectWarnings, getdir(session)),
       supervise = TRUE
     )
 
@@ -991,7 +1001,7 @@ server = function(input, output, session) {
     # background exercise
     x = callr::r_bg(
       func = evaluateExamScans,
-      args = list(isolate(examEvaluationData()), collectWarnings, dir),
+      args = list(isolate(examEvaluationData()), collectWarnings, getdir(session)),
       supervise = TRUE
     )
     
@@ -1017,6 +1027,7 @@ server = function(input, output, session) {
 
   # finalizing evaluation - trigger
   examFinalizeEvaluation = eventReactive(input$proceedEvaluation, {
+    dir = getdir(session)
     removeModal()
     preparedEvaluation = isolate(examEvaluationData())
 
