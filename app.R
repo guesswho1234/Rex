@@ -218,7 +218,7 @@ parseExercise = function(exercise, seed, collectWarnings, dir){
   return(out)
 }
 
-loadExercise = function(id, seed, html, figure, message, session) {
+loadExercise = function(session, id, seed, html, figure, message) {
   session$sendCustomMessage("setExerciseId", id)
   
   if(!is.null(html)) {
@@ -899,7 +899,7 @@ server = function(input, output, session) {
   output$downloadExercises = downloadHandler(
     filename = "exercises.zip",
     content = function(fname) {
-      result = prepareExerciseDownloadFiles(isolate(input$exercisesToDownload))
+      result = prepareExerciseDownloadFiles(session, isolate(input$exercisesToDownload))
       exerciseFiles = unlist(result$exerciseFiles, recursive = TRUE)
 
       zip(zipfile=fname, files=exerciseFiles, flags='-r9XjFS')
@@ -937,7 +937,7 @@ server = function(input, output, session) {
       invalidateLater(millis = 10, session = session)
     } else {
       result = exerciseParsing()$get_result()
-      loadExercise(result$id, result$seed, result$html, result$figure, result$message, session)
+      loadExercise(session, result$id, result$seed, result$html, result$figure, result$message)
       stopWait(session)
     }
   })
@@ -949,7 +949,7 @@ server = function(input, output, session) {
   examCreation = eventReactive(input$createExam, {
     startWait(session)
 
-    preparedExam = prepareExam(isolate(input$createExam), isolate(input$seedValueExercises), isolate(input))
+    preparedExam = prepareExam(session, isolate(input$createExam), isolate(input$seedValueExercises), isolate(input))
 
     x = callr::r_bg(
       func = createExam,
@@ -996,7 +996,7 @@ server = function(input, output, session) {
     startWait(session)
     
     # save input data in reactive value
-    examEvaluationData(prepareEvaluation(isolate(input$evaluateExam), isolate(input$rotateScans), isolate(input)))
+    examEvaluationData(prepareEvaluation(session, isolate(input$evaluateExam), isolate(input$rotateScans), isolate(input)))
 
     # background exercise
     x = callr::r_bg(
