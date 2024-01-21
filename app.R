@@ -20,6 +20,8 @@ library(pdftools) # pdftools_3.4.0
 library(qpdf) # qpdf_1.3.2
 library(openssl) # openssl_2.1.1
 
+library(shinyauthr)
+
 # FUNCTIONS ----------------------------------------------------------------
 getDir = function(session) {
   paste0(tempdir(), "/", session$token)
@@ -806,64 +808,96 @@ errorCodes = setNames(apply(errorCodes[,-1], 1, FUN=as.list), errorCodes[,1])
 warningCodes = read.csv("warningCodes.csv")
 warningCodes = setNames(apply(warningCodes[,-1], 1, FUN=as.list), warningCodes[,1])
 
+# dataframe that holds usernames, passwords and other user data
+user_base <- tibble::tibble(
+  user = c("user1", "user2"),
+  password = sapply(c("pass1", "pass2"), sodium::password_store),
+  permissions = c("admin", "standard"),
+  name = c("User One", "User Two")
+)
+
 # UI -----------------------------------------------------------------
 ui = fluidPage(
   shinyjs::useShinyjs(),
+  
+  # DEBUG
   textOutput("debug"),
+  
+  # AUTH 
+  div(class = "pull-right", shinyauthr::logoutUI(id = "logout")),
+  shinyauthr::loginUI(id = "login"),
+  
+  # TEMPLATE
   htmlTemplate(
     filename = "main.html",
-
-    # EXERCISES -------------------------------------------------------------------
+    # EXERCISES 
     textInput_seedValueExercises = textInput("seedValueExercises", label = NULL, value = initSeed),
     button_downloadExercises = myDownloadButton('downloadExercises'),
     button_downloadExercise = myDownloadButton('downloadExercise'),
+  
+    # EXAM CREATE
+    textInput_seedValueExam = textInput("seedValueExam", label = NULL, value = initSeed),
+    textInput_numberOfExams = textInput("numberOfExams", label = NULL, value = 1),
+    textInput_numberOfExercises = textInput("numberOfExercises", label = NULL, value = 0),
+    selectInput_examLanguage = selectInput("examLanguage", label = NULL, choices = languages, selected = NULL, multiple = FALSE),
+    textInput_examTitle = textInput("examTitle", label = NULL, value = NULL),
+    textInput_examCourse = textInput("examCourse", label = NULL, value = NULL),
+    textInput_examInstitution = textInput("examInstitution", label = NULL, value = NULL),
+    dateInput_examDate = dateInput("examDate", label = NULL, value = NULL, format = "yyyy-mm-dd"),
+    textInput_numberOfBlanks = textInput("numberOfBlanks", label = NULL, value = 0),
+    textInput_fixedPointsExamCreate = textInput("fixedPointsExamCreate", label = NULL, value = NULL),
+    checkboxInput_showPoints = checkboxInput("showPoints", label = NULL, value = NULL),
+    checkboxInput_duplex = checkboxInput("duplex", label = NULL, value = NULL),
 
-    # EXAM --------------------------------------------------------------------
-      # CREATE ------------------------------------------------------------------
-      textInput_seedValueExam = textInput("seedValueExam", label = NULL, value = initSeed),
-      textInput_numberOfExams = textInput("numberOfExams", label = NULL, value = 1),
-      textInput_numberOfExercises = textInput("numberOfExercises", label = NULL, value = 0),
-      selectInput_examLanguage = selectInput("examLanguage", label = NULL, choices = languages, selected = NULL, multiple = FALSE),
-      textInput_examTitle = textInput("examTitle", label = NULL, value = NULL),
-      textInput_examCourse = textInput("examCourse", label = NULL, value = NULL),
-      textInput_examInstitution = textInput("examInstitution", label = NULL, value = NULL),
-      dateInput_examDate = dateInput("examDate", label = NULL, value = NULL, format = "yyyy-mm-dd"),
-      textInput_numberOfBlanks = textInput("numberOfBlanks", label = NULL, value = 0),
-      textInput_fixedPointsExamCreate = textInput("fixedPointsExamCreate", label = NULL, value = NULL),
-      checkboxInput_showPoints = checkboxInput("showPoints", label = NULL, value = NULL),
-      checkboxInput_duplex = checkboxInput("duplex", label = NULL, value = NULL),
-
-      # EVALUATE ----------------------------------------------------------------
-      textInput_fixedPointsExamEvaluate = textInput("fixedPointsExamEvaluate", label = NULL, value = NULL),
-      checkboxInput_partialPoints = checkboxInput("partialPoints", label = NULL, value = NULL),
-      checkboxInput_negativePoints = checkboxInput("negativePoints", label = NULL, value = NULL),
-      selectInput_rule = selectInput("rule", label = NULL, choices = rules, selected = NULL, multiple = FALSE),
+    # EXAM EVALUATE
+    textInput_fixedPointsExamEvaluate = textInput("fixedPointsExamEvaluate", label = NULL, value = NULL),
+    checkboxInput_partialPoints = checkboxInput("partialPoints", label = NULL, value = NULL),
+    checkboxInput_negativePoints = checkboxInput("negativePoints", label = NULL, value = NULL),
+    selectInput_rule = selectInput("rule", label = NULL, choices = rules, selected = NULL, multiple = FALSE),
+  
+    textInput_markThreshold1 = textInput("markThreshold1", label = NULL, value = 0),
+    textInput_markThreshold2 = textInput("markThreshold2", label = NULL, value = 0.5),
+    textInput_markThreshold3 = textInput("markThreshold3", label = NULL, value = 0.6),
+    textInput_markThreshold4 = textInput("markThreshold4", label = NULL, value = 0.75),
+    textInput_markThreshold5 = textInput("markThreshold5", label = NULL, value = 0.85),
     
-      textInput_markThreshold1 = textInput("markThreshold1", label = NULL, value = 0),
-      textInput_markThreshold2 = textInput("markThreshold2", label = NULL, value = 0.5),
-      textInput_markThreshold3 = textInput("markThreshold3", label = NULL, value = 0.6),
-      textInput_markThreshold4 = textInput("markThreshold4", label = NULL, value = 0.75),
-      textInput_markThreshold5 = textInput("markThreshold5", label = NULL, value = 0.85),
-      
-      textInput_markLabel1 = textInput("markLabel1", label = NULL, value = NULL),
-      textInput_markLabe12 = textInput("markLabe12", label = NULL, value = NULL),
-      textInput_markLabel3 = textInput("markLabel3", label = NULL, value = NULL),
-      textInput_markLabel4 = textInput("markLabel4", label = NULL, value = NULL),
-      textInput_markLabel5 = textInput("markLabel5", label = NULL, value = NULL),
-    
-      selectInput_evaluationLanguage = selectInput("evaluationLanguage", label = NULL, choices = languages, selected = NULL, multiple = FALSE),
-      checkboxInput_rotateScans = checkboxInput("rotateScans", label = NULL, value = NULL)
+    textInput_markLabel1 = textInput("markLabel1", label = NULL, value = NULL),
+    textInput_markLabe12 = textInput("markLabe12", label = NULL, value = NULL),
+    textInput_markLabel3 = textInput("markLabel3", label = NULL, value = NULL),
+    textInput_markLabel4 = textInput("markLabel4", label = NULL, value = NULL),
+    textInput_markLabel5 = textInput("markLabel5", label = NULL, value = NULL),
+  
+    selectInput_evaluationLanguage = selectInput("evaluationLanguage", label = NULL, choices = languages, selected = NULL, multiple = FALSE),
+    checkboxInput_rotateScans = checkboxInput("rotateScans", label = NULL, value = NULL)
   )
 )
-
+  
 # SERVER -----------------------------------------------------------------
 server = function(input, output, session) {
+  # AUTH --------------------------------------------------------------------
+  credentials <- shinyauthr::loginServer(
+    id = "login",
+    data = user_base,
+    user_col = user,
+    pwd_col = password,
+    sodium_hashed = TRUE,
+    log_out = reactive(logout_init())
+  )
+  
+  # Logout to hide
+  logout_init <- shinyauthr::logoutServer(
+    id = "logout",
+    active = reactive(credentials()$user_auth)
+  )
+  
+  # req(credentials()$user_auth) #TODO: use this as requirement
+  
   # STARTUP -------------------------------------------------------------
   dir.create(getDir(session))
   removeRuntimeFiles(session)
-  
+
   initSeed <<- as.numeric(gsub("-", "", Sys.Date()))
-  
+
   session$sendCustomMessage("debugMessage", session$token)
   session$sendCustomMessage("debugMessage", tempdir())
   session$sendCustomMessage("debugMessage", list.files(tempdir()))
@@ -872,6 +906,7 @@ server = function(input, output, session) {
   onStop(function() {
     unlink(getDir(session), recursive = TRUE)
   })
+  
   # HEARTBEAT -------------------------------------------------------------
   initialState = TRUE
 
@@ -882,7 +917,7 @@ server = function(input, output, session) {
     }
     initialState <<- FALSE
   })
-  
+
   # EXPORT SINGLE EXERCISE ------------------------------------------------------
   output$downloadExercise = downloadHandler(
     filename = function() {
@@ -894,7 +929,7 @@ server = function(input, output, session) {
     },
     contentType = "text/rnw",
   )
-  
+
   # EXPORT ALL EXERCISES ------------------------------------------------------
   output$downloadExercises = downloadHandler(
     filename = "exercises.zip",
@@ -909,29 +944,29 @@ server = function(input, output, session) {
   )
 
   # PARSE EXERCISES -------------------------------------------------------------
-  # TODO: (sync, prepare function) send list of exercises with javascript exerciseID and exerciseCode; 
-  # (sync, prepare function) store all files in temp; 
+  # TODO: (sync, prepare function) send list of exercises with javascript exerciseID and exerciseCode;
+  # (sync, prepare function) store all files in temp;
   # (a sync, parse function) parse all exercises ans store results as one list and add to exerciseID;
   # (sync, send values to frontend and load into dom)
   exerciseParsing = eventReactive(input$parseExercise, {
     startWait(session)
-    
+
     x = callr::r_bg(
       func = parseExercise,
       args = list(isolate(input$parseExercise), isolate(input$seedValueExercises), collectWarnings, getDir(session)),
       supervise = TRUE
       # env = c(callr::rcmd_safe_env(), MAKEBSP = FALSE)
     )
-    
+
     # x$wait() makes it a sync exercise again - not what we want, but for now lets do this
     # in the future maybe send exercises to parse as batch from javascript
     # then async parse all exercises with one "long" wait screen
     # fill fields sync by looping through reponses (list of reponses, one for each exercise parsed)
     x$wait()
-    
+
     return(x)
   })
-  
+
   observe({
     if (exerciseParsing()$is_alive()) {
       invalidateLater(millis = 10, session = session)
@@ -941,7 +976,7 @@ server = function(input, output, session) {
       stopWait(session)
     }
   })
-  
+
   # CREATE EXAM -------------------------------------------------------------
   # exam seed change
   examFiles = reactiveVal()
@@ -981,20 +1016,20 @@ server = function(input, output, session) {
     },
     contentType = "application/zip"
   )
-  
+
   # modal close
   observeEvent(input$dismiss_examCreationResponse, {
     removeModal()
     stopWait(session)
   })
-  
+
   # EVALUATE EXAM -------------------------------------------------------------
   examEvaluationData = reactiveVal()
-  
+
   # evaluate scans - trigger
   examScanEvaluation = eventReactive(input$evaluateExam, {
     startWait(session)
-    
+
     # save input data in reactive value
     examEvaluationData(prepareEvaluation(session, isolate(input$evaluateExam), isolate(input$rotateScans), isolate(input)))
 
@@ -1004,11 +1039,11 @@ server = function(input, output, session) {
       args = list(isolate(examEvaluationData()), collectWarnings, getDir(session)),
       supervise = TRUE
     )
-    
+
     return(x)
   })
-  
-  # evaluate scans - callback 
+
+  # evaluate scans - callback
   observe({
     if (examScanEvaluation()$is_alive()) {
       invalidateLater(millis = 100, session = session)
@@ -1017,10 +1052,10 @@ server = function(input, output, session) {
 
       # save result in reactive value
       examEvaluationData(result$preparedEvaluation)
-      
+
       # open modal
-      evaluateExamScansResponse(session, 
-                       result$message, 
+      evaluateExamScansResponse(session,
+                       result$message,
                        result$scans_reg_fullJoinData)
     }
   })
@@ -1038,23 +1073,23 @@ server = function(input, output, session) {
     # write scanData
     scanDatafile = paste0(dir, "/", "Daten.txt")
     writeLines(text=scanData, con=scanDatafile)
-    
+
     # create *_nops_scan.zip file needed for exams::nops_eval
     zipFile = paste0(dir, "/", preparedEvaluation$meta$examName, "_nops_scan.zip")
     zip(zipFile, c(preparedEvaluation$files$scans, scanDatafile), flags='-r9XjFS')
-    
+
     # manage preparedEvaluation data
     preparedEvaluation$files$scanEvaluation = zipFile
     preparedEvaluation$files = within(preparedEvaluation$files, rm(list=c("scans")))
     examEvaluationData(preparedEvaluation)
-    
+
     # background exercise
     x = callr::r_bg(
       func = evaluateExamFinalize,
       args = list(isolate(examEvaluationData()), collectWarnings, dir),
       supervise = TRUE
     )
-    
+
     return(x)
   })
 
@@ -1064,7 +1099,7 @@ server = function(input, output, session) {
       invalidateLater(millis = 100, session = session)
     } else {
       result = examFinalizeEvaluation()$get_result()
-      
+
       # save result in reactive value
       examEvaluationData(result$preparedEvaluation)
 
@@ -1081,13 +1116,13 @@ server = function(input, output, session) {
     },
     contentType = "application/zip"
   )
-  
+
   # modal close
   observeEvent(input$dismiss_evaluateExamScansResponse, {
     removeModal()
     stopWait(session)
   })
-  
+
   observeEvent(input$dismiss_evaluateExamFinalizeResponse, {
     removeModal()
     stopWait(session)
