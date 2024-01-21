@@ -21,7 +21,7 @@ library(qpdf) # qpdf_1.3.2
 library(openssl) # openssl_2.1.1
 
 # FUNCTIONS ----------------------------------------------------------------
-removeRuntimeFiles = function() {
+removeRuntimeFiles = function(session) {
   temfiles = list.files(dir)
   filesToRemove = temfiles
   
@@ -721,7 +721,7 @@ startWait = function(session){
 }
 
 stopWait = function(session){
-  removeRuntimeFiles()
+  removeRuntimeFiles(session)
   session$sendCustomMessage("wait", 1)
 }
 
@@ -850,7 +850,7 @@ server = function(input, output, session) {
   # STARTUP -------------------------------------------------------------
   dir <<- paste0(tempdir(), "/", session$token)
   dir.create(dir)
-  removeRuntimeFiles()
+  removeRuntimeFiles(session)
   
   initSeed <<- as.numeric(gsub("-", "", Sys.Date()))
   
@@ -880,7 +880,7 @@ server = function(input, output, session) {
     },
     content = function(fname) {
       writeLines(text=gsub("\r\n", "\n", isolate(input$exerciseToDownload$exerciseCode)), con=fname)
-      removeRuntimeFiles()
+      removeRuntimeFiles(session)
     },
     contentType = "text/rnw",
   )
@@ -893,7 +893,7 @@ server = function(input, output, session) {
       exerciseFiles = unlist(result$exerciseFiles, recursive = TRUE)
 
       zip(zipfile=fname, files=exerciseFiles, flags='-r9XjFS')
-      removeRuntimeFiles()
+      removeRuntimeFiles(session)
     },
     contentType = "application/zip",
   )
