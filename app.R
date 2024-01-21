@@ -870,7 +870,7 @@ server = function(input, output, session) {
 
   # CLEANUP -------------------------------------------------------------
   onStop(function() {
-    unlink(getdir(session), recursive = TRUE)
+    unlink(getDir(session), recursive = TRUE)
   })
   # HEARTBEAT -------------------------------------------------------------
   initialState = TRUE
@@ -918,7 +918,7 @@ server = function(input, output, session) {
     
     x = callr::r_bg(
       func = parseExercise,
-      args = list(isolate(input$parseExercise), isolate(input$seedValueExercises), collectWarnings, getdir(session)),
+      args = list(isolate(input$parseExercise), isolate(input$seedValueExercises), collectWarnings, getDir(session)),
       supervise = TRUE
       # env = c(callr::rcmd_safe_env(), MAKEBSP = FALSE)
     )
@@ -953,7 +953,7 @@ server = function(input, output, session) {
 
     x = callr::r_bg(
       func = createExam,
-      args = list(preparedExam, collectWarnings, getdir(session)),
+      args = list(preparedExam, collectWarnings, getDir(session)),
       supervise = TRUE
     )
 
@@ -1001,7 +1001,7 @@ server = function(input, output, session) {
     # background exercise
     x = callr::r_bg(
       func = evaluateExamScans,
-      args = list(isolate(examEvaluationData()), collectWarnings, getdir(session)),
+      args = list(isolate(examEvaluationData()), collectWarnings, getDir(session)),
       supervise = TRUE
     )
     
@@ -1027,7 +1027,7 @@ server = function(input, output, session) {
 
   # finalizing evaluation - trigger
   examFinalizeEvaluation = eventReactive(input$proceedEvaluation, {
-    dir = getdir(session)
+    dir = getDir(session)
     removeModal()
     preparedEvaluation = isolate(examEvaluationData())
 
