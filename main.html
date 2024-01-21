@@ -77,7 +77,9 @@
 			<div id="exercises" class="mainSection active">
 				<div class="sectionHeader">
 					<div class="settings">
-						<h1><span lang="de">Einstellungen</span><span lang="en">Settings</span></h1>
+						<h1>
+							<span lang="de">Einstellungen</span><span lang="en">Settings</span>
+						</h1>
 						<div>
 							<div>
 								<label for="seedValueExercises"><span lang="de">Seed</span><span lang="en">Seed</span></label>
@@ -86,7 +88,9 @@
 						</div>
 					</div>
 					<div class="summary">
-						<h1><span lang="de">Zusammenfassung</span><span lang="en">Summary</span></h1>
+						<h1>
+							<span lang="de">Zusammenfassung</span><span lang="en">Summary</span>
+						</h1>
 						<table>
 							<tr>
 								<th><span lang="de">Seed</span><span lang="en">Seed</span></th>
@@ -103,7 +107,9 @@
 						</table>
 					</div>
 				</div>
-				<h1><span lang="de">Aufgaben</span><span lang="en">Exercises</span></h1>
+				<h1>
+					<span lang="de">Aufgaben</span><span lang="en">Exercises</span>
+				</h1>
 				<div class="contentWrapper">
 					<div class="sidebar">
 						<div id="exercise_list" class="itemList">
@@ -211,7 +217,9 @@
 				</div>
 			</div>	
 			<div id="exam" class="mainSection">
-				<h1><span lang="de">Prüfung</span><span lang="en">Exam</span></h1>
+				<h1>
+					<span lang="de">Prüfung</span><span lang="en">Exam</span>
+				</h1>
 				<div class="contentWrapper">
 					<div class="sidebar">
 						<div id="examFunctions_list" class="itemList">
@@ -228,35 +236,43 @@
 								<div>
 									<label for="seedValueExam"><span lang="de">Seed</span><span lang="en">Seed</span></label>
 									</br>
-									<span id="autofillSeed" class="autofillField"><span lang="de">Seed aus Aufgaben-Bereich kopieren</span><span lang="en">Copy seed from exercise section</span></span>
+									<span id="autofillSeed" class="autofillField"><span lang="de">Seed aus Aufgaben-Bereich kopieren.</span><span lang="en">Copy seed from exercise section.</span></span>
 									{{ textInput_seedValueExam }}
 								</div>
 								<div>
 									<label for="numberOfExams"><span lang="de">Anzahl Varianten</span><span lang="en">Number of scramblings</span></label>
+									</br>
+									<span class="infoField"><span lang="de">Je Variante wird ein eigener Seed verwendet.</span><span lang="en">For each scrambling a different seed is used.</span></span>
 									{{ textInput_numberOfExams }}
 								</div>
 								<div>
 									<label for="numberOfExercises"><span lang="de">Anzahl Aufgaben</span><span lang="en">Number of exercises</span></label>
 									</br>
-									<span id="autofillNumberOfExercises" class="autofillField"><span lang="de">Alle markierten Aufgaben</span><span lang="en">All marked exercises</span></span>
+									<span id="autofillNumberOfExercises" class="autofillField"><span lang="de">Alle markierten Aufgaben wählen.</span><span lang="en">Select all marked exercises.</span></span>
 									{{ textInput_numberOfExercises }}
 								</div>
 								<div>
 									<label for="fixedPointsExamCreate"><span lang="de">Fixe Punkte pro Aufgabe</span><span lang="en">Fixed points per exercise</span></label>
+									</br>
+									<span class="infoField"><span lang="de">Pro Aufgabe definierte Punkte überschreiben.</span><span lang="en">Override points defined for each exercise.</span></span>
 									{{ textInput_fixedPointsExamCreate }}
 								</div>
 								<div>
 									<label for="showPoints"><span lang="de">Punkte anzeigen</span><span lang="en">Show points</span></label>
+									</br>
+									<span class="infoField"><span lang="de">Anzahl and Punkten je Aufgabe in der Klausur angeben.</span><span lang="en">Show number of points for each exercise in the exam.</span></span>
 									{{ checkboxInput_showPoints }}
 								</div>
 								<div>
 									<label for="duplex"><span lang="de">Doppelseitiger Druck</span><span lang="en">Duplex printing</span></label>
+									</br>
+									<span class="infoField"><span lang="de">Bei doppelseitigem Druck immer auswählen.</span><span lang="en">Always select when duplex printing.</span></span>
 									{{ checkboxInput_duplex }}
 								</div>
 								<div>
 									<label for="examLanguage"><span lang="de">Sprache</span><span lang="en">Language</span></label>
 									</br>
-									<span id="infoExamLanguage" class="infoField"><span lang="de">Nur für allgemeine Texte im Dokument</span><span lang="en">Only for general document texts</span></span>
+									<span class="infoField"><span lang="de">Betrifft nur allgemeine Texte im Dokument.</span><span lang="en">Only relevant for general document texts.</span></span>
 									{{ selectInput_examLanguage }}
 								</div>
 								<div>
@@ -278,13 +294,13 @@
 								<div>
 									<label for="numberOfBlanks"><span lang="de">Anzahl leeren Seiten</span><span lang="en">Number of blank pages</span></label>
 									</br>
-									<span id="infoNumberOfBlanks" class="infoField"><span lang="de">Werden am Ende der Prüfung angehängt</span><span lang="en">Are appended to the end of the exam</span></span>
+									<span class="infoField"><span lang="de">Werden am Ende der Prüfung angehängt.</span><span lang="en">Are appended to the end of the exam.</span></span>
 									{{ textInput_numberOfBlanks }}
 								</div>
 								<div>
 									<label><span lang="de">Zusatz Pdf-Seiten</span><span lang="en">Additional Pdf pages</span></label>
 									</br>
-									<span id="infoAddAdditionalPdf" class="infoField"><span lang="de">Werden am Ende der Prüfung angehängt</span><span lang="en">Are appended to the end of the exam</span></span>
+									<span class="infoField"><span lang="de">Werden am Ende der Prüfung angehängt.</span><span lang="en">Are appended to the end of the exam.</span></span>
 									<div id="additionalPdfContainer">
 										<label class="examFileUpload" for="file-upload_addAdditionalPdf">
 											<div class="examFileButton">
@@ -318,26 +334,32 @@
 							<div>
 								<div>
 									<label for="fixedPointsExamEvaluate"><span lang="de">Fixe Punkte pro Aufgabe</span><span lang="en">Fixed points per exercise</span></label>
+									</br>
+									<<span class="infoField"><span lang="de">Pro Aufgabe definierte Punkte überschreiben.</span><span lang="en">Override points defined for each exercise.</span></span>
 									{{ textInput_fixedPointsExamEvaluate }}
 								</div>
 								<div>
 									<label for="partialPoints"><span lang="de">Teilpunkte</span><span lang="en">Partial points</span></label>
+									</br>
+									<span class="infoField"><span lang="de">Teilpunkte in Aufgaben erlauben.</span><span lang="en">Allow for partial points in exercises.</span></span>
 									{{ checkboxInput_partialPoints }}
 								</div>
 								<div>
 									<label for="negativePoints"><span lang="de">Minuspunkte</span><span lang="en">Negative points</span></label>
+									</br>
+									<span class="infoField"><span lang="de">Minuspunkte je nach gewählter Regeln vergeben.</span><span lang="en">Give negative points according to the chosen rule.</span></span>
 									{{ checkboxInput_negativePoints }}
 								</div>
 								<div>
 									<label for="rule"><span lang="de">Regel</span><span lang="en">Rule</span></label>
 									</br>
-									<span id="infoRules" class="infoField"><span lang="de">Regel für Abzugspunkte bei falschen Antworten</span><span lang="en">Point deductions rules for incorrect answers</span></span>
+									<span class="infoField"><span lang="de">Regeln für Minuspunkte bei falschen Antworten.</span><span lang="en">Negative point rules for incorrect answers.</span></span>
 									{{ selectInput_rule }}
 								</div>
 								<div>
 									<label for="marks"><span lang="de">Notenschlüssel</span><span lang="en">Clef</span></label>
 									</br>
-									<span id="infoMark" class="infoField"><span lang="de">Zahlen von 0 bis 1 werden als 0% bis 100% gewertet</span><span lang="en">Numbers between 0 and 1 are evaluated as 0% to 100%</span></span>
+									<span class="infoField"><span lang="de">Zahlen von 0 bis 1 werden als 0% bis 100% gewertet.</span><span lang="en">Numbers between 0 and 1 are evaluated as 0% to 100%.</span></span>
 									<table id="marks">
 										<tr>
 											<th><span lang="de">Punkte</span><span lang="en">Points</span></th>
@@ -368,19 +390,19 @@
 								<div>
 									<label for="evaluationLanguage"><span lang="de">Sprache</span><span lang="en">Language</span></label>
 									</br>
-									<span id="infoEvaluationLanguage" class="infoField"><span lang="de">Nur für allgemeine Texte im Dokument</span><span lang="en">Only for general document texts</span></span>
+									<span class="infoField"><span lang="de">Betrifft nur allgemeine Texte im Dokument.</span><span lang="en">Only relevant for general document texts.</span></span>
 									{{ selectInput_evaluationLanguage }}
 								</div>
 								<div>
 									<label for="rotateScans"><span lang="de">Scans drehen</span><span lang="en">Rotate scans</span></label>
 									</br>
-									<span id="infoRules" class="infoField"><span lang="de">Dreht alle PDF-Seiten um 180 Grad.</span><span lang="en">Rotates all PDF pages by 180 degrees.</span></span>
+									<span class="infoField"><span lang="de">Dreht alle PDF-Seiten um 180 Grad.</span><span lang="en">Rotates all PDF pages by 180 degrees.</span></span>
 									{{ checkboxInput_rotateScans }}
 								</div>
 								<div>
 									<label><span lang="de">Lösungen</span><span lang="en">Solutions</span></label>
 									</br>
-									<span id="infoExamSolutions" class="infoField"><span lang="de">Bei der Prüfungserellung gespeicherte RDS-Datei.</span><span lang="en">RDS file saved when creating the exam.</span></span>
+									<span class="infoField"><span lang="de">Bei der Prüfungserellung gespeicherte RDS-Datei.</span><span lang="en">RDS file saved when creating the exam.</span></span>
 									<div id="examSolutionsContainer">
 										<label class="examFileUpload" for="file-upload_examSolutions">
 											<div class="examFileButton">
@@ -398,7 +420,7 @@
 									</div>
 									<label><span lang="de">Registrierte Teilnehmer</span><span lang="en">Registered participants</span></label>
 									</br>
-									<span id="infoExamRegisteredParticipants" class="infoField"><span lang="de">Teilnehmerliste als CSV-Datei mit den Spalten "registration", "name" und "id".</span><span lang="en">Registered participants as CSV file with columns "registration", "name", and "id".</span></span>
+									<span class="infoField"><span lang="de">Teilnehmerliste als CSV-Datei mit den Spalten "registration", "name" und "id".</span><span lang="en">Registered participants as CSV file with columns "registration", "name", and "id".</span></span>
 									<div id="examRegisteredParticipantsContainer">
 										<label class="examFileUpload" for="file-upload_examRegisteredParticipants">
 											<div class="examFileButton">
@@ -416,7 +438,7 @@
 									</div>
 									<label><span lang="de">Bewertungs-Scans</span><span lang="en">Evaluation scans</span></label>
 									</br>
-									<span id="infoExamScans" class="infoField"><span lang="de">Scans als PDF- oder PNG-Dateien.</span><span lang="en">Scans ans PDF or PNG files.</span></span>
+									<span class="infoField"><span lang="de">Scans als PDF- oder PNG-Dateien.</span><span lang="en">Scans as PDF or PNG files.</span></span>
 									<div id="examScansContainer">
 										<label class="examFileUpload" for="file-upload_examScans">
 											<div class="examFileButton">
@@ -449,7 +471,9 @@
 				</div>
 			</div>		
 			<div id="help" class="mainSection">
-				<h1><span lang="de">Hilfe</span><span lang="en">Help</span></h1>
+				<h1>
+					<span lang="de">Hilfe</span><span lang="en">Help</span>
+				</h1>
 				<div class="contentWrapper">
 					<div class="sidebar">
 						<div id="help_list" class="itemList">

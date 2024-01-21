@@ -185,21 +185,16 @@ body.textButtonMode .textButton {
 /* -------------------------------------------------------------- */
 /* TOOLTIP  */
 /* -------------------------------------------------------------- */
-/* .tooltip { */
-	/* display: flex; */
-	/* justify-content: center; */
-	/* margin-left: 20px; */
-/* } */
-
-/* .tooltip .tooltiptext { */
+/* .tt .ttText { */
 	/* visibility: hidden; */
 	/* z-index: 1; */
 	/* opacity: 0; */
 	/* transition: opacity 0.3s; */
+	/* position: relative; */
+	/* top: -1.5rem; */
 /* } */
 
-/* #hotkeysActiveContainer:hover .tooltiptext, */
-/* .tooltip:hover .tooltiptext { */
+/* .tt:hover .ttText { */
 	/* visibility: visible; */
 	/* opacity: 1; */
 /* } */
@@ -975,6 +970,7 @@ main > * {
 .autofillField {
 	text-decoration: underline;
 	cursor: pointer;
+	color: var(---tryCatch_success);
 }
 
 #exerciseFigureFiles img {
@@ -988,7 +984,6 @@ main > * {
 #examScanFiles,
 #examSolutionsFile,
 #examRegisteredParticipantsFile {
-	width: 262px;
 	min-height: 34px;
 	background: var(---background3);
 }
@@ -998,6 +993,7 @@ main > * {
 #examScan_list_items,
 #examSolutions_list_items,
 #examRegisteredParticipants_list_items {
+	min-width: 200px;
 	display: block;
 	padding: 0.25rem;
 }
@@ -1011,6 +1007,7 @@ main > * {
 	margin: 0.25rem;
 	padding: 0.25rem;
 	justify-content: space-between;
+	gap: 10px;
 }
 
 .exerciseFigureName,
@@ -1018,7 +1015,6 @@ main > * {
 .examScanName,
 .examSolutionsName,
 .examRegisteredParticipantsName {
-	width: 90%;
 	overflow: hidden;
 	white-space: nowrap;
 }
@@ -1028,7 +1024,7 @@ main > * {
 .examScanItem .removeText,
 .examSolutionsItem .removeText,
 .examRegisteredParticipantsItem .removeText {
-	display: none;
+	display: block;
 }
 
 .exerciseFigureItem:hover,
@@ -1038,14 +1034,6 @@ main > * {
 .examRegisteredParticipantsItem:hover {
 	background: var(---tryCatch_error);
 	cursor: pointer;
-}
-
-.exerciseFigureItem:hover .removeText,
-.additionalPdfItem:hover .removeText,
-.examScanItem:hover .removeText,
-.examSolutionsItem:hover .removeText,
-.examRegisteredParticipantsItem:hover .removeText {
-	display: block;
 }
 
 .exerciseFigureButton,

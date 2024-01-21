@@ -991,7 +991,7 @@ function createExercise(exerciseID, name='exercise',
 	if( file === null) {
 		setSimpleExerciseFileContents(exerciseID);
 	}
-	
+		
 	$('#exercise_list_items').append('<div class="exerciseItem sidebarListItem"><span class="exerciseName">' + name + '</span></span><span class="exerciseBlock"><span lang="de">Block:</span><span lang="en">Block:</span><input value="' + block + '"/></span><span class="exerciseButtons"><span class="exerciseParse exerciseButton disabled"><i class="fa-solid fa-rotate"></i></span><span class="examExercise exerciseButton ' + (editable ? '' : 'disabled') + '"><span class="iconButton"><i class="fa-solid fa-star"></i></span><span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span></span><span class="exerciseRemove exerciseButton"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></span></span></div>');
 }
 
@@ -1664,7 +1664,7 @@ function addAdditionalPdf(file) {
 
 		fileReader.readAsDataURL(file);
 		
-		$('#additionalPdf_list_items').append('<div class="additionalPdfItem"><span class="additionalPdfName">' + fileName + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
+		$('#additionalPdf_list_items').append('<div class="additionalPdfItem"><span class="additionalPdfName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
 	}
 }
 
@@ -1836,7 +1836,7 @@ function addExamEvaluationFile(file) {
 
 			fileReader.readAsDataURL(file);
 			
-			$('#examScan_list_items').append('<div class="examScanItem"><span class="examScanName">' + fileName + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
+			$('#examScan_list_items').append('<div class="examScanItem"><span class="examScanName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
 			break;
 		case 'rds': 
 			fileReader = new FileReader();
@@ -1850,7 +1850,7 @@ function addExamEvaluationFile(file) {
 			fileReader.readAsDataURL(file);
 			
 			$('#examSolutions_list_items').empty();
-			$('#examSolutions_list_items').append('<div class="examSolutionsItem"><span class="examSolutionsName">' + fileName + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
+			$('#examSolutions_list_items').append('<div class="examSolutionsItem"><span class="examSolutionsName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
 			break;
 		case 'csv':
 			fileReader = new FileReader();
@@ -1864,7 +1864,7 @@ function addExamEvaluationFile(file) {
 			fileReader.readAsText(file);
 			
 			$('#examRegisteredParticipants_list_items').empty();
-			$('#examRegisteredParticipants_list_items').append('<div class="examRegisteredParticipantsItem"><span class="examRegisteredParticipantsName">' + fileName + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
+			$('#examRegisteredParticipants_list_items').append('<div class="examRegisteredParticipantsItem"><span class="examRegisteredParticipantsName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
 			break;
 	}
 }
