@@ -1017,10 +1017,7 @@ server = function(input, output, session) {
   })
 
   output$downloadExamFiles = downloadHandler(
-    filename = paste0(paste0(c("exam", input$examTitle,
-                               input$examCourse,
-                               as.character(input$examDate),
-                               input$seedValueExercises), collapse="_"), ".zip"),
+    filename = paste0(paste0(c("exam", input$seedValueExam), collapse="_"), ".zip"),
     content = function(fname) {
       zip(zipfile=fname, files=isolate(examFiles()), flags='-r9XjFS')
     },
