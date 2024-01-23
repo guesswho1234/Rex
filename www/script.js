@@ -224,10 +224,10 @@ document.onkeydown = function(evt) {
 				if (updateView && $('.exerciseItem.active:not(.filtered)').length > 0) {
 					viewExercise($('.exerciseItem.active:not(.filtered)').first().index('.exerciseItem'));
 				}
-			} else {
-				if (evtobj.keyCode == 67) // c
-					newSimpleExercise();
-			}
+			} 
+			
+			if (evtobj.keyCode == 67) // c
+				newSimpleExercise();
 		}
 	} else {
 		if (!$(evtobj.target).is('input')) {
@@ -1155,7 +1155,7 @@ $('body').on('focus', '[contenteditable]', function() {
 		}
 		
 		if ($this.hasClass('points')) {
-			content = getIntegerInput(0, null, 1, points);
+			content = getIntegerInput(0, null, 1, content);
 			iuf['exercises'][exerciseID]['points'] = content;
 		}
 		
