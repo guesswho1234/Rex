@@ -20,7 +20,7 @@ library(pdftools) # pdftools_3.4.0
 library(qpdf) # qpdf_1.3.2
 library(openssl) # openssl_2.1.1
 
-library(shinyauthr)
+# library(shinyauthr)
 
 # FUNCTIONS ----------------------------------------------------------------
 getDir = function(session) {
@@ -343,8 +343,16 @@ prepareExam = function(session, exam, seed, input) {
     seedBoundaries = c(seedMin, seedMax)
   )
   
+  # needed for pdf files (not for html files) - somehow exams needs it that way
+  fileIds = 1:exam$numberOfExams
+  fileIdSizes = floor(log10(fileIds))
+  fileIdSizes = max(fileIdSizes) - fileIdSizes
+  fileIds = sapply(seq_along(fileIdSizes), function(x){
+    paste0(paste0(rep("0", max(fileIdSizes))[0:fileIdSizes[x]], collapse=""), fileIds[x])
+  })
+  
   examHtmlFiles = paste0(dir, "/", name, 1:exam$numberOfExams, ".html")
-  examPdfFiles = paste0(dir, "/", name, 1:exam$numberOfExams, ".pdf")
+  examPdfFiles = paste0(dir, "/", name, fileIds, ".pdf")
   examRdsFile = paste0(dir, "/", name, ".rds")
 
   return(list(examFields=examFields, examFiles=list(examHtmlFiles=examHtmlFiles, pdfFiles=examPdfFiles, rdsFile=examRdsFile), sourceFiles=list(exerciseFiles=exerciseFiles, additionalPdfFiles=additionalPdfFiles)))
@@ -809,12 +817,12 @@ warningCodes = read.csv("warningCodes.csv")
 warningCodes = setNames(apply(warningCodes[,-1], 1, FUN=as.list), warningCodes[,1])
 
 # dataframe that holds usernames, passwords and other user data
-user_base <- tibble::tibble(
-  user = c("user1", "user2"),
-  password = sapply(c("pass1", "pass2"), sodium::password_store),
-  permissions = c("admin", "standard"),
-  name = c("User One", "User Two")
-)
+# user_base <- tibble::tibble(
+#   user = c("user1", "user2"),
+#   password = sapply(c("pass1", "pass2"), sodium::password_store),
+#   permissions = c("admin", "standard"),
+#   name = c("User One", "User Two")
+# )
 
 # UI -----------------------------------------------------------------
 ui = fluidPage(
@@ -824,8 +832,8 @@ ui = fluidPage(
   textOutput("debug"),
   
   # AUTH 
-  div(class = "pull-right", shinyauthr::logoutUI(id = "logout")),
-  shinyauthr::loginUI(id = "login"),
+  # div(class = "pull-right", shinyauthr::logoutUI(id = "logout")),
+  # shinyauthr::loginUI(id = "login"),
   
   # TEMPLATE
   htmlTemplate(
@@ -875,20 +883,20 @@ ui = fluidPage(
 # SERVER -----------------------------------------------------------------
 server = function(input, output, session) {
   # AUTH --------------------------------------------------------------------
-  credentials <- shinyauthr::loginServer(
-    id = "login",
-    data = user_base,
-    user_col = user,
-    pwd_col = password,
-    sodium_hashed = TRUE,
-    log_out = reactive(logout_init())
-  )
-  
-  # Logout to hide
-  logout_init <- shinyauthr::logoutServer(
-    id = "logout",
-    active = reactive(credentials()$user_auth)
-  )
+  # credentials <- shinyauthr::loginServer(
+  #   id = "login",
+  #   data = user_base,
+  #   user_col = user,
+  #   pwd_col = password,
+  #   sodium_hashed = TRUE,
+  #   log_out = reactive(logout_init())
+  # )
+  # 
+  # # Logout to hide
+  # logout_init <- shinyauthr::logoutServer(
+  #   id = "logout",
+  #   active = reactive(credentials()$user_auth)
+  # )
   
   # req(credentials()$user_auth) #TODO: use this as requirement
   
@@ -1001,6 +1009,8 @@ server = function(input, output, session) {
     } else {
       result = examCreation()$get_result()
       examFiles(unlist(result$files, recursive = TRUE))
+      
+      print(examFiles())
 
       examCreationResponse(session, result$message, length(isolate(examFiles())) > 0)
     }
