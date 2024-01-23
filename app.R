@@ -321,7 +321,7 @@ prepareExam = function(session, exam, seed, input) {
   course = input$examCourse
   points = if(!is.na(input$fixedPointsExamCreate) && is.numeric(input$fixedPointsExamCreate)) input$fixedPointsExamCreate else NULL
   date = input$examDate
-  name = paste0(c("exam", title, course, as.character(date), exam$examSeed, ""), collapse="_")
+  name = paste0(c("exam", exam$examSeed, ""), collapse="_")
   
   examFields = list(
     file = exercises,
