@@ -1567,7 +1567,7 @@ Shiny.addCustomMessageHandler('setExerciseE', function(e) {
 	
 	iuf['exercises'][exerciseID]['e'] = e;
 
-	if(e === 0)
+	if(e === 0 || e.charAt(0) === "W")
 		$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .examExercise').removeClass('disabled');
 		loadExerciseFromObject(exerciseID);
 });
@@ -1912,7 +1912,6 @@ $("#markThreshold5").change(function(){
 	$(this).val(getFloatInput(0, null, 0.85, $(this).val()));
 }); 
 
-
 $('body').on('change', '#inputSheetID', function() {
 	$(this).val(getIntegerInput(0, 99999999999, 0, $(this).val()));
 });
@@ -1961,10 +1960,6 @@ async function evaluateExamEvent() {
 $('body').on('click', '.compareListItem:not(.noParticipation)', function() {
 	resetInspect();
 	sortCompareListItems();
-
-	// inputSheetID type="number" min="0" max="99999999999" step="1"
-	// inputSheetID type="number" min="0" max="99"  step="1"
-	// inputTypeID type="number" min="0" max="999" step="1"
 	
 	const scanFocused = iuf['examEvaluation']['scans_reg_fullJoinData'][parseInt($(this).find('.evalIndex').html())];
 		

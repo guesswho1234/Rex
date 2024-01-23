@@ -33,8 +33,8 @@ removeRuntimeFiles = function(session) {
   temfiles = list.files(dir)
   filesToRemove = temfiles
   
-  session$sendCustomMessage("debugMessage", dir)
-  session$sendCustomMessage("debugMessage", filesToRemove)
+  # session$sendCustomMessage("debugMessage", dir)
+  # session$sendCustomMessage("debugMessage", filesToRemove)
 
   if(length(filesToRemove) > 0) {
     unlink(paste0(dir, "/", filesToRemove), recursive = TRUE)
@@ -404,7 +404,15 @@ createExam = function(preparedExam, collectWarnings, dir) {
                             pages = pages,
                             points = points,
                             showpoints = showpoints,
-                            seed = seed)
+                            seed = seed,
+                            encoding = "UTF-8", # not yet implemented as input field
+                            reglength = 7, # not yet implemented as input field
+                            header = NULL, # not yet implemented as input field
+                            intro = NULL, # not yet implemented as input field
+                            replacement = FALSE, # not yet implemented as input field
+                            samepage = TRUE, # not yet implemented as input field
+                            newpage = FALSE, # not yet implemented as input field
+                            logo = NULL) # not yet implemented as input field
         })
 
     NULL
@@ -906,9 +914,9 @@ server = function(input, output, session) {
 
   initSeed <<- as.numeric(gsub("-", "", Sys.Date()))
 
-  session$sendCustomMessage("debugMessage", session$token)
-  session$sendCustomMessage("debugMessage", tempdir())
-  session$sendCustomMessage("debugMessage", list.files(tempdir()))
+  # session$sendCustomMessage("debugMessage", session$token)
+  # session$sendCustomMessage("debugMessage", tempdir())
+  # session$sendCustomMessage("debugMessage", list.files(tempdir()))
 
   # CLEANUP -------------------------------------------------------------
   onStop(function() {
