@@ -1028,13 +1028,15 @@ server = function(input, output, session) {
     } else {
       result = examCreation()$get_result()
       examFiles(unlist(result$files, recursive = TRUE))
+      
+      print(isolate(input$seedValueExam))
 
       examCreationResponse(session, result$message, length(isolate(examFiles())) > 0)
     }
   })
 
   output$downloadExamFiles = downloadHandler(
-    filename = paste0(paste0(c("exam", input$seedValueExam), collapse="_"), ".zip"),
+    filename = "exam.zip",
     content = function(fname) {
       zip(zipfile=fname, files=isolate(examFiles()), flags='-r9XjFS')
     },
@@ -1134,7 +1136,7 @@ server = function(input, output, session) {
 
   # finalizing evaluation - download
   output$downloadEvaluationFiles = downloadHandler(
-    filename = paste0(gsub("exam", "evaluation", isolate(examEvaluationData()$meta$examName)), ".zip"),
+    filename = "evaluation.zip",
     content = function(fname) {
       zip(zipfile=fname, files=unlist(isolate(examEvaluationData()$files), recursive = TRUE), flags='-r9XjFS')
     },
