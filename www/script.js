@@ -1675,6 +1675,7 @@ function removeAdditionalPdf(element) {
 }
 
 $('#seedValueExam').change(function(){
+	console.log($(this).val());
 	$(this).val(getIntegerInput(1, 99999999, 1, $(this).val()));
 }); 
 
@@ -1688,8 +1689,9 @@ $("#numberOfExams").change(function(){
 }); 
 
 $("#autofillSeed").click(function(){
-	const seed = getIntegerInput(1, 99999999, 1, $('#seedValueExercises').val());
+	const seed = getIntegerInput(1, 99999999, 1, $('#examDate input').val().replaceAll("-", ""));
 	$('#seedValueExam').val(seed);
+	Shiny.onInputChange("seedValueExam", $('#seedValueExam').val());
 }); 
 
 $("#fixedPointsExamCreate").change(function(){
@@ -1706,6 +1708,7 @@ $("#numberOfBlanks").change(function(){
 
 $("#autofillNumberOfExercises").click(function(){
 	$('#numberOfExercises').val(getIntegerInput(0, 45, 0, getNumberOfExamExercises()));
+	Shiny.onInputChange("numberOfExercises", $('#numberOfExercises').val());
 }); 
 
 $("#createExamEvent").click(function(){
@@ -1720,7 +1723,9 @@ async function createExamEvent() {
 	const additionalPdfNames = iuf.examAdditionalPdf.map(pdf => pdf[0]);
 	const additionalPdfFiles = iuf.examAdditionalPdf.map(pdf => pdf[1]);
 	
-	Shiny.onInputChange("createExam", {examSeed: $('#seedValueExam').val(), numberOfExams: $("#numberOfExams").val(), numberOfExercises: $("#numberOfExercises").val(), exerciseNames: exerciseNames, exerciseCodes:exerciseCodes, blocks: blocks, additionalPdfNames: additionalPdfNames, additionalPdfFiles: additionalPdfFiles}, {priority: 'event'});
+	Shiny.onInputChange("createExam", {exerciseNames: exerciseNames, exerciseCodes:exerciseCodes, blocks: blocks, additionalPdfNames: additionalPdfNames, additionalPdfFiles: additionalPdfFiles}, {priority: 'event'});
+	
+	// Shiny.onInputChange("createExam", {examSeed: $('#seedValueExam').val(), numberOfExams: $("#numberOfExams").val(), numberOfExercises: $("#numberOfExercises").val(), exerciseNames: exerciseNames, exerciseCodes:exerciseCodes, blocks: blocks, additionalPdfNames: additionalPdfNames, additionalPdfFiles: additionalPdfFiles}, {priority: 'event'});
 }
 
 /* --------------------------------------------------------------

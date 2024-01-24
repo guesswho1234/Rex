@@ -2,6 +2,7 @@
 <!-- main.html -->
 <html xmlns="http://www.w3.org/1999/xhtml" lang="de" xml:lang="de">
 	<head>
+		{{ headContent() }}
 		<title>Rex</title>	
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -234,9 +235,13 @@
 							<h2><span lang="de">Prüfung Erstellen</span><span lang="en">Create exam</span></h2>
 							<div>
 								<div>
+									<label for="examDate"><span lang="de">Prüfungsdatum (yyyy-mm-dd)</span><span lang="en">Exam date (yyyy-mm-dd)</span></label>
+									{{ dateInput_examDate }}
+								</div>
+								<div>
 									<label for="seedValueExam"><span lang="de">Seed</span><span lang="en">Seed</span></label>
 									</br>
-									<span id="autofillSeed" class="autofillField"><span lang="de">Seed aus Aufgaben-Bereich kopieren.</span><span lang="en">Copy seed from exercise section.</span></span>
+									<span id="autofillSeed" class="autofillField"><span lang="de">Prüfungsdatum verwenden.</span><span lang="en">Use exam date.</span></span>
 									{{ textInput_seedValueExam }}
 								</div>
 								<div>
@@ -258,6 +263,10 @@
 									{{ textInput_fixedPointsExamCreate }}
 								</div>
 								<div>
+									<label for="examReglength"><span lang="de">Anzahl Ziffern Matrikelnummer</span><span lang="en">Registration number digits</span></label>
+									{{ selectInput_examRegLength }}
+								</div>
+								<div>
 									<label for="showPoints"><span lang="de">Punkte anzeigen</span><span lang="en">Show points</span></label>
 									</br>
 									<span class="infoField"><span lang="de">Anzahl and Punkten je Aufgabe in der Klausur angeben.</span><span lang="en">Show number of points for each exercise in the exam.</span></span>
@@ -268,6 +277,19 @@
 									</br>
 									<span class="infoField"><span lang="de">Bei doppelseitigem Druck immer auswählen.</span><span lang="en">Always select when duplex printing.</span></span>
 									{{ checkboxInput_duplex }}
+								</div>
+								<div>
+									<label for="replacement"><span lang="de">Ersatz-Antwortbogen</span><span lang="en">Replacement evaluation sheet</span></label>
+									{{ checkboxInput_replacement }}
+								</div>
+								
+								<div>
+									<label for="samepage"><span lang="de">Umbruch bei Antwortmöglichkeiten vermeiden</span><span lang="en">Avoid wrap in choice list</span></label>
+									{{ checkboxInput_samepage }}
+								</div>
+								<div>
+									<label for="newpage"><span lang="de">Neue Seite je Aufgabe</span><span lang="en">New page per exercise</span></label>
+									{{ checkboxInput_newpage }}
 								</div>
 								<div>
 									<label for="examLanguage"><span lang="de">Sprache</span><span lang="en">Language</span></label>
@@ -286,10 +308,6 @@
 								<div>
 									<label for="examCourse"><span lang="de">Kurs</span><span lang="en">Course</span></label>
 									{{ textInput_examCourse }}
-								</div>
-								<div>
-									<label for="examDate"><span lang="de">Prüfungsdatum (yyyy-mm-dd)</span><span lang="en">Exam date (yyyy-mm-dd)</span></label>
-									{{ dateInput_examDate }}
 								</div>
 								<div>
 									<label for="numberOfBlanks"><span lang="de">Anzahl leeren Seiten</span><span lang="en">Number of blank pages</span></label>
@@ -335,7 +353,7 @@
 								<div>
 									<label for="fixedPointsExamEvaluate"><span lang="de">Fixe Punkte pro Aufgabe</span><span lang="en">Fixed points per exercise</span></label>
 									</br>
-									<<span class="infoField"><span lang="de">Pro Aufgabe definierte Punkte überschreiben.</span><span lang="en">Override points defined for each exercise.</span></span>
+									<span class="infoField"><span lang="de">Pro Aufgabe definierte Punkte überschreiben.</span><span lang="en">Override points defined for each exercise.</span></span>
 									{{ textInput_fixedPointsExamEvaluate }}
 								</div>
 								<div>

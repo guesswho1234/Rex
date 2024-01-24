@@ -280,9 +280,8 @@ loadExercise = function(session, id, seed, html, figure, message) {
   session$sendCustomMessage("setExerciseId", -1)
 }
 
-prepareExam = function(session, exam, seed, input) {
+prepareExam = function(session, exam, input) {
   dir = getDir(session)
-  
   exam$exerciseNames = as.list(make.unique(unlist(exam$exerciseNames), sep="_"))
   exerciseFiles = unlist(lapply(setNames(seq_along(exam$exerciseNames), exam$exerciseNames), function(i){
     file = paste0(dir, "/", exam$exerciseNames[[i]], ".rnw")
@@ -290,17 +289,17 @@ prepareExam = function(session, exam, seed, input) {
 
     return(file)
   }))
-  
-  numberOfExams = as.numeric(exam$numberOfExams)
+
+  numberOfExams = as.numeric(input$numberOfExams)
   blocks = as.numeric(exam$blocks)
   uniqueBlocks = unique(blocks)
-  numberOfExercises = as.numeric(exam$numberOfExercises)
+  numberOfExercises = as.numeric(input$numberOfExercises)
   exercisesPerBlock = numberOfExercises / length(uniqueBlocks)
   exercises = lapply(uniqueBlocks, function(x) exerciseFiles[blocks==x])
 
   seedList = matrix(1, nrow=numberOfExams, ncol=length(exam$exerciseNames))
-  seedList = seedList * as.numeric(paste0(if(is.na(exam$examSeed)) NULL else exam$examSeed, 1:numberOfExams))
-  
+  seedList = seedList * as.numeric(paste0(if(is.na(is.numeric(input$seedValueExam))) NULL else input$seedValueExam, 1:numberOfExams))
+
   pages = NULL
   additionalPdfFiles = list()
   
@@ -320,9 +319,10 @@ prepareExam = function(session, exam, seed, input) {
   title = input$examTitle
   course = input$examCourse
   points = if(!is.na(as.numeric(input$fixedPointsExamCreate))) input$fixedPointsExamCreate else NULL
+  reglength = if(!is.na(as.numeric(input$examRegLength))) as.numeric(input$examRegLength) else 7
   date = input$examDate
-  name = paste0(c("exam", exam$examSeed, ""), collapse="_")
-  
+  name = paste0(c("exam", input$seedValueExam, ""), collapse="_")
+
   examFields = list(
     file = exercises,
     fileBoundaries = c(exerciseMin, exerciseMax),
@@ -340,18 +340,25 @@ prepareExam = function(session, exam, seed, input) {
     points = points,
     showpoints = input$showPoints,
     seed = seedList,
-    seedBoundaries = c(seedMin, seedMax)
+    seedBoundaries = c(seedMin, seedMax),
+    reglength = reglength,
+    header = NULL,
+    intro = NULL,
+    replacement = input$replacement,
+    samepage = input$samepage,
+    newpage = input$newpage,
+    logo = NULL
   )
-  
+
   # needed for pdf files (not for html files) - somehow exams needs it that way
-  fileIds = 1:exam$numberOfExams
+  fileIds = 1:numberOfExams
   fileIdSizes = floor(log10(fileIds))
   fileIdSizes = max(fileIdSizes) - fileIdSizes
   fileIds = sapply(seq_along(fileIdSizes), function(x){
     paste0(paste0(rep("0", max(fileIdSizes))[0:fileIdSizes[x]], collapse=""), fileIds[x])
   })
   
-  examHtmlFiles = paste0(dir, "/", name, 1:exam$numberOfExams, ".html")
+  examHtmlFiles = paste0(dir, "/", name, 1:numberOfExams, ".html")
   examPdfFiles = paste0(dir, "/", name, fileIds, ".pdf")
   examRdsFile = paste0(dir, "/", name, ".rds")
 
@@ -405,14 +412,14 @@ createExam = function(preparedExam, collectWarnings, dir) {
                             points = points,
                             showpoints = showpoints,
                             seed = seed,
-                            encoding = "UTF-8", # not yet implemented as input field
-                            reglength = 7, # not yet implemented as input field
-                            header = NULL, # not yet implemented as input field
-                            intro = NULL, # not yet implemented as input field
-                            replacement = FALSE, # not yet implemented as input field
-                            samepage = TRUE, # not yet implemented as input field
-                            newpage = FALSE, # not yet implemented as input field
-                            logo = NULL) # not yet implemented as input field
+                            encoding = "UTF-8",
+                            reglength = reglength, 
+                            header = header,
+                            intro = intro, 
+                            replacement = replacement, 
+                            samepage = samepage, 
+                            newpage = newpage, 
+                            logo = NULL) 
         })
 
     NULL
@@ -846,43 +853,51 @@ ui = fluidPage(
   # TEMPLATE
   htmlTemplate(
     filename = "main.html",
-    # EXERCISES 
+  
+    # EXERCISES
     textInput_seedValueExercises = textInput("seedValueExercises", label = NULL, value = initSeed),
     button_downloadExercises = myDownloadButton('downloadExercises'),
     button_downloadExercise = myDownloadButton('downloadExercise'),
-  
+
     # EXAM CREATE
+    dateInput_examDate = dateInput("examDate", label = NULL, value = NULL, format = "yyyy-mm-dd"),
     textInput_seedValueExam = textInput("seedValueExam", label = NULL, value = initSeed),
     textInput_numberOfExams = textInput("numberOfExams", label = NULL, value = 1),
     textInput_numberOfExercises = textInput("numberOfExercises", label = NULL, value = 0),
-    selectInput_examLanguage = selectInput("examLanguage", label = NULL, choices = languages, selected = NULL, multiple = FALSE),
-    textInput_examTitle = textInput("examTitle", label = NULL, value = NULL),
-    textInput_examCourse = textInput("examCourse", label = NULL, value = NULL),
-    textInput_examInstitution = textInput("examInstitution", label = NULL, value = NULL),
-    dateInput_examDate = dateInput("examDate", label = NULL, value = NULL, format = "yyyy-mm-dd"),
-    textInput_numberOfBlanks = textInput("numberOfBlanks", label = NULL, value = 0),
     textInput_fixedPointsExamCreate = textInput("fixedPointsExamCreate", label = NULL, value = NULL),
+    selectInput_examRegLength = selectInput("examRegLength", label = NULL, choices = 1:10, selected = 8, multiple = FALSE),
     checkboxInput_showPoints = checkboxInput("showPoints", label = NULL, value = NULL),
     checkboxInput_duplex = checkboxInput("duplex", label = NULL, value = NULL),
+    checkboxInput_replacement = checkboxInput("replacement", label = NULL, value = NULL),
+    checkboxInput_samepage = checkboxInput("samepage", label = NULL, value = NULL),
+    checkboxInput_newpage = checkboxInput("newpage", label = NULL, value = NULL),
+    selectInput_examLanguage = selectInput("examLanguage", label = NULL, choices = languages, selected = NULL, multiple = FALSE),
+    textInput_examInstitution = textInput("examInstitution", label = NULL, value = NULL),
+    textInput_examTitle = textInput("examTitle", label = NULL, value = NULL),
+    textInput_examCourse = textInput("examCourse", label = NULL, value = NULL),
+    textInput_numberOfBlanks = textInput("numberOfBlanks", label = NULL, value = 0),
 
     # EXAM EVALUATE
     textInput_fixedPointsExamEvaluate = textInput("fixedPointsExamEvaluate", label = NULL, value = NULL),
     checkboxInput_partialPoints = checkboxInput("partialPoints", label = NULL, value = NULL),
     checkboxInput_negativePoints = checkboxInput("negativePoints", label = NULL, value = NULL),
     selectInput_rule = selectInput("rule", label = NULL, choices = rules, selected = NULL, multiple = FALSE),
-  
+
     textInput_markThreshold1 = textInput("markThreshold1", label = NULL, value = 0),
-    textInput_markThreshold2 = textInput("markThreshold2", label = NULL, value = 0.5),
-    textInput_markThreshold3 = textInput("markThreshold3", label = NULL, value = 0.6),
-    textInput_markThreshold4 = textInput("markThreshold4", label = NULL, value = 0.75),
-    textInput_markThreshold5 = textInput("markThreshold5", label = NULL, value = 0.85),
-    
     textInput_markLabel1 = textInput("markLabel1", label = NULL, value = NULL),
+    
+    textInput_markThreshold2 = textInput("markThreshold2", label = NULL, value = 0.5),
     textInput_markLabe12 = textInput("markLabe12", label = NULL, value = NULL),
+    
+    textInput_markThreshold3 = textInput("markThreshold3", label = NULL, value = 0.6),
     textInput_markLabel3 = textInput("markLabel3", label = NULL, value = NULL),
+    
+    textInput_markThreshold4 = textInput("markThreshold4", label = NULL, value = 0.75),
     textInput_markLabel4 = textInput("markLabel4", label = NULL, value = NULL),
+    
+    textInput_markThreshold5 = textInput("markThreshold5", label = NULL, value = 0.85),
     textInput_markLabel5 = textInput("markLabel5", label = NULL, value = NULL),
-  
+    
     selectInput_evaluationLanguage = selectInput("evaluationLanguage", label = NULL, choices = languages, selected = NULL, multiple = FALSE),
     checkboxInput_rotateScans = checkboxInput("rotateScans", label = NULL, value = NULL)
   )
@@ -1000,7 +1015,7 @@ server = function(input, output, session) {
   examCreation = eventReactive(input$createExam, {
     startWait(session)
 
-    preparedExam = prepareExam(session, isolate(input$createExam), isolate(input$seedValueExercises), isolate(input))
+    preparedExam = prepareExam(session, isolate(input$createExam), isolate(input))
 
     x = callr::r_bg(
       func = createExam,
@@ -1018,14 +1033,14 @@ server = function(input, output, session) {
       result = examCreation()$get_result()
       examFiles(unlist(result$files, recursive = TRUE))
       
-      print(examFiles())
+      print(isolate(input$seedValueExam))
 
       examCreationResponse(session, result$message, length(isolate(examFiles())) > 0)
     }
   })
 
   output$downloadExamFiles = downloadHandler(
-    filename = paste0(paste0(c("exam", input$seedValueExam), collapse="_"), ".zip"),
+    filename = "exam.zip",
     content = function(fname) {
       zip(zipfile=fname, files=isolate(examFiles()), flags='-r9XjFS')
     },
@@ -1125,7 +1140,7 @@ server = function(input, output, session) {
 
   # finalizing evaluation - download
   output$downloadEvaluationFiles = downloadHandler(
-    filename = paste0(gsub("exam", "evaluation", isolate(examEvaluationData()$meta$examName)), ".zip"),
+    filename = "evaluation.zip",
     content = function(fname) {
       zip(zipfile=fname, files=unlist(isolate(examEvaluationData()$files), recursive = TRUE), flags='-r9XjFS')
     },
