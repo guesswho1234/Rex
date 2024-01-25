@@ -866,16 +866,16 @@ ui = fluidPage(
     textInput_numberOfExercises = textInput("numberOfExercises", label = NULL, value = 0),
     textInput_fixedPointsExamCreate = textInput("fixedPointsExamCreate", label = NULL, value = NULL),
     selectInput_examRegLength = selectInput("examRegLength", label = NULL, choices = 1:10, selected = 8, multiple = FALSE),
-    checkboxInput_showPoints = checkboxInput("showPoints", label = NULL, value = NULL),
-    checkboxInput_duplex = checkboxInput("duplex", label = NULL, value = NULL),
+    checkboxInput_showPoints = checkboxInput("showPoints", label = NULL, value = TRUE),
+    checkboxInput_duplex = checkboxInput("duplex", label = NULL, value = TRUE),
     checkboxInput_replacement = checkboxInput("replacement", label = NULL, value = NULL),
-    checkboxInput_samepage = checkboxInput("samepage", label = NULL, value = NULL),
+    checkboxInput_samepage = checkboxInput("samepage", label = NULL, value = TRUE),
     checkboxInput_newpage = checkboxInput("newpage", label = NULL, value = NULL),
-    selectInput_examLanguage = selectInput("examLanguage", label = NULL, choices = languages, selected = NULL, multiple = FALSE),
+    selectInput_examLanguage = selectInput("examLanguage", label = NULL, choices = languages, selected = "de", multiple = FALSE),
     textInput_examInstitution = textInput("examInstitution", label = NULL, value = NULL),
     textInput_examTitle = textInput("examTitle", label = NULL, value = NULL),
     textInput_examCourse = textInput("examCourse", label = NULL, value = NULL),
-    textInput_numberOfBlanks = textInput("numberOfBlanks", label = NULL, value = 0),
+    textInput_numberOfBlanks = textInput("numberOfBlanks", label = NULL, value = 5),
 
     # EXAM EVALUATE
     textInput_fixedPointsExamEvaluate = textInput("fixedPointsExamEvaluate", label = NULL, value = NULL),
@@ -898,8 +898,8 @@ ui = fluidPage(
     textInput_markThreshold5 = textInput("markThreshold5", label = NULL, value = 0.85),
     textInput_markLabel5 = textInput("markLabel5", label = NULL, value = NULL),
     
-    selectInput_evaluationLanguage = selectInput("evaluationLanguage", label = NULL, choices = languages, selected = NULL, multiple = FALSE),
-    checkboxInput_rotateScans = checkboxInput("rotateScans", label = NULL, value = NULL)
+    selectInput_evaluationLanguage = selectInput("evaluationLanguage", label = NULL, choices = languages, selected = "de", multiple = FALSE),
+    checkboxInput_rotateScans = checkboxInput("rotateScans", label = NULL, value = TRUE)
   )
 )
   
