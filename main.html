@@ -235,7 +235,9 @@
 							<h2><span lang="de">Prüfung Erstellen</span><span lang="en">Create exam</span></h2>
 							<div>
 								<div>
-									<label for="examDate"><span lang="de">Prüfungsdatum (yyyy-mm-dd)</span><span lang="en">Exam date (yyyy-mm-dd)</span></label>
+									<label for="examDate"><span lang="de">Prüfungsdatum</span><span lang="en">Exam date</span></label>
+									</br>
+									<span class="infoField"><span lang="de">Format: yyyy-mm-dd</span><span lang="en">Format: yyyy-mm-dd</span></span>
 									{{ dateInput_examDate }}
 								</div>
 								<div>
@@ -275,11 +277,13 @@
 								<div>
 									<label for="duplex"><span lang="de">Doppelseitiger Druck</span><span lang="en">Duplex printing</span></label>
 									</br>
-									<span class="infoField"><span lang="de">Bei doppelseitigem Druck immer auswählen.</span><span lang="en">Always select when duplex printing.</span></span>
+									<span class="infoField"><span lang="de">Wichtig bei doppelseitigem Druck.</span><span lang="en">Important for duplex printing.</span></span>
 									{{ checkboxInput_duplex }}
 								</div>
 								<div>
 									<label for="replacement"><span lang="de">Ersatz-Antwortbogen</span><span lang="en">Replacement evaluation sheet</span></label>
+									</br>
+									<span class="infoField"><span lang="de">Fügt einen zusätzlichen Antwortbogen ein.</span><span lang="en">Add an additional evaluation sheet.</span></span>
 									{{ checkboxInput_replacement }}
 								</div>
 								
@@ -289,6 +293,8 @@
 								</div>
 								<div>
 									<label for="newpage"><span lang="de">Neue Seite je Aufgabe</span><span lang="en">New page per exercise</span></label>
+									</br>
+									<span class="infoField"><span lang="de">Jede Aufgabe auf einer separaten Seiten platzieren.</span><span lang="en">Place each exercise on a separate page.</span></span>
 									{{ checkboxInput_newpage }}
 								</div>
 								<div>
