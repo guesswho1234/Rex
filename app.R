@@ -846,14 +846,15 @@ ui = fluidPage(
   # DEBUG
   textOutput("debug"),
   
-  # AUTH 
-  # div(class = "pull-right", shinyauthr::logoutUI(id = "logout")),
-  # shinyauthr::loginUI(id = "login"),
+  # AUTH
+  div(class = "pull-right", shinyauthr::logoutUI(id = "logout")),
+  shinyauthr::loginUI(id = "login"),
   
   # TEMPLATE
+  # uiOutput("rexApp")
   htmlTemplate(
     filename = "main.html",
-  
+
     # EXERCISES
     textInput_seedValueExercises = textInput("seedValueExercises", label = NULL, value = initSeed),
     button_downloadExercises = myDownloadButton('downloadExercises'),
@@ -885,19 +886,19 @@ ui = fluidPage(
 
     textInput_markThreshold1 = textInput("markThreshold1", label = NULL, value = 0),
     textInput_markLabel1 = textInput("markLabel1", label = NULL, value = NULL),
-    
+
     textInput_markThreshold2 = textInput("markThreshold2", label = NULL, value = 0.5),
     textInput_markLabe12 = textInput("markLabe12", label = NULL, value = NULL),
-    
+
     textInput_markThreshold3 = textInput("markThreshold3", label = NULL, value = 0.6),
     textInput_markLabel3 = textInput("markLabel3", label = NULL, value = NULL),
-    
+
     textInput_markThreshold4 = textInput("markThreshold4", label = NULL, value = 0.75),
     textInput_markLabel4 = textInput("markLabel4", label = NULL, value = NULL),
-    
+
     textInput_markThreshold5 = textInput("markThreshold5", label = NULL, value = 0.85),
     textInput_markLabel5 = textInput("markLabel5", label = NULL, value = NULL),
-    
+
     selectInput_evaluationLanguage = selectInput("evaluationLanguage", label = NULL, choices = languages, selected = "de", multiple = FALSE),
     checkboxInput_rotateScans = checkboxInput("rotateScans", label = NULL, value = TRUE)
   )
@@ -920,8 +921,61 @@ server = function(input, output, session) {
   #   id = "logout",
   #   active = reactive(credentials()$user_auth)
   # )
-  
-  # req(credentials()$user_auth) #TODO: use this as requirement
+  # 
+  # output$rexApp <- renderUI({
+  #   req(credentials()$user_auth)
+  #   
+  #   htmlTemplate(
+  #     filename = "test.html",
+  # 
+  #     # EXERCISES
+  #     textInput_seedValueExercises = textInput("seedValueExercises", label = NULL, value = initSeed),
+  #     button_downloadExercises = myDownloadButton('downloadExercises'),
+  #     button_downloadExercise = myDownloadButton('downloadExercise'),
+  # 
+  #     # EXAM CREATE
+  #     dateInput_examDate = dateInput("examDate", label = NULL, value = NULL, format = "yyyy-mm-dd"),
+  #     textInput_seedValueExam = textInput("seedValueExam", label = NULL, value = initSeed),
+  #     textInput_numberOfExams = textInput("numberOfExams", label = NULL, value = 1),
+  #     textInput_numberOfExercises = textInput("numberOfExercises", label = NULL, value = 0),
+  #     textInput_fixedPointsExamCreate = textInput("fixedPointsExamCreate", label = NULL, value = NULL),
+  #     selectInput_examRegLength = selectInput("examRegLength", label = NULL, choices = 1:10, selected = 8, multiple = FALSE),
+  #     checkboxInput_showPoints = checkboxInput("showPoints", label = NULL, value = TRUE),
+  #     checkboxInput_duplex = checkboxInput("duplex", label = NULL, value = TRUE),
+  #     checkboxInput_replacement = checkboxInput("replacement", label = NULL, value = NULL),
+  #     checkboxInput_samepage = checkboxInput("samepage", label = NULL, value = TRUE),
+  #     checkboxInput_newpage = checkboxInput("newpage", label = NULL, value = NULL),
+  #     selectInput_examLanguage = selectInput("examLanguage", label = NULL, choices = languages, selected = "de", multiple = FALSE),
+  #     textInput_examInstitution = textInput("examInstitution", label = NULL, value = NULL),
+  #     textInput_examTitle = textInput("examTitle", label = NULL, value = NULL),
+  #     textInput_examCourse = textInput("examCourse", label = NULL, value = NULL),
+  #     textInput_numberOfBlanks = textInput("numberOfBlanks", label = NULL, value = 5),
+  # 
+  #     # EXAM EVALUATE
+  #     textInput_fixedPointsExamEvaluate = textInput("fixedPointsExamEvaluate", label = NULL, value = NULL),
+  #     checkboxInput_partialPoints = checkboxInput("partialPoints", label = NULL, value = NULL),
+  #     checkboxInput_negativePoints = checkboxInput("negativePoints", label = NULL, value = NULL),
+  #     selectInput_rule = selectInput("rule", label = NULL, choices = rules, selected = NULL, multiple = FALSE),
+  # 
+  #     textInput_markThreshold1 = textInput("markThreshold1", label = NULL, value = 0),
+  #     textInput_markLabel1 = textInput("markLabel1", label = NULL, value = NULL),
+  # 
+  #     textInput_markThreshold2 = textInput("markThreshold2", label = NULL, value = 0.5),
+  #     textInput_markLabe12 = textInput("markLabe12", label = NULL, value = NULL),
+  # 
+  #     textInput_markThreshold3 = textInput("markThreshold3", label = NULL, value = 0.6),
+  #     textInput_markLabel3 = textInput("markLabel3", label = NULL, value = NULL),
+  # 
+  #     textInput_markThreshold4 = textInput("markThreshold4", label = NULL, value = 0.75),
+  #     textInput_markLabel4 = textInput("markLabel4", label = NULL, value = NULL),
+  # 
+  #     textInput_markThreshold5 = textInput("markThreshold5", label = NULL, value = 0.85),
+  #     textInput_markLabel5 = textInput("markLabel5", label = NULL, value = NULL),
+  # 
+  #     selectInput_evaluationLanguage = selectInput("evaluationLanguage", label = NULL, choices = languages, selected = "de", multiple = FALSE),
+  #     checkboxInput_rotateScans = checkboxInput("rotateScans", label = NULL, value = TRUE)
+  #   )
+  # })
   
   # STARTUP -------------------------------------------------------------
   dir.create(getDir(session))

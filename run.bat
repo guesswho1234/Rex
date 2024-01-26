@@ -1,0 +1,1 @@
+C:\Programme\R\R-4.3.0\bin\Rscript.exe "C:/Users/User/Desktop/work/Rex/PROJECT_Rex/start.txt"
