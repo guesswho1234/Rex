@@ -33,9 +33,6 @@ removeRuntimeFiles = function(session) {
   temfiles = list.files(dir)
   filesToRemove = temfiles
   
-  # session$sendCustomMessage("debugMessage", dir)
-  # session$sendCustomMessage("debugMessage", filesToRemove)
-
   if(length(filesToRemove) > 0) {
     unlink(paste0(dir, "/", filesToRemove), recursive = TRUE)
   }
@@ -846,7 +843,6 @@ ui = htmlTemplate(
   
 # SERVER -----------------------------------------------------------------
 server = function(input, output, session) {
-#todo: add req(credentials()$user_auth) to everything that is only allowed when logged in
   # AUTH --------------------------------------------------------------------
   credentials <- shinyauthr::loginServer(
     id = "login",
@@ -862,10 +858,17 @@ server = function(input, output, session) {
     id = "logout",
     active = reactive(credentials()$user_auth)
   )
-
+  
   output$rexApp <- renderUI({
     req(credentials()$user_auth)
     
+    # STARTUP -------------------------------------------------------------
+    dir.create(getDir(session))
+    removeRuntimeFiles(session)
+    
+    initSeed <<- as.numeric(gsub("-", "", Sys.Date()))
+
+    # LOAD APP ----------------------------------------------------------------
     htmlTemplate(
       filename = "app.html",
 
@@ -918,17 +921,6 @@ server = function(input, output, session) {
     )
   })
   
-  # STARTUP -------------------------------------------------------------
-  #todo: move to when logged in
-  dir.create(getDir(session))
-  removeRuntimeFiles(session)
-
-  initSeed <<- as.numeric(gsub("-", "", Sys.Date()))
-
-  session$sendCustomMessage("debugMessage", session$token)
-  session$sendCustomMessage("debugMessage", tempdir())
-  session$sendCustomMessage("debugMessage", list.files(tempdir()))
-
   # CLEANUP -------------------------------------------------------------
   onStop(function() {
     unlink(getDir(session), recursive = TRUE)
@@ -976,6 +968,7 @@ server = function(input, output, session) {
   # (a sync, parse function) parse all exercises ans store results as one list and add to exerciseID;
   # (sync, send values to frontend and load into dom)
   exerciseParsing = eventReactive(input$parseExercise, {
+    req(credentials()$user_auth)
     startWait(session)
 
     x = callr::r_bg(
@@ -1005,10 +998,10 @@ server = function(input, output, session) {
   })
 
   # CREATE EXAM -------------------------------------------------------------
-  # exam seed change
   examFiles = reactiveVal()
 
   examCreation = eventReactive(input$createExam, {
+    req(credentials()$user_auth)
     startWait(session)
 
     preparedExam = prepareExam(session, isolate(input$createExam), isolate(input))
@@ -1023,6 +1016,8 @@ server = function(input, output, session) {
   })
 
   observe({
+    req(credentials()$user_auth)
+    
     if (examCreation()$is_alive()) {
       invalidateLater(millis = 100, session = session)
     } else {
@@ -1045,6 +1040,8 @@ server = function(input, output, session) {
 
   # modal close
   observeEvent(input$dismiss_examCreationResponse, {
+    req(credentials()$user_auth)
+    
     removeModal()
     stopWait(session)
   })
@@ -1054,6 +1051,7 @@ server = function(input, output, session) {
 
   # evaluate scans - trigger
   examScanEvaluation = eventReactive(input$evaluateExam, {
+    req(credentials()$user_auth)
     startWait(session)
 
     # save input data in reactive value
@@ -1071,6 +1069,8 @@ server = function(input, output, session) {
 
   # evaluate scans - callback
   observe({
+    req(credentials()$user_auth)
+    
     if (examScanEvaluation()$is_alive()) {
       invalidateLater(millis = 100, session = session)
     } else {
@@ -1088,6 +1088,8 @@ server = function(input, output, session) {
 
   # finalizing evaluation - trigger
   examFinalizeEvaluation = eventReactive(input$proceedEvaluation, {
+    req(credentials()$user_auth)
+    
     dir = getDir(session)
     removeModal()
     preparedEvaluation = isolate(examEvaluationData())
@@ -1121,6 +1123,8 @@ server = function(input, output, session) {
 
   # finalizing evaluation - callback
   observe({
+    req(credentials()$user_auth)
+    
     if (examFinalizeEvaluation()$is_alive()) {
       invalidateLater(millis = 100, session = session)
     } else {
@@ -1145,11 +1149,15 @@ server = function(input, output, session) {
 
   # modal close
   observeEvent(input$dismiss_evaluateExamScansResponse, {
+    req(credentials()$user_auth)
+    
     removeModal()
     stopWait(session)
   })
 
   observeEvent(input$dismiss_evaluateExamFinalizeResponse, {
+    req(credentials()$user_auth)
+    
     removeModal()
     stopWait(session)
   })
