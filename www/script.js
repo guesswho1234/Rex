@@ -875,27 +875,28 @@ let dndExercises = {
 window.addEventListener('DOMContentLoaded', dndExercises.init);
 
 function loadExercisesDnD(items) {	
-	const blockNum = getBlockNum();
+	// const block = getBlock();
 	
 	getFilesDataTransferItems(items).then((files) => {
 		Array.from(files).forEach(file => {	
-			loadExercise(file, blockNum);
+			loadExercise(file);
 		});
 	});
 }
 
 function loadExercisesFileDialog(items) {	
-	const blockNum = getBlockNum();
+	// const block = getBlock();
 	
 	Array.from(items).forEach(file => {	
-		loadExercise(file, blockNum);
+		loadExercise(file);
 	});
 }
 
-function getBlockNum() {
-	const blockNum = Math.max(...iuf['exercises'].map(x => x.block)) + 1;
-	return blockNum > 0 ? blockNum : 1;
-}
+// function getBlock() {
+	// disabled -
+	// const block = Math.max(...iuf['exercises'].map(x => x.block)) + 1;
+	// return block > 0 ? block : 1;
+// }
 
 function loadExercise(file, block = 1) {
 	const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
