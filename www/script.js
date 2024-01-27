@@ -3,18 +3,14 @@
 *
 */
 
-delete connected;
-delete iuf;
-delete exercises;
-delete exerciseID_hook;
-delete d_exerciseName;
-delete d_questionText;
-delete d_answerText;
-delete d_result;
-delete d_registration; 
-delete dndExercises;
-delete dndAdditionalPdf;
-delete dndExamEvaluation;
+/* --------------------------------------------------------------
+DEBUG 
+-------------------------------------------------------------- */
+Shiny.addCustomMessageHandler('debugMessage', function(message) {
+	console.log("DEBUG MESSAGE:\n")
+	console.log(message)
+	console.log("\n\n")
+});
 
 /* --------------------------------------------------------------
 APP INIT
@@ -65,12 +61,10 @@ function addCustomStyles(){
 }
 
 /* --------------------------------------------------------------
-DEBUG 
+LOGOUT 
 -------------------------------------------------------------- */
-Shiny.addCustomMessageHandler('debugMessage', function(message) {
-	console.log("DEBUG MESSAGE:\n")
-	console.log(message)
-	console.log("\n\n")
+$('body').on('click', '#logout-button', function() {
+	location.reload();
 });
 
 /* --------------------------------------------------------------
@@ -461,7 +455,6 @@ const languages = {en:["Englisch", "English"],
  DATA 
 -------------------------------------------------------------- */
 let iuf = new Object();
-
 let exercises = -1;
 let exerciseID_hook = -1;
 
@@ -597,7 +590,7 @@ function exerciseRemoveAll(){
 		return $(this).index();
 	}).get();
 	
-	for (var i = removeIndices.length -1; i >= 0; i--) {
+	for (let i = removeIndices.length -1; i >= 0; i--) {
 		iuf['exercises'].splice(removeIndices[i],1);
 		exercises = exercises - 1;
 	}
@@ -1096,8 +1089,8 @@ function getTrueFalseText(value) {
 }
 
 Array.fromList = function(list) {
-    var array= new Array(list.length);
-    for (var i= 0, n= list.length; i<n; i++)
+    let array= new Array(list.length);
+    for (let i= 0, n= list.length; i<n; i++)
         array[i]= list[i];
     return array;
 };

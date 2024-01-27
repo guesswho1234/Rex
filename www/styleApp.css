@@ -9,6 +9,17 @@ nav .nav.navbar-nav a.disabled {
 	cursor: unset;
 }
 
+#logout-button {
+	background-color: var(---tryCatch_error);
+	border-color: var(---tryCatch_error);
+	border: 2px solid var(---background);
+	border-radius: 5px;
+}
+
+#logout-button:hover {
+	border: 2px solid var(---main);
+}
+
 #disableOverlay {
 	width: 100%;
 	height: 100%;
@@ -157,23 +168,6 @@ body.textButtonMode .textButton {
 #logoutContainer {
 	margin-right: 20px;
 }
-
-/* -------------------------------------------------------------- */
-/* TOOLTIP  */
-/* -------------------------------------------------------------- */
-/* .tt .ttText { */
-	/* visibility: hidden; */
-	/* z-index: 1; */
-	/* opacity: 0; */
-	/* transition: opacity 0.3s; */
-	/* position: relative; */
-	/* top: -1.5rem; */
-/* } */
-
-/* .tt:hover .ttText { */
-	/* visibility: visible; */
-	/* opacity: 1; */
-/* } */
 
 /* -------------------------------------------------------------- */
 /* SECTIONS  */
