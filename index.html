@@ -22,16 +22,15 @@
 		{{ shinyauthr::loginUI(id = "login", tags$img(id = "logoLogin", class="logo", src="logo.svg")) }}
 		<div class="fullHLine"></div>
 		{{ htmlOutput("rexApp", inline=TRUE) }}
-		<div class="footer-container">
-			<footer id="footer" class="wrapper">	
-				<footer>
-					<div id="copyright">
-						<small>
-							<div>&copy; Copyright <script>document.write(new Date().getFullYear())</script>, Sebastian Bachler</div>
-						</small> 
-					</div>
-				</footer>
-			</footer>
-		</div>
+		<footer>
+			<div id="copyright">
+				<small>
+					<div>&copy; <script>document.write(new Date().getFullYear())</script> Sebastian Bachler</div>
+					<div>Based on <a href="https://cran.r-project.org/web/packages/exams/index.html target="_blank" rel="noopener noreferrer"">R/exams</a>, © <script>document.write(new Date().getFullYear())</script> Achim Zeileis</div>
+					<div>Licensed under <a href="urlToLocallyHostedLicense">GNU GPL-2</a></div>
+					<div>Download the source code <a href="https://github.com/guesswho1234/PROJECT_Rex" target="_blank" rel="noopener noreferrer">here</a></div>
+				</small> 
+			</div>
+		</footer>
 	</body>	
 </html>

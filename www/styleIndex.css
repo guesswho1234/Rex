@@ -34,10 +34,27 @@ body {
 	padding: 5px;
 }	
 
+#login-button {
+	background-color: var(---tryCatch_success);
+	border-color: var(---tryCatch_success);
+	border: 2px solid var(---background);
+	border-radius: 5px;
+}
+
+#login-button:hover {
+	border: 2px solid var(---main);
+}
+
 /* --------------------------------------------------------------
  FOOTER 
 -------------------------------------------------------------- */
-.footer-container {
-	padding: 1rem;
-	background: var(---background);
+footer {
+	display: flex;
+	margin: auto;
+}
+
+#copyright {
+	margin: auto;
+	text-align: center;
+	color: var(---background2);
 }
