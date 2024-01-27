@@ -3,10 +3,23 @@
 *
 */
 
+delete connected;
+delete iuf;
+delete exercises;
+delete exerciseID_hook;
+delete d_exerciseName;
+delete d_questionText;
+delete d_answerText;
+delete d_result;
+delete d_registration; 
+delete dndExercises;
+delete dndAdditionalPdf;
+delete dndExamEvaluation;
+
 /* --------------------------------------------------------------
- DOCUMENT READY 
+APP INIT
 -------------------------------------------------------------- */
-$(document).ready(function () {
+function initApp(){
 	iuf['exercises'] = new Array();
 	iuf['examAdditionalPdf'] = new Array(); 
 	iuf['examEvaluation'] = new Array();
@@ -14,23 +27,7 @@ $(document).ready(function () {
 	iuf['examEvaluation']['registeredParticipants'] = new Array();
 	iuf['examEvaluation']['solutions'] = new Array();
 	iuf['examEvaluation']['scans_reg_fullJoinData'] = new Array();
-});
-
-/* --------------------------------------------------------------
-RSHINY CONNECTION 
--------------------------------------------------------------- */
-let connected = false;
-$(document).on('shiny:disconnected', function(event) {
-   connected = false;
-   $('#heart span').addClass('dead');
-}).on('shiny:connected', function(event) {
-   connected = true;
-});
-
-/* --------------------------------------------------------------
-RSHINY SESSION 
--------------------------------------------------------------- */
-function initApp(){
+	
 	$('#s_initialSeed').html(itemSingle($('#seedValueExercises').val(), 'greenLabel'));
 	$('#s_numberOfExams').html(itemSingle($('#numberOfExams').val(), 'grayLabel'));
 	$('#logout-button').removeClass('shinyjs-hide');
@@ -44,6 +41,17 @@ function initApp(){
 	f_langDeEn();
 	resetOutputFields();
 }
+
+/* --------------------------------------------------------------
+RSHINY CONNECTION 
+-------------------------------------------------------------- */
+let connected = false;
+$(document).on('shiny:disconnected', function(event) {
+   connected = false;
+   $('#heart span').addClass('dead');
+}).on('shiny:connected', function(event) {
+   connected = true;
+});
 
 /* --------------------------------------------------------------
 ADD CUSTOM STYLESHEETS
@@ -889,8 +897,6 @@ let dndExercises = {
 };
 
 function loadExercisesDnD(items) {	
-	// const block = getBlock();
-	
 	getFilesDataTransferItems(items).then((files) => {
 		Array.from(files).forEach(file => {	
 			loadExercise(file);
@@ -899,18 +905,10 @@ function loadExercisesDnD(items) {
 }
 
 function loadExercisesFileDialog(items) {	
-	// const block = getBlock();
-	
 	Array.from(items).forEach(file => {	
 		loadExercise(file);
 	});
 }
-
-// function getBlock() {
-	// disabled -
-	// const block = Math.max(...iuf['exercises'].map(x => x.block)) + 1;
-	// return block > 0 ? block : 1;
-// }
 
 function loadExercise(file, block = 1) {
 	const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
@@ -1737,8 +1735,6 @@ async function createExamEvent() {
 	const additionalPdfFiles = iuf.examAdditionalPdf.map(pdf => pdf[1]);
 	
 	Shiny.onInputChange("createExam", {exerciseNames: exerciseNames, exerciseCodes:exerciseCodes, blocks: blocks, additionalPdfNames: additionalPdfNames, additionalPdfFiles: additionalPdfFiles}, {priority: 'event'});
-	
-	// Shiny.onInputChange("createExam", {examSeed: $('#seedValueExam').val(), numberOfExams: $("#numberOfExams").val(), numberOfExercises: $("#numberOfExercises").val(), exerciseNames: exerciseNames, exerciseCodes:exerciseCodes, blocks: blocks, additionalPdfNames: additionalPdfNames, additionalPdfFiles: additionalPdfFiles}, {priority: 'event'});
 }
 
 /* --------------------------------------------------------------

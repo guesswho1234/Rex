@@ -863,6 +863,7 @@ server = function(input, output, session) {
     req(credentials()$user_auth)
     
     # STARTUP -------------------------------------------------------------
+    unlink(getDir(session), recursive = TRUE)
     dir.create(getDir(session))
     removeRuntimeFiles(session)
     
