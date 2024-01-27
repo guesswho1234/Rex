@@ -1024,8 +1024,6 @@ server = function(input, output, session) {
     } else {
       result = examCreation()$get_result()
       examFiles(unlist(result$files, recursive = TRUE))
-      
-      print(isolate(input$seedValueExam))
 
       examCreationResponse(session, result$message, length(isolate(examFiles())) > 0)
     }
