@@ -30,15 +30,31 @@ $(document).on('shiny:disconnected', function(event) {
 /* --------------------------------------------------------------
 RSHINY SESSION 
 -------------------------------------------------------------- */
-$(document).on('shiny:sessioninitialized', function(event) {
+function initApp(){
 	$('#s_initialSeed').html(itemSingle($('#seedValueExercises').val(), 'greenLabel'));
 	$('#s_numberOfExams').html(itemSingle($('#numberOfExams').val(), 'grayLabel'));
+	$('#logout-button').removeClass('shinyjs-hide');
+	
+	dndExercises.init();
+	dndAdditionalPdf.init();
+	dndExamEvaluation.init();
 	
 	f_hotKeys();
 	f_buttonMode();
 	f_langDeEn();
 	resetOutputFields();
-});
+}
+
+/* --------------------------------------------------------------
+ADD CUSTOM STYLESHEETS
+-------------------------------------------------------------- */
+function addCustomStyles(){
+	const linkElements = ['<link rel="stylesheet" href="styleApp.css" type="text/css">',
+	'<link rel="stylesheet" href="/fontawesome/css/fontawesome.min.css" type="text/css">',
+	'<link rel="stylesheet" href="/fontawesome/css/all.min.css" type="text/css">']	
+
+	linkElements.forEach(style => $("head").append(style));
+}
 
 /* --------------------------------------------------------------
 DEBUG 
@@ -872,8 +888,6 @@ let dndExercises = {
 	},
 };
 
-window.addEventListener('DOMContentLoaded', dndExercises.init);
-
 function loadExercisesDnD(items) {	
 	// const block = getBlock();
 	
@@ -1630,8 +1644,6 @@ let dndAdditionalPdf = {
 	},
 };
 
-window.addEventListener('DOMContentLoaded', dndAdditionalPdf.init);
-
 function loadAdditionalPdfDnD(items) {	
 	getFilesDataTransferItems(items).then(async (files) => {
 		Array.from(files).forEach(file => {	
@@ -1781,8 +1793,6 @@ let dndExamEvaluation = {
 		}
 	},
 };
-
-window.addEventListener('DOMContentLoaded', dndExamEvaluation.init);
 
 function loadExamEvaluation(items) {	
 	getFilesDataTransferItems(items).then(async (files) => {
