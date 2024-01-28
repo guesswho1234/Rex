@@ -193,7 +193,7 @@ document.onkeydown = function(evt) {
 				
 				if (evtobj.shiftKey) {
 					switch (evtobj.keyCode) {
-						case 65: // shift+a
+						case 69: // shift+e
 							examExerciseAll();
 							break;
 						case 68: // shift+d
@@ -207,7 +207,7 @@ document.onkeydown = function(evt) {
 							
 				if(!evtobj.shiftKey && !evtobj.ctrlKey) {
 					switch (evtobj.keyCode) {
-						case 65: // a
+						case 69: // e
 							if ($('.exerciseItem.active:not(.filtered)').length > 0 && !$('.exerciseItem.active:not(.filtered) .examExercise').hasClass('disabled')) {
 								$('.exerciseItem.active:not(.filtered)').closest('.exerciseItem:not(.filtered)').toggleClass('exam');	
 								setExamExercise($('.exerciseItem.active:not(.filtered)').closest('.exerciseItem:not(.filtered)').index('.exerciseItem:not(.filtered)'), $('.exerciseItem.active:not(.filtered)').closest('.exerciseItem:not(.filtered)').hasClass('exam'));
@@ -246,7 +246,7 @@ document.onkeydown = function(evt) {
 				}
 			} 
 			
-			if (evtobj.keyCode == 67) // c
+			if (evtobj.keyCode == 65) // c
 				newSimpleExercise();
 		}
 	} else {
