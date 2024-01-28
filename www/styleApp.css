@@ -1,40 +1,23 @@
 /* --------------------------------------------------------------
  GENERAL 
 -------------------------------------------------------------- */
-.color-theme {
-	---background: rgba(248, 248, 248, 1);
-	---background2: rgba(0, 0, 0, 0.2);
-	---background3: rgba(238, 238, 238, 1);
-	---main: rgba(64, 64, 64, 1);
-	---highlight_values: rgba(85, 87, 211, 0.6);
-	---transparent: rgba(255, 255, 255, 0);
-	---label_yellow: rgba(251, 238, 200, 1);
-	---label_gray: rgba(238, 238, 238, 1);
-	---tryCatch_success: rgba(67, 168, 145, 1);
-	---tryCatch_warning: rgba(255, 211, 128, 1);
-	---tryCatch_error: rgba(211, 85, 85, 1);
-	---heartRed: hsl(0,50%,50%);
-	---heartRainbow: linear-gradient( 130deg, rgb(255, 0, 0) 30%, rgb(255, 154, 0) 35%, rgb(208, 222, 33) 40%, rgb(79, 220, 74) 45%, rgb(63, 218, 216) 50%, rgb(47, 201, 226) 55%, rgb(28, 127, 238) 60%, rgb(95, 21, 242) 65%, rgb(186, 12, 248) 70%, rgb(251, 7, 217) 75%, rgb(255, 0, 0) 100% );
-}
-
-html {
-	font-family: Helvetica, sans-serif;
-	font-style: normal;
-	font-weight: normal;
-	font-size: 16px;
-}
-
-body {
-	height: auto;
-	color: var(---main);
-}
-
 nav {
 	z-index: 998 !important;
 }
 
 nav .nav.navbar-nav a.disabled {
 	cursor: unset;
+}
+
+#logout-button {
+	background-color: var(---tryCatch_error);
+	border-color: var(---tryCatch_error);
+	border: 2px solid var(---background);
+	border-radius: 5px;
+}
+
+#logout-button:hover {
+	border: 2px solid var(---main);
 }
 
 #disableOverlay {
@@ -79,13 +62,14 @@ nav .nav.navbar-nav a.disabled {
 }
 
 #navMisc {
-	margin: 1rem;
 	position: absolute;
 	top: 0;
 	right: 0;
 	display: flex;
 	gap: 25px;
 	font-weight: bold;
+	height: 100%;
+	place-items: center;
 }
 
 #navMisc .buttonModeSelector, 
@@ -138,7 +122,6 @@ body.textButtonMode .textButton {
 
 #heartbeatContainer { 
 	position: relative;
-	margin-right: 20px;
 }
 
 #heart { 
@@ -182,22 +165,9 @@ body.textButtonMode .textButton {
 	display: none;
 }
 
-/* -------------------------------------------------------------- */
-/* TOOLTIP  */
-/* -------------------------------------------------------------- */
-/* .tt .ttText { */
-	/* visibility: hidden; */
-	/* z-index: 1; */
-	/* opacity: 0; */
-	/* transition: opacity 0.3s; */
-	/* position: relative; */
-	/* top: -1.5rem; */
-/* } */
-
-/* .tt:hover .ttText { */
-	/* visibility: visible; */
-	/* opacity: 1; */
-/* } */
+#logoutContainer {
+	margin-right: 20px;
+}
 
 /* -------------------------------------------------------------- */
 /* SECTIONS  */
@@ -1063,12 +1033,4 @@ main > * {
 
 #help .contentTab.active {
 	display:block;
-}
-
-/* --------------------------------------------------------------
- FOOTER 
--------------------------------------------------------------- */
-.footer-container {
-	padding: 1rem;
-	background: var(---background);
 }

@@ -4,9 +4,18 @@
 */
 
 /* --------------------------------------------------------------
- DOCUMENT READY 
+DEBUG 
 -------------------------------------------------------------- */
-$(document).ready(function () {
+Shiny.addCustomMessageHandler('debugMessage', function(message) {
+	console.log("DEBUG MESSAGE:\n")
+	console.log(message)
+	console.log("\n\n")
+});
+
+/* --------------------------------------------------------------
+APP INIT
+-------------------------------------------------------------- */
+function initApp(){
 	iuf['exercises'] = new Array();
 	iuf['examAdditionalPdf'] = new Array(); 
 	iuf['examEvaluation'] = new Array();
@@ -14,7 +23,22 @@ $(document).ready(function () {
 	iuf['examEvaluation']['registeredParticipants'] = new Array();
 	iuf['examEvaluation']['solutions'] = new Array();
 	iuf['examEvaluation']['scans_reg_fullJoinData'] = new Array();
-});
+	
+	$('#s_initialSeed').html(itemSingle($('#seedValueExercises').val(), 'greenLabel'));
+	$('#s_numberOfExams').html(itemSingle($('#numberOfExams').val(), 'grayLabel'));
+	$('#logout-button').removeClass('shinyjs-hide');
+	
+	dndExercises.init();
+	dndAdditionalPdf.init();
+	dndExamEvaluation.init();
+	
+	f_hotKeys();
+	f_buttonMode();
+	f_langDeEn();
+	resetOutputFields();
+	
+	$('#copyright small').append('<div id="additionalCopyright"><div>Based on <a href="https://cran.r-project.org/web/packages/exams/index.html" target="_blank" rel="noopener noreferrer">R/exams</a> © ' + new Date().getFullYear() + ' Achim Zeileis</div><div>Licensed under <a href="LICENSE.html" target="_blank" rel="noopener noreferrer">GNU GPL-2</a></div><div>Download the source code <a href="https://github.com/guesswho1234/PROJECT_Rex" target="_blank" rel="noopener noreferrer">here</a></div></div>');
+}
 
 /* --------------------------------------------------------------
 RSHINY CONNECTION 
@@ -28,25 +52,21 @@ $(document).on('shiny:disconnected', function(event) {
 });
 
 /* --------------------------------------------------------------
-RSHINY SESSION 
+ADD CUSTOM STYLESHEETS
 -------------------------------------------------------------- */
-$(document).on('shiny:sessioninitialized', function(event) {
-	$('#s_initialSeed').html(itemSingle($('#seedValueExercises').val(), 'greenLabel'));
-	$('#s_numberOfExams').html(itemSingle($('#numberOfExams').val(), 'grayLabel'));
-	
-	f_hotKeys();
-	f_buttonMode();
-	f_langDeEn();
-	resetOutputFields();
-});
+function addCustomStyles(){
+	const linkElements = ['<link rel="stylesheet" href="styleApp.css" type="text/css">',
+	'<link rel="stylesheet" href="/fontawesome/css/fontawesome.min.css" type="text/css">',
+	'<link rel="stylesheet" href="/fontawesome/css/all.min.css" type="text/css">']	
+
+	linkElements.forEach(style => $("head").append(style));
+}
 
 /* --------------------------------------------------------------
-DEBUG 
+LOGOUT 
 -------------------------------------------------------------- */
-Shiny.addCustomMessageHandler('debugMessage', function(message) {
-	console.log("DEBUG MESSAGE:\n")
-	console.log(message)
-	console.log("\n\n")
+$('body').on('click', '#logout-button', function() {
+	location.reload();
 });
 
 /* --------------------------------------------------------------
@@ -437,7 +457,6 @@ const languages = {en:["Englisch", "English"],
  DATA 
 -------------------------------------------------------------- */
 let iuf = new Object();
-
 let exercises = -1;
 let exerciseID_hook = -1;
 
@@ -573,7 +592,7 @@ function exerciseRemoveAll(){
 		return $(this).index();
 	}).get();
 	
-	for (var i = removeIndices.length -1; i >= 0; i--) {
+	for (let i = removeIndices.length -1; i >= 0; i--) {
 		iuf['exercises'].splice(removeIndices[i],1);
 		exercises = exercises - 1;
 	}
@@ -872,11 +891,7 @@ let dndExercises = {
 	},
 };
 
-window.addEventListener('DOMContentLoaded', dndExercises.init);
-
 function loadExercisesDnD(items) {	
-	// const block = getBlock();
-	
 	getFilesDataTransferItems(items).then((files) => {
 		Array.from(files).forEach(file => {	
 			loadExercise(file);
@@ -885,18 +900,10 @@ function loadExercisesDnD(items) {
 }
 
 function loadExercisesFileDialog(items) {	
-	// const block = getBlock();
-	
 	Array.from(items).forEach(file => {	
 		loadExercise(file);
 	});
 }
-
-// function getBlock() {
-	// disabled -
-	// const block = Math.max(...iuf['exercises'].map(x => x.block)) + 1;
-	// return block > 0 ? block : 1;
-// }
 
 function loadExercise(file, block = 1) {
 	const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
@@ -1084,8 +1091,8 @@ function getTrueFalseText(value) {
 }
 
 Array.fromList = function(list) {
-    var array= new Array(list.length);
-    for (var i= 0, n= list.length; i<n; i++)
+    let array= new Array(list.length);
+    for (let i= 0, n= list.length; i<n; i++)
         array[i]= list[i];
     return array;
 };
@@ -1630,8 +1637,6 @@ let dndAdditionalPdf = {
 	},
 };
 
-window.addEventListener('DOMContentLoaded', dndAdditionalPdf.init);
-
 function loadAdditionalPdfDnD(items) {	
 	getFilesDataTransferItems(items).then(async (files) => {
 		Array.from(files).forEach(file => {	
@@ -1725,8 +1730,6 @@ async function createExamEvent() {
 	const additionalPdfFiles = iuf.examAdditionalPdf.map(pdf => pdf[1]);
 	
 	Shiny.onInputChange("createExam", {exerciseNames: exerciseNames, exerciseCodes:exerciseCodes, blocks: blocks, additionalPdfNames: additionalPdfNames, additionalPdfFiles: additionalPdfFiles}, {priority: 'event'});
-	
-	// Shiny.onInputChange("createExam", {examSeed: $('#seedValueExam').val(), numberOfExams: $("#numberOfExams").val(), numberOfExercises: $("#numberOfExercises").val(), exerciseNames: exerciseNames, exerciseCodes:exerciseCodes, blocks: blocks, additionalPdfNames: additionalPdfNames, additionalPdfFiles: additionalPdfFiles}, {priority: 'event'});
 }
 
 /* --------------------------------------------------------------
@@ -1781,8 +1784,6 @@ let dndExamEvaluation = {
 		}
 	},
 };
-
-window.addEventListener('DOMContentLoaded', dndExamEvaluation.init);
 
 function loadExamEvaluation(items) {	
 	getFilesDataTransferItems(items).then(async (files) => {

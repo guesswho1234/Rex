@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<!-- index.html -->
+<html xmlns="http://www.w3.org/1999/xhtml" lang="de" xml:lang="de">
+	<head>
+		{{ headContent() }}
+		{{ bootstrapLib() }}
+		{{ shinyjs::useShinyjs() }}
+		<title>Rex</title>	
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+		<link rel="manifest" href="/site.webmanifest">
+		<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+		<meta name="msapplication-TileColor" content="#da532c">
+		<meta name="theme-color" content="#ffffff">	
+		<link rel="stylesheet" href="styleIndex.css" type="text/css">
+	</head>
+	<body class="color-theme textButtonMode">
+		{{ textOutput("debug") }}
+		{{ shinyauthr::loginUI(id = "login", tags$img(id = "logoLogin", class="logo", src="logo.svg")) }}
+		<div class="fullHLine"></div>
+		{{ htmlOutput("rexApp", inline=TRUE) }}
+		<footer>
+			<div id="copyright">
+				<small>
+					<div>&copy; <script>document.write(new Date().getFullYear())</script> Sebastian Bachler</div>
+				</small> 
+			</div>
+		</footer>
+	</body>	
+</html>
