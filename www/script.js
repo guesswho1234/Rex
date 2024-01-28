@@ -36,6 +36,8 @@ function initApp(){
 	f_buttonMode();
 	f_langDeEn();
 	resetOutputFields();
+	
+	$('#copyright small').append('<div id="additionalCopyright"><div>Based on <a href="https://cran.r-project.org/web/packages/exams/index.html" target="_blank" rel="noopener noreferrer">R/exams</a> © ' + new Date().getFullYear() + ' Achim Zeileis</div><div>Licensed under <a href="LICENSE.html" target="_blank" rel="noopener noreferrer">GNU GPL-2</a></div><div>Download the source code <a href="https://github.com/guesswho1234/PROJECT_Rex" target="_blank" rel="noopener noreferrer">here</a></div></div>');
 }
 
 /* --------------------------------------------------------------
