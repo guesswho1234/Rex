@@ -11,7 +11,8 @@ helpers.installPackages(
   "qpdf",
   "pdftools",
   "openssl",
-  "tinytex"
+  "tinytex",
+  "shinyauthr"
 )
 
 # special install packages
