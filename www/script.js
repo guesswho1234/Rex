@@ -45,6 +45,12 @@ function initApp(){
 	resetOutputFields();
 	
 	$('#copyright small').append('<div id="additionalCopyright"><div>Based on <a href="https://cran.r-project.org/web/packages/exams/index.html" target="_blank" rel="noopener noreferrer">R/exams</a> © ' + new Date().getFullYear() + ' Achim Zeileis</div><div>Licensed under <a href="LICENSE.html" target="_blank" rel="noopener noreferrer">GNU GPL-2</a></div><div>Download the source code <a href="https://github.com/guesswho1234/PROJECT_Rex" target="_blank" rel="noopener noreferrer">here</a></div></div>');
+	
+	const linkElements = ['<link rel="stylesheet" href="styleApp.css" type="text/css">',
+	'<link rel="stylesheet" href="/fontawesome/css/fontawesome.min.css" type="text/css">',
+	'<link rel="stylesheet" href="/fontawesome/css/all.min.css" type="text/css">']	
+
+	linkElements.forEach(style => $("head").append(style));
 }
 
 /* --------------------------------------------------------------
@@ -57,17 +63,6 @@ $(document).on('shiny:disconnected', function(event) {
 }).on('shiny:connected', function(event) {
    connected = true;
 });
-
-/* --------------------------------------------------------------
-ADD CUSTOM STYLESHEETS
--------------------------------------------------------------- */
-function addCustomStyles(){
-	const linkElements = ['<link rel="stylesheet" href="styleApp.css" type="text/css">',
-	'<link rel="stylesheet" href="/fontawesome/css/fontawesome.min.css" type="text/css">',
-	'<link rel="stylesheet" href="/fontawesome/css/all.min.css" type="text/css">']	
-
-	linkElements.forEach(style => $("head").append(style));
-}
 
 /* --------------------------------------------------------------
 LOGOUT 
