@@ -828,7 +828,7 @@ warningCodes = read.csv("tryCatch/warningCodes.csv")
 warningCodes = setNames(apply(warningCodes[,-1], 1, FUN=as.list), warningCodes[,1])
 
 # dataframe that holds usernames, passwords and other user data
-user_base <- data.frame(
+user_base = data.frame(
   user = c("rex"),
   password = sapply(c("rex"), sodium::password_store),
   permissions = c("admin"),
@@ -843,7 +843,7 @@ ui = htmlTemplate(
 # SERVER -----------------------------------------------------------------
 server = function(input, output, session) {
   # AUTH --------------------------------------------------------------------
-  credentials <- shinyauthr::loginServer(
+  credentials = shinyauthr::loginServer(
     id = "login",
     data = user_base,
     user_col = user,
@@ -853,12 +853,13 @@ server = function(input, output, session) {
   )
 
   # Logout to hide
-  logout_init <- shinyauthr::logoutServer(
+  logout_init = shinyauthr::logoutServer(
     id = "logout",
     active = reactive(credentials()$user_auth)
   )
   
-  output$rexApp <- renderUI({
+  eventReactive
+  output$rexApp = renderUI({
     req(credentials()$user_auth)
     
     # STARTUP -------------------------------------------------------------
@@ -869,7 +870,7 @@ server = function(input, output, session) {
     initSeed <<- as.numeric(gsub("-", "", Sys.Date()))
 
     # LOAD APP ----------------------------------------------------------------
-    htmlTemplate(
+     htmlTemplate(
       filename = "app.html",
 
       # EXERCISES
@@ -968,7 +969,6 @@ server = function(input, output, session) {
   # (a sync, parse function) parse all exercises ans store results as one list and add to exerciseID;
   # (sync, send values to frontend and load into dom)
   exerciseParsing = eventReactive(input$parseExercise, {
-    req(credentials()$user_auth)
     startWait(session)
 
     x = callr::r_bg(
@@ -1001,7 +1001,6 @@ server = function(input, output, session) {
   examFiles = reactiveVal()
 
   examCreation = eventReactive(input$createExam, {
-    req(credentials()$user_auth)
     startWait(session)
 
     preparedExam = prepareExam(session, isolate(input$createExam), isolate(input))
@@ -1016,8 +1015,6 @@ server = function(input, output, session) {
   })
 
   observe({
-    req(credentials()$user_auth)
-    
     if (examCreation()$is_alive()) {
       invalidateLater(millis = 100, session = session)
     } else {
@@ -1038,8 +1035,6 @@ server = function(input, output, session) {
 
   # modal close
   observeEvent(input$dismiss_examCreationResponse, {
-    req(credentials()$user_auth)
-    
     removeModal()
     stopWait(session)
   })
@@ -1049,7 +1044,6 @@ server = function(input, output, session) {
 
   # evaluate scans - trigger
   examScanEvaluation = eventReactive(input$evaluateExam, {
-    req(credentials()$user_auth)
     startWait(session)
 
     # save input data in reactive value
@@ -1067,8 +1061,6 @@ server = function(input, output, session) {
 
   # evaluate scans - callback
   observe({
-    req(credentials()$user_auth)
-    
     if (examScanEvaluation()$is_alive()) {
       invalidateLater(millis = 100, session = session)
     } else {
@@ -1086,8 +1078,6 @@ server = function(input, output, session) {
 
   # finalizing evaluation - trigger
   examFinalizeEvaluation = eventReactive(input$proceedEvaluation, {
-    req(credentials()$user_auth)
-    
     dir = getDir(session)
     removeModal()
     preparedEvaluation = isolate(examEvaluationData())
@@ -1121,8 +1111,6 @@ server = function(input, output, session) {
 
   # finalizing evaluation - callback
   observe({
-    req(credentials()$user_auth)
-    
     if (examFinalizeEvaluation()$is_alive()) {
       invalidateLater(millis = 100, session = session)
     } else {
@@ -1147,15 +1135,11 @@ server = function(input, output, session) {
 
   # modal close
   observeEvent(input$dismiss_evaluateExamScansResponse, {
-    req(credentials()$user_auth)
-    
     removeModal()
     stopWait(session)
   })
 
   observeEvent(input$dismiss_evaluateExamFinalizeResponse, {
-    req(credentials()$user_auth)
-    
     removeModal()
     stopWait(session)
   })

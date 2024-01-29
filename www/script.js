@@ -15,7 +15,25 @@ Shiny.addCustomMessageHandler('debugMessage', function(message) {
 /* --------------------------------------------------------------
 APP INIT
 -------------------------------------------------------------- */
+var myFunc = function func(){
+     if( myFunc.fired ) return;
+     myFunc.fired = true;
+     console.log('called once and never again!'); // your stuff here
+}; 
+
+let init = false;
+
+$(document).on('shiny:idle', function(event) {
+	if(!init) {
+		init = true;
+		initApp();
+	}
+});
+
 function initApp(){
+	if( initApp.fired ) return;
+	initApp.fired = true;
+	 
 	iuf['exercises'] = new Array();
 	iuf['examAdditionalPdf'] = new Array(); 
 	iuf['examEvaluation'] = new Array();
@@ -622,6 +640,9 @@ function exerciseDownload() {
 	
 	const exerciseName = iuf.exercises[exerciseID].name;
 	const exerciseCode = iuf.exercises[exerciseID].file;
+	
+	console.log(exerciseName);
+	console.log(exerciseCode);
 	
 	Shiny.onInputChange("exerciseToDownload", {exerciseName:exerciseName, exerciseCode: exerciseCode}, {priority: 'event'});	
 }
