@@ -15,19 +15,8 @@ Shiny.addCustomMessageHandler('debugMessage', function(message) {
 /* --------------------------------------------------------------
 APP INIT
 -------------------------------------------------------------- */
-var myFunc = function func(){
-     if( myFunc.fired ) return;
-     myFunc.fired = true;
-     console.log('called once and never again!'); // your stuff here
-}; 
-
-let init = false;
-
 $(document).on('shiny:idle', function(event) {
-	if(!init) {
-		init = true;
-		initApp();
-	}
+	initApp();
 });
 
 function initApp(){
