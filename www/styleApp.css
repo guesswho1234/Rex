@@ -9,6 +9,29 @@ nav .nav.navbar-nav a.disabled {
 	cursor: unset;
 }
 
+#logoutContainer {
+	position: relative;
+}
+
+#logoutContainer.disabled logout-button {
+	background-color: var(---background2);
+}
+
+#logoutOverlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	height: 100%;
+	width: 100%;
+	background-color: var(---transparent);
+	z-index: -1;
+}
+
+#logoutContainer.disabled #logoutOverlay {
+	z-index: 0;
+	cursor: no-drop;
+}
+
 #logout-button {
 	background-color: var(---tryCatch_error);
 	border-color: var(---tryCatch_error);

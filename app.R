@@ -473,7 +473,9 @@ prepareEvaluation = function(session, evaluation, rotate, input){
   
   registeredParticipantsFile = unlist(lapply(seq_along(evaluation$examRegisteredParticipantsnName), function(i){
     file = paste0(dir, "/", evaluation$examRegisteredParticipantsnName[[i]], ".csv")
-    writeLines(text=gsub("\r\n", "\n", evaluation$examRegisteredParticipantsnFile[[i]]), con=file)
+    content = gsub("\r\n", "\n", evaluation$examRegisteredParticipantsnFile[[i]])
+    content = gsub(",", ";", content)
+    writeLines(text=content, con=file)
 
     return(file)
   }))
@@ -588,7 +590,18 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
         if(length(files$solution) != 1){
           stop("E1014")
         }
-
+        
+        # read registered participants
+        registeredParticipantData = read.csv2(files$registeredParticipants)
+        
+        if(ncol(registeredParticipantData) != 3){
+          stop("E1015")
+        }
+        
+        if(!all(names(registeredParticipantData) == c("registration", "name", "id"))){
+          stop("E1016")
+        }
+        
         # process scans
         scanData = exams::nops_scan(images=files$scans,
                                     file="test",
@@ -612,9 +625,6 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
           blob = readBin(file, "raw", n=file.info(file)$size)
           openssl::base64_encode(blob)
         })
-
-        # read registered participants
-        registeredParticipantData = read.csv2(files$registeredParticipants)
         
         # full outer join of scanData and registeredParticipantData
         scans_reg_fullJoinData = merge(scanData, registeredParticipantData, by="registration", all=TRUE)
@@ -821,10 +831,10 @@ languages = c("en",
 rules = list("- 1/max(nwrong, 2)"="false2", "- 1/nwrong"="false", "- 1/ncorrect"="true", "- 1"="all", "- 0"="none")
 messageSymbols = c('<i class=\"fa-solid fa-circle-check\"></i>', '<i class=\"fa-solid fa-triangle-exclamation\"></i>', '<i class=\"fa-solid fa-circle-exclamation\"></i>')
 
-errorCodes = read.csv("tryCatch/errorCodes.csv")
+errorCodes = read.csv2("tryCatch/errorCodes.csv")
 errorCodes = setNames(apply(errorCodes[,-1], 1, FUN=as.list), errorCodes[,1])
 
-warningCodes = read.csv("tryCatch/warningCodes.csv")
+warningCodes = read.csv2("tryCatch/warningCodes.csv")
 warningCodes = setNames(apply(warningCodes[,-1], 1, FUN=as.list), warningCodes[,1])
 
 # dataframe that holds usernames, passwords and other user data

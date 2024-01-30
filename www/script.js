@@ -304,9 +304,11 @@ Shiny.addCustomMessageHandler('wait', function(status) {
 	if(status === 0) {
 		$('#disableOverlay').addClass("active");
 		$('nav .nav.navbar-nav li').addClass("disabled");
+		$('#logoutContainer').addClass("disabled");
 	} else {
 		$('#disableOverlay').removeClass("active");
 		$('nav .nav.navbar-nav li').removeClass("disabled");
+		$('#logoutContainer').removeClass("disabled");
 	}
 });
 
@@ -624,10 +626,7 @@ function exerciseDownload() {
 	
 	const exerciseName = iuf.exercises[exerciseID].name;
 	const exerciseCode = iuf.exercises[exerciseID].file;
-	
-	console.log(exerciseName);
-	console.log(exerciseCode);
-	
+		
 	Shiny.onInputChange("exerciseToDownload", {exerciseName:exerciseName, exerciseCode: exerciseCode}, {priority: 'event'});	
 }
 
@@ -1432,8 +1431,6 @@ $('#exercise_info').on('click', '.removeAnswer', function() {
 	const exerciseID = getID();
 	const choicesID = $(this).index('.removeAnswer');
 	
-	console.log(choicesID);
-	
 	if( iuf['exercises'][exerciseID]['choices'].length > 0 ) {	
 		iuf['exercises'][exerciseID]['choices'].splice(choicesID, 1);
 		iuf['exercises'][exerciseID]['result'].splice(choicesID, 1);
@@ -1686,7 +1683,6 @@ function removeAdditionalPdf(element) {
 }
 
 $('#seedValueExam').change(function(){
-	console.log($(this).val());
 	$(this).val(getIntegerInput(1, 99999999, 1, $(this).val()));
 }); 
 
