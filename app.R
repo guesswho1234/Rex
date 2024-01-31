@@ -475,7 +475,15 @@ prepareEvaluation = function(session, evaluation, rotate, input){
     file = paste0(dir, "/", evaluation$examRegisteredParticipantsnName[[i]], ".csv")
     content = gsub("\r\n", "\n", evaluation$examRegisteredParticipantsnFile[[i]])
     content = gsub(",", ";", content)
+
     writeLines(text=content, con=file)
+    
+    #todo: where to get reglength in eval?
+    # content = read.csv2(file)
+    # print(content)
+    # content$registration = sprintf(paste0("%0", input$regLength, "d"), as.numeric(registration))
+    # print(content)
+    # write.csv2(content, file)
 
     return(file)
   }))

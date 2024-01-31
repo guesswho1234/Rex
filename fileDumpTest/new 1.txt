@@ -1,0 +1,5 @@
+Object.entries(datenTxt).map(x => x[1]).map(y => y[0])
+
+[... new Set(Object.entries(datenTxt).map(x => x[1]).map(y => y[0]))]
+
+[... new Set(iuf.examEvaluation.scans_reg_fullJoinData.filter(x=> x.scan != "NA" && x.type == "NA").map(x=>x.registration))]
