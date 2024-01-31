@@ -644,6 +644,10 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
         
         # set "XXXXXXX" as registration number for scans which show "ERROR" in any field
         scans_reg_fullJoinData$registration[apply(scans_reg_fullJoinData, 1, function(x) any(x=="ERROR"))] = "XXXXXXX"
+        
+        #set replacement in case it is messed up (sometimes scan names are set for this variable)
+        scans_reg_fullJoinData$replacement = as.character(scans_reg_fullJoinData$replacement)
+        scans_reg_fullJoinData$replacement[!scans_reg_fullJoinData$replacement %in% c("0", "1")] = "0"
 
         scans_reg_fullJoinData <<- scans_reg_fullJoinData
       })
