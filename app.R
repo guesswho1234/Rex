@@ -599,9 +599,6 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
         # read registered participants
         registeredParticipantData = read.csv2(files$registeredParticipants)
         
-        # pad zeroes to registration number
-        registeredParticipantData$registration = sprintf(paste0("%0", fields$regLength, "d"), as.numeric(registeredParticipantData$registration))
-        
         if(ncol(registeredParticipantData) != 3){
           stop("E1015")
         }
@@ -609,12 +606,11 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
         if(!all(names(registeredParticipantData) == c("registration", "name", "id"))){
           stop("E1016")
         }
-        
-        # process scans
+
         scanData = exams::nops_scan(images=files$scans,
                          file=FALSE,
                          dir=dir)
-        scanData = as.data.frame(matrix(Reduce(rbind, lapply(scanData, function(x) strsplit(x, " ")[[1]])), nrow=length(scanData)))
+        scanData = read.table(text=scanData, sep=" ", fill=TRUE)
         names(scanData)[c(1:6)] = c("scan", "sheet", "scrambling", "type", "replacement", "registration")
         names(scanData)[-c(1:6)] = (7:ncol(scanData)) - 6
         
@@ -645,10 +641,9 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
         # set "XXXXXXX" as registration number for scans which show "ERROR" in any field
         scans_reg_fullJoinData$registration[apply(scans_reg_fullJoinData, 1, function(x) any(x=="ERROR"))] = "XXXXXXX"
         
-        #set replacement in case it is messed up (sometimes scan names are set for this variable)
-        scans_reg_fullJoinData$replacement = as.character(scans_reg_fullJoinData$replacement)
-        scans_reg_fullJoinData$replacement[!scans_reg_fullJoinData$replacement %in% c("0", "1")] = "0"
-
+        # pad zeroes to registration number
+        scans_reg_fullJoinData$registration[scans_reg_fullJoinData$registration != "XXXXXXX"] = sprintf(paste0("%0", fields$regLength, "d"), as.numeric(scans_reg_fullJoinData$registration[scans_reg_fullJoinData$registration != "XXXXXXX"]))
+        
         scans_reg_fullJoinData <<- scans_reg_fullJoinData
       })
 
