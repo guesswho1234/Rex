@@ -782,22 +782,28 @@ main > * {
 	border-bottom: 2px solid var(---main);
 }
 
-#compareScanRegistrationDataTable .compareListItem.matched,
-#focusedCompareListItem .compareListItem.matched {
+#compareScanRegistrationDataTable .compareListItem.valid,
+#focusedCompareListItem .compareListItem.valid {
 	background: var(---tryCatch_success);
 }
 
-#compareScanRegistrationDataTable .compareListItem.noParticipation,
-#focusedCompareListItem .compareListItem.noParticipation {
+#compareScanRegistrationDataTable .compareListItem.notMatched,
+#focusedCompareListItem .compareListItem.notMatched {
 	background: var(---tryCatch_warning);
+	display: none;
 }
 
-#compareScanRegistrationDataTable .compareListItem.noRegistration,
-#focusedCompareListItem .compareListItem.noRegistration {
+#compareScanRegistrationDataTable .compareListItem.lastEdited,
+#focusedCompareListItem .compareListItem.lastEdited {
+	background: var(---highlight_values);
+}
+
+#compareScanRegistrationDataTable .compareListItem.invalid,
+#focusedCompareListItem .compareListItem.invalid {
 	background: var(---tryCatch_error);
 }
 
-#compareScanRegistrationDataTable .compareListItem:not(.noParticipation):not(.focus):hover {
+#compareScanRegistrationDataTable .compareListItem:not(.notMatched):not(.focus):hover {
 	filter: unset;
 	background: var(---background3);
 	border: 2px solid var(---main);

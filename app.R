@@ -478,13 +478,6 @@ prepareEvaluation = function(session, evaluation, rotate, input){
 
     writeLines(text=content, con=file)
     
-    #todo: where to get reglength in eval?
-    # content = read.csv2(file)
-    # print(content)
-    # content$registration = sprintf(paste0("%0", input$regLength, "d"), as.numeric(registration))
-    # print(content)
-    # write.csv2(content, file)
-
     return(file)
   }))
   
@@ -550,6 +543,8 @@ prepareEvaluation = function(session, evaluation, rotate, input){
   numChoices = length(examExerciseMetaData[[1]][[1]]$questionlist)
 
   # additional settings
+  regLength = input$examRegLength
+  
   points = input$fixedPointsExamEvaluate
   if(is.numeric(points) && points > 0) {
     points = rep(points, numExercises)
@@ -577,9 +572,9 @@ prepareEvaluation = function(session, evaluation, rotate, input){
   }
 
   language = input$evaluationLanguage
-
+  
   return(list(meta=list(examIds=examIds, examName=examName, numExercises=numExercises, numChoices=numChoices),
-              fields=list(points=points, partial=partial, negative=negative, rule=rule, mark=mark, labels=labels, language=language), 
+              fields=list(points=points, regLength=regLength, partial=partial, negative=negative, rule=rule, mark=mark, labels=labels, language=language), 
               files=list(solution=solutionFile, registeredParticipants=registeredParticipantsFile, scans=scanFiles)))
 }
 
@@ -603,6 +598,9 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
         
         # read registered participants
         registeredParticipantData = read.csv2(files$registeredParticipants)
+        
+        # pad zeroes to registration number
+        registeredParticipantData$registration = sprintf(paste0("%0", fields$regLength, "d"), as.numeric(registeredParticipantData$registration))
         
         if(ncol(registeredParticipantData) != 3){
           stop("E1015")
@@ -646,10 +644,10 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
         
         # set "XXXXXXX" as registration number for scans which show "ERROR" in any field
         scans_reg_fullJoinData$registration[apply(scans_reg_fullJoinData, 1, function(x) any(x=="ERROR"))] = "XXXXXXX"
-        
+
         scans_reg_fullJoinData <<- scans_reg_fullJoinData
       })
-      
+
       NULL
     })
     key = "Success"
@@ -697,7 +695,7 @@ evaluateExamScansResponse = function(session, message, preparedEvaluation, scans
       })
     )
     
-    examIds_json = rjs_vectorToJsonArray(preparedEvaluation$meta$examIds)
+    examIds_json = rjs_vectorToJsonStringArray(preparedEvaluation$meta$examIds)
 
     session$sendCustomMessage("setExanIds", examIds_json)
     session$sendCustomMessage("compareScanRegistrationData", scans_reg_fullJoinData_json)
@@ -917,6 +915,7 @@ server = function(input, output, session) {
 
       # EXAM EVALUATE
       textInput_fixedPointsExamEvaluate = textInput("fixedPointsExamEvaluate", label = NULL, value = NULL),
+      selectInput_evaluateReglength = selectInput("examRegLength", label = NULL, choices = 1:10, selected = 8, multiple = FALSE),
       checkboxInput_partialPoints = checkboxInput("partialPoints", label = NULL, value = TRUE),
       checkboxInput_negativePoints = checkboxInput("negativePoints", label = NULL, value = NULL),
       selectInput_rule = selectInput("rule", label = NULL, choices = rules, selected = NULL, multiple = FALSE),
@@ -1087,7 +1086,7 @@ server = function(input, output, session) {
 
       # save result in reactive value
       examEvaluationData(result$preparedEvaluation)
-
+      
       # open modal
       evaluateExamScansResponse(session,
                        result$message,
