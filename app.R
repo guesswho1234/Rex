@@ -678,7 +678,7 @@ evaluateExamScansResponse = function(session, message, preparedEvaluation, scans
     tags$div(id="inspectScan"),
     tags$div(id="compareScanRegistrationDataTable"),
     footer = tagList(
-      myActionButton("dismiss_evaluateExamScansResponse", "Schließen", "Close", "fa-solid fa-xmark"),
+      myActionButton("dismiss_evaluateExamScansResponse", "Abbrechen", "Cancle", "fa-solid fa-xmark"),
       if (!is.null(scans_reg_fullJoinData) && nrow(scans_reg_fullJoinData) > 0) 
         myActionButton("proceedEval", "Weiter", "Proceed", "fa-solid fa-circle-right"),
     ),
