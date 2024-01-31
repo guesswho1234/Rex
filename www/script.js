@@ -2169,6 +2169,10 @@ $('body').on('click', '#shiny-modal button[data-dismiss="modal"]', function() {
 	$('#disableOverlay').removeClass("active");
 });
 
+Shiny.addCustomMessageHandler('setExanIds', function(jsonData) {
+	iuf['examEvaluation']['examIds'] = JSON.parse(jsonData);
+});
+
 Shiny.addCustomMessageHandler('compareScanRegistrationData', function(jsonData) {
 	iuf['examEvaluation']['scans_reg_fullJoinData'] = JSON.parse(jsonData);
 
