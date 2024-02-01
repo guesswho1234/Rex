@@ -33,8 +33,8 @@ function initApp(){
 	iuf['examEvaluation']['changeHistory'] = null;
 	iuf['examEvaluation']['scans_reg_fullJoinData'] = new Array();
 	
-	$('#s_initialSeed').html(itemSingle($('#seedValueExercises').val(), 'greenLabel'));
-	$('#s_numberOfExams').html(itemSingle($('#numberOfExams').val(), 'grayLabel'));
+	$('#s_initialSeed').html(itemSingle($('#seedValueExercises').val(), 'greenLabelValue'));
+	$('#s_numberOfExams').html(itemSingle($('#numberOfExams').val(), 'grayLabelValue'));
 	$('#logout-button').removeClass('shinyjs-hide');
 	
 	dndExercises.init();
@@ -162,6 +162,9 @@ document.onkeydown = function(evt) {
 		switch (evtobj.keyCode) {
 			case 13: // enter
 				applyInspect();
+				break;
+			case 32: //space
+				applyInspectNext();
 				break;
 			case 27: // ESC
 				cancleInspect();
@@ -510,7 +513,7 @@ function getFilesDataTransferItems(dataTransferItems) {
 $("#seedValueExercises").change(function(){
 	const seed = getIntegerInput(1, 999999999999, null, $(this).val());
 	$(this).val(seed);
-	$('#s_initialSeed').html(itemSingle(seed, 'greenLabel'));
+	$('#s_initialSeed').html(itemSingle(seed, 'greenLabelValue'));
 	
 	if(iuf.exercises.length > 0) viewExercise(getID());
 }); 
@@ -522,7 +525,7 @@ function examExercisesSummary() {
 	numberOfExamExercises();
 	numberOfExerciseBlocks();
 	 
-	$('#s_initialSeed').html(itemSingle($('#seedValueExercises').val(), 'greenLabel'));
+	$('#s_initialSeed').html(itemSingle($('#seedValueExercises').val(), 'greenLabelValue'));
 	
 	if($('.exerciseItem.exam').length == 0) { 
 		$('#s_numberOfExercises').html("");
@@ -544,13 +547,13 @@ function examExercisesSummary() {
 		}
 	})
 	
-	$('#s_numberOfExercises').html(itemSingle(numberOfExamExercisesCounter, 'grayLabel'));
-	$('#s_totalPoints').html(itemSingle(totalPoints, 'yellowLabel'));
+	$('#s_numberOfExercises').html(itemSingle(numberOfExamExercisesCounter, 'grayLabelValue'));
+	$('#s_totalPoints').html(itemSingle(totalPoints, 'yellowLabelValue'));
 	$('#s_topicsTable').html(itemTable(topics));
 }
 
 function itemSingle(item, className) {
-	return '<span class="s_labelContainer"><span class="s_label"><span class="s_labelSingle ' + className + '">' + item + '</span></span></span>';
+	return '<span class="myLabelContainer"><span class="myLabel"><span class="myLabelSingle ' + className + '">' + item + '</span></span></span>';
 }
 
 function itemTable(arr) {
@@ -563,10 +566,10 @@ function itemTable(arr) {
 	
 	out = Object.entries(counts).map(entry => {
 		const [key, value] = entry;
-		return '<span class="s_label"><span class="s_key">' + key + '</span><span class="s_value">' + value + '</span></span>';
+		return '<span class="myLabel"><span class="label_key yellowLabelKey">' + key + '</span><span class="label_value yellowLabelValue">' + value + '</span></span>';
 	}).join('');
 	
-	return '<span class="s_labelContainer">' + out + '</span>';
+	return '<span class="myLabelContainer">' + out + '</span>';
 }
 
 /* --------------------------------------------------------------
@@ -1694,7 +1697,7 @@ $('#additionalPdf_list_items').on('click', '.additionalPdfItem', function() {
 
 $("#numberOfExams").change(function(){
 	$(this).val(getIntegerInput(1, null, 1, $(this).val()));
-	$('#s_numberOfExams').html(itemSingle($(this).val(), 'grayLabel'));
+	$('#s_numberOfExams').html(itemSingle($(this).val(), 'grayLabelValue'));
 }); 
 
 $("#autofillSeed").click(function(){
@@ -1967,14 +1970,14 @@ async function evaluateExamEvent() {
 										 examScanPngNames: examScanPngNames, examScanPngFiles: examScanPngFiles}, {priority: 'event'});
 }
 
-$('body').on('click', '.compareListItem:not(.notMatched)', function() {
+$('body').on('click', '.compareListItem:not(.notAssigned)', function() {
 	resetInspect();
 	sortCompareListItems();
 	
 	const scanFocused = iuf['examEvaluation']['scans_reg_fullJoinData'][parseInt($(this).find('.evalIndex').html())];
 		
-	$('#inspectScan').append('<div id="focusedCompareListItem"></div><div id="inspectScanContent"><div id="inspectScanImage"><img src="data:image/png;base64, ' + scanFocused.blob + '"/></div><div id="inspectScanTemplate"><span id="scannedRegistration"><span id="scannedRegistrationText"><span lang="de">Matrikelnummer:</span><span lang="en">Registration Number:</span></span><select id="selectRegistration" autocomplete="on"></select></span><span id="replacementSheet"><span id="replacementSheetText"><span lang="de">Ersatzbeleg:</span><span lang="en">Replacement sheet:</span></span></span><span id="scannedSheetID"><span id="scannedSheetIDText"><span lang="de">Klausur-ID:</span><span lang="en">Exam ID:</span></span><select id="inputSheetID" autocomplete="on"></select></span><span id="scannedScramblingID"><span id="scannedScramblingIDText"><span lang="de">Variante:</span><span lang="en">Scrambling:</span></span><input id="inputScramblingID"/></span><span id="scannedTypeID"><span id="scannedTypeIDText"><span lang="de">Belegart:</span><span lang="en">Type:</span></span><input id="inputTypeID"/></span>	<table id="scannedAnswers"></table></div></div><div id="inspectScanButtons"><button id="cancleInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-xmark"></i></span><span class="textButton"><span lang="de">Abbrechen</span><span lang="en">Cancle</span></span></button><button id="applyInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-check"></i></span><span class="textButton"><span lang="de">Übernehmen</span><span lang="en">Apply</span></span></button></div>')
-	
+	$('#inspectScan').append('<div id="inspectScanContent"><div id="inspectScanImage"><img src="data:image/png;base64, ' + scanFocused.blob + '"/></div><div id="inspectScanTemplate"><span id="scannedRegistration"><span id="scannedRegistrationText"><span lang="de">Matrikelnummer:</span><span lang="en">Registration Number:</span></span><select id="selectRegistration" autocomplete="on"></select></span><span id="replacementSheet"><span id="replacementSheetText"><span lang="de">Ersatzbeleg:</span><span lang="en">Replacement sheet:</span></span></span><span id="scannedSheetID"><span id="scannedSheetIDText"><span lang="de">Klausur-ID:</span><span lang="en">Exam ID:</span></span><select id="inputSheetID" autocomplete="on"></select></span><span id="scannedScramblingID"><span id="scannedScramblingIDText"><span lang="de">Variante:</span><span lang="en">Scrambling:</span></span><input id="inputScramblingID"/></span><span id="scannedTypeID"><span id="scannedTypeIDText"><span lang="de">Belegart:</span><span lang="en">Type:</span></span><input id="inputTypeID"/></span>	<table id="scannedAnswers"></table></div></div><div id="inspectScanButtons"><button id="cancleInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-xmark"></i></span><span class="textButton"><span lang="de">Abbrechen</span><span lang="en">Cancle</span></span></button><button id="applyInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-check"></i></span><span class="textButton"><span lang="de">Übernehmen</span><span lang="en">Apply</span></span></button><button id="applyInspectNext" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-list-check"></i></span><span class="textButton"><span lang="de">Übernehmen & Weiter</span><span lang="en">Apply & Next</span></span></button></div>');
+		
 	// populate input fields
 	let registrations = iuf['examEvaluation']['scans_reg_fullJoinData'].filter(x => x.scan === 'NA').map(x => x.registration);
 	
@@ -2036,8 +2039,8 @@ $('body').on('click', '.compareListItem:not(.notMatched)', function() {
 	
 	$(this).addClass('focus');
 	$('.compareListItem:not(.focus)').addClass('blur');
-	$(this).clone().appendTo('#focusedCompareListItem')
-	
+	$('#inspectScan').insertAfter('.compareListItem.focus');
+		
 	f_langDeEn();
 	$('#inspectScan').show();
 });
@@ -2045,49 +2048,97 @@ $('body').on('click', '.compareListItem:not(.notMatched)', function() {
 function populateCompareTable() {
 	$('#compareScanRegistrationDataTable').empty();
 	
+	let invalidCount = 0; 
+	let validCount = 0; 
+	let notAssignedCount = 0;
+	
 	iuf['examEvaluation']['scans_reg_fullJoinData'].forEach((element, index) => {	
 		let stateClass = null;
-		
-		// lastEdited
-		if(index === iuf['examEvaluation']['changeHistory'])
-			stateClass = 'lastEdited'	
-		
+				
 		// invalid
-		if(element.registration === d_registration || 
-			!iuf['examEvaluation']['examIds'].includes(element.sheet) ||
-			element.sheet === "NA" ||
-			element.scrambling === "NA" ||
-			element.type === "NA" ||
-			(element.replacement !== "0" && element.replacement !== "1"))
-			stateClass = [stateClass, 'invalid'].join(' ');
+		if(scanInvalid(element)) {
+			stateClass = 'invalid';
+			invalidCount++;
+		}
 		
-		// not matched
-		if(element.scan === 'NA') 
-			stateClass = 'notMatched'
+		// not assigned
+		if(scanNotAssiged(element)) {
+			stateClass = 'notAssigned'
+			notAssignedCount++;
+		}
 		
 		// valid 
-		if(stateClass === null) 
+		if(scanValid(element)) {
 			stateClass = 'valid'
-		
+			validCount++;
+		}	
+
+		// lastEdited
+		if(scanLastEdited(element))
+			stateClass = [stateClass, 'lastEdited'].join(' ');			
 		
 		$('#compareScanRegistrationDataTable').append('<div class="compareListItem ' + stateClass + '"><span class="evalIndex">' + index + '</span></span><span class="evalRegistration">' + element.registration + '</span><span class="evalName">' + element.name + '</span><span class="evalId">' + element.id + '</span><span class="evalInspect"><i class="fa-solid fa-magnifying-glass"></i></span></div>')
 	});
 	
-	sortCompareListItems();
+	// scan stats
+	$('#scanStats').empty();
+	$('#scanStats').append('<span id="scansInvalidCount" class="scanStat myLabel"><span class="scanStatText label_key redLabelKey"><span lang="de">Ungültige Scans</span><span lang="en">Invalid scans</span></span><span class="scanStatValue label_value redLabelValue">' + invalidCount + '</span></span>')
+	$('#scanStats').append('<span id="scansValidCount" class="scanStat myLabel"><span class="scanStatText label_key greenLabelKey"><span lang="de">Gültige Scans</span><span lang="en">Valid scans</span></span><span class="scanStatValue label_value greenLabelValue">' + validCount + '</span></span>')
+	$('#scanStats').append('<span id="scansnotAssignedCount" class="scanStat myLabel"><span class="scanStatText label_key yellowLabelKey"><span lang="de">Nicht zugeordnete Matrikelnummern</span><span lang="en">Registration numbers not assigned</span></span><span class="scanStatValue label_value yellowLabelValue">' + notAssignedCount + '</span></span>')
+	
+	setNotAssignedVisibility();
+	f_langDeEn();
+}
+
+function scanInvalid(scan) {
+	return scan.scan !== 'NA' && (scan.registration === d_registration || !iuf['examEvaluation']['examIds'].includes(scan.sheet) || isNaN(scan.sheet) || isNaN(scan.scrambling) || isNaN(scan.type) || (scan.replacement !== "0" && scan.replacement !== "1"))
+}
+
+function scanNotAssiged(scan) {
+	return scan.scan === 'NA';
+}
+
+function scanValid(scan) {
+	return !scanNotAssiged(scan) && !scanInvalid(scan);
+}
+
+function scanLastEdited(scan) {
+	return scan.changeHistory === "1";
 }
 
 function sortCompareListItems(){
+	let list = $("#compareScanRegistrationDataTable .compareListItem").get();
+	let maxDigits = Math.max(...list.map(x=>$(x).find('.evalRegistration').html()).map(x=>Math.log(x) * Math.LOG10E + 1 | 0));
 	let sortRegistrations = function(a, b) {
+		let x = a;
+		let y = b;
 		a = parseInt($(a).find('.evalRegistration').html());
 		b = parseInt($(b).find('.evalRegistration').html());
 		
 		a = (isNaN(a) ? -1 : a);
 		b = (isNaN(b) ? -1 : b);
 		
+		if($(x).hasClass('invalid')) 
+			a = a + Math.pow(10, maxDigits + 1)
+	
+		if($(x).hasClass('valid')) 
+			a = a + Math.pow(10, maxDigits + 2)
+				
+		if($(x).hasClass('notAssigned')) 
+			a = a + Math.pow(10, maxDigits + 3)
+			
+		if($(y).hasClass('invalid')) 
+			b = b + Math.pow(10, maxDigits + 1)
+			
+		if($(y).hasClass('valid')) 
+			b = b + Math.pow(10, maxDigits + 2)
+			
+		if($(y).hasClass('notAssigned')) 
+			b = b + Math.pow(10, maxDigits + 3)	
+		
 		return a < b ? -1 : a > b ? 1 : 0;
 	}
 
-    let list = $("#compareScanRegistrationDataTable .compareListItem").get();
     list.sort(sortRegistrations);
     for (let i = 0; i < list.length; i++) {
         list[i].parentNode.appendChild(list[i]);
@@ -2096,6 +2147,7 @@ function sortCompareListItems(){
 
 function resetInspect(){
 	$('#inspectScan').hide();
+	$('#inspectScan').insertBefore('#compareScanRegistrationDataTable');
 	$('.compareListItem').removeClass('blur');
 	$('.compareListItem').removeClass('focus');
 	$('#inspectScan').empty();
@@ -2105,9 +2157,36 @@ $('body').on('click', '#applyInspect', function() {
 	applyInspect();
 });
 
+$('body').on('click', '#applyInspectNext', function() {
+	applyInspectNext();
+});
+
+$('body').on('change', '#showNotAssigned', function() {
+	setNotAssignedVisibility();
+});
+
+function setNotAssignedVisibility() {
+	if($('#showNotAssigned').find("input").prop('checked')) {
+		$('#compareScanRegistrationDataTable .compareListItem.notAssigned').css("display", "flex");
+	} else {
+		$('#compareScanRegistrationDataTable .compareListItem.notAssigned').css("display", "none");
+	}
+}
+
+function applyInspectNext(){
+	applyInspect();
+	
+	if($('#compareScanRegistrationDataTable .compareListItem.invalid').length !== 0) {
+		$('#compareScanRegistrationDataTable .compareListItem.invalid').first().click();
+	}
+}
+
 function applyInspect(){	
-	const scanFocusedIndex = parseInt($('#focusedCompareListItem .evalIndex').html());
-	iuf['examEvaluation']['changeHistory'] = scanFocusedIndex;
+	const scanFocusedIndex = parseInt($('#compareScanRegistrationDataTable .compareListItem.focus .evalIndex').html());
+	iuf['examEvaluation']['scans_reg_fullJoinData'] = iuf['examEvaluation']['scans_reg_fullJoinData'].map(obj => {
+		return { ...obj, changeHistory: "0" }
+	});
+	iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].changeHistory = "1";
 	
 	const zeroPad = (num, places) => String(num).padStart(places, '0');
 	
@@ -2213,14 +2292,19 @@ Shiny.addCustomMessageHandler('setExanIds', function(jsonData) {
 
 Shiny.addCustomMessageHandler('compareScanRegistrationData', function(jsonData) {
 	iuf['examEvaluation']['scans_reg_fullJoinData'] = JSON.parse(jsonData);
+	
+	iuf['examEvaluation']['scans_reg_fullJoinData'] = iuf['examEvaluation']['scans_reg_fullJoinData'].map(obj => {
+		return { ...obj, changeHistory: "0" }
+	});
 
 	populateCompareTable();
+	sortCompareListItems();
 });
 
 $('body').on('click', '#proceedEval', function() {
 	const properties = ['scan', 'sheet', 'scrambling', 'type', 'replacement', 'registration',].concat(new Array(45).fill(1).map( (_, i) => i+1 ));
-
-	const datenTxt = Object.assign({}, iuf['examEvaluation']['scans_reg_fullJoinData'].filter(x => x.scan !== 'NA' && x.registration !== d_registration).map(x => Object.assign({}, properties.map(y => x[y] === undefined ? "00000" : x[y], {}))));
+	
+	const datenTxt = Object.assign({}, iuf['examEvaluation']['scans_reg_fullJoinData'].filter(x => scanValid(x)).map(x => Object.assign({}, properties.map(y => x[y] === undefined ? "00000" : x[y], {}))));
 
 	Shiny.onInputChange("proceedEvaluation", datenTxt, {priority: 'event'});
 });

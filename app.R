@@ -117,6 +117,11 @@ myDownloadButton = function(id){
          target = "_blank", type = "button", download = NA, NULL, myButtonStyle("Speichern", "Save", "fa-solid fa-download"))
 }
 
+myCheckBox = function(id, deText, enText) {
+  text = paste0('<span class="checkBoxText"><span lang="de">', deText, ':</span><span lang="en">', enText, ':</span></span>')
+  tags$span(id = id, HTML(text), tags$input(type="checkbox"))
+}
+
 myButtonStyle = function(deText, enText, icon) {
   icon = paste0('<span class="iconButton"><i class="', icon, '"></i></span>')
   text = paste0('<span class="textButton"><span lang="de">', deText, '</span><span lang="en">', enText, '</span></span>')
@@ -543,7 +548,7 @@ prepareEvaluation = function(session, evaluation, rotate, input){
   numChoices = length(examExerciseMetaData[[1]][[1]]$questionlist)
 
   # additional settings
-  regLength = input$examRegLength
+  regLength = input$evaluationRegLength
   
   points = input$fixedPointsExamEvaluate
   if(is.numeric(points) && points > 0) {
@@ -614,7 +619,7 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
         names(scanData)[c(1:6)] = c("scan", "sheet", "scrambling", "type", "replacement", "registration")
         names(scanData)[-c(1:6)] = (7:ncol(scanData)) - 6
         
-        # midify using additional data from exam to know how many questions and answer per question existed
+        # reduce columns using additional data from exam to know how many questions and answer per question existed
         scanData = scanData[,-which(grepl("^[[:digit:]]+$", names(scanData)))[-c(1:meta$numExercises)]] # remove unnecessary placeholders for unused questions
         scanData$numExercises = meta$numExercises
         scanData$numChoices = meta$numChoices
@@ -641,8 +646,12 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
         # set "XXXXXXX" as registration number for scans which show "ERROR" in any field
         scans_reg_fullJoinData$registration[apply(scans_reg_fullJoinData, 1, function(x) any(x=="ERROR"))] = "XXXXXXX"
         
-        # pad zeroes to registration number
+        # pad zeroes to registration number and answers
         scans_reg_fullJoinData$registration[scans_reg_fullJoinData$registration != "XXXXXXX"] = sprintf(paste0("%0", fields$regLength, "d"), as.numeric(scans_reg_fullJoinData$registration[scans_reg_fullJoinData$registration != "XXXXXXX"]))
+        scans_reg_fullJoinData[,as.character(1:meta$numExercises)] = apply(scans_reg_fullJoinData[,as.character(1:meta$numExercises)], 2, function(x){
+          x[is.na(x)] = 0
+          x = sprintf(paste0("%0", meta$numChoices, "d"), as.numeric(x))
+        })
         
         scans_reg_fullJoinData <<- scans_reg_fullJoinData
       })
@@ -675,6 +684,8 @@ evaluateExamScansResponse = function(session, message, preparedEvaluation, scans
   showModal(modalDialog(
     title = tags$span(HTML('<span lang="de">Scans überprüfen</span><span lang="en">Check scans</span>')),
     tags$span(id="responseMessage", myMessage(message)),
+    myCheckBox(id="showNotAssigned", "Nicht zugeordnete Matrikelnummern anzeigen", "Show registrations without assignment"),
+    tags$div(id="scanStats"),
     tags$div(id="inspectScan"),
     tags$div(id="compareScanRegistrationDataTable"),
     footer = tagList(
@@ -914,7 +925,7 @@ server = function(input, output, session) {
 
       # EXAM EVALUATE
       textInput_fixedPointsExamEvaluate = textInput("fixedPointsExamEvaluate", label = NULL, value = NULL),
-      selectInput_evaluateReglength = selectInput("examRegLength", label = NULL, choices = 1:10, selected = 8, multiple = FALSE),
+      selectInput_evaluateReglength = selectInput("evaluationRegLength", label = NULL, choices = 1:10, selected = 8, multiple = FALSE),
       checkboxInput_partialPoints = checkboxInput("partialPoints", label = NULL, value = TRUE),
       checkboxInput_negativePoints = checkboxInput("negativePoints", label = NULL, value = NULL),
       selectInput_rule = selectInput("rule", label = NULL, choices = rules, selected = NULL, multiple = FALSE),
