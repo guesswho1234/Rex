@@ -83,7 +83,7 @@ myMessage = function(message) {
     if (message$value$message %in% names(errorCodes)) {
       message$value = getErrorCodeMessage(message$value$message)
     } else {
-      message$value = getErrorCodeMessage("E1000")
+      message$value = message$value # getErrorCodeMessage("E1000")
     }
   }
   
@@ -115,6 +115,11 @@ myActionButton = function(id, deText, enText, icon){
 myDownloadButton = function(id){
   tags$a(id = id, class = "btn btn-default shiny-download-link", href = "", 
          target = "_blank", type = "button", download = NA, NULL, myButtonStyle("Speichern", "Save", "fa-solid fa-download"))
+}
+
+myCheckBox = function(id, deText, enText) {
+  text = paste0('<span class="checkBoxText"><span lang="de">', deText, ':</span><span lang="en">', enText, ':</span></span>')
+  tags$span(id = id, HTML(text), tags$input(type="checkbox"))
 }
 
 myButtonStyle = function(deText, enText, icon) {
@@ -467,7 +472,7 @@ prepareEvaluation = function(session, evaluation, rotate, input){
     return(file)
   }))
   examExerciseMetaData = readRDS(solutionFile)
-  
+
   # registered participants
   evaluation$examRegisteredParticipantsnName = as.list(make.unique(unlist(evaluation$examRegisteredParticipantsnName), sep="_"))
   
@@ -475,8 +480,9 @@ prepareEvaluation = function(session, evaluation, rotate, input){
     file = paste0(dir, "/", evaluation$examRegisteredParticipantsnName[[i]], ".csv")
     content = gsub("\r\n", "\n", evaluation$examRegisteredParticipantsnFile[[i]])
     content = gsub(",", ";", content)
-    writeLines(text=content, con=file)
 
+    writeLines(text=content, con=file)
+    
     return(file)
   }))
   
@@ -487,6 +493,7 @@ prepareEvaluation = function(session, evaluation, rotate, input){
   
   if(length(evaluation$examScanPdfNames) > 0){
     evaluation$examScanPdfNames = as.list(make.unique(unlist(evaluation$examScanPdfNames), sep="_"))
+    
     pdfFiles = lapply(setNames(seq_along(evaluation$examScanPdfNames), evaluation$examScanPdfNames), function(i){
       file = paste0(dir, "/", evaluation$examScanPdfNames[[i]], ".pdf")
       raw = openssl::base64_decode(evaluation$examScanPdfFiles[[i]])
@@ -536,10 +543,13 @@ prepareEvaluation = function(session, evaluation, rotate, input){
 
   # meta data
   examName = evaluation$examSolutionsName[[1]]
+  examIds = names(examExerciseMetaData)
   numExercises = length(examExerciseMetaData[[1]])
   numChoices = length(examExerciseMetaData[[1]][[1]]$questionlist)
-  
+
   # additional settings
+  regLength = input$evaluationRegLength
+  
   points = input$fixedPointsExamEvaluate
   if(is.numeric(points) && points > 0) {
     points = rep(points, numExercises)
@@ -567,9 +577,9 @@ prepareEvaluation = function(session, evaluation, rotate, input){
   }
 
   language = input$evaluationLanguage
-
-  return(list(meta=list(examName=examName, numExercises=numExercises, numChoices=numChoices),
-              fields=list(points=points, partial=partial, negative=negative, rule=rule, mark=mark, labels=labels, language=language), 
+  
+  return(list(meta=list(examIds=examIds, examName=examName, numExercises=numExercises, numChoices=numChoices),
+              fields=list(points=points, regLength=regLength, partial=partial, negative=negative, rule=rule, mark=mark, labels=labels, language=language), 
               files=list(solution=solutionFile, registeredParticipants=registeredParticipantsFile, scans=scanFiles)))
 }
 
@@ -601,20 +611,15 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
         if(!all(names(registeredParticipantData) == c("registration", "name", "id"))){
           stop("E1016")
         }
-        
-        # process scans
-        scanData = exams::nops_scan(images=files$scans,
-                                    file="test",
-                                    dir=dir)
-        
+
         scanData = exams::nops_scan(images=files$scans,
                          file=FALSE,
                          dir=dir)
-        scanData = as.data.frame(matrix(Reduce(rbind, lapply(scanData, function(x) strsplit(x, " ")[[1]])), nrow=length(scanData)))
+        scanData = read.table(text=scanData, sep=" ", fill=TRUE)
         names(scanData)[c(1:6)] = c("scan", "sheet", "scrambling", "type", "replacement", "registration")
         names(scanData)[-c(1:6)] = (7:ncol(scanData)) - 6
         
-        # midify using additional data from exam to know how many questions and answer per question existed
+        # reduce columns using additional data from exam to know how many questions and answer per question existed
         scanData = scanData[,-which(grepl("^[[:digit:]]+$", names(scanData)))[-c(1:meta$numExercises)]] # remove unnecessary placeholders for unused questions
         scanData$numExercises = meta$numExercises
         scanData$numChoices = meta$numChoices
@@ -641,9 +646,16 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
         # set "XXXXXXX" as registration number for scans which show "ERROR" in any field
         scans_reg_fullJoinData$registration[apply(scans_reg_fullJoinData, 1, function(x) any(x=="ERROR"))] = "XXXXXXX"
         
+        # pad zeroes to registration number and answers
+        scans_reg_fullJoinData$registration[scans_reg_fullJoinData$registration != "XXXXXXX"] = sprintf(paste0("%0", fields$regLength, "d"), as.numeric(scans_reg_fullJoinData$registration[scans_reg_fullJoinData$registration != "XXXXXXX"]))
+        scans_reg_fullJoinData[,as.character(1:meta$numExercises)] = apply(scans_reg_fullJoinData[,as.character(1:meta$numExercises)], 2, function(x){
+          x[is.na(x)] = 0
+          x = sprintf(paste0("%0", meta$numChoices, "d"), as.numeric(x))
+        })
+        
         scans_reg_fullJoinData <<- scans_reg_fullJoinData
       })
-      
+
       NULL
     })
     key = "Success"
@@ -658,9 +670,9 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
                 preparedEvaluation=preparedEvaluation))
   },
   error = function(e){
-    if(!grepl("E\\d{4}", e$message)){
-      e$message = "E1003"
-    }
+    # if(!grepl("E\\d{4}", e$message)){
+    #   e$message = "E1003"
+    # }
     
     return(list(message=list(key="Error", value=e), scans_reg_fullJoinData=NULL, examName=NULL, files=list(), data=list()))
   })
@@ -668,12 +680,14 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
   return(out)
 }
 
-evaluateExamScansResponse = function(session, message, scans_reg_fullJoinData) {
+evaluateExamScansResponse = function(session, message, preparedEvaluation, scans_reg_fullJoinData) {
   showModal(modalDialog(
     title = tags$span(HTML('<span lang="de">Scans überprüfen</span><span lang="en">Check scans</span>')),
     tags$span(id="responseMessage", myMessage(message)),
-    tags$div(id="compareScanRegistrationDataTable"),
+    myCheckBox(id="showNotAssigned", "Nicht zugeordnete Matrikelnummern anzeigen", "Show registrations without assignment"),
+    tags$div(id="scanStats"),
     tags$div(id="inspectScan"),
+    tags$div(id="compareScanRegistrationDataTable"),
     footer = tagList(
       myActionButton("dismiss_evaluateExamScansResponse", "Abbrechen", "Cancle", "fa-solid fa-xmark"),
       if (!is.null(scans_reg_fullJoinData) && nrow(scans_reg_fullJoinData) > 0) 
@@ -691,6 +705,9 @@ evaluateExamScansResponse = function(session, message, scans_reg_fullJoinData) {
       })
     )
     
+    examIds_json = rjs_vectorToJsonStringArray(preparedEvaluation$meta$examIds)
+
+    session$sendCustomMessage("setExanIds", examIds_json)
     session$sendCustomMessage("compareScanRegistrationData", scans_reg_fullJoinData_json)
   }
 }
@@ -735,9 +752,9 @@ evaluateExamFinalize = function(preparedEvaluation, collectWarnings, dir){
                 preparedEvaluation=preparedEvaluation))
   },
   error = function(e){
-    if(!grepl("E\\d{4}", e$message)){
-      e$message = "E1004"
-    }
+    # if(!grepl("E\\d{4}", e$message)){
+    #   e$message = "E1004"
+    # }
     
     return(list(message=list(key="Error", value=e), examName=NULL, files=list()))
   })
@@ -908,7 +925,8 @@ server = function(input, output, session) {
 
       # EXAM EVALUATE
       textInput_fixedPointsExamEvaluate = textInput("fixedPointsExamEvaluate", label = NULL, value = NULL),
-      checkboxInput_partialPoints = checkboxInput("partialPoints", label = NULL, value = NULL),
+      selectInput_evaluateReglength = selectInput("evaluationRegLength", label = NULL, choices = 1:10, selected = 8, multiple = FALSE),
+      checkboxInput_partialPoints = checkboxInput("partialPoints", label = NULL, value = TRUE),
       checkboxInput_negativePoints = checkboxInput("negativePoints", label = NULL, value = NULL),
       selectInput_rule = selectInput("rule", label = NULL, choices = rules, selected = NULL, multiple = FALSE),
 
@@ -1058,7 +1076,7 @@ server = function(input, output, session) {
 
     # save input data in reactive value
     examEvaluationData(prepareEvaluation(session, isolate(input$evaluateExam), isolate(input$rotateScans), isolate(input)))
-
+    
     # background exercise
     x = callr::r_bg(
       func = evaluateExamScans,
@@ -1078,10 +1096,11 @@ server = function(input, output, session) {
 
       # save result in reactive value
       examEvaluationData(result$preparedEvaluation)
-
+      
       # open modal
       evaluateExamScansResponse(session,
                        result$message,
+                       result$preparedEvaluation,
                        result$scans_reg_fullJoinData)
     }
   })
