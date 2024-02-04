@@ -281,147 +281,144 @@ loadExercise = function(session, id, seed, html, figure, message) {
   session$sendCustomMessage("setExerciseId", -1)
 }
 
-prepareExam = function(session, exam, input) {
-  dir = getDir(session)
-  exam$exerciseNames = as.list(make.unique(unlist(exam$exerciseNames), sep="_"))
-  exerciseFiles = unlist(lapply(setNames(seq_along(exam$exerciseNames), exam$exerciseNames), function(i){
-    file = paste0(dir, "/", exam$exerciseNames[[i]], ".rnw")
-    writeLines(text=gsub("\r\n", "\n", exam$exerciseCodes[[i]]), con=file, sep="")
-
-    return(file)
-  }))
-
-  numberOfExams = as.numeric(input$numberOfExams)
-  blocks = as.numeric(exam$blocks)
-  uniqueBlocks = unique(blocks)
-  numberOfExercises = as.numeric(input$numberOfExercises)
-  exercisesPerBlock = numberOfExercises / length(uniqueBlocks)
-  exercises = lapply(uniqueBlocks, function(x) exerciseFiles[blocks==x])
-
-  seedList = matrix(1, nrow=numberOfExams, ncol=length(exam$exerciseNames))
-  seedList = seedList * as.numeric(paste0(if(is.na(is.numeric(input$seedValueExam))) NULL else input$seedValueExam, 1:numberOfExams))
-
-  pages = NULL
-  additionalPdfFiles = list()
-  
-  if(length(exam$additionalPdfNames) > 0) {
-    exam$additionalPdfNames = as.list(make.unique(unlist(exam$additionalPdfNames), sep="_"))
-    additionalPdfFiles = unlist(lapply(setNames(seq_along(exam$additionalPdfNames), exam$additionalPdfNames), function(i){
-      file = paste0(dir, "/", exam$additionalPdfNames[[i]], ".pdf")
-      raw = openssl::base64_decode(exam$additionalPdfFiles[[i]])
-      writeBin(raw, con = file)
-      
-      return(file)
-    }))
-    
-    pages = additionalPdfFiles
-  }
-  
-  title = input$examTitle
-  course = input$examCourse
-  points = if(!is.na(as.numeric(input$fixedPointsExamCreate))) input$fixedPointsExamCreate else NULL
-  reglength = if(!is.na(as.numeric(input$examRegLength))) as.numeric(input$examRegLength) else 7
-  date = input$examDate
-  name = paste0(c("exam", input$seedValueExam, ""), collapse="_")
-
-  examFields = list(
-    file = exercises,
-    fileBoundaries = c(exerciseMin, exerciseMax),
-    n = numberOfExams,
-    nsamp = exercisesPerBlock,
-    name = name,
-    language = input$examLanguage,
-    title = title,
-    course = course,
-    institution = input$examInstitution,
-    date = date,
-    blank = input$numberOfBlanks,
-    duplex = input$duplex,
-    pages = pages,
-    points = points,
-    showpoints = input$showPoints,
-    seed = seedList,
-    seedBoundaries = c(seedMin, seedMax),
-    reglength = reglength,
-    header = NULL,
-    intro = NULL,
-    replacement = input$replacement,
-    samepage = input$samepage,
-    newpage = input$newpage,
-    logo = NULL
-  )
-
-  # needed for pdf files (not for html files) - somehow exams needs it that way
-  fileIds = 1:numberOfExams
-  fileIdSizes = floor(log10(fileIds))
-  fileIdSizes = max(fileIdSizes) - fileIdSizes
-  fileIds = sapply(seq_along(fileIdSizes), function(x){
-    paste0(paste0(rep("0", max(fileIdSizes))[0:fileIdSizes[x]], collapse=""), fileIds[x])
-  })
-  
-  examHtmlFiles = paste0(dir, "/", name, 1:numberOfExams, ".html")
-  examPdfFiles = paste0(dir, "/", name, fileIds, ".pdf")
-  examRdsFile = paste0(dir, "/", name, ".rds")
-
-  return(list(examFields=examFields, examFiles=list(examHtmlFiles=examHtmlFiles, pdfFiles=examPdfFiles, rdsFile=examRdsFile), sourceFiles=list(exerciseFiles=exerciseFiles, additionalPdfFiles=additionalPdfFiles)))
-}
-
-createExam = function(preparedExam, collectWarnings, dir) {
+createExam = function(exam, settings, input, collectWarnings, dir) {
   out = tryCatch({
     warnings = collectWarnings({
-        with(preparedExam$examFields, {
+      exam$exerciseNames = as.list(make.unique(unlist(exam$exerciseNames), sep="_"))
+      exerciseFiles = unlist(lapply(setNames(seq_along(exam$exerciseNames), exam$exerciseNames), function(i){
+        file = paste0(dir, "/", exam$exerciseNames[[i]], ".rnw")
+        writeLines(text=gsub("\r\n", "\n", exam$exerciseCodes[[i]]), con=file, sep="")
+        
+        return(file)
+      }))
+      
+      numberOfExams = as.numeric(input$numberOfExams)
+      blocks = as.numeric(exam$blocks)
+      uniqueBlocks = unique(blocks)
+      numberOfExercises = as.numeric(input$numberOfExercises)
+      exercisesPerBlock = numberOfExercises / length(uniqueBlocks)
+      exercises = lapply(uniqueBlocks, function(x) exerciseFiles[blocks==x])
+      
+      seedList = matrix(1, nrow=numberOfExams, ncol=length(exam$exerciseNames))
+      seedList = seedList * as.numeric(paste0(if(is.na(is.numeric(input$seedValueExam))) NULL else input$seedValueExam, 1:numberOfExams))
+      
+      pages = NULL
+      additionalPdfFiles = list()
+      
+      if(length(exam$additionalPdfNames) > 0) {
+        exam$additionalPdfNames = as.list(make.unique(unlist(exam$additionalPdfNames), sep="_"))
+        additionalPdfFiles = unlist(lapply(setNames(seq_along(exam$additionalPdfNames), exam$additionalPdfNames), function(i){
+          file = paste0(dir, "/", exam$additionalPdfNames[[i]], ".pdf")
+          raw = openssl::base64_decode(exam$additionalPdfFiles[[i]])
+          writeBin(raw, con = file)
+          
+          return(file)
+        }))
+        
+        pages = additionalPdfFiles
+      }
+      
+      title = input$examTitle
+      course = input$examCourse
+      points = if(!is.na(as.numeric(input$fixedPointsExamCreate))) input$fixedPointsExamCreate else NULL
+      reglength = if(!is.na(as.numeric(input$examRegLength))) as.numeric(input$examRegLength) else 7
+      date = input$examDate
+      name = paste0(c("exam", input$seedValueExam, ""), collapse="_")
+      
+      examFields = list(
+        file = exercises,
+        fileBoundaries = c(settings$exerciseMin, settings$exerciseMax),
+        n = numberOfExams,
+        nsamp = exercisesPerBlock,
+        name = name,
+        language = input$examLanguage,
+        title = title,
+        course = course,
+        institution = input$examInstitution,
+        date = date,
+        blank = input$numberOfBlanks,
+        duplex = input$duplex,
+        pages = pages,
+        points = points,
+        showpoints = input$showPoints,
+        seed = seedList,
+        seedBoundaries = c(settings$seedMin, settings$seedMax),
+        reglength = reglength,
+        header = NULL,
+        intro = NULL,
+        replacement = input$replacement,
+        samepage = input$samepage,
+        newpage = input$newpage,
+        logo = NULL
+      )
+      
+      # needed for pdf files (not for html files) - somehow exams needs it that way
+      fileIds = 1:numberOfExams
+      fileIdSizes = floor(log10(fileIds))
+      fileIdSizes = max(fileIdSizes) - fileIdSizes
+      fileIds = sapply(seq_along(fileIdSizes), function(x){
+        paste0(paste0(rep("0", max(fileIdSizes))[0:fileIdSizes[x]], collapse=""), fileIds[x])
+      })
+      
+      examHtmlFiles = paste0(dir, "/", name, 1:numberOfExams, ".html")
+      examPdfFiles = paste0(dir, "/", name, fileIds, ".pdf")
+      examRdsFile = paste0(dir, "/", name, ".rds")
+      
+      preparedExam = list(examFields=examFields, examFiles=list(examHtmlFiles=examHtmlFiles, pdfFiles=examPdfFiles, rdsFile=examRdsFile), sourceFiles=list(exerciseFiles=exerciseFiles, additionalPdfFiles=additionalPdfFiles))
+      
+      with(preparedExam$examFields, {
 
-          if(any(seed < seedBoundaries[1])){
-            stop("E1008")
-          }
-          
-          if(any(seed > seedBoundaries[2])){
-            stop("E1009")
-          }
-          
-          if(length(file) < fileBoundaries[1]){
-            stop("E1010")
-          }
-          
-          if(length(file) > fileBoundaries[2]){
-            stop("E1011")
-          }
-          
-          # create exam html preview with solutions
-          exams::exams2html(file = file,
-                            n = n,
-                            nsamp = nsamp,
-                            name = name,
-                            dir = dir,
-                            solution=TRUE,
-                            seed = seed)
-          
-          # create exam
-          exams::exams2nops(file = file,
-                            n = n,
-                            nsamp = nsamp,
-                            name = name,
-                            dir = dir,
-                            language = language,
-                            title = title,
-                            course = course,
-                            institution = institution,
-                            date = date,
-                            blank = blank,
-                            duplex = duplex,
-                            pages = pages,
-                            points = points,
-                            showpoints = showpoints,
-                            seed = seed,
-                            encoding = "UTF-8",
-                            reglength = reglength, 
-                            header = header,
-                            intro = intro, 
-                            replacement = replacement, 
-                            samepage = samepage, 
-                            newpage = newpage, 
-                            logo = NULL) 
-        })
+        if(any(seed < seedBoundaries[1])){
+          stop("E1008")
+        }
+
+        if(any(seed > seedBoundaries[2])){
+          stop("E1009")
+        }
+
+        if(length(file) < fileBoundaries[1]){
+          stop("E1010")
+        }
+
+        if(length(file) > fileBoundaries[2]){
+          stop("E1011")
+        }
+
+        # create exam html preview with solutions
+        exams::exams2html(file = file,
+                          n = n,
+                          nsamp = nsamp,
+                          name = name,
+                          dir = dir,
+                          solution=TRUE,
+                          seed = seed)
+
+        # create exam
+        exams::exams2nops(file = file,
+                          n = n,
+                          nsamp = nsamp,
+                          name = name,
+                          dir = dir,
+                          language = language,
+                          title = title,
+                          course = course,
+                          institution = institution,
+                          date = date,
+                          blank = blank,
+                          duplex = duplex,
+                          pages = pages,
+                          points = points,
+                          showpoints = showpoints,
+                          seed = seed,
+                          encoding = "UTF-8",
+                          reglength = reglength,
+                          header = header,
+                          intro = intro,
+                          replacement = replacement,
+                          samepage = samepage,
+                          newpage = newpage,
+                          logo = NULL)
+      })
 
     NULL
     })
@@ -431,17 +428,17 @@ createExam = function(preparedExam, collectWarnings, dir) {
       key = "Warning"
       value = "W1002"
     }
-    
+
     return(list(message=list(key=key, value=value), files=list(sourceFiles=preparedExam$sourceFiles, examFiles=preparedExam$examFiles)))
   },
   error = function(e){
-    if(!grepl("E\\d{4}", e$message)){
-      e$message = "E1002"
-    }
-    
+    # if(!grepl("E\\d{4}", e$message)){
+    #   e$message = "E1002"
+    # }
+
     return(list(message=list(key="Error", value=e), files=list()))
   })
-  
+
   return(out)
 }
 
@@ -458,156 +455,152 @@ examCreationResponse = function(session, message, downloadable) {
   session$sendCustomMessage("f_langDeEn", 1)
 }
 
-prepareEvaluation = function(session, evaluation, rotate, input){
-  dir = getDir(session)
-  
-  # exam
-  evaluation$examSolutionsName = as.list(make.unique(unlist(evaluation$examSolutionsName), sep="_"))
-  
-  solutionFile = unlist(lapply(seq_along(evaluation$examSolutionsName), function(i){
-    file = paste0(dir, "/", evaluation$examSolutionsName[[i]], ".rds")
-    raw = openssl::base64_decode(evaluation$examSolutionsFile[[i]])
-    writeBin(raw, con = file)
-
-    return(file)
-  }))
-  examExerciseMetaData = readRDS(solutionFile)
-
-  # registered participants
-  evaluation$examRegisteredParticipantsnName = as.list(make.unique(unlist(evaluation$examRegisteredParticipantsnName), sep="_"))
-  
-  registeredParticipantsFile = unlist(lapply(seq_along(evaluation$examRegisteredParticipantsnName), function(i){
-    file = paste0(dir, "/", evaluation$examRegisteredParticipantsnName[[i]], ".csv")
-    content = gsub("\r\n", "\n", evaluation$examRegisteredParticipantsnFile[[i]])
-    content = gsub(",", ";", content)
-
-    writeLines(text=content, con=file)
-    
-    return(file)
-  }))
-  
-  # process scans to end up with only png files at the end
-  pngFiles = NULL
-  pdfFiles = NULL
-  convertedPngFiles = NULL
-  
-  if(length(evaluation$examScanPdfNames) > 0){
-    evaluation$examScanPdfNames = as.list(make.unique(unlist(evaluation$examScanPdfNames), sep="_"))
-    
-    pdfFiles = lapply(setNames(seq_along(evaluation$examScanPdfNames), evaluation$examScanPdfNames), function(i){
-      file = paste0(dir, "/", evaluation$examScanPdfNames[[i]], ".pdf")
-      raw = openssl::base64_decode(evaluation$examScanPdfFiles[[i]])
-  
-      if(rotate){
-        file = gsub(".pdf", "_.pdf", file)
-        writeBin(raw, con = file)
-        output = paste0(dir, "/", evaluation$examScanPdfNames[[i]], ".pdf")
-        numberOfPages = qpdf::pdf_length(file)
-        qpdf::pdf_rotate_pages(input=file, output=output, pages=1:numberOfPages, angle=ifelse(rotate, 180, 0))
-  
-        file = output
-      } else {
-        writeBin(raw, con = file)
-      }
-      
-      
-      return(file)
-    })
-    
-    convertedPngFiles = unlist(lapply(seq_along(pdfFiles), function(i){
-      numberOfPages = qpdf::pdf_length(pdfFiles[[i]])
-      
-      filenames = sapply(1:numberOfPages, function(page){
-        paste0(dir, "/", names(pdfFiles)[i], "_scan", page, ".png")
-      })
-      
-      convertedFiles = pdftools::pdf_convert(pdf=pdfFiles[[i]], filenames=filenames, pages=NULL, format='png', dpi=300, antialias=TRUE, verbose=FALSE)
-    }))
-  }
-  
-  if(length(evaluation$examScanPngNames) > 0){
-    namesToConsider = c(sub("(.*\\/)([^.]+)(\\.[[:alnum:]]+$)", "\\2", convertedPngFiles), unlist(evaluation$examScanPngNames))
-    namesToConsider_idx = (length(namesToConsider)-length(evaluation$examScanPngNames) + 1):length(namesToConsider)
-
-    evaluation$examScanPngNames = as.list(make.unique(namesToConsider, sep="_"))[namesToConsider_idx]
-    pngFiles = unlist(lapply(seq_along(evaluation$examScanPngNames), function(i){
-      file = paste0(dir, "/", evaluation$examScanPngNames[[i]], ".png")
-      raw = openssl::base64_decode(evaluation$examScanPngFiles[[i]])
-      writeBin(raw, con = file)
-      
-      return(file)
-    }))
-  }
-  
-  scanFiles = c(convertedPngFiles, pngFiles)
-
-  # meta data
-  examName = evaluation$examSolutionsName[[1]]
-  examIds = names(examExerciseMetaData)
-  numExercises = length(examExerciseMetaData[[1]])
-  numChoices = length(examExerciseMetaData[[1]][[1]]$questionlist)
-
-  # additional settings
-  regLength = input$evaluationRegLength
-  
-  points = input$fixedPointsExamEvaluate
-  if(is.numeric(points) && points > 0) {
-    points = rep(points, numExercises)
-  } else {
-    points = NULL
-  }
-  
-  partial = input$partialPoints
-  negative = input$negativePoints
-  rule = input$rule
-  
-  mark = c(input$markThreshold1,
-           input$markThreshold2,
-           input$markThreshold3,
-           input$markThreshold4,
-           input$markThreshold5)
-  labels = c(input$markLabel1,
-             input$markLabe12,
-             input$markLabel3,
-             input$markLabel4,
-             input$markLabel5)
-  
-  if(any(labels=="")){
-    labels = NULL
-  }
-
-  language = input$evaluationLanguage
-  
-  return(list(meta=list(examIds=examIds, examName=examName, numExercises=numExercises, numChoices=numChoices),
-              fields=list(points=points, regLength=regLength, partial=partial, negative=negative, rule=rule, mark=mark, labels=labels, language=language), 
-              files=list(solution=solutionFile, registeredParticipants=registeredParticipantsFile, scans=scanFiles)))
-}
-
-evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
+evaluateExamScans = function(input, collectWarnings, dir){
   out = tryCatch({
     scans_reg_fullJoinData = NULL
-
+    
     warnings = collectWarnings({
+      # exam
+      input$evaluateExam$examSolutionsName = as.list(make.unique(unlist(input$evaluateExam$examSolutionsName), sep="_"))
+      
+      solutionFile = unlist(lapply(seq_along(input$evaluateExam$examSolutionsName), function(i){
+        file = paste0(dir, "/", input$evaluateExam$examSolutionsName[[i]], ".rds")
+        raw = openssl::base64_decode(input$evaluateExam$examSolutionsFile[[i]])
+        writeBin(raw, con = file)
+        
+        return(file)
+      }))
+      examExerciseMetaData = readRDS(solutionFile)
+      
+      # registered participants
+      input$evaluateExam$examRegisteredParticipantsnName = as.list(make.unique(unlist(input$evaluateExam$examRegisteredParticipantsnName), sep="_"))
+      
+      registeredParticipantsFile = unlist(lapply(seq_along(input$evaluateExam$examRegisteredParticipantsnName), function(i){
+        file = paste0(dir, "/", input$evaluateExam$examRegisteredParticipantsnName[[i]], ".csv")
+        content = gsub("\r\n", "\n", input$evaluateExam$examRegisteredParticipantsnFile[[i]])
+        content = gsub(",", ";", content)
+        
+        writeLines(text=content, con=file)
+        
+        return(file)
+      }))
+      
+      # process scans to end up with only png files at the end
+      pngFiles = NULL
+      pdfFiles = NULL
+      convertedPngFiles = NULL
+      
+      if(length(input$evaluateExam$examScanPdfNames) > 0){
+        input$evaluateExam$examScanPdfNames = as.list(make.unique(unlist(input$evaluateExam$examScanPdfNames), sep="_"))
+        
+        pdfFiles = lapply(setNames(seq_along(input$evaluateExam$examScanPdfNames), input$evaluateExam$examScanPdfNames), function(i){
+          file = paste0(dir, "/", input$evaluateExam$examScanPdfNames[[i]], ".pdf")
+          raw = openssl::base64_decode(input$evaluateExam$examScanPdfFiles[[i]])
+          
+          if(input$rotateScans){
+            file = gsub(".pdf", "_.pdf", file)
+            writeBin(raw, con = file)
+            output = paste0(dir, "/", input$evaluateExam$examScanPdfNames[[i]], ".pdf")
+            numberOfPages = qpdf::pdf_length(file)
+            qpdf::pdf_rotate_pages(input=file, output=output, pages=1:numberOfPages, angle=ifelse(input$rotateScans, 180, 0))
+            
+            file = output
+          } else {
+            writeBin(raw, con = file)
+          }
+          
+          
+          return(file)
+        })
+        
+        convertedPngFiles = unlist(lapply(seq_along(pdfFiles), function(i){
+          numberOfPages = qpdf::pdf_length(pdfFiles[[i]])
+          
+          filenames = sapply(1:numberOfPages, function(page){
+            paste0(dir, "/", names(pdfFiles)[i], "_scan", page, ".png")
+          })
+          
+          convertedFiles = pdftools::pdf_convert(pdf=pdfFiles[[i]], filenames=filenames, pages=NULL, format='png', dpi=300, antialias=TRUE, verbose=FALSE)
+        }))
+      }
+      
+      if(length(input$evaluateExam$examScanPngNames) > 0){
+        namesToConsider = c(sub("(.*\\/)([^.]+)(\\.[[:alnum:]]+$)", "\\2", convertedPngFiles), unlist(input$evaluateExam$examScanPngNames))
+        namesToConsider_idx = (length(namesToConsider)-length(input$evaluateExam$examScanPngNames) + 1):length(namesToConsider)
+        
+        input$evaluateExam$examScanPngNames = as.list(make.unique(namesToConsider, sep="_"))[namesToConsider_idx]
+        pngFiles = unlist(lapply(seq_along(input$evaluateExam$examScanPngNames), function(i){
+          file = paste0(dir, "/", input$evaluateExam$examScanPngNames[[i]], ".png")
+          raw = openssl::base64_decode(input$evaluateExam$examScanPngFiles[[i]])
+          writeBin(raw, con = file)
+          
+          return(file)
+        }))
+      }
+      
+      scanFiles = c(convertedPngFiles, pngFiles)
+      
+      # meta data
+      examName = input$evaluateExam$examSolutionsName[[1]]
+      examIds = names(examExerciseMetaData)
+      numExercises = length(examExerciseMetaData[[1]])
+      numChoices = length(examExerciseMetaData[[1]][[1]]$questionlist)
+      
+      # additional settings
+      regLength = input$evaluationRegLength
+      
+      points = input$fixedPointsExamEvaluate
+      if(is.numeric(points) && points > 0) {
+        points = rep(points, numExercises)
+      } else {
+        points = NULL
+      }
+      
+      partial = input$partialPoints
+      negative = input$negativePoints
+      rule = input$rule
+      
+      mark = c(input$markThreshold1,
+               input$markThreshold2,
+               input$markThreshold3,
+               input$markThreshold4,
+               input$markThreshold5)
+      labels = c(input$markLabel1,
+                 input$markLabe12,
+                 input$markLabel3,
+                 input$markLabel4,
+                 input$markLabel5)
+      
+      if(any(labels=="")){
+        labels = NULL
+      }
+      
+      language = input$evaluationLanguage
+      
+      preparedEvaluation = list(meta=list(examIds=examIds, examName=examName, numExercises=numExercises, numChoices=numChoices),
+                                fields=list(points=points, regLength=regLength, partial=partial, negative=negative, rule=rule, mark=mark, labels=labels, language=language),
+                                files=list(solution=solutionFile, registeredParticipants=registeredParticipantsFile, scans=scanFiles))
+      
       with(preparedEvaluation, {
         if(length(files$scans) < 1){
           stop("E1012")
         }
-        
+
         if(length(files$registeredParticipants) != 1){
           stop("E1013")
         }
-        
+
         if(length(files$solution) != 1){
           stop("E1014")
         }
-        
+
         # read registered participants
         registeredParticipantData = read.csv2(files$registeredParticipants)
-        
+
         if(ncol(registeredParticipantData) != 3){
           stop("E1015")
         }
-        
+
         if(!all(names(registeredParticipantData) == c("registration", "name", "id"))){
           stop("E1016")
         }
@@ -618,41 +611,41 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
         scanData = read.table(text=scanData, sep=" ", fill=TRUE)
         names(scanData)[c(1:6)] = c("scan", "sheet", "scrambling", "type", "replacement", "registration")
         names(scanData)[-c(1:6)] = (7:ncol(scanData)) - 6
-        
+
         # reduce columns using additional data from exam to know how many questions and answer per question existed
         scanData = scanData[,-which(grepl("^[[:digit:]]+$", names(scanData)))[-c(1:meta$numExercises)]] # remove unnecessary placeholders for unused questions
         scanData$numExercises = meta$numExercises
         scanData$numChoices = meta$numChoices
-        
+
         # add scans as base64 to be displayed in browser
         scanData$blob = lapply(scanData$scan, function(x) {
           file = paste0(dir, "/", x)
           blob = readBin(file, "raw", n=file.info(file)$size)
           openssl::base64_encode(blob)
         })
-        
+
         # full outer join of scanData and registeredParticipantData
         scans_reg_fullJoinData = merge(scanData, registeredParticipantData, by="registration", all=TRUE)
-        
+
         # in case of duplicates, set "XXXXXXX" as registration number and "NA" for name and id for every match following the first one
         dups = duplicated(scans_reg_fullJoinData$registration)
         scans_reg_fullJoinData$registration[dups] = "XXXXXXX"
         scans_reg_fullJoinData$name[dups] = "NA"
         scans_reg_fullJoinData$id[dups] = "NA"
-        
-        # set "XXXXXXX" as registration number for scans which were not matched with any of the registered participants 
+
+        # set "XXXXXXX" as registration number for scans which were not matched with any of the registered participants
         scans_reg_fullJoinData$registration[is.na(scans_reg_fullJoinData$name) & is.na(scans_reg_fullJoinData$id)] = "XXXXXXX"
-        
+
         # set "XXXXXXX" as registration number for scans which show "ERROR" in any field
         scans_reg_fullJoinData$registration[apply(scans_reg_fullJoinData, 1, function(x) any(x=="ERROR"))] = "XXXXXXX"
-        
+
         # pad zeroes to registration number and answers
         scans_reg_fullJoinData$registration[scans_reg_fullJoinData$registration != "XXXXXXX"] = sprintf(paste0("%0", fields$regLength, "d"), as.numeric(scans_reg_fullJoinData$registration[scans_reg_fullJoinData$registration != "XXXXXXX"]))
         scans_reg_fullJoinData[,as.character(1:meta$numExercises)] = apply(scans_reg_fullJoinData[,as.character(1:meta$numExercises)], 2, function(x){
           x[is.na(x)] = 0
           x = sprintf(paste0("%0", meta$numChoices, "d"), as.numeric(x))
         })
-        
+
         scans_reg_fullJoinData <<- scans_reg_fullJoinData
       })
 
@@ -665,18 +658,18 @@ evaluateExamScans = function(preparedEvaluation, collectWarnings, dir){
       value = "W1003"
     }
 
-    return(list(message=list(key=key, value=value), 
-                scans_reg_fullJoinData=scans_reg_fullJoinData, 
+    return(list(message=list(key=key, value=value),
+                scans_reg_fullJoinData=scans_reg_fullJoinData,
                 preparedEvaluation=preparedEvaluation))
   },
   error = function(e){
     # if(!grepl("E\\d{4}", e$message)){
     #   e$message = "E1003"
     # }
-    
+
     return(list(message=list(key="Error", value=e), scans_reg_fullJoinData=NULL, examName=NULL, files=list(), data=list()))
   })
-  
+
   return(out)
 }
 
@@ -821,8 +814,8 @@ exerciseMax = 45
 seedMin = 1
 seedMax = 999999999999
 initSeed = 1
-numberOfExerciseBlocks = 1
-maxNumberOfExamExercises = 0
+# numberOfExerciseBlocks = 1 #todo: not used?
+# maxNumberOfExamExercises = 0 #todo: not used?
 languages = c("en",
               "de")
 # languages = c("en",
@@ -846,6 +839,7 @@ languages = c("en",
 #               "es",
 #               "tr")
 rules = list("- 1/max(nwrong, 2)"="false2", "- 1/nwrong"="false", "- 1/ncorrect"="true", "- 1"="all", "- 0"="none")
+
 messageSymbols = c('<i class=\"fa-solid fa-circle-check\"></i>', '<i class=\"fa-solid fa-triangle-exclamation\"></i>', '<i class=\"fa-solid fa-circle-exclamation\"></i>')
 
 errorCodes = read.csv2("tryCatch/errorCodes.csv")
@@ -1031,11 +1025,22 @@ server = function(input, output, session) {
   examCreation = eventReactive(input$createExam, {
     startWait(session)
 
-    preparedExam = prepareExam(session, isolate(input$createExam), isolate(input))
-
+    # preparedExam = prepareExam(session, isolate(input$createExam), isolate(input))
+    # 
+    # x = callr::r_bg(
+    #   func = createExam,
+    #   args = list(preparedExam, collectWarnings, getDir(session)),
+    #   supervise = TRUE
+    # )
+    
+    settings = list(exerciseMin=exerciseMin,
+                    exerciseMax=exerciseMax,
+                    seedMin=seedMin,
+                    seedMax=seedMax)
+    
     x = callr::r_bg(
       func = createExam,
-      args = list(preparedExam, collectWarnings, getDir(session)),
+      args = list(isolate(input$createExam), settings, isolate(reactiveValuesToList(input)), collectWarnings, getDir(session)),
       supervise = TRUE
     )
 
@@ -1074,13 +1079,10 @@ server = function(input, output, session) {
   examScanEvaluation = eventReactive(input$evaluateExam, {
     startWait(session)
 
-    # save input data in reactive value
-    examEvaluationData(prepareEvaluation(session, isolate(input$evaluateExam), isolate(input$rotateScans), isolate(input)))
-    
     # background exercise
     x = callr::r_bg(
       func = evaluateExamScans,
-      args = list(isolate(examEvaluationData()), collectWarnings, getDir(session)),
+      args = list(isolate(reactiveValuesToList(input)), collectWarnings, getDir(session)),
       supervise = TRUE
     )
 
