@@ -334,13 +334,6 @@ $('#examNav').parent().click(function () {
 	$('#exam').addClass('active');
 });
 
-$('#helpNav').parent().click(function () {	
-	if( $(this).parent().hasClass('disabled') ) return;
-	
-	$('.mainSection').removeClass('active');
-	$('#help').addClass('active');
-});
-
 function selectListItem(index) {	
 	$('.mainSection.active .contentTab').removeClass('active');
 	$('.mainSection.active .contentTab').eq(index).addClass('active');
@@ -2381,12 +2374,3 @@ $('body').on('click', '#proceedEval', function() {
 
 	Shiny.onInputChange("proceedEvaluation", datenTxt, {priority: 'event'});
 });
-
-/* --------------------------------------------------------------
-HELP 
--------------------------------------------------------------- */
-$("#help_list_items .sidebarListItem").click(function(){
-	$('#help_list_items .sidebarListItem').removeClass('active');
-	$(this).addClass('active');
-	selectListItem($('.mainSection.active .sidebarListItem.active').index());
-}); 

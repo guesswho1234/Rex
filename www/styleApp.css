@@ -1085,18 +1085,3 @@ main > * {
 .scanStat {
 	display: block;
 }
-
-/* --------------------------------------------------------------
- HELP 
--------------------------------------------------------------- */
-#help .content {
-	width: 100%;
-}
-
-#help .contentTab {
-	display:none;
-}
-
-#help .contentTab.active {
-	display:block;
-}
