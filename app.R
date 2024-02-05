@@ -76,7 +76,7 @@ getMessageCode = function(message){
   code
 }
 
-myMessage = function(message) {
+myMessage = function(message, class) {
   type = getMessageType(message)
   
   if(type == 2) {
@@ -100,10 +100,11 @@ myMessage = function(message) {
   message$value = gsub("[\r]", "",message$value)
   message$value = gsub("[\n]", "", message$value)
   
+  
 
   messageSign = paste0('<span class="responseSign ', message$key, 'Sign">', messageSymbols[type + 1], '</span>')
-  messageText = paste0('<span class="exerciseTryCatchText">', message$value , '</span>')
-  messageObject = paste0('<span class="exerciseTryCatch ', message$key, '">', messageSign, messageText, '</span>')
+  messageText = paste0('<span class="', paste0(class, 'TryCatchText'), ' tryCatchText">', message$value , '</span>')
+  messageObject = paste0('<span class="', paste0(class, 'TryCatch'), ' tryCatch ', message$key, '">', messageSign, messageText, '</span>')
   
   HTML(messageObject)
 }
@@ -276,7 +277,7 @@ loadExercise = function(session, id, seed, html, figure, message) {
     }
   }
 
-  session$sendCustomMessage("setExerciseMessage", myMessage(message))
+  session$sendCustomMessage("setExerciseMessage", myMessage(message, "exercise"))
   session$sendCustomMessage("setExerciseE", getMessageCode(message))
   session$sendCustomMessage("setExerciseId", -1)
 }
@@ -445,7 +446,7 @@ createExam = function(exam, settings, input, collectWarnings, dir) {
 examCreationResponse = function(session, message, downloadable) {
   showModal(modalDialog(
     title = tags$span(HTML('<span lang="de">Prüfung erstellen</span><span lang="en">Create exam</span>')),
-    tags$span(id="responseMessage", myMessage(message)),
+    tags$span(id="responseMessage", myMessage(message, "modal")),
     footer = tagList(
       if (downloadable)
         myDownloadButton('downloadExamFiles'),
@@ -676,11 +677,16 @@ evaluateExamScans = function(input, collectWarnings, dir){
 evaluateExamScansResponse = function(session, message, preparedEvaluation, scans_reg_fullJoinData) {
   showModal(modalDialog(
     title = tags$span(HTML('<span lang="de">Scans überprüfen</span><span lang="en">Check scans</span>')),
-    tags$span(id="responseMessage", myMessage(message)),
-    myCheckBox(id="showNotAssigned", "Nicht zugeordnete Matrikelnummern anzeigen", "Show registrations without assignment"),
-    tags$div(id="scanStats"),
-    tags$div(id="inspectScan"),
-    tags$div(id="compareScanRegistrationDataTable"),
+    tags$span(id="responseMessage", myMessage(message, "modal")),
+    
+    if (!is.null(scans_reg_fullJoinData) && nrow(scans_reg_fullJoinData) > 0) 
+      tagList(
+        myCheckBox(id="showNotAssigned", "Nicht zugeordnete Matrikelnummern anzeigen", "Show registrations without assignment"),
+        tags$div(id="scanStats"),
+        tags$div(id="inspectScan"),
+        tags$div(id="compareScanRegistrationDataTable"),
+      ),
+    
     footer = tagList(
       myActionButton("dismiss_evaluateExamScansResponse", "Abbrechen", "Cancle", "fa-solid fa-xmark"),
       if (!is.null(scans_reg_fullJoinData) && nrow(scans_reg_fullJoinData) > 0) 
@@ -758,7 +764,7 @@ evaluateExamFinalize = function(preparedEvaluation, collectWarnings, dir){
 evaluateExamFinalizeResponse = function(session, message, downloadable) {
   showModal(modalDialog(
     title = tags$span(HTML('<span lang="de">Prüfung auswerten</span><span lang="en">Evaluate exam</span>')),
-    tags$span(id='responseMessage', myMessage(message)),
+    tags$span(id='responseMessage', myMessage(message, "modal")),
     footer = tagList(
       if (downloadable)
         myDownloadButton('downloadEvaluationFiles'),

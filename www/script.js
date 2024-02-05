@@ -46,13 +46,15 @@ function initApp(){
 	f_langDeEn();
 	resetOutputFields();
 	
-	$('#copyright small').append('<div id="additionalCopyright"><div>Based on <a href="https://cran.r-project.org/web/packages/exams/index.html" target="_blank" rel="noopener noreferrer">R/exams</a> © ' + new Date().getFullYear() + ' Achim Zeileis</div><div>Licensed under <a href="LICENSE.html" target="_blank" rel="noopener noreferrer">GNU GPL-2</a></div><div>Download the source code <a href="https://github.com/guesswho1234/PROJECT_Rex" target="_blank" rel="noopener noreferrer">here</a></div></div>');
+	$('#copyright small').append('<div id="additionalCopyright"><div>Based on <a href="https://cran.r-project.org/web/packages/exams/index.html" target="_blank" rel="noopener noreferrer">R/exams</a> © ' + new Date().getFullYear() + ' Achim Zeileis</div><div>Licensed under <a href="LICENSE.html" target="_blank" rel="noopener noreferrer">GNU GPL-2</a></div><div><a href="https://github.com/guesswho1234/PROJECT_Rex" target="_blank" rel="noopener noreferrer">Rex</a> source code</div></div>');
 	
 	const linkElements = ['<link rel="stylesheet" href="styleApp.css" type="text/css">',
 	'<link rel="stylesheet" href="/fontawesome/css/fontawesome.min.css" type="text/css">',
 	'<link rel="stylesheet" href="/fontawesome/css/all.min.css" type="text/css">']	
 
 	linkElements.forEach(style => $("head").append(style));
+	
+	changeHeartColor(0);
 }
 
 /* --------------------------------------------------------------
@@ -74,6 +76,35 @@ $('body').on('click', '#logout-button', function() {
 });
 
 /* --------------------------------------------------------------
+ COLORS 
+-------------------------------------------------------------- */
+const myColors = Array.from(document.styleSheets)
+.filter(
+sheet =>
+  sheet.href === null || sheet.href.startsWith(window.location.origin)
+)
+.reduce(
+(acc, sheet) =>
+  (acc = [
+	...acc,
+	...Array.from(sheet.cssRules).reduce(
+	  (def, rule) =>
+		(def =
+		  rule.selectorText === ".color-theme"
+			? [
+				...def,
+				...Array.from(rule.style).filter(name =>
+				  name.startsWith("--")
+				)
+			  ]
+			: def),
+	  []
+	)
+  ]),
+[]
+);
+
+/* --------------------------------------------------------------
  HEARTBEAT 
 -------------------------------------------------------------- */
 Shiny.addCustomMessageHandler('heartbeat', function(heartbeat) {
@@ -91,8 +122,37 @@ function pong(){
 }
 
 $('body').on('click', '#heart.ping', function(e) {
-	alert("Hey, stop that!");
+	changeHeartColor();
 });
+
+function changeHeartColor(increment = 1) {
+	let colorId = getHeartColorCookie();
+	colorId = colorId === null ? 14 : parseInt(colorId) + increment;
+	colorId = colorId > (myColors.length - 1) ? 0 : colorId;
+	
+	$('#heart span').css('background', 'var(' + myColors[colorId] + ')');
+	$('#heart span').css('-webkit-background-clip', 'text');
+	setHeartColorCookie(colorId);
+}
+
+function setHeartColorCookie(colorId) {
+    document.cookie = 'REX_JS_heartColor=' + colorId + ';path=/;SameSite=Lax';
+}
+
+function getHeartColorCookie() {
+    const name = 'REX_JS_heartColor';
+    const ca = document.cookie.split(';');
+	
+    for(let i=0;i < ca.length;i++) {
+        let c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+        if (c.indexOf(name) == 0) {
+			return c.substring(name.length + 1,c.length);
+		}
+    }
+	
+    return null;
+}
 
 /* --------------------------------------------------------------
  KEY EVENTS 
@@ -1124,7 +1184,7 @@ function filterNodes(element, allow) {
 function invalidateAfterEdit(exerciseID) {
 	setExamExercise(exerciseID, false);
 	iuf['exercises'][exerciseID]['e'] = 2;
-	iuf['exercises'][exerciseID]['message'] = '<span class="exerciseTryCatch Error"><span class="responseSign ErrorSign"><i class="fa-solid fa-circle-exclamation"></i></span><span class="exerciseTryCatchText">Exercise needs to be parsed again.</span></span>';
+	iuf['exercises'][exerciseID]['message'] = '<span class="exerciseTryCatch tryCatch Error"><span class="responseSign ErrorSign"><i class="fa-solid fa-circle-exclamation"></i></span><span class="exerciseTryCatchText tryCatchText">Exercise needs to be parsed again.</span></span>';
 	
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .examExercise').addClass('disabled');
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseTryCatch').remove();

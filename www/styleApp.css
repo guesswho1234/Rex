@@ -101,19 +101,38 @@ nav .nav.navbar-nav a.disabled {
 }
 
 #responseMessage,
-.exerciseTryCatch .exerciseTryCatchText {
+.tryCatch .tryCatchText {
 	font-family: Consolas;
-	color: #000000cf;
 	border-radius: 3px;
 	padding: 5px;
 	font-weight: bold;
 	text-align: left;
+	font-size: 0.9rem;
+	color: var(---main);
+}
+
+#responseMessage {
+	display: flex;
+}
+
+.modalTryCatch {
+	display: grid;
+	margin: auto;
+	font-size: 100px;
+}
+
+.modalTryCatch .responseSign {
+	margin: auto;
+}
+
+.modalTryCatchText {
+	margin: auto;
+	margin-top: 10px !important;
 }
 
 #exerciseUpload {
 	font-weight: unset;
 }
-
 
 .iconButton {
 	display: none;
@@ -154,15 +173,13 @@ body.textButtonMode .textButton {
 } 
 
 #heart span { 
-	background: var(---heartRed);
-	-webkit-background-clip: text;
 	-webkit-text-fill-color: transparent;
 } 
 
 #heart span.dead { 
-	background: var(---main);
-	-webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+	background: var(---main) !important;
+	-webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
 } 
 
 #heart.ping {
@@ -497,21 +514,21 @@ main > * {
 	align-items: first baseline;
 }
 
-.exerciseTryCatch .responseSign {
+.tryCatch .responseSign {
 	height: 100%;
 	display: flex;
 	place-items: center;
 }
 
-.exerciseTryCatch.Success {
+.tryCatch.Success {
 	color: var(---green_success);
 }
 
-.exerciseTryCatch.Warning {
+.tryCatch.Warning {
 	color: var(---yellow_warning);
 }
 
-.exerciseTryCatch.Error {
+.tryCatch.Error {
 	color: var(---red_error);
 }
 
@@ -589,27 +606,30 @@ main > * {
 	border: 2px solid var(---main) !important;
 }
 
-.exerciseTryCatch .exerciseTryCatchText {
+.tryCatch .tryCatchText {
 	visibility: hidden;
+}
+
+.exerciseTryCatch .exerciseTryCatchText {
 	width: max-content;
 	position: absolute;
 	z-index: 1;
 	margin-left: 20px
 }
 
-.exerciseTryCatch.Success .exerciseTryCatchText {
+.tryCatch.Success .tryCatchText {
 	display: none;
 }
 
-.exerciseTryCatch.Warning .exerciseTryCatchText {
+.tryCatch.Warning .tryCatchText {
 	background-color: var(---yellow_warning);
 }
 	
-.exerciseTryCatch.Error .exerciseTryCatchText {
+.tryCatch.Error .tryCatchText {
 	background-color: var(---red_error);
 }
 
-.exerciseTryCatch:hover .exerciseTryCatchText {
+.tryCatch:hover .tryCatchText {
 	visibility: visible;
 }
 
@@ -1076,6 +1096,7 @@ main > * {
 
 #scanStats {
 	display: flex;
+	place-content: center;
 }
 
 .checkBoxText {
