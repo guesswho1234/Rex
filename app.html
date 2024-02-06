@@ -295,6 +295,10 @@
 							{{ textInput_examCourse }}
 						</div>
 						<div>
+							<label for="examIntro"><span lang="de">Einleitung</span><span lang="en">Intro</span></label>
+							{{ textInput_examIntro }}
+						</div>
+						<div>
 							<label for="numberOfBlanks"><span lang="de">Anzahl leeren Seiten</span><span lang="en">Number of blank pages</span></label>
 							</br>
 							<span class="infoField"><span lang="de">Werden am Ende der Prüfung angehängt.</span><span lang="en">Are appended to the end of the exam.</span></span>
@@ -362,6 +366,12 @@
 							</br>
 							<span class="infoField"><span lang="de">Regeln für Minuspunkte bei falschen Antworten.</span><span lang="en">Negative point rules for incorrect answers.</span></span>
 							{{ selectInput_rule }}
+						</div>
+						<div>
+							<label for="mark"><span lang="de">Prüfungen benoten</span><span lang="en">Grade exams</span></label>
+							</br>
+							<span class="infoField"><span lang="de">Prüfungen anhand des Notenschlüssels benoten.</span><span lang="en">Grade exams based on the grading key.</span></span>
+							{{ checkboxInput_mark }}
 						</div>
 						<div>
 							<label for="marks"><span lang="de">Notenschlüssel</span><span lang="en">Grading key</span></label>

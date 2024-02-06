@@ -83,7 +83,7 @@ myMessage = function(message, class) {
     if (message$value$message %in% names(errorCodes)) {
       message$value = getErrorCodeMessage(message$value$message)
     } else {
-      message$value = message$value # getErrorCodeMessage("E1000")
+      message$value = getErrorCodeMessage("E1000")
     }
   }
   
@@ -136,7 +136,7 @@ collectWarnings = function(expr) {
     warnings <<- c(warnings, list(w))
     invokeRestart("muffleWarning")
   }
-  # origin = withCallingHandlers(expr, warning = wHandler)
+  
   withCallingHandlers(expr, warning = wHandler)
   
   return(warnings)
@@ -346,7 +346,7 @@ createExam = function(exam, settings, input, collectWarnings, dir) {
         seedBoundaries = c(settings$seedMin, settings$seedMax),
         reglength = reglength,
         header = NULL,
-        intro = NULL,
+        intro = c(input$examIntro), 
         replacement = input$replacement,
         samepage = input$samepage,
         newpage = input$newpage,
@@ -433,9 +433,9 @@ createExam = function(exam, settings, input, collectWarnings, dir) {
     return(list(message=list(key=key, value=value), files=list(sourceFiles=preparedExam$sourceFiles, examFiles=preparedExam$examFiles)))
   },
   error = function(e){
-    # if(!grepl("E\\d{4}", e$message)){
-    #   e$message = "E1002"
-    # }
+    if(!grepl("E\\d{4}", e$message)){
+      e$message = "E1002"
+    }
 
     return(list(message=list(key="Error", value=e), files=list()))
   })
@@ -448,9 +448,9 @@ examCreationResponse = function(session, message, downloadable) {
     title = tags$span(HTML('<span lang="de">Prüfung erstellen</span><span lang="en">Create exam</span>')),
     tags$span(id="responseMessage", myMessage(message, "modal")),
     footer = tagList(
+      myActionButton("dismiss_examCreationResponse", "Schließen", "Close", "fa-solid fa-xmark"),
       if (downloadable)
-        myDownloadButton('downloadExamFiles'),
-      myActionButton("dismiss_examCreationResponse", "Schließen", "Close", "fa-solid fa-xmark")
+        myDownloadButton('downloadExamFiles')
     )
   ))
   session$sendCustomMessage("f_langDeEn", 1)
@@ -561,21 +561,26 @@ evaluateExamScans = function(input, collectWarnings, dir){
       negative = input$negativePoints
       rule = input$rule
       
-      mark = c(input$markThreshold1,
-               input$markThreshold2,
-               input$markThreshold3,
-               input$markThreshold4,
-               input$markThreshold5)
-      labels = c(input$markLabel1,
-                 input$markLabe12,
-                 input$markLabel3,
-                 input$markLabel4,
-                 input$markLabel5)
+      mark = input$mark
+      labels = NULL
       
-      if(any(labels=="")){
-        labels = NULL
+      if(mark) {
+        mark = c(input$markThreshold1,
+                 input$markThreshold2,
+                 input$markThreshold3,
+                 input$markThreshold4,
+                 input$markThreshold5)
+        labels = c(input$markLabel1,
+                   input$markLabe12,
+                   input$markLabel3,
+                   input$markLabel4,
+                   input$markLabel5)
+        
+        if(any(labels=="")){
+          labels = NULL
+        }
       }
-      
+
       language = input$evaluationLanguage
       
       preparedEvaluation = list(meta=list(examIds=examIds, examName=examName, numExercises=numExercises, numChoices=numChoices),
@@ -664,9 +669,9 @@ evaluateExamScans = function(input, collectWarnings, dir){
                 preparedEvaluation=preparedEvaluation))
   },
   error = function(e){
-    # if(!grepl("E\\d{4}", e$message)){
-    #   e$message = "E1003"
-    # }
+    if(!grepl("E\\d{4}", e$message)){
+      e$message = "E1003"
+    }
 
     return(list(message=list(key="Error", value=e), scans_reg_fullJoinData=NULL, examName=NULL, files=list(), data=list()))
   })
@@ -679,7 +684,7 @@ evaluateExamScansResponse = function(session, message, preparedEvaluation, scans
     title = tags$span(HTML('<span lang="de">Scans überprüfen</span><span lang="en">Check scans</span>')),
     tags$span(id="responseMessage", myMessage(message, "modal")),
     
-    if (!is.null(scans_reg_fullJoinData) && nrow(scans_reg_fullJoinData) > 0) 
+    if (!is.null(scans_reg_fullJoinData)) 
       tagList(
         myCheckBox(id="showNotAssigned", "Nicht zugeordnete Matrikelnummern anzeigen", "Show registrations without assignment"),
         tags$div(id="scanStats"),
@@ -689,8 +694,8 @@ evaluateExamScansResponse = function(session, message, preparedEvaluation, scans
     
     footer = tagList(
       myActionButton("dismiss_evaluateExamScansResponse", "Abbrechen", "Cancle", "fa-solid fa-xmark"),
-      if (!is.null(scans_reg_fullJoinData) && nrow(scans_reg_fullJoinData) > 0) 
-        myActionButton("proceedEval", "Weiter", "Proceed", "fa-solid fa-circle-right"),
+      if (!is.null(scans_reg_fullJoinData)) 
+        myActionButton("proceedEval", "Weiter", "Proceed", "fa-solid fa-circle-right")
     ),
     size = "l"
   ))
@@ -708,6 +713,12 @@ evaluateExamScansResponse = function(session, message, preparedEvaluation, scans
 
     session$sendCustomMessage("setExanIds", examIds_json)
     session$sendCustomMessage("compareScanRegistrationData", scans_reg_fullJoinData_json)
+  } 
+  
+  print(nrow(scans_reg_fullJoinData))
+  
+  if (!is.null(scans_reg_fullJoinData) && nrow(scans_reg_fullJoinData) == 0) {
+    session$sendCustomMessage("backTocompareScanRegistrationData", 1)
   }
 }
 
@@ -751,9 +762,9 @@ evaluateExamFinalize = function(preparedEvaluation, collectWarnings, dir){
                 preparedEvaluation=preparedEvaluation))
   },
   error = function(e){
-    # if(!grepl("E\\d{4}", e$message)){
-    #   e$message = "E1004"
-    # }
+    if(!grepl("E\\d{4}", e$message)){
+      e$message = "E1004"
+    }
     
     return(list(message=list(key="Error", value=e), examName=NULL, files=list()))
   })
@@ -766,10 +777,10 @@ evaluateExamFinalizeResponse = function(session, message, downloadable) {
     title = tags$span(HTML('<span lang="de">Prüfung auswerten</span><span lang="en">Evaluate exam</span>')),
     tags$span(id='responseMessage', myMessage(message, "modal")),
     footer = tagList(
+      myActionButton("dismiss_evaluateExamFinalizeResponse", "Schließen", "Close", "fa-solid fa-xmark"),
+      myActionButton("backTo_evaluateExamScansResponse", "Zurück", "Back", "fa-solid fa-arrow-left"),
       if (downloadable)
-        myDownloadButton('downloadEvaluationFiles'),
-      # actionButton("dismiss_evaluateExamFinalizeResponse", label = "OK")
-      myActionButton("dismiss_evaluateExamFinalizeResponse", "Schließen", "Close", "fa-solid fa-xmark")
+        myDownloadButton('downloadEvaluationFiles')
     )
   ))
   session$sendCustomMessage("f_langDeEn", 1)
@@ -921,6 +932,7 @@ server = function(input, output, session) {
       textInput_examInstitution = textInput("examInstitution", label = NULL, value = NULL),
       textInput_examTitle = textInput("examTitle", label = NULL, value = NULL),
       textInput_examCourse = textInput("examCourse", label = NULL, value = NULL),
+      textInput_examIntro = textAreaInput("examIntro", label = NULL, value = NULL),
       textInput_numberOfBlanks = textInput("numberOfBlanks", label = NULL, value = 5),
 
       # EXAM EVALUATE
@@ -929,6 +941,7 @@ server = function(input, output, session) {
       checkboxInput_partialPoints = checkboxInput("partialPoints", label = NULL, value = TRUE),
       checkboxInput_negativePoints = checkboxInput("negativePoints", label = NULL, value = NULL),
       selectInput_rule = selectInput("rule", label = NULL, choices = rules, selected = NULL, multiple = FALSE),
+      checkboxInput_mark = checkboxInput("mark", label = NULL, value = NULL), 
 
       textInput_markThreshold1 = textInput("markThreshold1", label = NULL, value = 0),
       textInput_markLabel1 = textInput("markLabel1", label = NULL, value = NULL),
@@ -1031,14 +1044,6 @@ server = function(input, output, session) {
   examCreation = eventReactive(input$createExam, {
     startWait(session)
 
-    # preparedExam = prepareExam(session, isolate(input$createExam), isolate(input))
-    # 
-    # x = callr::r_bg(
-    #   func = createExam,
-    #   args = list(preparedExam, collectWarnings, getDir(session)),
-    #   supervise = TRUE
-    # )
-    
     settings = list(exerciseMin=exerciseMin,
                     exerciseMax=exerciseMax,
                     seedMin=seedMin,
@@ -1079,7 +1084,8 @@ server = function(input, output, session) {
   })
 
   # EVALUATE EXAM -------------------------------------------------------------
-  examEvaluationData = reactiveVal()
+  examScanEvaluationData = reactiveVal()
+  examFinalizeEvaluationData = reactiveVal()
 
   # evaluate scans - trigger
   examScanEvaluation = eventReactive(input$evaluateExam, {
@@ -1103,7 +1109,7 @@ server = function(input, output, session) {
       result = examScanEvaluation()$get_result()
 
       # save result in reactive value
-      examEvaluationData(result$preparedEvaluation)
+      examScanEvaluationData(result)
       
       # open modal
       evaluateExamScansResponse(session,
@@ -1117,12 +1123,12 @@ server = function(input, output, session) {
   examFinalizeEvaluation = eventReactive(input$proceedEvaluation, {
     dir = getDir(session)
     removeModal()
-    preparedEvaluation = isolate(examEvaluationData())
+    preparedEvaluation = isolate(examScanEvaluationData()$preparedEvaluation)
 
     # process scanData
     scanData = Reduce(c, lapply(input$proceedEvaluation, function(x) paste0(unlist(unname(x)), collapse=" ")))
     scanData = paste0(scanData, collapse="\n")
-
+    
     # write scanData
     scanDatafile = paste0(dir, "/", "Daten.txt")
     writeLines(text=scanData, con=scanDatafile)
@@ -1134,12 +1140,12 @@ server = function(input, output, session) {
     # manage preparedEvaluation data
     preparedEvaluation$files$scanEvaluation = zipFile
     preparedEvaluation$files = within(preparedEvaluation$files, rm(list=c("scans")))
-    examEvaluationData(preparedEvaluation)
+    examFinalizeEvaluationData(preparedEvaluation)
 
     # background exercise
     x = callr::r_bg(
       func = evaluateExamFinalize,
-      args = list(isolate(examEvaluationData()), collectWarnings, dir),
+      args = list(isolate(examFinalizeEvaluationData()), collectWarnings, dir),
       supervise = TRUE
     )
 
@@ -1154,7 +1160,7 @@ server = function(input, output, session) {
       result = examFinalizeEvaluation()$get_result()
 
       # save result in reactive value
-      examEvaluationData(result$preparedEvaluation)
+      examFinalizeEvaluationData(result)
 
       # open modal
       evaluateExamFinalizeResponse(session, result$message, length(unlist(result$preparedEvaluation$files, recursive = TRUE)) > 0)
@@ -1165,10 +1171,21 @@ server = function(input, output, session) {
   output$downloadEvaluationFiles = downloadHandler(
     filename = "evaluation.zip",
     content = function(fname) {
-      zip(zipfile=fname, files=unlist(isolate(examEvaluationData()$files), recursive = TRUE), flags='-r9XjFS')
+      zip(zipfile=fname, files=unlist(isolate(examFinalizeEvaluationData()$preparedEvaluation$files), recursive = TRUE), flags='-r9XjFS')
     },
     contentType = "application/zip"
   )
+  
+  # back to evaluateExamScansResponse
+  observeEvent(input$backTo_evaluateExamScansResponse, {
+    removeModal()
+    
+    result = isolate(examScanEvaluationData())
+    evaluateExamScansResponse(session,
+                              result$message,
+                              result$preparedEvaluation,
+                              data.frame())
+  })
 
   # modal close
   observeEvent(input$dismiss_evaluateExamScansResponse, {

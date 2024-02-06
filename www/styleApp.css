@@ -172,6 +172,20 @@ body.textButtonMode .textButton {
 	cursor: pointer;
 } 
 
+#heart .dead::before { 
+	top: 38%;
+	background: var(---main);
+	content: "";
+	width: 150%;
+	position: absolute;
+	height: .2em;
+	border-radius: .1em;
+	left: -19%;
+	white-space: nowrap;
+	display: block;
+	transform: rotate(-45deg);
+} 
+
 #heart span { 
 	-webkit-text-fill-color: transparent;
 } 
