@@ -346,7 +346,7 @@ createExam = function(exam, settings, input, collectWarnings, dir) {
         seedBoundaries = c(settings$seedMin, settings$seedMax),
         reglength = reglength,
         header = NULL,
-        intro = NULL,
+        intro = NULL, #input$intro, #todo: does not work - latex errir
         replacement = input$replacement,
         samepage = input$samepage,
         newpage = input$newpage,
@@ -932,6 +932,7 @@ server = function(input, output, session) {
       textInput_examInstitution = textInput("examInstitution", label = NULL, value = NULL),
       textInput_examTitle = textInput("examTitle", label = NULL, value = NULL),
       textInput_examCourse = textInput("examCourse", label = NULL, value = NULL),
+      textInput_examIntro = textInput("examIntro", label = NULL, value = NULL),
       textInput_numberOfBlanks = textInput("numberOfBlanks", label = NULL, value = 5),
 
       # EXAM EVALUATE

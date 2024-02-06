@@ -2103,7 +2103,7 @@ function magnifierInit() {
 	let magnifierSize = $('#inspectScanImage').width() / 2;
 	let magnification = 2;
 	let magnify = new magnifier();
-	magnify.magnifyImg('img', magnification, magnifierSize);
+	magnify.magnifyImg('#inspectScanImage  img', magnification, magnifierSize);
 }
 
 function magnifier() {
@@ -2123,42 +2123,42 @@ function magnifier() {
 		magnification = +(magnification);
 	
 		$pointer.hover(function() {
-		$(this).css('cursor', 'none');
-		$('.magnify').show();
+			$(this).css('cursor', 'none');
+			$('.magnify').show();
 
-		let width = $(this).width();
-		let height = $(this).height();
-		let src = $(this).attr('src');
-		let imagePos = $(this).offset();
-		let image = $(this);
-	
-		if (magnifierSize == undefined) {
-			magnifierSize = '150px';
-		}
-	
-		$('.magnify').css({
-			'background-size': width * magnification + 'px ' + height * magnification + "px",
-			'background-image': 'url("' + src + '")',
-			'width': magnifierSize,
-			'height': magnifierSize
-		});
-	
-		let magnifyOffset = +($('.magnify').width() / 2);
-		let rightSide = +(imagePos.left + $(this).width());
-		let bottomSide = +(imagePos.top + $(this).height());
-	
-		$(document).mousemove(function(e) {
-				if (e.pageX < +(imagePos.left - magnifyOffset / 6) || e.pageX > +(rightSide + magnifyOffset / 6) || e.pageY < +(imagePos.top - magnifyOffset / 6) || e.pageY > +(bottomSide + magnifyOffset / 6)) {
-				$('.magnify').hide();
-				$(document).unbind('mousemove');
+			let width = $(this).width();
+			let height = $(this).height();
+			let src = $(this).attr('src');
+			let imagePos = $(this).offset();
+			let image = $(this);
+		
+			if (magnifierSize == undefined) {
+				magnifierSize = '150px';
 			}
-			let backgroundPos = "" - ((e.pageX - imagePos.left) * magnification - magnifyOffset) + "px " + -((e.pageY - imagePos.top) * magnification - magnifyOffset) + "px";
+		
 			$('.magnify').css({
-				'left': e.pageX - magnifyOffset,
-				'top': e.pageY - magnifyOffset,
-				'background-position': backgroundPos
+				'background-size': width * magnification + 'px ' + height * magnification + "px",
+				'background-image': 'url("' + src + '")',
+				'width': magnifierSize,
+				'height': magnifierSize
 			});
-		});
+		
+			let magnifyOffset = +($('.magnify').width() / 2);
+			let rightSide = +(imagePos.left + $(this).width());
+			let bottomSide = +(imagePos.top + $(this).height());
+		
+			$(document).mousemove(function(e) {
+					if (e.pageX < +(imagePos.left - magnifyOffset / 6) || e.pageX > +(rightSide + magnifyOffset / 6) || e.pageY < +(imagePos.top - magnifyOffset / 6) || e.pageY > +(bottomSide + magnifyOffset / 6)) {
+					$('.magnify').hide();
+					$(document).unbind('mousemove');
+				}
+				let backgroundPos = "" - ((e.pageX - imagePos.left) * magnification - magnifyOffset) + "px " + -((e.pageY - imagePos.top) * magnification - magnifyOffset) + "px";
+				$('.magnify').css({
+					'left': e.pageX - magnifyOffset,
+					'top': e.pageY - magnifyOffset,
+					'background-position': backgroundPos
+				});
+			});
 		}, function() {
 	
 		});
@@ -2272,6 +2272,7 @@ function sortCompareListItems(){
 }
 
 function resetInspect(){
+	$('.magnify').remove();
 	$('#inspectScan').hide();
 	$('#inspectScan').insertBefore('#compareScanRegistrationDataTable');
 	$('.compareListItem').removeClass('blur');
