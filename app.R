@@ -83,7 +83,7 @@ myMessage = function(message, class) {
     if (message$value$message %in% names(errorCodes)) {
       message$value = getErrorCodeMessage(message$value$message)
     } else {
-      message$value = message$value # getErrorCodeMessage("E1000")
+      message$value = getErrorCodeMessage("E1000")
     }
   }
   
@@ -136,7 +136,7 @@ collectWarnings = function(expr) {
     warnings <<- c(warnings, list(w))
     invokeRestart("muffleWarning")
   }
-  # origin = withCallingHandlers(expr, warning = wHandler)
+  
   withCallingHandlers(expr, warning = wHandler)
   
   return(warnings)
@@ -346,7 +346,7 @@ createExam = function(exam, settings, input, collectWarnings, dir) {
         seedBoundaries = c(settings$seedMin, settings$seedMax),
         reglength = reglength,
         header = NULL,
-        intro = NULL, #input$intro, #todo: does not work - latex errir
+        intro = c(input$examIntro), 
         replacement = input$replacement,
         samepage = input$samepage,
         newpage = input$newpage,
@@ -433,9 +433,9 @@ createExam = function(exam, settings, input, collectWarnings, dir) {
     return(list(message=list(key=key, value=value), files=list(sourceFiles=preparedExam$sourceFiles, examFiles=preparedExam$examFiles)))
   },
   error = function(e){
-    # if(!grepl("E\\d{4}", e$message)){
-    #   e$message = "E1002"
-    # }
+    if(!grepl("E\\d{4}", e$message)){
+      e$message = "E1002"
+    }
 
     return(list(message=list(key="Error", value=e), files=list()))
   })
@@ -669,9 +669,9 @@ evaluateExamScans = function(input, collectWarnings, dir){
                 preparedEvaluation=preparedEvaluation))
   },
   error = function(e){
-    # if(!grepl("E\\d{4}", e$message)){
-    #   e$message = "E1003"
-    # }
+    if(!grepl("E\\d{4}", e$message)){
+      e$message = "E1003"
+    }
 
     return(list(message=list(key="Error", value=e), scans_reg_fullJoinData=NULL, examName=NULL, files=list(), data=list()))
   })
@@ -762,9 +762,9 @@ evaluateExamFinalize = function(preparedEvaluation, collectWarnings, dir){
                 preparedEvaluation=preparedEvaluation))
   },
   error = function(e){
-    # if(!grepl("E\\d{4}", e$message)){
-    #   e$message = "E1004"
-    # }
+    if(!grepl("E\\d{4}", e$message)){
+      e$message = "E1004"
+    }
     
     return(list(message=list(key="Error", value=e), examName=NULL, files=list()))
   })
@@ -932,7 +932,7 @@ server = function(input, output, session) {
       textInput_examInstitution = textInput("examInstitution", label = NULL, value = NULL),
       textInput_examTitle = textInput("examTitle", label = NULL, value = NULL),
       textInput_examCourse = textInput("examCourse", label = NULL, value = NULL),
-      textInput_examIntro = textInput("examIntro", label = NULL, value = NULL),
+      textInput_examIntro = textAreaInput("examIntro", label = NULL, value = NULL),
       textInput_numberOfBlanks = textInput("numberOfBlanks", label = NULL, value = 5),
 
       # EXAM EVALUATE
@@ -1044,14 +1044,6 @@ server = function(input, output, session) {
   examCreation = eventReactive(input$createExam, {
     startWait(session)
 
-    # preparedExam = prepareExam(session, isolate(input$createExam), isolate(input))
-    # 
-    # x = callr::r_bg(
-    #   func = createExam,
-    #   args = list(preparedExam, collectWarnings, getDir(session)),
-    #   supervise = TRUE
-    # )
-    
     settings = list(exerciseMin=exerciseMin,
                     exerciseMax=exerciseMax,
                     seedMin=seedMin,

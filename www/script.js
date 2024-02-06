@@ -316,19 +316,6 @@ document.onkeydown = function(evt) {
 			if (evtobj.keyCode == 65) // c
 				newSimpleExercise();
 		}
-	} else {
-		if (!$(evtobj.target).is('input')) {
-			switch (evtobj.keyCode) {
-				case 87: // w
-					sidebarMoveUp($('.mainSection.active'));
-					selectListItem($('.mainSection.active .sidebarListItem.active').index());
-					break;
-				case 83: // s
-					sidebarMoveDown($('.mainSection.active'));
-					selectListItem($('.mainSection.active .sidebarListItem.active').index());
-					break;
-			}
-		}
 	}
 };
 
