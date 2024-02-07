@@ -1235,7 +1235,7 @@ function contenteditable_getPlain(content) {
 	content = content.textContent;
 	content = content.replaceAll('\\', '');
 	content = content.replaceAll('&nbsp;', ' ');
-	content = content.replaceAll('\n', '');
+	content = content.replaceAll('\n', ' ');
 		
 	return content;
 }
@@ -1249,8 +1249,8 @@ function contenteditable_getSpecial(content) {
 		content = content.replaceAll('<br />', '\\\\');
 		content = content.replaceAll('<br/>', '\\\\');
 		content = content.replaceAll('</br>', '\\\\');
-		content = content.replaceAll('&nbsp;', '');
-		content = content.replaceAll('\n', '');
+		content = content.replaceAll('&nbsp;', ' ');
+		content = content.replaceAll('\n', ' ');
 	}
 	
 	return content;
