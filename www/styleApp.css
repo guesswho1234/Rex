@@ -720,17 +720,19 @@ main > * {
 	padding: 2px;
 	width: 60px;
 	text-align: center;
-	background: var(---highlight_values);
-}
-
-#resultContent .result.numericResult {
-	display: flex;
-	align-items: center;
 }
 
 #resultContent .choice {
 	height: 100%;
 	display:flex;
+}
+
+#resultContent .mchoiceResult.trueMchoiceResult {
+	background: var(---green_success_fade);
+}
+
+#resultContent .mchoiceResult.falseMchoiceResult {
+	background: var(---red_error_fade);
 }
 
 #resultContent .choice input {

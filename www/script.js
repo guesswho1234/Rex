@@ -669,6 +669,8 @@ $("#exerciseDownload").click(function(){
 function exerciseDownload() {	
 	const exerciseID = getID();
 	
+	setSimpleExerciseFileContents(exerciseID);
+	
 	const exerciseName = iuf.exercises[exerciseID].name;
 	const exerciseCode = iuf.exercises[exerciseID].file;
 		
@@ -681,6 +683,7 @@ $('#exerciseDownloadAll').click(function () {
 
 function exerciseDownloadAll() {	
 	const filteredTasks = iuf.exercises.filter((x, index) => {
+		setSimpleExerciseFileContents(index);
 		return !$('.exerciseItem:nth-child(' + (index + 1) + ')').hasClass('filtered')
 	});
 	
@@ -1125,11 +1128,18 @@ function resetOutputFields() {
 
 $('#exercise_info').on('click', '.editTrueFalse', function(e) {
 	const exerciseID = getID();
+	invalidateAfterEdit(exerciseID);
 	const newValue = iuf['exercises'][exerciseID]['result'][$(this).index('.mchoiceResult')] !== true;
+		
+	$(this).removeClass("trueMchoiceResult");
+	$(this).removeClass("falseMchoiceResult");
+	$(this).addClass(newValue + "MchoiceResult");
 		
 	iuf['exercises'][exerciseID]['result'][$(this).index('.mchoiceResult')] = newValue;
 	$(this).html(getTrueFalseText(newValue));
 	
+	setSimpleExerciseFileContents(exerciseID);	
+	examExercisesSummary();
 	f_langDeEn();
 });
 
@@ -1201,6 +1211,7 @@ $('body').on('focus', '[contenteditable]', function() {
 		}
 		
 		if ($this.hasClass('points')) {
+			content = contenteditable_getPlain(content);
 			content = getIntegerInput(0, null, 1, content);
 			iuf['exercises'][exerciseID]['points'] = content;
 		}
@@ -1223,7 +1234,7 @@ $('body').on('focus', '[contenteditable]', function() {
 function contenteditable_getPlain(content) {
 	content = content.textContent;
 	content = content.replaceAll('\\', '');
-	content = content.replaceAll('&nbsp;', '');
+	content = content.replaceAll('&nbsp;', ' ');
 	content = content.replaceAll('\n', '');
 		
 	return content;
@@ -1319,7 +1330,7 @@ function loadExerciseFromObject(exerciseID) {
 	if(iuf['exercises'][exerciseID]['type'] === "mchoice" || iuf['exercises'][exerciseID]['editable']) {
 		const field = 'result'
 		const zip = iuf['exercises'][exerciseID][field].map((x, i) => [x, iuf['exercises'][exerciseID]['choices'][i]]);
-		let content = '<div id="resultContent">' + zip.map(i => '<p>' + (editable ? '<button type="button" class="removeAnswer btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></button>' : '') + '<span class=\"result mchoiceResult ' + (editable ? 'editTrueFalse' : '') + '\">' + getTrueFalseText(i[0]) + '</span><span class="choice"><span class="choiceText" contenteditable="' + editable + '" spellcheck="false">' + i[1] + '</span></span></p>').join('') + '</div>';
+		let content = '<div id="resultContent">' + zip.map(i => '<p>' + (editable ? '<button type="button" class="removeAnswer btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></button>' : '') + '<span class=\"result mchoiceResult ' + (i[0] + 'MchoiceResult ') + (editable ? 'editTrueFalse' : '') + '\">' + getTrueFalseText(i[0]) + '</span><span class="choice"><span class="choiceText" contenteditable="' + editable + '" spellcheck="false">' + i[1] + '</span></span></p>').join('') + '</div>';
 		
 		if( iuf['exercises'][exerciseID]['editable'] ) {
 			content = '<button id="addNewAnswer" type="button" class="btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-plus"></i></span><span class="textButton"><span lang="de">Neue Antwortmöglichkeit</span><span lang="en">New Answer</span></span></button>' + content;
