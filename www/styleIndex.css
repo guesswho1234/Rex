@@ -30,6 +30,7 @@ html {
 body {
 	height: auto;
 	color: var(---main);
+	padding-right: 0 !important;
 }
 
 .logo {

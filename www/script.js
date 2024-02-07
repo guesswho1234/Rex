@@ -2295,14 +2295,14 @@ function applyInspectNext(){
 	}
 }
 
+const zeroPad = (num, places) => isNaN(num) ? "NA" : String(num).padStart(places, '0');
+
 function applyInspect(){	
 	const scanFocusedIndex = parseInt($('#compareScanRegistrationDataTable .compareListItem.focus .evalIndex').html());
 	iuf['examEvaluation']['scans_reg_fullJoinData'] = iuf['examEvaluation']['scans_reg_fullJoinData'].map(obj => {
 		return { ...obj, changeHistory: "0" }
 	});
 	iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].changeHistory = "1";
-	
-	const zeroPad = (num, places) => String(num).padStart(places, '0');
 	
 	const registrationUnchanged = $('#selectRegistration').find(":selected").text() === iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].registration;
 	const replacementUnchanged = ($('#replacementSheet').find("input").prop('checked') ? "1" : "0") === iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].replacement;
@@ -2408,7 +2408,7 @@ Shiny.addCustomMessageHandler('compareScanRegistrationData', function(jsonData) 
 	iuf['examEvaluation']['scans_reg_fullJoinData'] = JSON.parse(jsonData);
 		
 	iuf['examEvaluation']['scans_reg_fullJoinData'] = iuf['examEvaluation']['scans_reg_fullJoinData'].map(obj => {
-		return { ...obj, changeHistory: "0" }
+		return { ...obj, sheet: zeroPad(obj.sheet, 11), scrambling: zeroPad(obj.scrambling, 2), type: zeroPad(obj.type, 3), changeHistory: "0" }
 	});
 
 	populateCompareTable();

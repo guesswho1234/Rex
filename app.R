@@ -715,8 +715,6 @@ evaluateExamScansResponse = function(session, message, preparedEvaluation, scans
     session$sendCustomMessage("compareScanRegistrationData", scans_reg_fullJoinData_json)
   } 
   
-  print(nrow(scans_reg_fullJoinData))
-  
   if (!is.null(scans_reg_fullJoinData) && nrow(scans_reg_fullJoinData) == 0) {
     session$sendCustomMessage("backTocompareScanRegistrationData", 1)
   }
