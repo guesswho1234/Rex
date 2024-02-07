@@ -46,7 +46,7 @@ function initApp(){
 	f_langDeEn();
 	resetOutputFields();
 	
-	$('#copyright small').append('<div id="additionalCopyright"><div>Based on <a href="https://cran.r-project.org/web/packages/exams/index.html" target="_blank" rel="noopener noreferrer">R/exams</a> © ' + new Date().getFullYear() + ' Achim Zeileis</div><div>Licensed under <a href="LICENSE.html" target="_blank" rel="noopener noreferrer">GNU GPL-2</a></div><div><a href="https://github.com/guesswho1234/PROJECT_Rex" target="_blank" rel="noopener noreferrer">Rex</a> source code</div></div>');
+	$('#copyright small').append('<div id="additionalCopyright"><div>Based on <a href="https://cran.r-project.org/web/packages/exams/index.html" target="_blank" rel="noopener noreferrer">R/exams</a> © ' + new Date().getFullYear() + ' Achim Zeileis</div><div>Licensed under <a href="LICENSE.html" target="_blank" rel="noopener noreferrer">GNU GPL-3</a></div><div><a href="https://github.com/guesswho1234/PROJECT_Rex" target="_blank" rel="noopener noreferrer">Rex</a> source code</div></div>');
 	
 	const linkElements = ['<link rel="stylesheet" href="styleApp.css" type="text/css">',
 	'<link rel="stylesheet" href="/fontawesome/css/fontawesome.min.css" type="text/css">',
