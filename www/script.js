@@ -1030,6 +1030,7 @@ function createExercise(exerciseID, name='exercise',
 	iuf['exercises'][exerciseID]['seed'] = seed;
 	iuf['exercises'][exerciseID]['exam'] = exam;
 	iuf['exercises'][exerciseID]['question'] = question;
+	iuf['exercises'][exerciseID]['question_raw'] = d_questionText;
 	iuf['exercises'][exerciseID]['choices'] = choices;
 	iuf['exercises'][exerciseID]['result'] = result;
 	iuf['exercises'][exerciseID]['examHistory'] = examHistory;
@@ -1180,6 +1181,12 @@ function invalidateAfterEdit(exerciseID) {
 
 $('body').on('focus', '[contenteditable]', function() {
     const $this = $(this);
+	const exerciseID = getID();
+	
+	if ($this.hasClass('questionText')) {
+		$this.html(iuf['exercises'][exerciseID]['question_raw']);
+	}
+	
     $this.data('before', $this.html());
 }).on('blur', '[contenteditable]', function() {
     const $this = $(this);
@@ -1195,9 +1202,8 @@ $('body').on('focus', '[contenteditable]', function() {
 		} else {
 			content = filterNodes($this.get(0), {p: [], br: [], a: ['href']}).innerHTML;
 			content = content.replaceAll('<br>', '\\\\');
+			content = content.replaceAll('<br />', '\\\\');
 		}
-		
-		content = content.replaceAll('\\', '\\\\');
 		
 		$this.html(content);
 			
@@ -1208,6 +1214,7 @@ $('body').on('focus', '[contenteditable]', function() {
 		
 		if ($this.hasClass('questionText')) {
 			iuf['exercises'][exerciseID]['question'] = content;
+			iuf['exercises'][exerciseID]['question_raw'] = content;
 		}
 		
 		if ($this.hasClass('choiceText')) {
@@ -1337,7 +1344,7 @@ function loadExerciseFromObject(exerciseID) {
 
 function setSimpleExerciseFileContents(exerciseID){
 	let fileText = rnwTemplate;
-	fileText = fileText.replace("?rnwTemplate_q", '"' + iuf['exercises'][exerciseID]['question'] + '"');
+	fileText = fileText.replace("?rnwTemplate_q", '"' + iuf['exercises'][exerciseID]['question'].replaceAll('\\', '\\\\') + '"');
 	fileText = fileText.replace("?rnwTemplate_c", 'c(' + iuf['exercises'][exerciseID]['choices'].map(c=>'"' + c + '"').join(',') + ')');
 	fileText = fileText.replace("?rnwTemplate_s", 'c(' + iuf['exercises'][exerciseID]['result'].map(s=>s?"T":"F").join(',') + ')');
 	fileText = fileText.replace("?rnwTemplate_p", iuf['exercises'][exerciseID]['points']);

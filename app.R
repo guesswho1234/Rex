@@ -186,7 +186,7 @@ parseExercise = function(exercise, seed, collectWarnings, dir){
       file = tempfile(fileext = ".Rnw")
       writeLines(text=gsub("\r\n", "\n", exercise$exerciseCode), con=file)
 
-      htmlPreview = exams::exams2html(file, dir = dir, seed = seed, base64 = TRUE, mathjax = TRUE)
+      htmlPreview = exams::exams2html(file, dir = dir, seed = seed, base64 = TRUE)
       
       if (htmlPreview$exam1$exercise1$metainfo$type != "mchoice") {
         stop("E1005")
@@ -392,8 +392,7 @@ createExam = function(exam, settings, input, collectWarnings, dir) {
                           name = name,
                           dir = dir,
                           solution=TRUE,
-                          seed = seed,
-                          mathjax = TRUE)
+                          seed = seed)
 
         # create exam
         exams::exams2nops(file = file,
