@@ -829,8 +829,6 @@ exerciseMax = 45
 seedMin = 1
 seedMax = 999999999999
 initSeed = 1
-# numberOfExerciseBlocks = 1 #todo: not used?
-# maxNumberOfExamExercises = 0 #todo: not used?
 languages = c("en",
               "de")
 # languages = c("en",

@@ -1147,6 +1147,104 @@ Array.fromList = function(list) {
     return array;
 };
 
+function invalidateAfterEdit(exerciseID) {
+	setExamExercise(exerciseID, false);
+	iuf['exercises'][exerciseID]['e'] = 2;
+	iuf['exercises'][exerciseID]['message'] = '<span class="exerciseTryCatch tryCatch Error"><span class="responseSign ErrorSign"><i class="fa-solid fa-circle-exclamation"></i></span><span class="exerciseTryCatchText tryCatchText">Exercise needs to be parsed again.</span></span>';
+	
+	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .examExercise').addClass('disabled');
+	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseTryCatch').remove();
+	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').prepend(iuf['exercises'][exerciseID]['message']);
+}
+
+$('body').on('focus', '[contenteditable]', function() {
+    const $this = $(this);
+	const exerciseID = getID();
+	
+	if ($this.hasClass('questionText')) {
+		$this.html(iuf['exercises'][exerciseID]['question_raw']);
+	}
+	
+    $this.data('before', $this.html());
+}).on('blur', '[contenteditable]', function() {
+    const $this = $(this);
+    if ($this.data('before') !== $this.html()) {
+		const exerciseID = getID();	
+		
+		invalidateAfterEdit(exerciseID);
+		
+		$this.contents().each(function() {
+			if(this.nodeType === Node.COMMENT_NODE) {
+				$(this).remove();
+			}
+		});
+		
+		let content = $this.get(0);
+			
+		if ($this.hasClass('exerciseNameText')) {
+			content = contenteditable_getPlain(content);
+			
+			$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseName').text(content);
+			iuf['exercises'][exerciseID]['name'] = content;
+		}
+		
+		if ($this.hasClass('questionText')) {
+			content = contenteditable_getSpecial(content);
+			
+			iuf['exercises'][exerciseID]['question_raw'] = content;
+		}
+		
+		if ($this.hasClass('choiceText')) {
+			content = contenteditable_getPlain(content);
+			
+			iuf['exercises'][exerciseID]['choices'][$this.index('.choiceText')] = content;
+		}
+		
+		if ($this.hasClass('points')) {
+			content = getIntegerInput(0, null, 1, content);
+			iuf['exercises'][exerciseID]['points'] = content;
+		}
+		
+		if ($this.hasClass('topicText')) {
+			content = contenteditable_getPlain(content);
+			
+			iuf['exercises'][exerciseID]['topic'] = content;
+		}
+
+		$this.html(content);
+		
+		iuf['exercises'][exerciseID]['question'] = iuf['exercises'][exerciseID]['question_raw'];
+		
+		setSimpleExerciseFileContents(exerciseID);	
+		examExercisesSummary();
+    }
+});
+
+function contenteditable_getPlain(content) {
+	content = content.textContent;
+	content = content.replaceAll('\\', '');
+	content = content.replaceAll('&nbsp;', '');
+	content = content.replaceAll('\n', '');
+		
+	return content;
+}
+
+function contenteditable_getSpecial(content) {
+	if(content.childNodes.length === 1 && content.childNodes[0].nodeType === 3) {
+		content = content.textContent;
+	} else {
+		content = filterNodes(content, {br: []}).innerHTML;
+		content = content.replaceAll('<br>', '\\\\');
+		content = content.replaceAll('<br />', '\\\\');
+		content = content.replaceAll('<br/>', '\\\\');
+		content = content.replaceAll('</br>', '\\\\');
+		content = content.replaceAll('&nbsp;', '');
+		content = content.replaceAll('\n', '');
+	}
+	
+	return content;
+}
+
 function filterNodes(element, allow) {
     Array.fromList(element.childNodes).forEach(function(child) {
         if (child.nodeType === 1) {
@@ -1167,105 +1265,6 @@ function filterNodes(element, allow) {
     });
 
 	return element;
-}
-
-function invalidateAfterEdit(exerciseID) {
-	setExamExercise(exerciseID, false);
-	iuf['exercises'][exerciseID]['e'] = 2;
-	iuf['exercises'][exerciseID]['message'] = '<span class="exerciseTryCatch tryCatch Error"><span class="responseSign ErrorSign"><i class="fa-solid fa-circle-exclamation"></i></span><span class="exerciseTryCatchText tryCatchText">Exercise needs to be parsed again.</span></span>';
-	
-	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .examExercise').addClass('disabled');
-	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseTryCatch').remove();
-	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').prepend(iuf['exercises'][exerciseID]['message']);
-}
-
-$('body').on('focus', '[contenteditable]', function() {
-    const $this = $(this);
-	const exerciseID = getID();
-	
-	if ($this.hasClass('questionText')) {
-		$this.html(iuf['exercises'][exerciseID]['question_raw']);
-	}
-	
-    $this.data('before', $this.html());
-}).on('blur', '[contenteditable]', function() { //todo: cleanup node filter
-    const $this = $(this);
-    if ($this.data('before') !== $this.html()) {
-		const exerciseID = getID();	
-		
-		invalidateAfterEdit(exerciseID);
-		
-		let content = $this.get(0);
-			
-		if ($this.hasClass('exerciseNameText')) {
-			content = prepareNonQuestionText(content);
-			
-			$this.html(content);
-			
-			$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseName').text(content);
-			iuf['exercises'][exerciseID]['name'] = content;
-		}
-		
-		if ($this.hasClass('questionText')) {
-			content = prepareQuestionText(content);
-			
-			$this.html(content);
-			
-			iuf['exercises'][exerciseID]['question'] = content;
-			iuf['exercises'][exerciseID]['question_raw'] = content;
-		}
-		
-		if ($this.hasClass('choiceText')) {
-			content = prepareNonQuestionText(content);
-			
-			$this.html(content);
-			
-			iuf['exercises'][exerciseID]['choices'][$this.index('.choiceText')] = content;
-		}
-		
-		if ($this.hasClass('points')) {
-			content = getIntegerInput(0, null, 1, content);
-			$this.html(content);
-			iuf['exercises'][exerciseID]['points'] = content;
-		}
-		
-		if ($this.hasClass('topicText')) {
-			content = prepareNonQuestionText(content);
-			
-			$this.html(content);
-			
-			iuf['exercises'][exerciseID]['topic'] = content;
-		}
-
-		$this.html(content);
-		setSimpleExerciseFileContents(exerciseID);	
-		examExercisesSummary();
-    }
-});
-
-function prepareNonQuestionText(content) {
-	if(content.childNodes.length === 1 && content.childNodes[0].nodeType === 3) {
-		content = content.textContent;
-	} else {
-		content = filterNodes(content, {p: [], a: ['href']}).innerHTML;
-	}
-	content = content.replaceAll('\\', '');
-	
-	return content;
-}
-
-function prepareQuestionText(content) {
-	if(content.childNodes.length === 1 && content.childNodes[0].nodeType === 3) {
-		content = content.textContent;
-	} else {
-		content = filterNodes(content, {p: [], br: [], a: ['href']}).innerHTML;
-		content = content.replaceAll('<br>', '\\\\');
-		content = content.replaceAll('<br />', '\\\\');
-		content = content.replaceAll('<br/>', '\\\\');
-		content = content.replaceAll('</br>', '\\\\');
-	}
-	
-	return content;
 }
 
 document.addEventListener('dblclick', (event) => {
@@ -1376,6 +1375,7 @@ function loadExerciseFromObject(exerciseID) {
 
 function setSimpleExerciseFileContents(exerciseID){
 	let fileText = rnwTemplate;
+	
 	fileText = fileText.replace("?rnwTemplate_q", '"' + iuf['exercises'][exerciseID]['question'].replaceAll('\\', '\\\\') + '"');
 	fileText = fileText.replace("?rnwTemplate_c", 'c(' + iuf['exercises'][exerciseID]['choices'].map(c=>'"' + c + '"').join(',') + ')');
 	fileText = fileText.replace("?rnwTemplate_s", 'c(' + iuf['exercises'][exerciseID]['result'].map(s=>s?"T":"F").join(',') + ')');
