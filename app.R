@@ -161,7 +161,7 @@ parseExercise = function(exercise, seed, collectWarnings, dir){
   out = tryCatch({
     warnings = collectWarnings({
       # show all possible choices when viewing exercises (only relevant for editable exercises)
-      exercise$exerciseCode = sub("maxChoices = 5", "maxChoices = NULL", exercise$exerciseCode)
+      exercise$exerciseCode = sub("maxChoices=5", "maxChoices=NULL", exercise$exerciseCode)
       
       # remove image from question when viewing exercises (only relevant for editable exercises)
       exercise$exerciseCode = sub("rnwTemplate_showFigure = TRUE", "rnwTemplate_showFigure = FALSE", exercise$exerciseCode)
@@ -246,9 +246,9 @@ loadExercise = function(session, id, seed, html, figure, message) {
       tags = trimws(strsplit(html$exam1$exercise1$metainfo$tags, ",")[[1]], "both")
       tags = rjs_vectorToJsonStringArray(tags)
     }
-    
+
     precision = html$exam1$exercise1$metainfo$precision
-    points = html$exam1$exercise1$points
+    points = html$exam1$exercise1$metainfo$points
     topic = html$exam1$exercise1$metainfo$topic
     type = html$exam1$exercise1$metainfo$type
     question = html$exam1$exercise1$question

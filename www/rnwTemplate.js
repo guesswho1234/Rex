@@ -11,7 +11,7 @@ rnwTemplate_choices=?rnwTemplate_c
 rnwTemplate_solutions=?rnwTemplate_s
 rnwTemplate_points=?rnwTemplate_p
 rnwTemplate_figure=?rnwTemplate_f
-rnwTemplate_maxChoices = 5
+rnwTemplate_maxChoices=5
 if(!is.null(rnwTemplate_maxChoices)){
 	limit=min(length(rnwTemplate_choices), rnwTemplate_maxChoices)
 	sel=sample(1:length(rnwTemplate_choices), limit)
