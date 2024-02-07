@@ -1189,12 +1189,15 @@ $('body').on('focus', '[contenteditable]', function() {
 		invalidateAfterEdit(exerciseID);
 		
 		let content = $this.get(0);
-				
+								
 		if(content.childNodes.length === 1 && content.childNodes[0].nodeType === 3) {
 			content = content.textContent;
 		} else {
 			content = filterNodes($this.get(0), {p: [], br: [], a: ['href']}).innerHTML;
+			content = content.replaceAll('<br>', '\\\\');
 		}
+		
+		content = content.replaceAll('\\', '\\\\');
 		
 		$this.html(content);
 			

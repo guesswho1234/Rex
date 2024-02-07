@@ -21,8 +21,8 @@ if(!is.null(rnwTemplate_maxChoices)){
 rnwTemplate_showFigure = TRUE
 @
 \\begin{question}
-\\Sexpr{rnwTemplate_question}
 <<echo=FALSE, results=tex>>=
+cat(rnwTemplate_question)
 if(rnwTemplate_showFigure && length(rnwTemplate_figure) == 3) {
 	rnwTemplate_figureFile = paste0(rnwTemplate_figure[1], ".", rnwTemplate_figure[2])
 	rnwTemplate_figureRaw = openssl::base64_decode(rnwTemplate_figure[3])
