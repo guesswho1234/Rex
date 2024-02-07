@@ -1122,7 +1122,7 @@ server = function(input, output, session) {
     dir = getDir(session)
     removeModal()
     preparedEvaluation = isolate(examScanEvaluationData()$preparedEvaluation)
-
+    
     # process scanData
     scanData = Reduce(c, lapply(input$proceedEvaluation, function(x) paste0(unlist(unname(x)), collapse=" ")))
     scanData = paste0(scanData, collapse="\n")
@@ -1178,7 +1178,13 @@ server = function(input, output, session) {
   observeEvent(input$backTo_evaluateExamScansResponse, {
     removeModal()
     
+    unlink(examFinalizeEvaluationData()$preparedEvaluation$files$scanEvaluation)
+    unlink(examFinalizeEvaluationData()$preparedEvaluation$files$nops_evaluationCsv)
+    unlink(examFinalizeEvaluationData()$preparedEvaluation$files$nops_evaluationZip)
+    
     result = isolate(examScanEvaluationData())
+    
+    
     evaluateExamScansResponse(session,
                               result$message,
                               result$preparedEvaluation,
