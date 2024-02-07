@@ -1247,7 +1247,7 @@ function prepareNonQuestionText(content) {
 	if(content.childNodes.length === 1 && content.childNodes[0].nodeType === 3) {
 		content = content.textContent;
 	} else {
-		content = filterNodes(content), {p: [], a: ['href']}).innerHTML;
+		content = filterNodes(content, {p: [], a: ['href']}).innerHTML;
 	}
 	content = content.replaceAll('\\', '');
 	
@@ -1258,7 +1258,7 @@ function prepareQuestionText(content) {
 	if(content.childNodes.length === 1 && content.childNodes[0].nodeType === 3) {
 		content = content.textContent;
 	} else {
-		content = filterNodes(content), {p: [], br: [], a: ['href']}).innerHTML;
+		content = filterNodes(content, {p: [], br: [], a: ['href']}).innerHTML;
 		content = content.replaceAll('<br>', '\\\\');
 		content = content.replaceAll('<br />', '\\\\');
 		content = content.replaceAll('<br/>', '\\\\');
