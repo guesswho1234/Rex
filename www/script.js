@@ -1188,7 +1188,7 @@ $('body').on('focus', '[contenteditable]', function() {
 	}
 	
     $this.data('before', $this.html());
-}).on('blur', '[contenteditable]', function() {
+}).on('blur', '[contenteditable]', function() { //todo: cleanup node filter
     const $this = $(this);
     if ($this.data('before') !== $this.html()) {
 		const exerciseID = getID();	
@@ -1196,37 +1196,44 @@ $('body').on('focus', '[contenteditable]', function() {
 		invalidateAfterEdit(exerciseID);
 		
 		let content = $this.get(0);
-								
-		if(content.childNodes.length === 1 && content.childNodes[0].nodeType === 3) {
-			content = content.textContent;
-		} else {
-			content = filterNodes($this.get(0), {p: [], br: [], a: ['href']}).innerHTML;
-			content = content.replaceAll('<br>', '\\\\');
-			content = content.replaceAll('<br />', '\\\\');
-		}
-		
-		$this.html(content);
 			
 		if ($this.hasClass('exerciseNameText')) {
+			content = prepareNonQuestionText(content);
+			
+			$this.html(content);
+			
 			$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseName').text(content);
 			iuf['exercises'][exerciseID]['name'] = content;
 		}
 		
 		if ($this.hasClass('questionText')) {
+			content = prepareQuestionText(content);
+			
+			$this.html(content);
+			
 			iuf['exercises'][exerciseID]['question'] = content;
 			iuf['exercises'][exerciseID]['question_raw'] = content;
 		}
 		
 		if ($this.hasClass('choiceText')) {
+			content = prepareNonQuestionText(content);
+			
+			$this.html(content);
+			
 			iuf['exercises'][exerciseID]['choices'][$this.index('.choiceText')] = content;
 		}
 		
 		if ($this.hasClass('points')) {
 			content = getIntegerInput(0, null, 1, content);
+			$this.html(content);
 			iuf['exercises'][exerciseID]['points'] = content;
 		}
 		
 		if ($this.hasClass('topicText')) {
+			content = prepareNonQuestionText(content);
+			
+			$this.html(content);
+			
 			iuf['exercises'][exerciseID]['topic'] = content;
 		}
 
@@ -1235,6 +1242,31 @@ $('body').on('focus', '[contenteditable]', function() {
 		examExercisesSummary();
     }
 });
+
+function prepareNonQuestionText(content) {
+	if(content.childNodes.length === 1 && content.childNodes[0].nodeType === 3) {
+		content = content.textContent;
+	} else {
+		content = filterNodes($this.get(0), {p: [], a: ['href']}).innerHTML;
+	}
+	content = content.replaceAll('\\', '');
+	
+	return content;
+}
+
+function prepareQuestionText(content) {
+	if(content.childNodes.length === 1 && content.childNodes[0].nodeType === 3) {
+		content = content.textContent;
+	} else {
+		content = filterNodes($this.get(0), {p: [], br: [], a: ['href']}).innerHTML;
+		content = content.replaceAll('<br>', '\\\\');
+		content = content.replaceAll('<br />', '\\\\');
+		content = content.replaceAll('<br/>', '\\\\');
+		content = content.replaceAll('</br>', '\\\\');
+	}
+	
+	return content;
+}
 
 document.addEventListener('dblclick', (event) => {
   window.getSelection().selectAllChildren(event.target)
