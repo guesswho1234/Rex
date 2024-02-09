@@ -27,6 +27,14 @@
 				</div>
 			</a>
 		</li>
+		<li>
+			<a href="#tab-9289-3" data-toggle="tab" data-bs-toggle="tab" data-value="addonTools">
+				<div id="addonToolsNav">
+					<span lang="de">WERKZEUGE</span>
+					<span lang="en">TOOLS</span>
+				</div>
+			</a>
+		</li>
 	</ul>
 	<div id="navMisc">
 		<div id="hotkeysActiveContainer">
@@ -487,6 +495,23 @@
 			</div>
 		</div>
 	</div>
+	<div id="addonTools" class="mainSection">
+	<h1>
+		<span lang="de">Werlzeuge</span><span lang="en">Tools</span>
+	</h1>
+	<div class="contentWrapper">
+		<div class="sidebar">
+			<div id="addonTools_list" class="itemList">
+				<div id="addonTools_list_items">
+					{{ addonToolsSidebarListItems }}
+				</div>
+			</div>
+		</div>
+		<div class="content">
+			{{ addonToolsContentTabs }}
+		</div>
+	</div>
+</div>	
 </main>
 <script src="script.js" defer></script>	
 <script src="rnwTemplate.js" defer></script>	

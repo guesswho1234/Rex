@@ -1009,15 +1009,15 @@ main > * {
 	display: table;
 }
 
-#exam .content {
+.content {
 	width: 100%;
 }
 
-#exam .contentTab {
+.contentTab {
 	display:none;
 }
 
-#exam .contentTab.active {
+.contentTab.active {
 	display:block;
 }
 

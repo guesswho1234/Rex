@@ -381,6 +381,13 @@ $('#examNav').parent().click(function () {
 	$('#exam').addClass('active');
 });
 
+$('#addonToolsNav').parent().click(function () {	
+	if( $(this).parent().hasClass('disabled') ) return;
+	
+	$('.mainSection').removeClass('active');
+	$('#addonTools').addClass('active');
+});
+
 function selectListItem(index) {	
 	$('.mainSection.active .contentTab').removeClass('active');
 	$('.mainSection.active .contentTab').eq(index).addClass('active');
@@ -1681,6 +1688,16 @@ Shiny.addCustomMessageHandler('setExerciseE', function(e) {
 });
 
 /* --------------------------------------------------------------
+ EXAM 
+-------------------------------------------------------------- */
+$("#examFunctions_list_items .sidebarListItem").click(function(){
+	$('#examFunctions_list_items .sidebarListItem').removeClass('active');
+	$(this).addClass('active');
+	
+	selectListItem($('.mainSection.active .sidebarListItem.active').index());
+}); 
+
+/* --------------------------------------------------------------
  CREATE EXAM 
 -------------------------------------------------------------- */
 $("#examFunctions_list_items .sidebarListItem").click(function(){
@@ -2480,3 +2497,13 @@ $('body').on('click', '#proceedEval', function() {
 
 	Shiny.onInputChange("proceedEvaluation", datenTxt, {priority: 'event'});
 });
+
+/* --------------------------------------------------------------
+ ADDON TOOLS
+-------------------------------------------------------------- */
+$("#addonTools_list_items .sidebarListItem").click(function(){
+	$('#addonTools_list_items .sidebarListItem').removeClass('active');
+	$(this).addClass('active');
+	
+	selectListItem($('.mainSection.active .sidebarListItem.active').index());
+}); 

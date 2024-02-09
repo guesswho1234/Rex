@@ -861,6 +861,10 @@ errorCodes = setNames(apply(errorCodes[,-1], 1, FUN=as.list), errorCodes[,1])
 warningCodes = read.csv2("tryCatch/warningCodes.csv")
 warningCodes = setNames(apply(warningCodes[,-1], 1, FUN=as.list), warningCodes[,1])
 
+addonTools = list.files("addonTools/", recursive = TRUE) 
+addonTools_path = "addonTools/"
+addonTools = unique(Reduce(c, lapply(addonTools[grepl("/", addonTools)], \(x) strsplit(x, split="/")[[1]][1])))
+
 # dataframe that holds usernames, passwords and other user data
 user_base = data.frame(
   user = c("rex"),
@@ -955,7 +959,15 @@ server = function(input, output, session) {
       textInput_markLabel5 = textInput("markLabel5", label = NULL, value = NULL),
 
       selectInput_evaluationLanguage = selectInput("evaluationLanguage", label = NULL, choices = languages, selected = "de", multiple = FALSE),
-      checkboxInput_rotateScans = checkboxInput("rotateScans", label = NULL, value = TRUE)
+      checkboxInput_rotateScans = checkboxInput("rotateScans", label = NULL, value = TRUE),
+      
+      addonToolsSidebarListItems = lapply(addonTools, \(addonTool) {
+        htmlTemplate(filename = paste0(addonTools_path, addonTool, "/", addonTool, "_sidebarListItem.html"))
+      }),
+      
+      addonToolsContentTabs = lapply(addonTools, \(addonTool) {
+        htmlTemplate(filename = paste0(addonTools_path, addonTool, "/", addonTool, "_contentTab.html"))
+      })
     )
   })
   
