@@ -51,6 +51,10 @@ function initApp(){
 	const linkElements = ['<link rel="stylesheet" href="styleApp.css" type="text/css">',
 	'<link rel="stylesheet" href="/fontawesome/css/fontawesome.min.css" type="text/css">',
 	'<link rel="stylesheet" href="/fontawesome/css/all.min.css" type="text/css">']	
+	
+	if( $('#addonTools .sidebarListItem').length > 0 && $('#addonTools .contentTab').length > 0 && $('#addonTools .sidebarListItem').length == $('#addonTools .contentTab').length) {
+		$('.noAddonTools').removeClass('noAddonTools');
+	}
 
 	linkElements.forEach(style => $("head").append(style));
 	

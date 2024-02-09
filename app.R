@@ -865,6 +865,10 @@ addonTools = list.files("addonTools/", recursive = TRUE)
 addonTools_path = "addonTools/"
 addonTools = unique(Reduce(c, lapply(addonTools[grepl("/", addonTools)], \(x) strsplit(x, split="/")[[1]][1])))
 
+lapply(addonTools, \(addonTool) {
+  source(paste0(addonTools_path, addonTools, "/", addonTools, "_init.R"))
+})
+
 # dataframe that holds usernames, passwords and other user data
 user_base = data.frame(
   user = c("rex"),
@@ -966,7 +970,7 @@ server = function(input, output, session) {
       }),
       
       addonToolsContentTabs = lapply(addonTools, \(addonTool) {
-        htmlTemplate(filename = paste0(addonTools_path, addonTool, "/", addonTool, "_contentTab.html"))
+        htmlTemplate(filename = paste0(addonTools_path, addonTool, "/", addonTool, "_contentTab.html"), init=get(paste0(addonTool, "_fields")))
       })
     )
   })
