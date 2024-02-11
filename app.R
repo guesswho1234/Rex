@@ -759,6 +759,8 @@ evaluateExamFinalize = function(preparedEvaluation, collectWarnings, dir){
         evaluationData = cbind(evaluationData, exerciseTable)
         write.csv2(evaluationData, files$nops_evaluationCsv, row.names = FALSE)
         
+        #todo: add exam statistics
+        
       })
 
       NULL
