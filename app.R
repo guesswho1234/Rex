@@ -83,7 +83,7 @@ myMessage = function(message, class) {
     if (message$value$message %in% names(errorCodes)) {
       message$value = getErrorCodeMessage(message$value$message)
     } else {
-      message$value = getErrorCodeMessage("E1000")
+      message$value = message$value #getErrorCodeMessage("E1000")
     }
   }
   
@@ -745,19 +745,19 @@ evaluateExamFinalize = function(preparedEvaluation, collectWarnings, dir){
           language = fields$language,
           interactive = TRUE
         )
+
+        # add additional exercise columns
+        solutionData = readRDS(files$solution)
+        evaluationData = read.csv2(files$nops_evaluationCsv)
+
+        exerciseTable = as.data.frame(Reduce(rbind, lapply(evaluationData$exam, \(exam) {
+          Reduce(cbind, lapply(solutionData[[as.character(exam)]], \(exercise) exercise$metainfo$file))
+        })))
         
-        #todo: add exercise table to evaluation file
-        #todo: create statistics file for exercises overall, scramblings overall, and scramblings in detail with answers and solutions to exercises
-        # get all exercise filenames
-        # solutionData = readRDS(files$solution) #works
-        # evaluationData = read.csv2(files$nops_evaluationCsv) #works
-        # does not work from here on 
-        # exerciseTable = Reduce(rbind, lapply(evaluationData$exam, \(exam) {
-        #   Reduce(cbind, lapply(evaluationData[[exam]], \(exercise) exercise$metainfo$file))
-        # }))
-        # 
-        # evaluationData = cbind(evaluationData, exerciseTable)
-        # write.csv2(evaluationData, preparedEvaluation$files$nops_evaluationCsv, row.names = FALSE)
+        names(exerciseTable) = paste0("exercise.", 1:ncol(exerciseTable))
+
+        evaluationData = cbind(evaluationData, exerciseTable)
+        write.csv2(evaluationData, files$nops_evaluationCsv, row.names = FALSE)
         
       })
 
@@ -774,9 +774,9 @@ evaluateExamFinalize = function(preparedEvaluation, collectWarnings, dir){
                 preparedEvaluation=preparedEvaluation))
   },
   error = function(e){
-    if(!grepl("E\\d{4}", e$message)){
-      e$message = "E1004"
-    }
+    # if(!grepl("E\\d{4}", e$message)){
+    #   e$message = "E1004"
+    # }
     
     return(list(message=list(key="Error", value=e), examName=NULL, files=list()))
   })
