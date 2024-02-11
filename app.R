@@ -745,6 +745,20 @@ evaluateExamFinalize = function(preparedEvaluation, collectWarnings, dir){
           language = fields$language,
           interactive = TRUE
         )
+        
+        #todo: add exercise table to evaluation file
+        #todo: create statistics file for exercises overall, scramblings overall, and scramblings in detail with answers and solutions to exercises
+        # get all exercise filenames
+        # solutionData = readRDS(files$solution)
+        # evaluationData = read.csv2(preparedEvaluation$files$nops_evaluationCsv)
+        # 
+        # exerciseTable = Reduce(rbind, lapply(evaluationData$exam, \(exam) {
+        #   Reduce(cbind, lapply(evaluationData[[exam]], \(exercise) exercise$metainfo$file))
+        # }))
+        # 
+        # evaluationData = cbind(evaluationData, exerciseTable)
+        # write.csv2(evaluationData, preparedEvaluation$files$nops_evaluationCsv, row.names = FALSE)
+        
       })
 
       NULL
