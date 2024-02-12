@@ -2233,7 +2233,8 @@ function magnifier() {
 }
 
 function populateCompareTable() {
-	$('#compareScanRegistrationDataTable').empty();
+	$('.loadingCompareScanRegistrationDataTable').show();
+	$('#compareScanRegistrationDataTable').find('*').not('.loadingCompareScanRegistrationDataTable').remove();
 	
 	let invalidCount = 0; 
 	let validCount = 0; 
@@ -2273,6 +2274,7 @@ function populateCompareTable() {
 	$('#scanStats').append('<span id="scansValidCount" class="scanStat myLabel"><span class="scanStatText label_key greenLabelKey"><span lang="de">Gültige Scans</span><span lang="en">Valid scans</span></span><span class="scanStatValue label_value greenLabelValue">' + validCount + '</span></span>')
 	$('#scanStats').append('<span id="scansnotAssignedCount" class="scanStat myLabel"><span class="scanStatText label_key yellowLabelKey"><span lang="de">Nicht zugeordnete Matrikelnummern</span><span lang="en">Registration numbers not assigned</span></span><span class="scanStatValue label_value yellowLabelValue">' + notAssignedCount + '</span></span>')
 	
+	$('.loadingCompareScanRegistrationDataTable').hide();
 	setNotAssignedVisibility();
 	f_langDeEn();
 }

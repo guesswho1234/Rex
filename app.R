@@ -607,7 +607,7 @@ evaluateExamScans = function(input, collectWarnings, dir){
           stop("E1015")
         }
 
-        if(!all(names(registeredParticipantData) == c("registration", "name", "id"))){
+        if(!all(names(registeredParticipantData)[1:3] == c("registration", "name", "id"))){
           stop("E1016")
         }
 
@@ -689,7 +689,7 @@ evaluateExamScansResponse = function(session, message, preparedEvaluation, scans
         myCheckBox(id="showNotAssigned", "Nicht zugeordnete Matrikelnummern anzeigen", "Show registrations without assignment"),
         tags$div(id="scanStats"),
         tags$div(id="inspectScan"),
-        tags$div(id="compareScanRegistrationDataTable"),
+        tags$div(id="compareScanRegistrationDataTable", HTML('<div class="loadingCompareScanRegistrationDataTable"><span lang="de" class="loadingCompareScanRegistrationDataTable">BITTE WARTEN ...</span><span lang="en" class="loadingCompareScanRegistrationDataTable">PLEASE WAIT ...</span></div>')),
       ),
     
     footer = tagList(
@@ -715,6 +715,7 @@ evaluateExamScansResponse = function(session, message, preparedEvaluation, scans
     session$sendCustomMessage("compareScanRegistrationData", scans_reg_fullJoinData_json)
   } 
   
+  # display scanData again after going back from "evaluateExamFinalizeResponse"
   if (!is.null(scans_reg_fullJoinData) && nrow(scans_reg_fullJoinData) == 0) {
     session$sendCustomMessage("backTocompareScanRegistrationData", 1)
   }

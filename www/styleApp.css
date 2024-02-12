@@ -963,6 +963,10 @@ main > * {
 	cursor: pointer;
 }
 
+.loadingCompareScanRegistrationDataTable {
+	text-align: center;
+}
+
 #marks {
 	width: 300px;
 }
