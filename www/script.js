@@ -2495,7 +2495,7 @@ Shiny.addCustomMessageHandler('backTocompareScanRegistrationData', function(x) {
 });
 
 $('body').on('click', '#proceedEval', function() {
-	const properties = ['scan', 'sheet', 'scrambling', 'type', 'replacement', 'registration',].concat(new Array(45).fill(1).map( (_, i) => i+1 ));
+	const properties = ['scan', 'sheet', 'scrambling', 'type', 'replacement', 'registration'].concat(new Array(45).fill(1).map( (_, i) => i+1 ));
 	
 	const datenTxt = Object.assign({}, iuf['examEvaluation']['scans_reg_fullJoinData'].filter(x => scanValid(x)).map(x => Object.assign({}, properties.map(y => x[y] === undefined ? "00000" : x[y], {}))));
 
