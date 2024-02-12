@@ -727,7 +727,6 @@ evaluateExamFinalize = function(preparedEvaluation, collectWarnings, dir){
     nops_evaluation_fileNamePrefix = gsub("_+", "_", paste0(preparedEvaluation$meta$examName, "_nops_eval"))
     preparedEvaluation$files$nops_evaluationCsv = paste0(dir, "/", nops_evaluation_fileNamePrefix, ".csv")
     preparedEvaluation$files$nops_evaluationZip = paste0(dir, "/", nops_evaluation_fileNamePrefix, ".zip")
-    preparedEvaluation$files$nops_statisticsCsv = gsub("_+", "_", paste0(dir, "/", preparedEvaluation$meta$examName, "_nops_statistics", ".csv"))
 
     warnings = collectWarnings({
       with(preparedEvaluation, {
@@ -764,8 +763,6 @@ evaluateExamFinalize = function(preparedEvaluation, collectWarnings, dir){
         evaluationData[paste("answer", 1:length(solutionData[[1]]), sep=".")] = sprintf(paste0("%0", 5, "d"), unlist(evaluationData[paste("answer", 1:length(solutionData[[1]]), sep=".")]))
         evaluationData[paste("solution", 1:length(solutionData[[1]]), sep=".")] = sprintf(paste0("%0", 5, "d"), unlist(evaluationData[paste("solution", 1:length(solutionData[[1]]), sep=".")]))
         
-        write.csv2(evaluationData, files$nops_evaluationCsv, row.names = FALSE)
-        
         #add exam statistics
         exerciseNames = sapply(solutionData[[1]], \(exercise) exercise$metainfo$file)
         #todo: does not match because path is from exam creation
@@ -778,11 +775,13 @@ evaluateExamFinalize = function(preparedEvaluation, collectWarnings, dir){
           
           newColumns = as.data.frame(Reduce(rbind, lapply(seq_along(exerciseIds), \(row){
             columns = paste("points", exerciseIds[row], sep=".")
-            setNames(evaluationData[row,columns], exerciseNames[exerciseNameId])
+            setNames(evaluationData[row,columns,drop=FALSE], exerciseNames[exerciseNameId])
           })))
         }))
         
-        write.csv2(exerciseSummary, files$nops_statisticsCsv, row.names = FALSE)
+        evaluationData = cbind(evaluationData, exerciseSummary)
+        
+        write.csv2(evaluationData, files$nops_evaluationCsv, row.names = FALSE)
       })
 
       NULL
