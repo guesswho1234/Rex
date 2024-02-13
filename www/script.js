@@ -571,11 +571,8 @@ $("#seedValueExercises").change(function(){
 
 /* --------------------------------------------------------------
  EXERCISES SUMMARY 
+function examExercisesSummary() {	 
 -------------------------------------------------------------- */
-function examExercisesSummary() {
-	numberOfExamExercises();
-	numberOfExerciseBlocks();
-	 
 	$('#s_initialSeed').html(itemSingle($('#seedValueExercises').val(), 'greenLabelValue'));
 	
 	if($('.exerciseItem.exam').length == 0) { 
@@ -1073,28 +1070,40 @@ function parseExercise(exerciseID) {
 	Shiny.onInputChange("parseExercise", {exerciseCode: exerciseCode, exerciseID: exerciseID}, {priority: 'event'});	
 }
 
-function numberOfExamExercises() {
-	Shiny.onInputChange("setNumberOfExamExercises", getNumberOfExamExercises(), {priority: 'event'});
-}
-
-function numberOfExerciseBlocks() {
-	Shiny.onInputChange("setNumberOfExerciseBlocks", Math.max(1, getNumberOfExerciseBlocks()), {priority: 'event'});
-}
-
 function getNumberOfExerciseBlocks() {
-	return new Set(iuf['exercises'].filter((exercise) => exercise.exam).map(x => x.block)).size;
+	return new Set(iuf['exercises'].filter((x) => x.exam).map(x => x.block)).size;
 }
 
-function getNumberOfExamExercises() {
-	let setNumberOfExamExercises = 0;
-	iuf['exercises'].map(t => setNumberOfExamExercises += t.exam);
+function getMaxNumberOfExamExercises() {
+	const numberOfExerciseBlocks = getNumberOfExerciseBlocks();
 	
-	let numberOfExerciseBlocks = getNumberOfExerciseBlocks();
-		
+	let setNumberOfExamExercises = 0;
+	iuf['exercises'].map(x => setNumberOfExamExercises += x.exam);
 	setNumberOfExamExercises = setNumberOfExamExercises - setNumberOfExamExercises % numberOfExerciseBlocks;
+	
+	return Math.min(setNumberOfExamExercises, getMaxExercisesPerBlock()) * numberOfExerciseBlocks;
+}
 
-	const exercisesPerBlock = iuf['exercises'].filter((exercise) => exercise.exam).reduce( (acc, t) => (acc[t.block] = (acc[t.block] || 0) + 1, acc), {} );
-	return Math.min(setNumberOfExamExercises, Math.min(...Object.values(exercisesPerBlock))) * numberOfExerciseBlocks;
+function checkNumberOfExamExercises(numExercises) {
+	if(numExercises < 0)
+		return 0;
+	
+	const maxNumExercises = getMaxNumberOfExamExercises()
+	
+	if(numExercises > maxNumExercises)
+		return maxNumExercises;
+	
+	const numberOfExerciseBlocks = getNumberOfExerciseBlocks();
+	
+	if(numExercises % numberOfExerciseBlocks !== 0)
+		return numberOfExerciseBlocks;
+
+	return numExercises;
+}
+
+function getMaxExercisesPerBlock(){
+	const exercisesPerBlock = iuf['exercises'].filter((x) => x.exam).reduce( (acc, x) => (acc[x.block] = (acc[x.block] || 0) + 1, acc), {} );
+	return Math.min(...Object.values(exercisesPerBlock));
 }
 
 function viewExercise(exerciseID) {
@@ -1825,7 +1834,7 @@ $("#fixedPointsExamCreate").change(function(){
 }); 
 
 $("#numberOfExercises").change(function(){
-	$(this).val(getIntegerInput(0, 45, 0, $(this).val()));
+	$(this).val(getIntegerInput(0, 45, 0, checkNumberOfExamExercises($(this).val())));
 }); 
 
 $("#numberOfBlanks").change(function(){
@@ -1833,7 +1842,7 @@ $("#numberOfBlanks").change(function(){
 }); 
 
 $("#autofillNumberOfExercises").click(function(){
-	$('#numberOfExercises').val(getIntegerInput(0, 45, 0, getNumberOfExamExercises()));
+	$('#numberOfExercises').val(getIntegerInput(0, 45, 0, getMaxNumberOfExamExercises()));
 	Shiny.onInputChange("numberOfExercises", $('#numberOfExercises').val());
 }); 
 
