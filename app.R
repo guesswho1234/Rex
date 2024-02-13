@@ -752,35 +752,15 @@ evaluateExamFinalize = function(preparedEvaluation, collectWarnings, dir){
         evaluationData = read.csv2(files$nops_evaluationCsv)
 
         exerciseTable = as.data.frame(Reduce(rbind, lapply(evaluationData$exam, \(exam) {
-          Reduce(cbind, lapply(solutionData[[as.character(exam)]], \(exercise) exercise$metainfo$file))
-          #todo: does not match because path is from exam creation
-          # Reduce(cbind, lapply(solutionData[[as.character(exam)]], \(exercise) strsplit(exercise$metainfo$file, split=tail(strsplit(dir, split="/")[[1]], 1))[[1]][2]))
+          exerciseNames = Reduce(cbind, lapply(solutionData[[as.character(exam)]], \(exercise) exercise$metainfo$file))
         })))
         
         names(exerciseTable) = paste0("exercise.", 1:ncol(exerciseTable))
 
-        evaluationData = cbind(evaluationData[,-c(48:57)], exerciseTable)
+        evaluationData = cbind(evaluationData, exerciseTable)
         
         evaluationData[paste("answer", 1:length(solutionData[[1]]), sep=".")] = sprintf(paste0("%0", 5, "d"), unlist(evaluationData[paste("answer", 1:length(solutionData[[1]]), sep=".")]))
         evaluationData[paste("solution", 1:length(solutionData[[1]]), sep=".")] = sprintf(paste0("%0", 5, "d"), unlist(evaluationData[paste("solution", 1:length(solutionData[[1]]), sep=".")]))
-        
-        #add exam statistics
-        exerciseNames = sapply(solutionData[[1]], \(exercise) exercise$metainfo$file)
-        #todo: does not match because path is from exam creation
-        # exerciseNames = sapply(solutionData[[1]], \(exercise) strsplit(exercise$metainfo$file, split=tail(strsplit(dir, split="/")[[1]], 1))[[1]][2])
-        
-        exerciseSummary = Reduce(cbind, lapply(seq_along(exerciseNames), \(exerciseNameId){
-          exerciseIds = apply(evaluationData, 1, \(row){
-            which(unlist(row[which(grepl("exercise.[0-9]", names(evaluationData)))])%in%exerciseNames[exerciseNameId])
-          })
-          
-          newColumns = as.data.frame(Reduce(rbind, lapply(seq_along(exerciseIds), \(row){
-            columns = paste("points", exerciseIds[row], sep=".")
-            setNames(evaluationData[row,columns,drop=FALSE], exerciseNames[exerciseNameId])
-          })))
-        }))
-        
-        evaluationData = cbind(evaluationData, exerciseSummary)
         
         write.csv2(evaluationData, files$nops_evaluationCsv, row.names = FALSE)
       })
