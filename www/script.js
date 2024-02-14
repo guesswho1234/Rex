@@ -571,8 +571,8 @@ $("#seedValueExercises").change(function(){
 
 /* --------------------------------------------------------------
  EXERCISES SUMMARY 
-function examExercisesSummary() {	 
 -------------------------------------------------------------- */
+function examExercisesSummary() {	
 	$('#s_initialSeed').html(itemSingle($('#seedValueExercises').val(), 'greenLabelValue'));
 	
 	if($('.exerciseItem.exam').length == 0) { 
@@ -1041,7 +1041,7 @@ function createExercise(exerciseID, name='exercise',
 	iuf['exercises'][exerciseID]['seed'] = seed;
 	iuf['exercises'][exerciseID]['exam'] = exam;
 	iuf['exercises'][exerciseID]['question'] = question;
-	iuf['exercises'][exerciseID]['question_raw'] = d_questionText;
+	iuf['exercises'][exerciseID]['question_raw'] = question;
 	iuf['exercises'][exerciseID]['choices'] = choices;
 	iuf['exercises'][exerciseID]['result'] = result;
 	iuf['exercises'][exerciseID]['examHistory'] = examHistory;
@@ -1271,6 +1271,7 @@ function contenteditable_getSpecial(content) {
 		content = content.replaceAll('</br>', '\\\\');
 		content = content.replaceAll('&nbsp;', ' ');
 		content = content.replaceAll('\n', ' ');
+		
 	}
 	
 	return content;
@@ -1612,7 +1613,7 @@ $('#figure').on('click', '.exerciseFigureItem', function() {
 });
 
 getID = function() {
-	return(exerciseID_hook == -1 ? $('.exerciseItem.active').index('.exerciseItem') : exerciseID_hook);
+	return exerciseID_hook == -1 ? $('.exerciseItem.active').index('.exerciseItem') : exerciseID_hook;
 }
 
 Shiny.addCustomMessageHandler('setExerciseId', function(exerciseID) {
@@ -1656,6 +1657,10 @@ Shiny.addCustomMessageHandler('setExerciseType', function(exerciseType) {
 
 Shiny.addCustomMessageHandler('setExerciseQuestion', function(exerciseQuestion) {
 	iuf['exercises'][getID()]['question'] = exerciseQuestion;
+});
+
+Shiny.addCustomMessageHandler('setExerciseQuestionRaw', function(exerciseQuestionRaw) {
+	iuf['exercises'][getID()]['question_raw'] = exerciseQuestionRaw;
 });
 
 Shiny.addCustomMessageHandler('setExerciseFigure', function(jsonData) {

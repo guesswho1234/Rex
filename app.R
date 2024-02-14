@@ -181,12 +181,20 @@ parseExercise = function(exercise, seed, collectWarnings, dir){
         figure = list(name=figure_name, fileExt=figure_fileExt, blob=figure_blob)
       }
       
+      # extract raw question text
+      question_raw = strsplit(exercise$exerciseCode, "rnwTemplate_question=")[[1]][2]
+      question_raw = strsplit(question_raw, "rnwTemplate_choices")[[1]][1]
+      question_raw = paste0(rev(rev(strsplit(question_raw, "")[[1]][-1])[-c(1:3)]), collapse="") # trim to only get actualy question text
+      question_raw = gsub("\\\\", "\\", question_raw, fixed=TRUE)
+      
       seed = if(is.na(seed)) NULL else seed
       
       file = tempfile(fileext = ".Rnw")
       writeLines(text=gsub("\r\n", "\n", exercise$exerciseCode), con=file)
 
       htmlPreview = exams::exams2html(file, dir = dir, seed = seed, base64 = TRUE)
+      
+      htmlPreview$exam1$exercise1$question_raw = question_raw
       
       if (htmlPreview$exam1$exercise1$metainfo$type != "mchoice") {
         stop("E1005")
@@ -252,6 +260,7 @@ loadExercise = function(session, id, seed, html, figure, message) {
     topic = html$exam1$exercise1$metainfo$topic
     type = html$exam1$exercise1$metainfo$type
     question = html$exam1$exercise1$question
+    question_raw = html$exam1$exercise1$question_raw
     figure = rjs_vectorToJsonStringArray(unlist(figure))
     editable = ifelse(html$exam1$exercise1$metainfo$editable == 1, 1, 0)
     
@@ -264,6 +273,7 @@ loadExercise = function(session, id, seed, html, figure, message) {
     session$sendCustomMessage("setExerciseTags", tags)
     session$sendCustomMessage("setExerciseSeed", seed)
     session$sendCustomMessage("setExerciseQuestion", question)
+    session$sendCustomMessage("setExerciseQuestionRaw", question_raw)
     session$sendCustomMessage("setExerciseFigure", figure)
     session$sendCustomMessage("setExerciseEditable", editable)
     
@@ -425,17 +435,17 @@ createExam = function(exam, settings, input, collectWarnings, dir) {
     })
     key = "Success"
     value = paste(unique(unlist(warnings)), collapse="<br>")
-    if(value != "") {
-      key = "Warning"
-      value = "W1002"
-    }
+    # if(value != "") {
+    #   key = "Warning"
+    #   value = "W1002"
+    # }
 
     return(list(message=list(key=key, value=value), files=list(sourceFiles=preparedExam$sourceFiles, examFiles=preparedExam$examFiles)))
   },
   error = function(e){
-    if(!grepl("E\\d{4}", e$message)){
-      e$message = "E1002"
-    }
+    # if(!grepl("E\\d{4}", e$message)){
+    #   e$message = "E1002"
+    # }
 
     return(list(message=list(key="Error", value=e), files=list()))
   })
@@ -879,12 +889,13 @@ errorCodes = setNames(apply(errorCodes[,-1], 1, FUN=as.list), errorCodes[,1])
 warningCodes = read.csv2("tryCatch/warningCodes.csv")
 warningCodes = setNames(apply(warningCodes[,-1], 1, FUN=as.list), warningCodes[,1])
 
-addonTools = list.files("addonTools/", recursive = TRUE) 
 addonTools_path = "addonTools/"
+addonTools_path_www = "www/addonTools/"
+addonTools = list.files(addonTools_path_www, recursive = TRUE) 
 addonTools = unique(Reduce(c, lapply(addonTools[grepl("/", addonTools)], \(x) strsplit(x, split="/")[[1]][1])))
 
 lapply(addonTools, \(addonTool) {
-  source(paste0(addonTools_path, addonTools, "/", addonTools, "_init.R"))
+  source(paste0(addonTools_path_www, addonTools, "/", addonTools, ".R"))
 })
 
 # dataframe that holds usernames, passwords and other user data
@@ -930,14 +941,15 @@ server = function(input, output, session) {
     initSeed <<- as.numeric(gsub("-", "", Sys.Date()))
 
     # LOAD APP ----------------------------------------------------------------
+    fluidPage(
      htmlTemplate(
       filename = "app.html",
-
+    
       # EXERCISES
       textInput_seedValueExercises = textInput("seedValueExercises", label = NULL, value = initSeed),
       button_downloadExercises = myDownloadButton('downloadExercises'),
       button_downloadExercise = myDownloadButton('downloadExercise'),
-
+    
       # EXAM CREATE
       dateInput_examDate = dateInput("examDate", label = NULL, value = NULL, format = "yyyy-mm-dd"),
       textInput_seedValueExam = textInput("seedValueExam", label = NULL, value = initSeed),
@@ -956,7 +968,7 @@ server = function(input, output, session) {
       textInput_examCourse = textInput("examCourse", label = NULL, value = NULL),
       textInput_examIntro = textAreaInput("examIntro", label = NULL, value = NULL),
       textInput_numberOfBlanks = textInput("numberOfBlanks", label = NULL, value = 5),
-
+    
       # EXAM EVALUATE
       textInput_fixedPointsExamEvaluate = textInput("fixedPointsExamEvaluate", label = NULL, value = NULL),
       selectInput_evaluateReglength = selectInput("evaluationRegLength", label = NULL, choices = 1:10, selected = 8, multiple = FALSE),
@@ -964,33 +976,45 @@ server = function(input, output, session) {
       checkboxInput_negativePoints = checkboxInput("negativePoints", label = NULL, value = NULL),
       selectInput_rule = selectInput("rule", label = NULL, choices = rules, selected = NULL, multiple = FALSE),
       checkboxInput_mark = checkboxInput("mark", label = NULL, value = NULL), 
-
+    
       textInput_markThreshold1 = textInput("markThreshold1", label = NULL, value = 0),
       textInput_markLabel1 = textInput("markLabel1", label = NULL, value = NULL),
-
+    
       textInput_markThreshold2 = textInput("markThreshold2", label = NULL, value = 0.5),
       textInput_markLabe12 = textInput("markLabe12", label = NULL, value = NULL),
-
+    
       textInput_markThreshold3 = textInput("markThreshold3", label = NULL, value = 0.6),
       textInput_markLabel3 = textInput("markLabel3", label = NULL, value = NULL),
-
+    
       textInput_markThreshold4 = textInput("markThreshold4", label = NULL, value = 0.75),
       textInput_markLabel4 = textInput("markLabel4", label = NULL, value = NULL),
-
+    
       textInput_markThreshold5 = textInput("markThreshold5", label = NULL, value = 0.85),
       textInput_markLabel5 = textInput("markLabel5", label = NULL, value = NULL),
-
+    
       selectInput_evaluationLanguage = selectInput("evaluationLanguage", label = NULL, choices = languages, selected = "de", multiple = FALSE),
       checkboxInput_rotateScans = checkboxInput("rotateScans", label = NULL, value = TRUE),
       
       addonToolsSidebarListItems = lapply(addonTools, \(addonTool) {
-        htmlTemplate(filename = paste0(addonTools_path, addonTool, "/", addonTool, "_sidebarListItem.html"))
+        htmlTemplate(filename = paste0(addonTools_path_www, addonTool, "/", addonTool, "_sidebarListItem.html"))
       }),
       
       addonToolsContentTabs = lapply(addonTools, \(addonTool) {
-        htmlTemplate(filename = paste0(addonTools_path, addonTool, "/", addonTool, "_contentTab.html"), init=get(paste0(addonTool, "_fields")))
+        htmlTemplate(filename = paste0(addonTools_path_www, addonTool, "/", addonTool, "_contentTab.html"), init=get(paste0(addonTool, "_fields")))
       })
-    )
+    ),
+    
+    tags$script(src="script.js"),
+    tags$script(src="rnwTemplate.js"),
+    
+    lapply(addonTools, \(addonTool) {
+      tags$script(src=paste0(addonTools_path, addonTool, "/", addonTool, "_script.js"))
+    }),
+    
+    lapply(addonTools, \(addonTool) {
+      tags$style(src=paste0(addonTools_path, addonTool, "/", addonTool, "_style.css"))
+    })
+   )
   })
   
   # CLEANUP -------------------------------------------------------------
@@ -1232,6 +1256,33 @@ server = function(input, output, session) {
   observeEvent(input$dismiss_evaluateExamFinalizeResponse, {
     removeModal()
     stopWait(session)
+  })
+  
+  # ADDONS ------------------------------------------------------------------
+  addonCall = eventReactive(input$callAddonFunction, {
+    # startWait(session)
+    
+    # background exercise
+    x = callr::r_bg(
+      # func = evaluateExamScans,
+      func = get(input$callAddonFunction$func),
+      args = list(),
+      supervise = TRUE
+    )
+    
+    return(x)
+  })
+  
+  observe({
+    if (addonCall()$is_alive()) {
+      invalidateLater(millis = 100, session = session)
+    } else {
+      result = addonCall()$get_result()
+      
+      #todo: workinprogress
+      print(result)
+      session$sendCustomMessage("debugMessage", result)
+    }
   })
 }
 
