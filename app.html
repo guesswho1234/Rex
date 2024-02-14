@@ -27,9 +27,9 @@
 				</div>
 			</a>
 		</li>
-		<li class="noAddonTools">
-			<a href="#tab-9289-3" data-toggle="tab" data-bs-toggle="tab" data-value="addonTools">
-				<div id="addonToolsNav">
+		<li class="noAddons">
+			<a href="#tab-9289-3" data-toggle="tab" data-bs-toggle="tab" data-value="addons">
+				<div id="addonsNav">
 					<span lang="de">WERKZEUGE</span>
 					<span lang="en">TOOLS</span>
 				</div>
@@ -495,21 +495,21 @@
 			</div>
 		</div>
 	</div>
-	<div id="addonTools" class="mainSection noAddonTools">
-	<h1>
-		<span lang="de">Werkzeuge</span><span lang="en">Tools</span>
-	</h1>
-	<div class="contentWrapper">
-		<div class="sidebar">
-			<div id="addonTools_list" class="itemList">
-				<div id="addonTools_list_items">
-					{{ addonToolsSidebarListItems }}
+	<div id="addons" class="mainSection noAddons">
+		<h1>
+			<span lang="de">Werkzeuge</span><span lang="en">Tools</span>
+		</h1>
+		<div class="contentWrapper">
+			<div class="sidebar">
+				<div id="addonTools_list" class="itemList">
+					<div id="addonTools_list_items">
+						{{ addonSidebarListItems }}
+					</div>
 				</div>
 			</div>
+			<div class="content">
+				{{ addonContentTabs }}
+			</div>
 		</div>
-		<div class="content">
-			{{ addonToolsContentTabs }}
-		</div>
-	</div>
-</div>	
+	</div>	
 </main>	

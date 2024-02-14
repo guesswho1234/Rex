@@ -889,13 +889,13 @@ errorCodes = setNames(apply(errorCodes[,-1], 1, FUN=as.list), errorCodes[,1])
 warningCodes = read.csv2("tryCatch/warningCodes.csv")
 warningCodes = setNames(apply(warningCodes[,-1], 1, FUN=as.list), warningCodes[,1])
 
-addonTools_path = "addonTools/"
-addonTools_path_www = "www/addonTools/"
-addonTools = list.files(addonTools_path_www, recursive = TRUE) 
-addonTools = unique(Reduce(c, lapply(addonTools[grepl("/", addonTools)], \(x) strsplit(x, split="/")[[1]][1])))
+addons_path = "addons/"
+addons_path_www = "www/addons/"
+addons = list.files(addons_path_www, recursive = TRUE) 
+addons = unique(Reduce(c, lapply(addons[grepl("/", addons)], \(x) strsplit(x, split="/")[[1]][1])))
 
-lapply(addonTools, \(addonTool) {
-  source(paste0(addonTools_path_www, addonTools, "/", addonTools, ".R"))
+lapply(addons, \(addon) {
+  source(paste0(addons_path_www, addons, "/", addons, ".R"))
 })
 
 # dataframe that holds usernames, passwords and other user data
@@ -995,24 +995,24 @@ server = function(input, output, session) {
       selectInput_evaluationLanguage = selectInput("evaluationLanguage", label = NULL, choices = languages, selected = "de", multiple = FALSE),
       checkboxInput_rotateScans = checkboxInput("rotateScans", label = NULL, value = TRUE),
       
-      addonToolsSidebarListItems = lapply(addonTools, \(addonTool) {
-        htmlTemplate(filename = paste0(addonTools_path_www, addonTool, "/", addonTool, "_sidebarListItem.html"))
+      addonSidebarListItems = lapply(addons, \(addon) {
+        htmlTemplate(filename = paste0(addons_path_www, addon, "/", addon, "_sidebarListItem.html"))
       }),
       
-      addonToolsContentTabs = lapply(addonTools, \(addonTool) {
-        htmlTemplate(filename = paste0(addonTools_path_www, addonTool, "/", addonTool, "_contentTab.html"), init=get(paste0(addonTool, "_fields")))
+      addonContentTabs = lapply(addons, \(addon) {
+        htmlTemplate(filename = paste0(addons_path_www, addon, "/", addon, "_contentTab.html"), init=get(paste0(addon, "_fields")))
       })
     ),
     
     tags$script(src="script.js"),
     tags$script(src="rnwTemplate.js"),
     
-    lapply(addonTools, \(addonTool) {
-      tags$script(src=paste0(addonTools_path, addonTool, "/", addonTool, "_script.js"))
+    lapply(addons, \(addon) {
+      tags$script(src=paste0(addons_path, addon, "/", addon, "_script.js"))
     }),
     
-    lapply(addonTools, \(addonTool) {
-      tags$style(src=paste0(addonTools_path, addonTool, "/", addonTool, "_style.css"))
+    lapply(addons, \(addon) {
+      tags$style(src=paste0(addons_path, addon, "/", addon, "_style.css"))
     })
    )
   })

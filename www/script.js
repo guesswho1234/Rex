@@ -52,8 +52,8 @@ function initApp(){
 	'<link rel="stylesheet" href="/fontawesome/css/fontawesome.min.css" type="text/css">',
 	'<link rel="stylesheet" href="/fontawesome/css/all.min.css" type="text/css">']	
 	
-	if( $('#addonTools .sidebarListItem').length > 0 && $('#addonTools .contentTab').length > 0 && $('#addonTools .sidebarListItem').length == $('#addonTools .contentTab').length) {
-		$('.noAddonTools').removeClass('noAddonTools');
+	if( $('#addons .sidebarListItem').length > 0 && $('#addons .contentTab').length > 0 && $('#addons .sidebarListItem').length == $('#addons .contentTab').length) {
+		$('.noAddons').removeClass('noAddons');
 	}
 
 	linkElements.forEach(style => $("head").append(style));
@@ -385,11 +385,11 @@ $('#examNav').parent().click(function () {
 	$('#exam').addClass('active');
 });
 
-$('#addonToolsNav').parent().click(function () {	
+$('#addonsNav').parent().click(function () {	
 	if( $(this).parent().hasClass('disabled') ) return;
 	
 	$('.mainSection').removeClass('active');
-	$('#addonTools').addClass('active');
+	$('#addons').addClass('active');
 });
 
 function selectListItem(index) {	
@@ -2521,8 +2521,8 @@ $('body').on('click', '#proceedEval', function() {
 /* --------------------------------------------------------------
  ADDON TOOLS
 -------------------------------------------------------------- */
-$("#addonTools_list_items .sidebarListItem").click(function(){
-	$('#addonTools_list_items .sidebarListItem').removeClass('active');
+$("#addons_list_items .sidebarListItem").click(function(){
+	$('#addons_list_items .sidebarListItem').removeClass('active');
 	$(this).addClass('active');
 	
 	selectListItem($('.mainSection.active .sidebarListItem.active').index());
