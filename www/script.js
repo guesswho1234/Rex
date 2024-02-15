@@ -1299,11 +1299,8 @@ $('body').on('focus', '[contenteditable]', function() {
 		setSimpleExerciseFileContents(exerciseID);	
 		examExercisesSummary();
     } else {
-		if ($this.hasClass('questionText')) {
-		$this.html(iuf['exercises'][exerciseID]['question']);
-		}
-		
-		if ($this.hasClass('choiceText')) {
+		if(iuf['exercises'][exerciseID]['e'] == 0) {
+			$this.html(iuf['exercises'][exerciseID]['question']);
 			$this.html(iuf['exercises'][exerciseID]['choices'][$this.index('.choiceText')]);
 		}
 	}
