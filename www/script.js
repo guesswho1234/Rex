@@ -717,11 +717,12 @@ $("#exerciseDownload").click(function(){
 function exerciseDownload() {	
 	const exerciseID = getID();
 	
-	setSimpleExerciseFileContents(exerciseID);
+	if(iuf.exercises[exerciseID].editable)
+		setSimpleExerciseFileContents(exerciseID);
 	
 	const exerciseName = iuf.exercises[exerciseID].name;
 	const exerciseCode = iuf.exercises[exerciseID].file;
-		
+			
 	Shiny.onInputChange("exerciseToDownload", {exerciseName:exerciseName, exerciseCode: exerciseCode}, {priority: 'event'});	
 }
 
@@ -731,7 +732,8 @@ $('#exerciseDownloadAll').click(function () {
 
 function exerciseDownloadAll() {	
 	const filteredTasks = iuf.exercises.filter((x, index) => {
-		setSimpleExerciseFileContents(index);
+		if(iuf.exercises[index].editable)
+			setSimpleExerciseFileContents(index);
 		return !$('.exerciseItem:nth-child(' + (index + 1) + ')').hasClass('filtered')
 	});
 	
