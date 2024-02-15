@@ -83,7 +83,7 @@ myMessage = function(message, class) {
     if (message$value$message %in% names(errorCodes)) {
       message$value = getErrorCodeMessage(message$value$message)
     } else {
-      message$value = getErrorCodeMessage("E1000")
+      message$value = paste0("E1000: ", message$value$message)
     }
   }
   
@@ -91,15 +91,14 @@ myMessage = function(message, class) {
     if (message$value %in% names(warningCodes)) {
       message$value = getWarningCodeMessage(message$value)
     } else {
-      message$value = getWarningCodeMessage("W1000")
+      message$value = paste0("W1000: ", message$value)
     }
   }
   
   message$value = gsub("\"", "'", message$value)
-  message$value = gsub("[\r\n]", "[\n]", message$value)
-  message$value = gsub("[\r]", "[\n]", message$value)
-  message$value = gsub("[\n]", "<br>", trimws(message$value))
-  message$value = gsub("\"", "'", message$value)
+  message$value = gsub("[\r\n]", "<br>", trimws(message$value))
+  message$value = gsub("[\r]", "",message$value)
+  message$value = gsub("[\n]", "", message$value)
 
   messageSign = paste0('<span class="responseSign ', message$key, 'Sign">', messageSymbols[type + 1], '</span>')
   messageText = paste0('<span class="', paste0(class, 'TryCatchText'), ' tryCatchText">', message$value , '</span>')
@@ -161,7 +160,6 @@ parseExercise = function(exercise, seed, collectWarnings, dir){
     warnings = collectWarnings({
       # unify line breaks
       exercise$exerciseCode = gsub("\r\n", "\n", exercise$exerciseCode)
-      exercise$exerciseCode = gsub("\r", "\n", exercise$exerciseCode)
       
       # show all possible choices when viewing exercises (only relevant for editable exercises)
       exercise$exerciseCode = sub("maxChoices=5", "maxChoices=NULL", exercise$exerciseCode)
@@ -224,17 +222,17 @@ parseExercise = function(exercise, seed, collectWarnings, dir){
     })
     key = "Success"
     value = paste(unique(unlist(warnings)), collapse="<br>")
-    if(value != "") {
-      key = "Warning"
-      value = paste0("W1001: ", value)
-    }
+    # if(value != "") {
+    #   key = "Warning"
+    #   value = paste0("W1001: ", value)
+    # }
 
     return(list(message=list(key=key, value=value), id=exercise$exerciseID, seed=seed, html=htmlPreview, figure=figure))
   },
   error = function(e){
-    if(!grepl("E\\d{4}", e$message)){
-      e$message = paste0("E1001: ", e$message)
-    }
+    # if(!grepl("E\\d{4}", e$message)){
+    #   e$message = paste0("E1001: ", e$message)
+    # }
     
     return(list(message=list(key="Error", value=e), id=exercise$exerciseID, seed=NULL, html=NULL))
   })
@@ -266,7 +264,7 @@ loadExercise = function(session, id, seed, html, figure, message) {
       tags = trimws(strsplit(html$exam1$exercise1$metainfo$tags, ",")[[1]], "both")
       tags = rjs_vectorToJsonStringArray(tags)
     }
-
+    
     precision = html$exam1$exercise1$metainfo$precision
     points = html$exam1$exercise1$metainfo$points
     topic = html$exam1$exercise1$metainfo$topic
@@ -307,9 +305,7 @@ createExam = function(exam, settings, input, collectWarnings, dir) {
       exam$exerciseNames = as.list(make.unique(unlist(exam$exerciseNames), sep="_"))
       exerciseFiles = unlist(lapply(setNames(seq_along(exam$exerciseNames), exam$exerciseNames), function(i){
         file = paste0(dir, "/", exam$exerciseNames[[i]], ".rnw")
-        exerciseCode = gsub("\r\n", "\n", exam$exerciseCodes[[i]])
-        exerciseCode = gsub("\r", "\n", exam$exerciseCodes[[i]])
-        writeLines(text=exerciseCode, con=file, sep="")
+        writeLines(text=gsub("\r\n", "\n", exam$exerciseCodes[[i]]), con=file, sep="")
         
         return(file)
       }))
@@ -446,17 +442,17 @@ createExam = function(exam, settings, input, collectWarnings, dir) {
     })
     key = "Success"
     value = paste(unique(unlist(warnings)), collapse="<br>")
-    if(value != "") {
-      key = "Warning"
-      value = paste0("W1002: ", value)
-    }
+    # if(value != "") {
+    #   key = "Warning"
+    #   value = paste0("W1002: ", value)
+    # }
 
     return(list(message=list(key=key, value=value), files=list(sourceFiles=preparedExam$sourceFiles, examFiles=preparedExam$examFiles)))
   },
   error = function(e){
-    if(!grepl("E\\d{4}", e$message)){
-      e$message = paste0("E1002: ", e$message)
-    }
+    # if(!grepl("E\\d{4}", e$message)){
+    #   e$message = paste0("E1002: ", e$message)
+    # }
 
     return(list(message=list(key="Error", value=e), files=list()))
   })
@@ -500,7 +496,6 @@ evaluateExamScans = function(input, collectWarnings, dir){
       registeredParticipantsFile = unlist(lapply(seq_along(input$evaluateExam$examRegisteredParticipantsnName), function(i){
         file = paste0(dir, "/", input$evaluateExam$examRegisteredParticipantsnName[[i]], ".csv")
         content = gsub("\r\n", "\n", input$evaluateExam$examRegisteredParticipantsnFile[[i]])
-        content = gsub("\r", "\n", content)
         content = gsub(",", ";", content)
         
         writeLines(text=content, con=file)
@@ -681,19 +676,19 @@ evaluateExamScans = function(input, collectWarnings, dir){
     })
     key = "Success"
     value = paste(unique(unlist(warnings)), collapse="<br>")
-    if(value != "") {
-      key = "Warning"
-      value = paste0("W1003: ", value)
-    }
+    # if(value != "") {
+    #   key = "Warning"
+    #   value = paste0("W1003: ", value)
+    # }
 
     return(list(message=list(key=key, value=value),
                 scans_reg_fullJoinData=scans_reg_fullJoinData,
                 preparedEvaluation=preparedEvaluation))
   },
   error = function(e){
-    if(!grepl("E\\d{4}", e$message)){
-      e$message = paste0("E1003: ", e$message)
-    }
+    # if(!grepl("E\\d{4}", e$message)){
+    #   e$message = paste0("E1003: ", e$message)
+    # }
 
     return(list(message=list(key="Error", value=e), scans_reg_fullJoinData=NULL, examName=NULL, files=list(), data=list()))
   })
@@ -791,18 +786,18 @@ evaluateExamFinalize = function(preparedEvaluation, collectWarnings, dir){
     })
     key = "Success"
     value = paste(unique(unlist(warnings)), collapse="<br>")
-    if(value != "") {
-      key = "Warning"
-      value = paste0("W1004: ", value)
-    }
+    # if(value != "") {
+    #   key = "Warning"
+    #   value = paste0("W1004: ", value)
+    # }
     
     return(list(message=list(key=key, value=value), 
                 preparedEvaluation=preparedEvaluation))
   },
   error = function(e){
-    if(!grepl("E\\d{4}", e$message)){
-      e$message = paste0("E1004: ", e$message)
-    }
+    # if(!grepl("E\\d{4}", e$message)){
+    #   e$message = paste0("E1004: ", e$message)
+    # }
     
     return(list(message=list(key="Error", value=e), examName=NULL, files=list()))
   })
@@ -1051,9 +1046,7 @@ server = function(input, output, session) {
       paste0(isolate(input$exerciseToDownload$exerciseName), ".rnw")
     },
     content = function(fname) {
-      exercise = gsub("\r\n", "\n", isolate(input$exerciseToDownload$exerciseCode))
-      exercise = gsub("\r", "\n", exercise)
-      writeLines(text=exercise, con=fname)
+      writeLines(text=gsub("\r\n", "\n", isolate(input$exerciseToDownload$exerciseCode)), con=fname)
       removeRuntimeFiles(session)
     },
     contentType = "text/rnw",
@@ -1079,7 +1072,7 @@ server = function(input, output, session) {
   # (sync, send values to frontend and load into dom)
   exerciseParsing = eventReactive(input$parseExercise, {
     startWait(session)
-    
+
     x = callr::r_bg(
       func = parseExercise,
       args = list(isolate(input$parseExercise), isolate(input$seedValueExercises), collectWarnings, getDir(session)),

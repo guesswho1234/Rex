@@ -717,11 +717,12 @@ $("#exerciseDownload").click(function(){
 function exerciseDownload() {	
 	const exerciseID = getID();
 	
-	setSimpleExerciseFileContents(exerciseID);
+	if(iuf.exercises[exerciseID].editable)
+		setSimpleExerciseFileContents(exerciseID);
 	
 	const exerciseName = iuf.exercises[exerciseID].name;
 	const exerciseCode = iuf.exercises[exerciseID].file;
-		
+			
 	Shiny.onInputChange("exerciseToDownload", {exerciseName:exerciseName, exerciseCode: exerciseCode}, {priority: 'event'});	
 }
 
@@ -731,7 +732,8 @@ $('#exerciseDownloadAll').click(function () {
 
 function exerciseDownloadAll() {	
 	const filteredTasks = iuf.exercises.filter((x, index) => {
-		setSimpleExerciseFileContents(index);
+		if(iuf.exercises[index].editable)
+			setSimpleExerciseFileContents(index);
 		return !$('.exerciseItem:nth-child(' + (index + 1) + ')').hasClass('filtered')
 	});
 	
@@ -1271,6 +1273,7 @@ $('body').on('focus', '[contenteditable]', function() {
 			if(!$('#latexActiveContainer span').hasClass('active'))
 				content = contentLatexSanitize(content);
 
+			iuf['exercises'][exerciseID]['question'] = content;
 			iuf['exercises'][exerciseID]['question_raw'] = content;
 		}
 		
@@ -1278,6 +1281,7 @@ $('body').on('focus', '[contenteditable]', function() {
 			content = contenteditable_getPlain(content);
 			content = contentLatexSanitize(content);
 
+			iuf['exercises'][exerciseID]['choices'][$this.index('.choiceText')] = content;
 			iuf['exercises'][exerciseID]['choices_raw'][$this.index('.choiceText')] = content;
 		}
 		
@@ -1299,12 +1303,12 @@ $('body').on('focus', '[contenteditable]', function() {
 		setSimpleExerciseFileContents(exerciseID);	
 		examExercisesSummary();
     } else {
-		if ($this.hasClass('questionText')) {
-		$this.html(iuf['exercises'][exerciseID]['question']);
-		}
-		
-		if ($this.hasClass('choiceText')) {
-			$this.html(iuf['exercises'][exerciseID]['choices'][$this.index('.choiceText')]);
+		if(iuf['exercises'][exerciseID]['e'] == 0) {
+			if ($this.hasClass('questionText'))
+				$this.html(iuf['exercises'][exerciseID]['question']);
+	
+			if ($this.hasClass('choiceText'))
+				$this.html(iuf['exercises'][exerciseID]['choices'][$this.index('.choiceText')]);
 		}
 	}
 });
