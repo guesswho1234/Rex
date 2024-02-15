@@ -265,12 +265,6 @@ loadExercise = function(session, id, seed, html, figure, message) {
       tags = rjs_vectorToJsonStringArray(tags)
     }
     
-    print(html$exam1$exercise1$question)
-    print(html$exam1$exercise1$question_raw)
-    
-    print(html$exam1$exercise1$choices)
-    print(html$exam1$exercise1$choices_raw)
-
     precision = html$exam1$exercise1$metainfo$precision
     points = html$exam1$exercise1$metainfo$points
     topic = html$exam1$exercise1$metainfo$topic
