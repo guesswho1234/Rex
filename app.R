@@ -96,11 +96,10 @@ myMessage = function(message, class) {
   }
   
   message$value = gsub("\"", "'", message$value)
-  message$value = gsub("[\r\n]", "<br>", trimws(message$value))
-  message$value = gsub("[\r]", "",message$value)
-  message$value = gsub("[\n]", "", message$value)
-  
-  
+  message$value = gsub("[\r\n]", "[\n]", message$value)
+  message$value = gsub("[\r]", "[\n]", message$value)
+  message$value = gsub("[\n]", "<br>", trimws(message$value))
+  message$value = gsub("\"", "'", message$value)
 
   messageSign = paste0('<span class="responseSign ', message$key, 'Sign">', messageSymbols[type + 1], '</span>')
   messageText = paste0('<span class="', paste0(class, 'TryCatchText'), ' tryCatchText">', message$value , '</span>')
@@ -160,6 +159,10 @@ prepareExerciseDownloadFiles = function(session, exercises){
 parseExercise = function(exercise, seed, collectWarnings, dir){
   out = tryCatch({
     warnings = collectWarnings({
+      # unify line breaks
+      exercise$exerciseCode = gsub("\r\n", "\n", exercise$exerciseCode)
+      exercise$exerciseCode = gsub("\r", "\n", exercise$exerciseCode)
+      
       # show all possible choices when viewing exercises (only relevant for editable exercises)
       exercise$exerciseCode = sub("maxChoices=5", "maxChoices=NULL", exercise$exerciseCode)
       
@@ -184,17 +187,26 @@ parseExercise = function(exercise, seed, collectWarnings, dir){
       # extract raw question text
       question_raw = strsplit(exercise$exerciseCode, "rnwTemplate_question=")[[1]][2]
       question_raw = strsplit(question_raw, "rnwTemplate_choices")[[1]][1]
-      question_raw = paste0(rev(rev(strsplit(question_raw, "")[[1]][-1])[-c(1:3)]), collapse="") # trim to only get actualy question text
+      question_raw = paste0(rev(rev(strsplit(question_raw, "")[[1]][-1])[-c(1:3)]), collapse="") # trim
       question_raw = gsub("\\\\", "\\", question_raw, fixed=TRUE)
+      
+      # extract raw choice texts
+      choices_raw = strsplit(exercise$exerciseCode, "rnwTemplate_choices=")[[1]][2]
+      choices_raw = strsplit(choices_raw, "rnwTemplate_solutions")[[1]][1]
+      choices_raw = strsplit(choices_raw, ",\"")[[1]]
+      choices_raw[1] = paste0(strsplit(choices_raw[1], "")[[1]][-c(1:3)], collapse="")
+      choices_raw[length(choices_raw)] = paste0(rev(rev(strsplit(choices_raw[length(choices_raw)], "")[[1]])[-c(1:2)]), collapse="") #trim
+      choices_raw = Reduce(c, lapply(choices_raw, \(x) paste0(rev(rev(strsplit(x, "")[[1]])[-c(1)]), collapse=""))) # trim
       
       seed = if(is.na(seed)) NULL else seed
       
       file = tempfile(fileext = ".Rnw")
-      writeLines(text=gsub("\r\n", "\n", exercise$exerciseCode), con=file)
+      writeLines(text=exercise$exerciseCode, con=file)
 
       htmlPreview = exams::exams2html(file, dir = dir, seed = seed, base64 = TRUE)
       
       htmlPreview$exam1$exercise1$question_raw = question_raw
+      htmlPreview$exam1$exercise1$choices_raw = choices_raw
       
       if (htmlPreview$exam1$exercise1$metainfo$type != "mchoice") {
         stop("E1005")
@@ -220,9 +232,9 @@ parseExercise = function(exercise, seed, collectWarnings, dir){
     return(list(message=list(key=key, value=value), id=exercise$exerciseID, seed=seed, html=htmlPreview, figure=figure))
   },
   error = function(e){
-    if(!grepl("E\\d{4}", e$message)){
-      e$message = "E1001"
-    }
+    # if(!grepl("E\\d{4}", e$message)){
+    #   e$message = "E1001"
+    # }
     
     return(list(message=list(key="Error", value=e), id=exercise$exerciseID, seed=NULL, html=NULL))
   })
@@ -263,6 +275,9 @@ loadExercise = function(session, id, seed, html, figure, message) {
     question_raw = html$exam1$exercise1$question_raw
     figure = rjs_vectorToJsonStringArray(unlist(figure))
     editable = ifelse(html$exam1$exercise1$metainfo$editable == 1, 1, 0)
+    choices = rjs_vectorToJsonStringArray(html$exam1$exercise1$questionlist)
+    choices_raw = rjs_vectorToJsonStringArray(html$exam1$exercise1$choices_raw)
+    result = rjs_vectorToJsonArray(tolower(as.character(html$exam1$exercise1$metainfo$solution)))
     
     session$sendCustomMessage("setExerciseExamHistory", examHistory)
     session$sendCustomMessage("setExerciseAuthoredBy", authoredBy)
@@ -276,15 +291,9 @@ loadExercise = function(session, id, seed, html, figure, message) {
     session$sendCustomMessage("setExerciseQuestionRaw", question_raw)
     session$sendCustomMessage("setExerciseFigure", figure)
     session$sendCustomMessage("setExerciseEditable", editable)
-    
-    if(type == c("mchoice")) {
-      session$sendCustomMessage("setExerciseChoices", rjs_vectorToJsonStringArray(html$exam1$exercise1$questionlist))
-      session$sendCustomMessage("setExerciseResultMchoice", rjs_vectorToJsonArray(tolower(as.character(html$exam1$exercise1$metainfo$solution))))
-    } 
-    
-    if(type == "num") {
-      session$sendCustomMessage("setExerciseResultNumeric", result)
-    }
+    session$sendCustomMessage("setExerciseChoices", choices)
+    session$sendCustomMessage("setExerciseChoicesRaw", choices_raw)
+    session$sendCustomMessage("setExerciseResultMchoice", result)
   }
 
   session$sendCustomMessage("setExerciseMessage", myMessage(message, "exercise"))
@@ -298,7 +307,9 @@ createExam = function(exam, settings, input, collectWarnings, dir) {
       exam$exerciseNames = as.list(make.unique(unlist(exam$exerciseNames), sep="_"))
       exerciseFiles = unlist(lapply(setNames(seq_along(exam$exerciseNames), exam$exerciseNames), function(i){
         file = paste0(dir, "/", exam$exerciseNames[[i]], ".rnw")
-        writeLines(text=gsub("\r\n", "\n", exam$exerciseCodes[[i]]), con=file, sep="")
+        exerciseCode = gsub("\r\n", "\n", exam$exerciseCodes[[i]])
+        exerciseCode = gsub("\r", "\n", exam$exerciseCodes[[i]])
+        writeLines(text=exerciseCode, con=file, sep="")
         
         return(file)
       }))
@@ -489,6 +500,7 @@ evaluateExamScans = function(input, collectWarnings, dir){
       registeredParticipantsFile = unlist(lapply(seq_along(input$evaluateExam$examRegisteredParticipantsnName), function(i){
         file = paste0(dir, "/", input$evaluateExam$examRegisteredParticipantsnName[[i]], ".csv")
         content = gsub("\r\n", "\n", input$evaluateExam$examRegisteredParticipantsnFile[[i]])
+        content = gsub("\r", "\n", content)
         content = gsub(",", ";", content)
         
         writeLines(text=content, con=file)
@@ -1039,7 +1051,9 @@ server = function(input, output, session) {
       paste0(isolate(input$exerciseToDownload$exerciseName), ".rnw")
     },
     content = function(fname) {
-      writeLines(text=gsub("\r\n", "\n", isolate(input$exerciseToDownload$exerciseCode)), con=fname)
+      exercise = gsub("\r\n", "\n", isolate(input$exerciseToDownload$exerciseCode))
+      exercise = gsub("\r", "\n", exercise)
+      writeLines(text=exercise, con=fname)
       removeRuntimeFiles(session)
     },
     contentType = "text/rnw",
@@ -1065,7 +1079,7 @@ server = function(input, output, session) {
   # (sync, send values to frontend and load into dom)
   exerciseParsing = eventReactive(input$parseExercise, {
     startWait(session)
-
+    
     x = callr::r_bg(
       func = parseExercise,
       args = list(isolate(input$parseExercise), isolate(input$seedValueExercises), collectWarnings, getDir(session)),

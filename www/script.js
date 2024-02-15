@@ -1043,6 +1043,7 @@ function createExercise(exerciseID, name='exercise',
 	iuf['exercises'][exerciseID]['question'] = question;
 	iuf['exercises'][exerciseID]['question_raw'] = question;
 	iuf['exercises'][exerciseID]['choices'] = choices;
+	iuf['exercises'][exerciseID]['choices_raw'] = choices;
 	iuf['exercises'][exerciseID]['result'] = result;
 	iuf['exercises'][exerciseID]['examHistory'] = examHistory;
 	iuf['exercises'][exerciseID]['authoredBy'] = authoredBy;
@@ -1195,6 +1196,10 @@ $('body').on('focus', '[contenteditable]', function() {
 		$this.html(iuf['exercises'][exerciseID]['question_raw']);
 	}
 	
+	if ($this.hasClass('choiceText')) {
+		$this.html(iuf['exercises'][exerciseID]['choices_raw'][$this.index('.choiceText')]);
+	}
+	
     $this.data('before', $this.html());
 }).on('blur', '[contenteditable]', function() {
     const $this = $(this);
@@ -1213,6 +1218,7 @@ $('body').on('focus', '[contenteditable]', function() {
 			
 		if ($this.hasClass('exerciseNameText')) {
 			content = contenteditable_getPlain(content);
+			content = contentSanizite(content);
 			
 			$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseName').text(content);
 			iuf['exercises'][exerciseID]['name'] = content;
@@ -1220,14 +1226,14 @@ $('body').on('focus', '[contenteditable]', function() {
 		
 		if ($this.hasClass('questionText')) {
 			content = contenteditable_getSpecial(content);
-			
+
 			iuf['exercises'][exerciseID]['question_raw'] = content;
 		}
 		
 		if ($this.hasClass('choiceText')) {
 			content = contenteditable_getPlain(content);
-			
-			iuf['exercises'][exerciseID]['choices'][$this.index('.choiceText')] = content;
+
+			iuf['exercises'][exerciseID]['choices_raw'][$this.index('.choiceText')] = content;
 		}
 		
 		if ($this.hasClass('points')) {
@@ -1238,13 +1244,12 @@ $('body').on('focus', '[contenteditable]', function() {
 		
 		if ($this.hasClass('topicText')) {
 			content = contenteditable_getPlain(content);
+			content = contentSanizite(content);
 			
 			iuf['exercises'][exerciseID]['topic'] = content;
 		}
 
 		$this.html(content);
-		
-		iuf['exercises'][exerciseID]['question'] = iuf['exercises'][exerciseID]['question_raw'];
 		
 		setSimpleExerciseFileContents(exerciseID);	
 		examExercisesSummary();
@@ -1271,10 +1276,13 @@ function contenteditable_getSpecial(content) {
 		content = content.replaceAll('</br>', '\\\\');
 		content = content.replaceAll('&nbsp;', ' ');
 		content = content.replaceAll('\n', ' ');
-		
 	}
 	
 	return content;
+}
+
+function contentSanizite(content){
+	return content.replace(/[^a-z0-9\_\-]/gi, '');
 }
 
 function filterNodes(element, allow) {
@@ -1407,9 +1415,9 @@ function loadExerciseFromObject(exerciseID) {
 
 function setSimpleExerciseFileContents(exerciseID){
 	let fileText = rnwTemplate;
-	
-	fileText = fileText.replace("?rnwTemplate_q", '"' + iuf['exercises'][exerciseID]['question'].replaceAll('\\', '\\\\') + '"');
-	fileText = fileText.replace("?rnwTemplate_c", 'c(' + iuf['exercises'][exerciseID]['choices'].map(c=>'"' + c + '"').join(',') + ')');
+		
+	fileText = fileText.replace("?rnwTemplate_q", '"' + iuf['exercises'][exerciseID]['question_raw'].replaceAll('\\', '\\\\') + '"');
+	fileText = fileText.replace("?rnwTemplate_c", 'c(' + iuf['exercises'][exerciseID]['choices_raw'].map(c=>'"' + c.replaceAll('\\', '\\\\') + '"').join(',') + ')');
 	fileText = fileText.replace("?rnwTemplate_s", 'c(' + iuf['exercises'][exerciseID]['result'].map(s=>s?"T":"F").join(',') + ')');
 	fileText = fileText.replace("?rnwTemplate_p", iuf['exercises'][exerciseID]['points']);
 	fileText = fileText.replace("?rnwTemplate_t", iuf['exercises'][exerciseID]['topic']);
@@ -1671,6 +1679,11 @@ Shiny.addCustomMessageHandler('setExerciseFigure', function(jsonData) {
 Shiny.addCustomMessageHandler('setExerciseChoices', function(jsonData) {
 	const exerciseChoices = JSON.parse(jsonData);
 	iuf['exercises'][getID()]['choices'] = exerciseChoices;
+});
+
+Shiny.addCustomMessageHandler('setExerciseChoicesRaw', function(jsonData) {
+	const exerciseChoicesRaw = JSON.parse(jsonData);
+	iuf['exercises'][getID()]['choices_raw'] = exerciseChoicesRaw;
 });
 
 Shiny.addCustomMessageHandler('setExerciseResultMchoice', function(jsonData) {
