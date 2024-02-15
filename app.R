@@ -302,6 +302,22 @@ loadExercise = function(session, id, seed, html, figure, message) {
 createExam = function(exam, settings, input, collectWarnings, dir) {
   out = tryCatch({
     warnings = collectWarnings({
+      if(any(input$seedValueExam < settings$seedMin)){
+        stop("E1008")
+      }        
+      
+      if(any(input$seedValueExam > settings$seedMax)){
+        stop("E1009")
+      }
+      
+      if(length(exam$exerciseNames) < settings$exerciseMin){
+        stop("E1010")
+      }
+      
+      if(length(exam$exerciseNames) > settings$exerciseMax){
+        stop("E1011")
+      }
+      
       exam$exerciseNames = as.list(make.unique(unlist(exam$exerciseNames), sep="_"))
       exerciseFiles = unlist(lapply(setNames(seq_along(exam$exerciseNames), exam$exerciseNames), function(i){
         file = paste0(dir, "/", exam$exerciseNames[[i]], ".rnw")
@@ -345,7 +361,6 @@ createExam = function(exam, settings, input, collectWarnings, dir) {
       
       examFields = list(
         file = exercises,
-        fileBoundaries = c(settings$exerciseMin, settings$exerciseMax),
         n = numberOfExams,
         nsamp = exercisesPerBlock,
         name = name,
@@ -360,7 +375,6 @@ createExam = function(exam, settings, input, collectWarnings, dir) {
         points = points,
         showpoints = input$showPoints,
         seed = seedList,
-        seedBoundaries = c(settings$seedMin, settings$seedMax),
         reglength = reglength,
         header = NULL,
         intro = c(input$examIntro), 
@@ -385,23 +399,6 @@ createExam = function(exam, settings, input, collectWarnings, dir) {
       preparedExam = list(examFields=examFields, examFiles=list(examHtmlFiles=examHtmlFiles, pdfFiles=examPdfFiles, rdsFile=examRdsFile), sourceFiles=list(exerciseFiles=exerciseFiles, additionalPdfFiles=additionalPdfFiles))
       
       with(preparedExam$examFields, {
-
-        if(any(seed < seedBoundaries[1])){
-          stop("E1008")
-        }
-
-        if(any(seed > seedBoundaries[2])){
-          stop("E1009")
-        }
-
-        if(length(file) < fileBoundaries[1]){
-          stop("E1010")
-        }
-
-        if(length(file) > fileBoundaries[2]){
-          stop("E1011")
-        }
-
         # create exam html preview with solutions
         exams::exams2html(file = file,
                           n = n,
