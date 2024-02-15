@@ -83,7 +83,7 @@ myMessage = function(message, class) {
     if (message$value$message %in% names(errorCodes)) {
       message$value = getErrorCodeMessage(message$value$message)
     } else {
-      message$value = getErrorCodeMessage("E1000")
+      message$value = paste0("E1000: ", message$value$message)
     }
   }
   
@@ -91,7 +91,7 @@ myMessage = function(message, class) {
     if (message$value %in% names(warningCodes)) {
       message$value = getWarningCodeMessage(message$value)
     } else {
-      message$value = getWarningCodeMessage("W1000")
+      message$value = paste0("W1000: ", message$value)
     }
   }
   
@@ -224,17 +224,17 @@ parseExercise = function(exercise, seed, collectWarnings, dir){
     })
     key = "Success"
     value = paste(unique(unlist(warnings)), collapse="<br>")
-    if(value != "") {
-      key = "Warning"
-      value = paste0("W1001: ", value)
-    }
+    # if(value != "") {
+    #   key = "Warning"
+    #   value = paste0("W1001: ", value)
+    # }
 
     return(list(message=list(key=key, value=value), id=exercise$exerciseID, seed=seed, html=htmlPreview, figure=figure))
   },
   error = function(e){
-    if(!grepl("E\\d{4}", e$message)){
-      e$message = paste0("E1001: ", e$message)
-    }
+    # if(!grepl("E\\d{4}", e$message)){
+    #   e$message = paste0("E1001: ", e$message)
+    # }
     
     return(list(message=list(key="Error", value=e), id=exercise$exerciseID, seed=NULL, html=NULL))
   })
@@ -446,17 +446,17 @@ createExam = function(exam, settings, input, collectWarnings, dir) {
     })
     key = "Success"
     value = paste(unique(unlist(warnings)), collapse="<br>")
-    if(value != "") {
-      key = "Warning"
-      value = paste0("W1002: ", value)
-    }
+    # if(value != "") {
+    #   key = "Warning"
+    #   value = paste0("W1002: ", value)
+    # }
 
     return(list(message=list(key=key, value=value), files=list(sourceFiles=preparedExam$sourceFiles, examFiles=preparedExam$examFiles)))
   },
   error = function(e){
-    if(!grepl("E\\d{4}", e$message)){
-      e$message = paste0("E1002: ", e$message)
-    }
+    # if(!grepl("E\\d{4}", e$message)){
+    #   e$message = paste0("E1002: ", e$message)
+    # }
 
     return(list(message=list(key="Error", value=e), files=list()))
   })
@@ -681,19 +681,19 @@ evaluateExamScans = function(input, collectWarnings, dir){
     })
     key = "Success"
     value = paste(unique(unlist(warnings)), collapse="<br>")
-    if(value != "") {
-      key = "Warning"
-      value = paste0("W1003: ", value)
-    }
+    # if(value != "") {
+    #   key = "Warning"
+    #   value = paste0("W1003: ", value)
+    # }
 
     return(list(message=list(key=key, value=value),
                 scans_reg_fullJoinData=scans_reg_fullJoinData,
                 preparedEvaluation=preparedEvaluation))
   },
   error = function(e){
-    if(!grepl("E\\d{4}", e$message)){
-      e$message = paste0("E1003: ", e$message)
-    }
+    # if(!grepl("E\\d{4}", e$message)){
+    #   e$message = paste0("E1003: ", e$message)
+    # }
 
     return(list(message=list(key="Error", value=e), scans_reg_fullJoinData=NULL, examName=NULL, files=list(), data=list()))
   })
@@ -791,18 +791,18 @@ evaluateExamFinalize = function(preparedEvaluation, collectWarnings, dir){
     })
     key = "Success"
     value = paste(unique(unlist(warnings)), collapse="<br>")
-    if(value != "") {
-      key = "Warning"
-      value = paste0("W1004: ", value)
-    }
+    # if(value != "") {
+    #   key = "Warning"
+    #   value = paste0("W1004: ", value)
+    # }
     
     return(list(message=list(key=key, value=value), 
                 preparedEvaluation=preparedEvaluation))
   },
   error = function(e){
-    if(!grepl("E\\d{4}", e$message)){
-      e$message = paste0("E1004: ", e$message)
-    }
+    # if(!grepl("E\\d{4}", e$message)){
+    #   e$message = paste0("E1004: ", e$message)
+    # }
     
     return(list(message=list(key="Error", value=e), examName=NULL, files=list()))
   })
