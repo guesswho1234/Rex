@@ -2,8 +2,8 @@
 <!-- app.html -->
 <div id="disableOverlay">
 	<div id="disableOverlayContent">
-		<span lang="de">BITTE WARTEN...</span>
-		<span lang="en">PLEASE WAIT...</span>
+		<span lang="de">BITTE WARTEN ...</span>
+		<span lang="en">PLEASE WAIT ...</span>
 	</div>
 </div>
 <nav class="navbar navbar-default navbar-static-top" role="navigation">
@@ -24,6 +24,14 @@
 				<div id="examNav">
 					<span lang="de">PRÜFUNG</span>
 					<span lang="en">EXAM</span>
+				</div>
+			</a>
+		</li>
+		<li class="noAddons">
+			<a href="#tab-9289-3" data-toggle="tab" data-bs-toggle="tab" data-value="addons">
+				<div id="addonsNav">
+					<span lang="de">WERKZEUGE</span>
+					<span lang="en">TOOLS</span>
 				</div>
 			</a>
 		</li>
@@ -178,7 +186,7 @@
 					</div>
 				</div>
 				
-				<label for="result"><span lang="de">Ergebnis</span><span lang="en">Result</span></label>
+				<label for="result"><span lang="de">Antworten</span><span lang="en">Answers</span></label>
 				<div id="result">
 				</div>
 				
@@ -376,7 +384,7 @@
 						<div>
 							<label for="marks"><span lang="de">Notenschlüssel</span><span lang="en">Grading key</span></label>
 							</br>
-							<span class="infoField"><span lang="de">Zahlen von 0 bis 1 werden als 0% bis 100% gewertet.</span><span lang="en">Numbers between 0 and 1 are evaluated as 0% to 100%.</span></span>
+							<span class="infoField"><span lang="de">Zahlen von 0 bis 1 werden als 0% bis 100% gewertet. Werte werden nicht gerundet. Schwellenwerte zählen noch zur Note der selben Zeile.</span><span lang="en">Numbers between 0 and 1 are evaluated as 0% to 100%. Values are not rounded. Thresholds count towards the mark of the same row.</span></span>
 							<table id="marks">
 								<tr>
 									<th><span lang="de">Punkte</span><span lang="en">Points</span></th>
@@ -486,7 +494,22 @@
 				</div>
 			</div>
 		</div>
-	</div>			
-</main>
-<script src="script.js" defer></script>	
-<script src="rnwTemplate.js" defer></script>	
+	</div>
+	<div id="addons" class="mainSection noAddons">
+		<h1>
+			<span lang="de">Werkzeuge</span><span lang="en">Tools</span>
+		</h1>
+		<div class="contentWrapper">
+			<div class="sidebar">
+				<div id="addonTools_list" class="itemList">
+					<div id="addonTools_list_items">
+						{{ addonSidebarListItems }}
+					</div>
+				</div>
+			</div>
+			<div class="content">
+				{{ addonContentTabs }}
+			</div>
+		</div>
+	</div>	
+</main>	

@@ -51,6 +51,10 @@ function initApp(){
 	const linkElements = ['<link rel="stylesheet" href="styleApp.css" type="text/css">',
 	'<link rel="stylesheet" href="/fontawesome/css/fontawesome.min.css" type="text/css">',
 	'<link rel="stylesheet" href="/fontawesome/css/all.min.css" type="text/css">']	
+	
+	if( $('#addons .sidebarListItem').length > 0 && $('#addons .contentTab').length > 0 && $('#addons .sidebarListItem').length == $('#addons .contentTab').length) {
+		$('.noAddons').removeClass('noAddons');
+	}
 
 	linkElements.forEach(style => $("head").append(style));
 	
@@ -381,6 +385,13 @@ $('#examNav').parent().click(function () {
 	$('#exam').addClass('active');
 });
 
+$('#addonsNav').parent().click(function () {	
+	if( $(this).parent().hasClass('disabled') ) return;
+	
+	$('.mainSection').removeClass('active');
+	$('#addons').addClass('active');
+});
+
 function selectListItem(index) {	
 	$('.mainSection.active .contentTab').removeClass('active');
 	$('.mainSection.active .contentTab').eq(index).addClass('active');
@@ -561,10 +572,7 @@ $("#seedValueExercises").change(function(){
 /* --------------------------------------------------------------
  EXERCISES SUMMARY 
 -------------------------------------------------------------- */
-function examExercisesSummary() {
-	numberOfExamExercises();
-	numberOfExerciseBlocks();
-	 
+function examExercisesSummary() {	
 	$('#s_initialSeed').html(itemSingle($('#seedValueExercises').val(), 'greenLabelValue'));
 	
 	if($('.exerciseItem.exam').length == 0) { 
@@ -1033,8 +1041,9 @@ function createExercise(exerciseID, name='exercise',
 	iuf['exercises'][exerciseID]['seed'] = seed;
 	iuf['exercises'][exerciseID]['exam'] = exam;
 	iuf['exercises'][exerciseID]['question'] = question;
-	iuf['exercises'][exerciseID]['question_raw'] = d_questionText;
+	iuf['exercises'][exerciseID]['question_raw'] = question;
 	iuf['exercises'][exerciseID]['choices'] = choices;
+	iuf['exercises'][exerciseID]['choices_raw'] = choices;
 	iuf['exercises'][exerciseID]['result'] = result;
 	iuf['exercises'][exerciseID]['examHistory'] = examHistory;
 	iuf['exercises'][exerciseID]['authoredBy'] = authoredBy;
@@ -1062,28 +1071,40 @@ function parseExercise(exerciseID) {
 	Shiny.onInputChange("parseExercise", {exerciseCode: exerciseCode, exerciseID: exerciseID}, {priority: 'event'});	
 }
 
-function numberOfExamExercises() {
-	Shiny.onInputChange("setNumberOfExamExercises", getNumberOfExamExercises(), {priority: 'event'});
-}
-
-function numberOfExerciseBlocks() {
-	Shiny.onInputChange("setNumberOfExerciseBlocks", Math.max(1, getNumberOfExerciseBlocks()), {priority: 'event'});
-}
-
 function getNumberOfExerciseBlocks() {
-	return new Set(iuf['exercises'].filter((exercise) => exercise.exam).map(x => x.block)).size;
+	return new Set(iuf['exercises'].filter((x) => x.exam).map(x => x.block)).size;
 }
 
-function getNumberOfExamExercises() {
-	let setNumberOfExamExercises = 0;
-	iuf['exercises'].map(t => setNumberOfExamExercises += t.exam);
+function getMaxNumberOfExamExercises() {
+	const numberOfExerciseBlocks = getNumberOfExerciseBlocks();
 	
-	let numberOfExerciseBlocks = getNumberOfExerciseBlocks();
-		
+	let setNumberOfExamExercises = 0;
+	iuf['exercises'].map(x => setNumberOfExamExercises += x.exam);
 	setNumberOfExamExercises = setNumberOfExamExercises - setNumberOfExamExercises % numberOfExerciseBlocks;
+	
+	return Math.min(setNumberOfExamExercises, getMaxExercisesPerBlock()) * numberOfExerciseBlocks;
+}
 
-	const exercisesPerBlock = iuf['exercises'].filter((exercise) => exercise.exam).reduce( (acc, t) => (acc[t.block] = (acc[t.block] || 0) + 1, acc), {} );
-	return Math.min(setNumberOfExamExercises, Math.min(...Object.values(exercisesPerBlock))) * numberOfExerciseBlocks;
+function checkNumberOfExamExercises(numExercises) {
+	if(numExercises < 0)
+		return 0;
+	
+	const maxNumExercises = getMaxNumberOfExamExercises()
+	
+	if(numExercises > maxNumExercises)
+		return maxNumExercises;
+	
+	const numberOfExerciseBlocks = getNumberOfExerciseBlocks();
+	
+	if(numExercises % numberOfExerciseBlocks !== 0)
+		return numberOfExerciseBlocks;
+
+	return numExercises;
+}
+
+function getMaxExercisesPerBlock(){
+	const exercisesPerBlock = iuf['exercises'].filter((x) => x.exam).reduce( (acc, x) => (acc[x.block] = (acc[x.block] || 0) + 1, acc), {} );
+	return Math.min(...Object.values(exercisesPerBlock));
 }
 
 function viewExercise(exerciseID) {
@@ -1175,6 +1196,10 @@ $('body').on('focus', '[contenteditable]', function() {
 		$this.html(iuf['exercises'][exerciseID]['question_raw']);
 	}
 	
+	if ($this.hasClass('choiceText')) {
+		$this.html(iuf['exercises'][exerciseID]['choices_raw'][$this.index('.choiceText')]);
+	}
+	
     $this.data('before', $this.html());
 }).on('blur', '[contenteditable]', function() {
     const $this = $(this);
@@ -1193,6 +1218,7 @@ $('body').on('focus', '[contenteditable]', function() {
 			
 		if ($this.hasClass('exerciseNameText')) {
 			content = contenteditable_getPlain(content);
+			content = contentSanizite(content);
 			
 			$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseName').text(content);
 			iuf['exercises'][exerciseID]['name'] = content;
@@ -1200,14 +1226,14 @@ $('body').on('focus', '[contenteditable]', function() {
 		
 		if ($this.hasClass('questionText')) {
 			content = contenteditable_getSpecial(content);
-			
+
 			iuf['exercises'][exerciseID]['question_raw'] = content;
 		}
 		
 		if ($this.hasClass('choiceText')) {
 			content = contenteditable_getPlain(content);
-			
-			iuf['exercises'][exerciseID]['choices'][$this.index('.choiceText')] = content;
+
+			iuf['exercises'][exerciseID]['choices_raw'][$this.index('.choiceText')] = content;
 		}
 		
 		if ($this.hasClass('points')) {
@@ -1218,13 +1244,12 @@ $('body').on('focus', '[contenteditable]', function() {
 		
 		if ($this.hasClass('topicText')) {
 			content = contenteditable_getPlain(content);
+			content = contentSanizite(content);
 			
 			iuf['exercises'][exerciseID]['topic'] = content;
 		}
 
 		$this.html(content);
-		
-		iuf['exercises'][exerciseID]['question'] = iuf['exercises'][exerciseID]['question_raw'];
 		
 		setSimpleExerciseFileContents(exerciseID);	
 		examExercisesSummary();
@@ -1254,6 +1279,10 @@ function contenteditable_getSpecial(content) {
 	}
 	
 	return content;
+}
+
+function contentSanizite(content){
+	return content.replace(/[^a-z0-9\_\-]/gi, '');
 }
 
 function filterNodes(element, allow) {
@@ -1386,9 +1415,9 @@ function loadExerciseFromObject(exerciseID) {
 
 function setSimpleExerciseFileContents(exerciseID){
 	let fileText = rnwTemplate;
-	
-	fileText = fileText.replace("?rnwTemplate_q", '"' + iuf['exercises'][exerciseID]['question'].replaceAll('\\', '\\\\') + '"');
-	fileText = fileText.replace("?rnwTemplate_c", 'c(' + iuf['exercises'][exerciseID]['choices'].map(c=>'"' + c + '"').join(',') + ')');
+		
+	fileText = fileText.replace("?rnwTemplate_q", '"' + iuf['exercises'][exerciseID]['question_raw'].replaceAll('\\', '\\\\') + '"');
+	fileText = fileText.replace("?rnwTemplate_c", 'c(' + iuf['exercises'][exerciseID]['choices_raw'].map(c=>'"' + c.replaceAll('\\', '\\\\') + '"').join(',') + ')');
 	fileText = fileText.replace("?rnwTemplate_s", 'c(' + iuf['exercises'][exerciseID]['result'].map(s=>s?"T":"F").join(',') + ')');
 	fileText = fileText.replace("?rnwTemplate_p", iuf['exercises'][exerciseID]['points']);
 	fileText = fileText.replace("?rnwTemplate_t", iuf['exercises'][exerciseID]['topic']);
@@ -1592,7 +1621,7 @@ $('#figure').on('click', '.exerciseFigureItem', function() {
 });
 
 getID = function() {
-	return(exerciseID_hook == -1 ? $('.exerciseItem.active').index('.exerciseItem') : exerciseID_hook);
+	return exerciseID_hook == -1 ? $('.exerciseItem.active').index('.exerciseItem') : exerciseID_hook;
 }
 
 Shiny.addCustomMessageHandler('setExerciseId', function(exerciseID) {
@@ -1638,6 +1667,10 @@ Shiny.addCustomMessageHandler('setExerciseQuestion', function(exerciseQuestion) 
 	iuf['exercises'][getID()]['question'] = exerciseQuestion;
 });
 
+Shiny.addCustomMessageHandler('setExerciseQuestionRaw', function(exerciseQuestionRaw) {
+	iuf['exercises'][getID()]['question_raw'] = exerciseQuestionRaw;
+});
+
 Shiny.addCustomMessageHandler('setExerciseFigure', function(jsonData) {
 	const figure = JSON.parse(jsonData);
 	iuf['exercises'][getID()]['figure'] = figure[0] === "" ? null : figure;
@@ -1646,6 +1679,11 @@ Shiny.addCustomMessageHandler('setExerciseFigure', function(jsonData) {
 Shiny.addCustomMessageHandler('setExerciseChoices', function(jsonData) {
 	const exerciseChoices = JSON.parse(jsonData);
 	iuf['exercises'][getID()]['choices'] = exerciseChoices;
+});
+
+Shiny.addCustomMessageHandler('setExerciseChoicesRaw', function(jsonData) {
+	const exerciseChoicesRaw = JSON.parse(jsonData);
+	iuf['exercises'][getID()]['choices_raw'] = exerciseChoicesRaw;
 });
 
 Shiny.addCustomMessageHandler('setExerciseResultMchoice', function(jsonData) {
@@ -1679,6 +1717,16 @@ Shiny.addCustomMessageHandler('setExerciseE', function(e) {
 		$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .examExercise').removeClass('disabled');
 		loadExerciseFromObject(exerciseID);
 });
+
+/* --------------------------------------------------------------
+ EXAM 
+-------------------------------------------------------------- */
+$("#examFunctions_list_items .sidebarListItem").click(function(){
+	$('#examFunctions_list_items .sidebarListItem').removeClass('active');
+	$(this).addClass('active');
+	
+	selectListItem($('.mainSection.active .sidebarListItem.active').index());
+}); 
 
 /* --------------------------------------------------------------
  CREATE EXAM 
@@ -1804,7 +1852,7 @@ $("#fixedPointsExamCreate").change(function(){
 }); 
 
 $("#numberOfExercises").change(function(){
-	$(this).val(getIntegerInput(0, 45, 0, $(this).val()));
+	$(this).val(getIntegerInput(0, 45, 0, checkNumberOfExamExercises($(this).val())));
 }); 
 
 $("#numberOfBlanks").change(function(){
@@ -1812,7 +1860,7 @@ $("#numberOfBlanks").change(function(){
 }); 
 
 $("#autofillNumberOfExercises").click(function(){
-	$('#numberOfExercises').val(getIntegerInput(0, 45, 0, getNumberOfExamExercises()));
+	$('#numberOfExercises').val(getIntegerInput(0, 45, 0, getMaxNumberOfExamExercises()));
 	Shiny.onInputChange("numberOfExercises", $('#numberOfExercises').val());
 }); 
 
@@ -2212,7 +2260,8 @@ function magnifier() {
 }
 
 function populateCompareTable() {
-	$('#compareScanRegistrationDataTable').empty();
+	$('.loadingCompareScanRegistrationDataTable').show();
+	$('#compareScanRegistrationDataTable').find('*').not('.loadingCompareScanRegistrationDataTable').remove();
 	
 	let invalidCount = 0; 
 	let validCount = 0; 
@@ -2252,6 +2301,7 @@ function populateCompareTable() {
 	$('#scanStats').append('<span id="scansValidCount" class="scanStat myLabel"><span class="scanStatText label_key greenLabelKey"><span lang="de">Gültige Scans</span><span lang="en">Valid scans</span></span><span class="scanStatValue label_value greenLabelValue">' + validCount + '</span></span>')
 	$('#scanStats').append('<span id="scansnotAssignedCount" class="scanStat myLabel"><span class="scanStatText label_key yellowLabelKey"><span lang="de">Nicht zugeordnete Matrikelnummern</span><span lang="en">Registration numbers not assigned</span></span><span class="scanStatValue label_value yellowLabelValue">' + notAssignedCount + '</span></span>')
 	
+	$('.loadingCompareScanRegistrationDataTable').hide();
 	setNotAssignedVisibility();
 	f_langDeEn();
 }
@@ -2474,9 +2524,19 @@ Shiny.addCustomMessageHandler('backTocompareScanRegistrationData', function(x) {
 });
 
 $('body').on('click', '#proceedEval', function() {
-	const properties = ['scan', 'sheet', 'scrambling', 'type', 'replacement', 'registration',].concat(new Array(45).fill(1).map( (_, i) => i+1 ));
+	const properties = ['scan', 'sheet', 'scrambling', 'type', 'replacement', 'registration'].concat(new Array(45).fill(1).map( (_, i) => i+1 ));
 	
 	const datenTxt = Object.assign({}, iuf['examEvaluation']['scans_reg_fullJoinData'].filter(x => scanValid(x)).map(x => Object.assign({}, properties.map(y => x[y] === undefined ? "00000" : x[y], {}))));
 
 	Shiny.onInputChange("proceedEvaluation", datenTxt, {priority: 'event'});
 });
+
+/* --------------------------------------------------------------
+ ADDON TOOLS
+-------------------------------------------------------------- */
+$("#addons_list_items .sidebarListItem").click(function(){
+	$('#addons_list_items .sidebarListItem').removeClass('active');
+	$(this).addClass('active');
+	
+	selectListItem($('.mainSection.active .sidebarListItem.active').index());
+}); 

@@ -83,7 +83,7 @@ myMessage = function(message, class) {
     if (message$value$message %in% names(errorCodes)) {
       message$value = getErrorCodeMessage(message$value$message)
     } else {
-      message$value = getErrorCodeMessage("E1000")
+      message$value = message$value #getErrorCodeMessage("E1000")
     }
   }
   
@@ -96,11 +96,10 @@ myMessage = function(message, class) {
   }
   
   message$value = gsub("\"", "'", message$value)
-  message$value = gsub("[\r\n]", "<br>", trimws(message$value))
-  message$value = gsub("[\r]", "",message$value)
-  message$value = gsub("[\n]", "", message$value)
-  
-  
+  message$value = gsub("[\r\n]", "[\n]", message$value)
+  message$value = gsub("[\r]", "[\n]", message$value)
+  message$value = gsub("[\n]", "<br>", trimws(message$value))
+  message$value = gsub("\"", "'", message$value)
 
   messageSign = paste0('<span class="responseSign ', message$key, 'Sign">', messageSymbols[type + 1], '</span>')
   messageText = paste0('<span class="', paste0(class, 'TryCatchText'), ' tryCatchText">', message$value , '</span>')
@@ -160,6 +159,10 @@ prepareExerciseDownloadFiles = function(session, exercises){
 parseExercise = function(exercise, seed, collectWarnings, dir){
   out = tryCatch({
     warnings = collectWarnings({
+      # unify line breaks
+      exercise$exerciseCode = gsub("\r\n", "\n", exercise$exerciseCode)
+      exercise$exerciseCode = gsub("\r", "\n", exercise$exerciseCode)
+      
       # show all possible choices when viewing exercises (only relevant for editable exercises)
       exercise$exerciseCode = sub("maxChoices=5", "maxChoices=NULL", exercise$exerciseCode)
       
@@ -181,12 +184,29 @@ parseExercise = function(exercise, seed, collectWarnings, dir){
         figure = list(name=figure_name, fileExt=figure_fileExt, blob=figure_blob)
       }
       
+      # extract raw question text
+      question_raw = strsplit(exercise$exerciseCode, "rnwTemplate_question=")[[1]][2]
+      question_raw = strsplit(question_raw, "rnwTemplate_choices")[[1]][1]
+      question_raw = paste0(rev(rev(strsplit(question_raw, "")[[1]][-1])[-c(1:3)]), collapse="") # trim
+      question_raw = gsub("\\\\", "\\", question_raw, fixed=TRUE)
+      
+      # extract raw choice texts
+      choices_raw = strsplit(exercise$exerciseCode, "rnwTemplate_choices=")[[1]][2]
+      choices_raw = strsplit(choices_raw, "rnwTemplate_solutions")[[1]][1]
+      choices_raw = strsplit(choices_raw, ",\"")[[1]]
+      choices_raw[1] = paste0(strsplit(choices_raw[1], "")[[1]][-c(1:3)], collapse="")
+      choices_raw[length(choices_raw)] = paste0(rev(rev(strsplit(choices_raw[length(choices_raw)], "")[[1]])[-c(1:2)]), collapse="") #trim
+      choices_raw = Reduce(c, lapply(choices_raw, \(x) paste0(rev(rev(strsplit(x, "")[[1]])[-c(1)]), collapse=""))) # trim
+      
       seed = if(is.na(seed)) NULL else seed
       
       file = tempfile(fileext = ".Rnw")
-      writeLines(text=gsub("\r\n", "\n", exercise$exerciseCode), con=file)
+      writeLines(text=exercise$exerciseCode, con=file)
 
       htmlPreview = exams::exams2html(file, dir = dir, seed = seed, base64 = TRUE)
+      
+      htmlPreview$exam1$exercise1$question_raw = question_raw
+      htmlPreview$exam1$exercise1$choices_raw = choices_raw
       
       if (htmlPreview$exam1$exercise1$metainfo$type != "mchoice") {
         stop("E1005")
@@ -212,9 +232,9 @@ parseExercise = function(exercise, seed, collectWarnings, dir){
     return(list(message=list(key=key, value=value), id=exercise$exerciseID, seed=seed, html=htmlPreview, figure=figure))
   },
   error = function(e){
-    if(!grepl("E\\d{4}", e$message)){
-      e$message = "E1001"
-    }
+    # if(!grepl("E\\d{4}", e$message)){
+    #   e$message = "E1001"
+    # }
     
     return(list(message=list(key="Error", value=e), id=exercise$exerciseID, seed=NULL, html=NULL))
   })
@@ -252,8 +272,12 @@ loadExercise = function(session, id, seed, html, figure, message) {
     topic = html$exam1$exercise1$metainfo$topic
     type = html$exam1$exercise1$metainfo$type
     question = html$exam1$exercise1$question
+    question_raw = html$exam1$exercise1$question_raw
     figure = rjs_vectorToJsonStringArray(unlist(figure))
     editable = ifelse(html$exam1$exercise1$metainfo$editable == 1, 1, 0)
+    choices = rjs_vectorToJsonStringArray(html$exam1$exercise1$questionlist)
+    choices_raw = rjs_vectorToJsonStringArray(html$exam1$exercise1$choices_raw)
+    result = rjs_vectorToJsonArray(tolower(as.character(html$exam1$exercise1$metainfo$solution)))
     
     session$sendCustomMessage("setExerciseExamHistory", examHistory)
     session$sendCustomMessage("setExerciseAuthoredBy", authoredBy)
@@ -264,17 +288,12 @@ loadExercise = function(session, id, seed, html, figure, message) {
     session$sendCustomMessage("setExerciseTags", tags)
     session$sendCustomMessage("setExerciseSeed", seed)
     session$sendCustomMessage("setExerciseQuestion", question)
+    session$sendCustomMessage("setExerciseQuestionRaw", question_raw)
     session$sendCustomMessage("setExerciseFigure", figure)
     session$sendCustomMessage("setExerciseEditable", editable)
-    
-    if(type == c("mchoice")) {
-      session$sendCustomMessage("setExerciseChoices", rjs_vectorToJsonStringArray(html$exam1$exercise1$questionlist))
-      session$sendCustomMessage("setExerciseResultMchoice", rjs_vectorToJsonArray(tolower(as.character(html$exam1$exercise1$metainfo$solution))))
-    } 
-    
-    if(type == "num") {
-      session$sendCustomMessage("setExerciseResultNumeric", result)
-    }
+    session$sendCustomMessage("setExerciseChoices", choices)
+    session$sendCustomMessage("setExerciseChoicesRaw", choices_raw)
+    session$sendCustomMessage("setExerciseResultMchoice", result)
   }
 
   session$sendCustomMessage("setExerciseMessage", myMessage(message, "exercise"))
@@ -288,7 +307,9 @@ createExam = function(exam, settings, input, collectWarnings, dir) {
       exam$exerciseNames = as.list(make.unique(unlist(exam$exerciseNames), sep="_"))
       exerciseFiles = unlist(lapply(setNames(seq_along(exam$exerciseNames), exam$exerciseNames), function(i){
         file = paste0(dir, "/", exam$exerciseNames[[i]], ".rnw")
-        writeLines(text=gsub("\r\n", "\n", exam$exerciseCodes[[i]]), con=file, sep="")
+        exerciseCode = gsub("\r\n", "\n", exam$exerciseCodes[[i]])
+        exerciseCode = gsub("\r", "\n", exam$exerciseCodes[[i]])
+        writeLines(text=exerciseCode, con=file, sep="")
         
         return(file)
       }))
@@ -425,17 +446,17 @@ createExam = function(exam, settings, input, collectWarnings, dir) {
     })
     key = "Success"
     value = paste(unique(unlist(warnings)), collapse="<br>")
-    if(value != "") {
-      key = "Warning"
-      value = "W1002"
-    }
+    # if(value != "") {
+    #   key = "Warning"
+    #   value = "W1002"
+    # }
 
     return(list(message=list(key=key, value=value), files=list(sourceFiles=preparedExam$sourceFiles, examFiles=preparedExam$examFiles)))
   },
   error = function(e){
-    if(!grepl("E\\d{4}", e$message)){
-      e$message = "E1002"
-    }
+    # if(!grepl("E\\d{4}", e$message)){
+    #   e$message = "E1002"
+    # }
 
     return(list(message=list(key="Error", value=e), files=list()))
   })
@@ -462,7 +483,7 @@ evaluateExamScans = function(input, collectWarnings, dir){
     
     warnings = collectWarnings({
       # exam
-      input$evaluateExam$examSolutionsName = as.list(make.unique(unlist(input$evaluateExam$examSolutionsName), sep="_"))
+      input$evaluateExam$examSolutionsName = unlist(input$evaluateExam$examSolutionsName)[1]
       
       solutionFile = unlist(lapply(seq_along(input$evaluateExam$examSolutionsName), function(i){
         file = paste0(dir, "/", input$evaluateExam$examSolutionsName[[i]], ".rds")
@@ -474,11 +495,12 @@ evaluateExamScans = function(input, collectWarnings, dir){
       examExerciseMetaData = readRDS(solutionFile)
       
       # registered participants
-      input$evaluateExam$examRegisteredParticipantsnName = as.list(make.unique(unlist(input$evaluateExam$examRegisteredParticipantsnName), sep="_"))
+      input$evaluateExam$examRegisteredParticipantsnName = unlist(input$evaluateExam$examRegisteredParticipantsnName)[1]
       
       registeredParticipantsFile = unlist(lapply(seq_along(input$evaluateExam$examRegisteredParticipantsnName), function(i){
         file = paste0(dir, "/", input$evaluateExam$examRegisteredParticipantsnName[[i]], ".csv")
         content = gsub("\r\n", "\n", input$evaluateExam$examRegisteredParticipantsnFile[[i]])
+        content = gsub("\r", "\n", content)
         content = gsub(",", ";", content)
         
         writeLines(text=content, con=file)
@@ -607,7 +629,7 @@ evaluateExamScans = function(input, collectWarnings, dir){
           stop("E1015")
         }
 
-        if(!all(names(registeredParticipantData) == c("registration", "name", "id"))){
+        if(!all(names(registeredParticipantData)[1:3] == c("registration", "name", "id"))){
           stop("E1016")
         }
 
@@ -689,7 +711,7 @@ evaluateExamScansResponse = function(session, message, preparedEvaluation, scans
         myCheckBox(id="showNotAssigned", "Nicht zugeordnete Matrikelnummern anzeigen", "Show registrations without assignment"),
         tags$div(id="scanStats"),
         tags$div(id="inspectScan"),
-        tags$div(id="compareScanRegistrationDataTable"),
+        tags$div(id="compareScanRegistrationDataTable", HTML('<div class="loadingCompareScanRegistrationDataTable"><span lang="de" class="loadingCompareScanRegistrationDataTable">BITTE WARTEN ...</span><span lang="en" class="loadingCompareScanRegistrationDataTable">PLEASE WAIT ...</span></div>')),
       ),
     
     footer = tagList(
@@ -715,6 +737,7 @@ evaluateExamScansResponse = function(session, message, preparedEvaluation, scans
     session$sendCustomMessage("compareScanRegistrationData", scans_reg_fullJoinData_json)
   } 
   
+  # display scanData again after going back from "evaluateExamFinalizeResponse"
   if (!is.null(scans_reg_fullJoinData) && nrow(scans_reg_fullJoinData) == 0) {
     session$sendCustomMessage("backTocompareScanRegistrationData", 1)
   }
@@ -724,7 +747,7 @@ evaluateExamFinalize = function(preparedEvaluation, collectWarnings, dir){
   out = tryCatch({
     # file path and name settings
     nops_evaluation_fileNames = "evaluation.html"
-    nops_evaluation_fileNamePrefix = paste0(preparedEvaluation$meta$examName, "_nops_eval")
+    nops_evaluation_fileNamePrefix = gsub("_+", "_", paste0(preparedEvaluation$meta$examName, "_nops_eval"))
     preparedEvaluation$files$nops_evaluationCsv = paste0(dir, "/", nops_evaluation_fileNamePrefix, ".csv")
     preparedEvaluation$files$nops_evaluationZip = paste0(dir, "/", nops_evaluation_fileNamePrefix, ".zip")
 
@@ -745,6 +768,23 @@ evaluateExamFinalize = function(preparedEvaluation, collectWarnings, dir){
           language = fields$language,
           interactive = TRUE
         )
+
+        # add additional exercise columns
+        solutionData = readRDS(files$solution)
+        evaluationData = read.csv2(files$nops_evaluationCsv)
+
+        exerciseTable = as.data.frame(Reduce(rbind, lapply(evaluationData$exam, \(exam) {
+          exerciseNames = Reduce(cbind, lapply(solutionData[[as.character(exam)]], \(exercise) exercise$metainfo$file))
+        })))
+        
+        names(exerciseTable) = paste0("exercise.", 1:ncol(exerciseTable))
+
+        evaluationData = cbind(evaluationData, exerciseTable)
+        
+        evaluationData[paste("answer", 1:length(solutionData[[1]]), sep=".")] = sprintf(paste0("%0", 5, "d"), unlist(evaluationData[paste("answer", 1:length(solutionData[[1]]), sep=".")]))
+        evaluationData[paste("solution", 1:length(solutionData[[1]]), sep=".")] = sprintf(paste0("%0", 5, "d"), unlist(evaluationData[paste("solution", 1:length(solutionData[[1]]), sep=".")]))
+        
+        write.csv2(evaluationData, files$nops_evaluationCsv, row.names = FALSE)
       })
 
       NULL
@@ -760,9 +800,9 @@ evaluateExamFinalize = function(preparedEvaluation, collectWarnings, dir){
                 preparedEvaluation=preparedEvaluation))
   },
   error = function(e){
-    if(!grepl("E\\d{4}", e$message)){
-      e$message = "E1004"
-    }
+    # if(!grepl("E\\d{4}", e$message)){
+    #   e$message = "E1004"
+    # }
     
     return(list(message=list(key="Error", value=e), examName=NULL, files=list()))
   })
@@ -861,6 +901,15 @@ errorCodes = setNames(apply(errorCodes[,-1], 1, FUN=as.list), errorCodes[,1])
 warningCodes = read.csv2("tryCatch/warningCodes.csv")
 warningCodes = setNames(apply(warningCodes[,-1], 1, FUN=as.list), warningCodes[,1])
 
+addons_path = "addons/"
+addons_path_www = "www/addons/"
+addons = list.files(addons_path_www, recursive = TRUE) 
+addons = unique(Reduce(c, lapply(addons[grepl("/", addons)], \(x) strsplit(x, split="/")[[1]][1])))
+
+lapply(addons, \(addon) {
+  source(paste0(addons_path_www, addons, "/", addons, ".R"))
+})
+
 # dataframe that holds usernames, passwords and other user data
 user_base = data.frame(
   user = c("rex"),
@@ -900,18 +949,19 @@ server = function(input, output, session) {
     unlink(getDir(session), recursive = TRUE)
     dir.create(getDir(session))
     removeRuntimeFiles(session)
-    
+
     initSeed <<- as.numeric(gsub("-", "", Sys.Date()))
 
     # LOAD APP ----------------------------------------------------------------
+    fluidPage(
      htmlTemplate(
       filename = "app.html",
-
+    
       # EXERCISES
       textInput_seedValueExercises = textInput("seedValueExercises", label = NULL, value = initSeed),
       button_downloadExercises = myDownloadButton('downloadExercises'),
       button_downloadExercise = myDownloadButton('downloadExercise'),
-
+    
       # EXAM CREATE
       dateInput_examDate = dateInput("examDate", label = NULL, value = NULL, format = "yyyy-mm-dd"),
       textInput_seedValueExam = textInput("seedValueExam", label = NULL, value = initSeed),
@@ -930,7 +980,7 @@ server = function(input, output, session) {
       textInput_examCourse = textInput("examCourse", label = NULL, value = NULL),
       textInput_examIntro = textAreaInput("examIntro", label = NULL, value = NULL),
       textInput_numberOfBlanks = textInput("numberOfBlanks", label = NULL, value = 5),
-
+    
       # EXAM EVALUATE
       textInput_fixedPointsExamEvaluate = textInput("fixedPointsExamEvaluate", label = NULL, value = NULL),
       selectInput_evaluateReglength = selectInput("evaluationRegLength", label = NULL, choices = 1:10, selected = 8, multiple = FALSE),
@@ -938,25 +988,45 @@ server = function(input, output, session) {
       checkboxInput_negativePoints = checkboxInput("negativePoints", label = NULL, value = NULL),
       selectInput_rule = selectInput("rule", label = NULL, choices = rules, selected = NULL, multiple = FALSE),
       checkboxInput_mark = checkboxInput("mark", label = NULL, value = NULL), 
-
+    
       textInput_markThreshold1 = textInput("markThreshold1", label = NULL, value = 0),
       textInput_markLabel1 = textInput("markLabel1", label = NULL, value = NULL),
-
+    
       textInput_markThreshold2 = textInput("markThreshold2", label = NULL, value = 0.5),
       textInput_markLabe12 = textInput("markLabe12", label = NULL, value = NULL),
-
+    
       textInput_markThreshold3 = textInput("markThreshold3", label = NULL, value = 0.6),
       textInput_markLabel3 = textInput("markLabel3", label = NULL, value = NULL),
-
+    
       textInput_markThreshold4 = textInput("markThreshold4", label = NULL, value = 0.75),
       textInput_markLabel4 = textInput("markLabel4", label = NULL, value = NULL),
-
+    
       textInput_markThreshold5 = textInput("markThreshold5", label = NULL, value = 0.85),
       textInput_markLabel5 = textInput("markLabel5", label = NULL, value = NULL),
-
+    
       selectInput_evaluationLanguage = selectInput("evaluationLanguage", label = NULL, choices = languages, selected = "de", multiple = FALSE),
-      checkboxInput_rotateScans = checkboxInput("rotateScans", label = NULL, value = TRUE)
-    )
+      checkboxInput_rotateScans = checkboxInput("rotateScans", label = NULL, value = TRUE),
+      
+      addonSidebarListItems = lapply(addons, \(addon) {
+        htmlTemplate(filename = paste0(addons_path_www, addon, "/", addon, "_sidebarListItem.html"))
+      }),
+      
+      addonContentTabs = lapply(addons, \(addon) {
+        htmlTemplate(filename = paste0(addons_path_www, addon, "/", addon, "_contentTab.html"), init=get(paste0(addon, "_fields")))
+      })
+    ),
+    
+    tags$script(src="script.js"),
+    tags$script(src="rnwTemplate.js"),
+    
+    lapply(addons, \(addon) {
+      tags$script(src=paste0(addons_path, addon, "/", addon, "_script.js"))
+    }),
+    
+    lapply(addons, \(addon) {
+      tags$style(src=paste0(addons_path, addon, "/", addon, "_style.css"))
+    })
+   )
   })
   
   # CLEANUP -------------------------------------------------------------
@@ -981,7 +1051,9 @@ server = function(input, output, session) {
       paste0(isolate(input$exerciseToDownload$exerciseName), ".rnw")
     },
     content = function(fname) {
-      writeLines(text=gsub("\r\n", "\n", isolate(input$exerciseToDownload$exerciseCode)), con=fname)
+      exercise = gsub("\r\n", "\n", isolate(input$exerciseToDownload$exerciseCode))
+      exercise = gsub("\r", "\n", exercise)
+      writeLines(text=exercise, con=fname)
       removeRuntimeFiles(session)
     },
     contentType = "text/rnw",
@@ -1007,7 +1079,7 @@ server = function(input, output, session) {
   # (sync, send values to frontend and load into dom)
   exerciseParsing = eventReactive(input$parseExercise, {
     startWait(session)
-
+    
     x = callr::r_bg(
       func = parseExercise,
       args = list(isolate(input$parseExercise), isolate(input$seedValueExercises), collectWarnings, getDir(session)),
@@ -1086,7 +1158,7 @@ server = function(input, output, session) {
   # evaluate scans - trigger
   examScanEvaluation = eventReactive(input$evaluateExam, {
     startWait(session)
-
+    
     # background exercise
     x = callr::r_bg(
       func = evaluateExamScans,
@@ -1130,7 +1202,7 @@ server = function(input, output, session) {
     writeLines(text=scanData, con=scanDatafile)
 
     # create *_nops_scan.zip file needed for exams::nops_eval
-    zipFile = paste0(dir, "/", preparedEvaluation$meta$examName, "_nops_scan.zip")
+    zipFile = gsub("_+", "_", paste0(dir, "/", preparedEvaluation$meta$examName, "_nops_scan.zip"))
     zip(zipFile, c(preparedEvaluation$files$scans, scanDatafile), flags='-r9XjFS')
 
     # manage preparedEvaluation data
@@ -1198,6 +1270,33 @@ server = function(input, output, session) {
   observeEvent(input$dismiss_evaluateExamFinalizeResponse, {
     removeModal()
     stopWait(session)
+  })
+  
+  # ADDONS ------------------------------------------------------------------
+  addonCall = eventReactive(input$callAddonFunction, {
+    # startWait(session)
+    
+    # background exercise
+    x = callr::r_bg(
+      # func = evaluateExamScans,
+      func = get(input$callAddonFunction$func),
+      args = list(),
+      supervise = TRUE
+    )
+    
+    return(x)
+  })
+  
+  observe({
+    if (addonCall()$is_alive()) {
+      invalidateLater(millis = 100, session = session)
+    } else {
+      result = addonCall()$get_result()
+      
+      #todo: workinprogress
+      print(result)
+      session$sendCustomMessage("debugMessage", result)
+    }
   })
 }
 

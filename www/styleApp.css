@@ -223,6 +223,10 @@ body.textButtonMode .textButton {
 	margin-right: 20px;
 }
 
+.datepicker {
+	z-index: 999 !important;
+}
+
 /* -------------------------------------------------------------- */
 /* SECTIONS  */
 /* -------------------------------------------------------------- */
@@ -963,6 +967,10 @@ main > * {
 	cursor: pointer;
 }
 
+.loadingCompareScanRegistrationDataTable {
+	text-align: center;
+}
+
 #marks {
 	width: 300px;
 }
@@ -1009,15 +1017,15 @@ main > * {
 	display: table;
 }
 
-#exam .content {
+.content {
 	width: 100%;
 }
 
-#exam .contentTab {
+.contentTab {
 	display:none;
 }
 
-#exam .contentTab.active {
+.contentTab.active {
 	display:block;
 }
 
@@ -1121,4 +1129,11 @@ main > * {
 
 .scanStat {
 	display: block;
+}
+
+/* --------------------------------------------------------------
+ ADDON TOOLS 
+-------------------------------------------------------------- */
+.noAddons {
+	display: none !important;
 }
