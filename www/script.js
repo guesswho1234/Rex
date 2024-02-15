@@ -1273,6 +1273,7 @@ $('body').on('focus', '[contenteditable]', function() {
 			if(!$('#latexActiveContainer span').hasClass('active'))
 				content = contentLatexSanitize(content);
 
+			iuf['exercises'][exerciseID]['question'] = content;
 			iuf['exercises'][exerciseID]['question_raw'] = content;
 		}
 		
@@ -1280,6 +1281,7 @@ $('body').on('focus', '[contenteditable]', function() {
 			content = contenteditable_getPlain(content);
 			content = contentLatexSanitize(content);
 
+			iuf['exercises'][exerciseID]['choices'][$this.index('.choiceText')] = content;
 			iuf['exercises'][exerciseID]['choices_raw'][$this.index('.choiceText')] = content;
 		}
 		
@@ -1302,8 +1304,11 @@ $('body').on('focus', '[contenteditable]', function() {
 		examExercisesSummary();
     } else {
 		if(iuf['exercises'][exerciseID]['e'] == 0) {
-			$this.html(iuf['exercises'][exerciseID]['question']);
-			$this.html(iuf['exercises'][exerciseID]['choices'][$this.index('.choiceText')]);
+			if ($this.hasClass('questionText'))
+				$this.html(iuf['exercises'][exerciseID]['question']);
+	
+			if ($this.hasClass('choiceText'))
+				$this.html(iuf['exercises'][exerciseID]['choices'][$this.index('.choiceText')]);
 		}
 	}
 });
