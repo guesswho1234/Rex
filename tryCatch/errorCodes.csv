@@ -1,9 +1,9 @@
 code;en;de
-E1000;Unknown error.;Unbekannter Fehler.
-E1001;Unknown error.;Unbekannter Fehler.
-E1002;Unknown error.;Unbekannter Fehler.
-E1003;Unknown error.;Unbekannter Fehler.
-E1004;Unknown error.;Unbekannter Fehler.
+E1000;;
+E1001;;
+E1002;;
+E1003;;
+E1004;;
 E1005;Exercise type is not 'mchoice'.; Aufgabentyp ist nicht 'mchoice'.
 E1006;Exercise needs at least two choices.;Aufgabe benötigt mindestens zwei Antwortmöglichkeiten.
 E1007;Exercise has indentical choices.;Aufgabe hat identische Antwortmöglichkeiten.

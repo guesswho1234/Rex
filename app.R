@@ -66,11 +66,11 @@ getMessageCode = function(message){
   code = 0
   
   if(type == 2) {
-    code = ifelse(message$value$message %in% names(errorCodes), message$value$message, "E1000")
+    code = ifelse(strsplit(message$value$message, ":")[[1]][1] %in% names(errorCodes), message$value$message, paste0("E1000:", message$value$message))
   }
   
   if(type == 1) {
-    code = ifelse(message$value %in% names(errorCodes), message$value$message, "W1000")
+    code = ifelse(strsplit(message$value, ":")[[1]][1] %in% names(warningCodes), message$value, paste0("W1000:", message$value)) 
   }
   
   code
@@ -83,7 +83,7 @@ myMessage = function(message, class) {
     if (message$value$message %in% names(errorCodes)) {
       message$value = getErrorCodeMessage(message$value$message)
     } else {
-      message$value = message$value #getErrorCodeMessage("E1000")
+      message$value = getErrorCodeMessage("E1000")
     }
   }
   
@@ -187,7 +187,7 @@ parseExercise = function(exercise, seed, collectWarnings, dir){
       # extract raw question text
       question_raw = strsplit(exercise$exerciseCode, "rnwTemplate_question=")[[1]][2]
       question_raw = strsplit(question_raw, "rnwTemplate_choices")[[1]][1]
-      question_raw = paste0(rev(rev(strsplit(question_raw, "")[[1]][-1])[-c(1:3)]), collapse="") # trim
+      question_raw = paste0(rev(rev(strsplit(question_raw, "")[[1]][-1])[-c(1:2)]), collapse="") # trim
       question_raw = gsub("\\\\", "\\", question_raw, fixed=TRUE)
       
       # extract raw choice texts
@@ -226,15 +226,15 @@ parseExercise = function(exercise, seed, collectWarnings, dir){
     value = paste(unique(unlist(warnings)), collapse="<br>")
     if(value != "") {
       key = "Warning"
-      value = "W1001"
+      value = paste0("W1001: ", value)
     }
 
     return(list(message=list(key=key, value=value), id=exercise$exerciseID, seed=seed, html=htmlPreview, figure=figure))
   },
   error = function(e){
-    # if(!grepl("E\\d{4}", e$message)){
-    #   e$message = "E1001"
-    # }
+    if(!grepl("E\\d{4}", e$message)){
+      e$message = paste0("E1001: ", e$message)
+    }
     
     return(list(message=list(key="Error", value=e), id=exercise$exerciseID, seed=NULL, html=NULL))
   })
@@ -446,17 +446,17 @@ createExam = function(exam, settings, input, collectWarnings, dir) {
     })
     key = "Success"
     value = paste(unique(unlist(warnings)), collapse="<br>")
-    # if(value != "") {
-    #   key = "Warning"
-    #   value = "W1002"
-    # }
+    if(value != "") {
+      key = "Warning"
+      value = paste0("W1002: ", value)
+    }
 
     return(list(message=list(key=key, value=value), files=list(sourceFiles=preparedExam$sourceFiles, examFiles=preparedExam$examFiles)))
   },
   error = function(e){
-    # if(!grepl("E\\d{4}", e$message)){
-    #   e$message = "E1002"
-    # }
+    if(!grepl("E\\d{4}", e$message)){
+      e$message = paste0("E1002: ", e$message)
+    }
 
     return(list(message=list(key="Error", value=e), files=list()))
   })
@@ -683,7 +683,7 @@ evaluateExamScans = function(input, collectWarnings, dir){
     value = paste(unique(unlist(warnings)), collapse="<br>")
     if(value != "") {
       key = "Warning"
-      value = "W1003"
+      value = paste0("W1003: ", value)
     }
 
     return(list(message=list(key=key, value=value),
@@ -692,7 +692,7 @@ evaluateExamScans = function(input, collectWarnings, dir){
   },
   error = function(e){
     if(!grepl("E\\d{4}", e$message)){
-      e$message = "E1003"
+      e$message = paste0("E1003: ", e$message)
     }
 
     return(list(message=list(key="Error", value=e), scans_reg_fullJoinData=NULL, examName=NULL, files=list(), data=list()))
@@ -793,16 +793,16 @@ evaluateExamFinalize = function(preparedEvaluation, collectWarnings, dir){
     value = paste(unique(unlist(warnings)), collapse="<br>")
     if(value != "") {
       key = "Warning"
-      value = "W1004"
+      value = paste0("W1004: ", value)
     }
     
     return(list(message=list(key=key, value=value), 
                 preparedEvaluation=preparedEvaluation))
   },
   error = function(e){
-    # if(!grepl("E\\d{4}", e$message)){
-    #   e$message = "E1004"
-    # }
+    if(!grepl("E\\d{4}", e$message)){
+      e$message = paste0("E1004: ", e$message)
+    }
     
     return(list(message=list(key="Error", value=e), examName=NULL, files=list()))
   })

@@ -150,6 +150,18 @@ body.textButtonMode .textButton {
 	display: block !important;
 }
 
+#latexActiveContainer i {
+	margin-left: 0.25rem;
+}
+
+#latexActiveContainer span i {
+	color: var(---red_error);
+}
+
+#latexActiveContainer span.active i {
+	color: var(---green_success);
+}
+
 #hotkeysActiveContainer i {
 	margin-left: 0.25rem;
 }

@@ -41,6 +41,7 @@ function initApp(){
 	dndAdditionalPdf.init();
 	dndExamEvaluation.init();
 	
+	f_latex();
 	f_hotKeys();
 	f_buttonMode();
 	f_langDeEn();
@@ -155,6 +156,45 @@ function getHeartColorCookie() {
 		}
     }
 	
+    return null;
+}
+
+/* --------------------------------------------------------------
+ LATEX
+-------------------------------------------------------------- */
+$('#latexActiveContainer').click(function () {
+	setLatexCookie(+!getLatexCookie());
+	f_latex();
+});
+
+function f_latex() {
+	if (getLatexCookie()) {
+		$('#latexActiveContainer span').addClass('active');
+		return;
+	} 
+	
+	$('#latexActiveContainer span').removeClass('active');
+}
+
+Shiny.addCustomMessageHandler('f_latex', function(x) {
+	f_latex();
+});
+
+function setLatexCookie(latexActive) {
+    document.cookie = 'REX_JS_latex=' + latexActive + ';path=/;SameSite=Lax';
+}
+
+function getLatexCookie() {
+    const name = 'REX_JS_latex';
+    const ca = document.cookie.split(';');
+	
+    for(let i=0;i < ca.length;i++) {
+        let c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+        if (c.indexOf(name) == 0) {
+			return c.substring(name.length + 1,c.length) === "1";
+		}
+    }
     return null;
 }
 
@@ -1188,6 +1228,7 @@ function invalidateAfterEdit(exerciseID) {
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').prepend(iuf['exercises'][exerciseID]['message']);
 }
 
+//latex test string $ % & \ ^ _ { } ~ #
 $('body').on('focus', '[contenteditable]', function() {
     const $this = $(this);
 	const exerciseID = getID();
@@ -1203,9 +1244,9 @@ $('body').on('focus', '[contenteditable]', function() {
     $this.data('before', $this.html());
 }).on('blur', '[contenteditable]', function() {
     const $this = $(this);
+	const exerciseID = getID();	
+	
     if ($this.data('before') !== $this.html()) {
-		const exerciseID = getID();	
-		
 		invalidateAfterEdit(exerciseID);
 		
 		$this.contents().each(function() {
@@ -1218,7 +1259,7 @@ $('body').on('focus', '[contenteditable]', function() {
 			
 		if ($this.hasClass('exerciseNameText')) {
 			content = contenteditable_getPlain(content);
-			content = contentSanizite(content);
+			content = contentSanitize(content);
 			
 			$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseName').text(content);
 			iuf['exercises'][exerciseID]['name'] = content;
@@ -1226,12 +1267,16 @@ $('body').on('focus', '[contenteditable]', function() {
 		
 		if ($this.hasClass('questionText')) {
 			content = contenteditable_getSpecial(content);
+			
+			if(!$('#latexActiveContainer span').hasClass('active'))
+				content = contentLatexSanitize(content);
 
 			iuf['exercises'][exerciseID]['question_raw'] = content;
 		}
 		
 		if ($this.hasClass('choiceText')) {
 			content = contenteditable_getPlain(content);
+			content = contentLatexSanitize(content);
 
 			iuf['exercises'][exerciseID]['choices_raw'][$this.index('.choiceText')] = content;
 		}
@@ -1244,7 +1289,7 @@ $('body').on('focus', '[contenteditable]', function() {
 		
 		if ($this.hasClass('topicText')) {
 			content = contenteditable_getPlain(content);
-			content = contentSanizite(content);
+			content = contentSanitize(content);
 			
 			iuf['exercises'][exerciseID]['topic'] = content;
 		}
@@ -1253,12 +1298,20 @@ $('body').on('focus', '[contenteditable]', function() {
 		
 		setSimpleExerciseFileContents(exerciseID);	
 		examExercisesSummary();
-    }
+    } else {
+		if ($this.hasClass('questionText')) {
+		$this.html(iuf['exercises'][exerciseID]['question']);
+		}
+		
+		if ($this.hasClass('choiceText')) {
+			$this.html(iuf['exercises'][exerciseID]['choices'][$this.index('.choiceText')]);
+		}
+	}
 });
 
 function contenteditable_getPlain(content) {
 	content = content.textContent;
-	content = content.replaceAll('\\', '');
+	content = content.replaceAll('\\\\', '');
 	content = content.replaceAll('&nbsp;', ' ');
 	content = content.replaceAll('\n', ' ');
 		
@@ -1281,8 +1334,23 @@ function contenteditable_getSpecial(content) {
 	return content;
 }
 
-function contentSanizite(content){
+function contentSanitize(content){
 	return content.replace(/[^a-z0-9\_\-]/gi, '');
+}
+
+//latex test string $ % & \ ^ _ { } ~ #
+function contentLatexSanitize(content_raw){
+	// content_raw = content_raw.replaceAll('\\textbackslash', '\\'); # does not work
+	// content_raw = content_raw.replaceAll('\\symbol{92}', '\\'); # causes problems in json
+	content_raw = content_raw.replaceAll('\\~{}', '~');
+	content_raw = content_raw.replaceAll(/[\\](?=[$%&\^_{}~#])/g, '');
+	content_raw = content_raw.replace(/[{}]/g, '\\$&');
+	// content_raw = content_raw.replace(/[\\](?![$%&\^_{}~#])/g, '\\textbackslash'); # does not work
+	// content_raw = content_raw.replace(/[\\](?![$%&\^_{}~#])/g, '\\symbol{92}'); # causes problems in json
+	content_raw = content_raw.replaceAll(/[~]/g, '\\~{}');
+	content_raw = content_raw.replace(/[$%&#\^_]/g, '\\$&');
+
+	return content_raw
 }
 
 function filterNodes(element, allow) {
@@ -1427,6 +1495,8 @@ function setSimpleExerciseFileContents(exerciseID){
 	iuf['exercises'][exerciseID]['file'] = fileText;
 }
 
+
+
 function setExerciseFieldFromObject(field, content) {
 	$('#' + field).html(content);
 	$('#' + field).show();
@@ -1545,6 +1615,7 @@ $('#exercise_info').on('click', '#addNewAnswer', function() {
 	const exerciseID = getID();
 	
 	iuf['exercises'][exerciseID]['choices'].push(d_answerText);
+	iuf['exercises'][exerciseID]['choices_raw'].push(d_answerText);
 	iuf['exercises'][exerciseID]['result'].push(d_result);
 	
 	invalidateAfterEdit(exerciseID);
@@ -1558,8 +1629,9 @@ $('#exercise_info').on('click', '.removeAnswer', function() {
 	const exerciseID = getID();
 	const choicesID = $(this).index('.removeAnswer');
 	
-	if( iuf['exercises'][exerciseID]['choices'].length > 0 ) {	
+	if( iuf['exercises'][exerciseID]['choices'].length > 0 && iuf['exercises'][exerciseID]['choices_raw'].length > 0 ) {	
 		iuf['exercises'][exerciseID]['choices'].splice(choicesID, 1);
+		iuf['exercises'][exerciseID]['choices_raw'].splice(choicesID, 1);
 		iuf['exercises'][exerciseID]['result'].splice(choicesID, 1);
 	} 
 	
