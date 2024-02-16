@@ -3,6 +3,12 @@ uibkTools['visParticipantLists'] = new Array();
 uibkTools['rexEvaluationLists'] = new Array(); 
 
 /* --------------------------------------------------------------
+ADDON DEFAULT INPUT VALUES
+-------------------------------------------------------------- */
+$('#examInstitution').val("Universität Innsbruck");
+Shiny.onInputChange("examInstitution", $('#examInstitution').val());
+	
+/* --------------------------------------------------------------
 VIS PARTICIPANT FILES
 -------------------------------------------------------------- */
 function loadVisParticipantListsFileDialog(items) {
