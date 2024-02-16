@@ -206,6 +206,14 @@ $('#hotkeysActiveContainer').click(function () {
 	f_hotKeys();
 });
 
+$('#hotkeysActiveContainer').hover(
+  function() {
+    $('.hotkeyInfo').addClass('reveal');
+  }, function() {
+    $('.hotkeyInfo').removeClass('reveal');
+  }
+);
+
 function f_hotKeys() {
 	if (getHotkeysCookie()) {
 		$('#hotkeysActiveContainer span').addClass('active');
@@ -267,7 +275,7 @@ document.onkeydown = function(evt) {
 			case 13: // enter
 				applyInspect();
 				break;
-			case 32: //space
+			case 32: // space
 				applyInspectNext();
 				break;
 			case 27: // ESC
@@ -310,6 +318,9 @@ document.onkeydown = function(evt) {
 						case 68: // shift+d
 							exerciseRemoveAll();
 							break;
+						case 83: // shift+s
+							exerciseDownloadAll();
+							break;
 						case 82: // shift+r 
 							exerciseParseAll()
 							break;
@@ -324,11 +335,11 @@ document.onkeydown = function(evt) {
 								setExamExercise($('.exerciseItem.active:not(.filtered)').closest('.exerciseItem:not(.filtered)').index('.exerciseItem:not(.filtered)'), $('.exerciseItem.active:not(.filtered)').closest('.exerciseItem:not(.filtered)').hasClass('exam'));
 							}
 							break;
-						case 87: // w
+						case 38: // ARROW UP
 							sidebarMoveUp($('.mainSection.active'));
 							updateView = true;
 							break;
-						case 83: // s
+						case 40: // ARROW DOWN
 							sidebarMoveDown($('.mainSection.active'));
 							updateView = true;
 							break;
@@ -348,7 +359,9 @@ document.onkeydown = function(evt) {
 						case 82: // r 
 							viewExercise($('.exerciseItem.active:not(.filtered)').first().index('.exerciseItem'));
 							break;
-
+						case 83: // s 
+							exerciseDownload();
+							break;
 					}
 				}
 				
@@ -1104,7 +1117,7 @@ function createExercise(exerciseID, name='exercise',
 		setSimpleExerciseFileContents(exerciseID);
 	}
 		
-	$('#exercise_list_items').append('<div class="exerciseItem sidebarListItem"><span class="exerciseName">' + name + '</span></span><span class="exerciseBlock"><span lang="de">Block:</span><span lang="en">Block:</span><input value="' + block + '"/></span><span class="exerciseButtons"><span class="exerciseParse exerciseButton disabled"><i class="fa-solid fa-rotate"></i></span><span class="examExercise exerciseButton disabled"><span class="iconButton"><i class="fa-solid fa-star"></i></span><span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span></span><span class="exerciseRemove exerciseButton"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></span></span></div>');
+	$('#exercise_list_items').append('<div class="exerciseItem sidebarListItem"><span class="exerciseName">' + name + '</span></span><span class="exerciseBlock"><span lang="de">Block:</span><span lang="en">Block:</span><input value="' + block + '"/></span><span class="exerciseButtons"><span class="exerciseParse exerciseButton disabled"><span class="hotkeyInfo"><span lang="de">R</span><span lang="en">R</span></span><i class="fa-solid fa-rotate"></i></span><span class="examExercise exerciseButton disabled"><span class="hotkeyInfo"><span lang="de">E</span><span lang="en">E</span></span><span class="iconButton"><i class="fa-solid fa-star"></i></span><span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span></span><span class="exerciseRemove exerciseButton"><span class="hotkeyInfo"><span lang="de">D</span><span lang="en">D</span></span><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></span></span></div>');
 }
 
 function parseExercise(exerciseID) {	
@@ -1261,7 +1274,7 @@ $('body').on('focus', '[contenteditable]', function() {
 			
 		if ($this.hasClass('exerciseNameText')) {
 			content = contenteditable_getPlain(content);
-			content = contentSanitize(content);
+			content = contentTextSanitize(content);
 			
 			$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseName').text(content);
 			iuf['exercises'][exerciseID]['name'] = content;
@@ -1293,7 +1306,7 @@ $('body').on('focus', '[contenteditable]', function() {
 		
 		if ($this.hasClass('topicText')) {
 			content = contenteditable_getPlain(content);
-			content = contentSanitize(content);
+			content = contentTextSanitize(content);
 			
 			iuf['exercises'][exerciseID]['topic'] = content;
 		}
@@ -1338,11 +1351,11 @@ function contenteditable_getSpecial(content) {
 	return content;
 }
 
-function contentSanitize(content){
+function contentTextSanitize(content){
 	return content.replace(/[^a-z0-9\_\-]/gi, '');
 }
 
-//latex test string $ % & \ ^ _ { } ~ #
+//latex test string: $ % & \ ^ _ { } ~ #
 function contentLatexSanitize(content_raw){
 	// content_raw = content_raw.replaceAll('\\textbackslash', '\\'); # does not work
 	// content_raw = content_raw.replaceAll('\\symbol{92}', '\\'); # causes problems in json
@@ -1940,6 +1953,23 @@ $("#autofillNumberOfExercises").click(function(){
 	Shiny.onInputChange("numberOfExercises", $('#numberOfExercises').val());
 }); 
 
+$("#examInstitution").change(function(){
+	$(this).val(contentTextSanitize($(this).val()));
+}); 
+
+$("#examTitle").change(function(){
+	$(this).val(contentTextSanitize($(this).val()));
+}); 
+
+$("#examCourse").change(function(){
+	$(this).val(contentTextSanitize($(this).val()));
+}); 
+
+$("#examIntro").change(function(){
+	if(!$('#latexActiveContainer span').hasClass('active'))
+		$(this).val(contentLatexSanitize($(this).val()));
+}); 
+
 $("#createExamEvent").click(function(){
 	createExamEvent();
 }); 
@@ -2142,6 +2172,26 @@ $("#markThreshold5").change(function(){
 	$(this).val(getFloatInput(0, null, 0.85, $(this).val()));
 }); 
 
+$("#markLabel1").change(function(){
+	$(this).val(contentTextSanitize($(this).val()));
+}); 
+
+$("#markLabel2").change(function(){
+	$(this).val(contentTextSanitize($(this).val()));
+}); 
+
+$("#markLabel3").change(function(){
+	$(this).val(contentTextSanitize($(this).val()));
+}); 
+
+$("#markLabel4").change(function(){
+	$(this).val(contentTextSanitize($(this).val()));
+}); 
+
+$("#markLabel5").change(function(){
+	$(this).val(contentTextSanitize($(this).val()));
+}); 
+
 $('body').on('change', '#inputSheetID', function() {
 	$(this).val(getIntegerInput(0, 99999999999, 0, $(this).val()));
 });
@@ -2192,8 +2242,8 @@ $('body').on('click', '.compareListItem:not(.notAssigned)', function() {
 	sortCompareListItems();
 	
 	const scanFocused = iuf['examEvaluation']['scans_reg_fullJoinData'][parseInt($(this).find('.evalIndex').html())];
-		
-	$('#inspectScan').append('<div id="inspectScanContent"><div id="inspectScanImage"><img src="data:image/png;base64, ' + scanFocused.blob + '"/></div><div id="inspectScanTemplate"><span id="scannedRegistration"><span id="scannedRegistrationText"><span lang="de">Matrikelnummer:</span><span lang="en">Registration Number:</span></span><select id="selectRegistration" autocomplete="on"></select></span><span id="replacementSheet"><span id="replacementSheetText"><span lang="de">Ersatzbeleg:</span><span lang="en">Replacement sheet:</span></span></span><span id="scannedSheetID"><span id="scannedSheetIDText"><span lang="de">Klausur-ID:</span><span lang="en">Exam ID:</span></span><select id="inputSheetID" autocomplete="on"></select></span><span id="scannedScramblingID"><span id="scannedScramblingIDText"><span lang="de">Variante:</span><span lang="en">Scrambling:</span></span><input id="inputScramblingID"/></span><span id="scannedTypeID"><span id="scannedTypeIDText"><span lang="de">Belegart:</span><span lang="en">Type:</span></span><input id="inputTypeID"/></span>	<table id="scannedAnswers"></table></div></div><div id="inspectScanButtons"><button id="cancleInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-xmark"></i></span><span class="textButton"><span lang="de">Abbrechen</span><span lang="en">Cancle</span></span></button><button id="applyInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-check"></i></span><span class="textButton"><span lang="de">Übernehmen</span><span lang="en">Apply</span></span></button><button id="applyInspectNext" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-list-check"></i></span><span class="textButton"><span lang="de">Übernehmen & Nächter Scan</span><span lang="en">Apply & Next Scan</span></span></button></div>');
+			
+	$('#inspectScan').append('<div id="inspectScanContent"><div id="inspectScanImage"><img src="data:image/png;base64, ' + scanFocused.blob + '"/></div><div id="inspectScanTemplate"><span id="scannedRegistration"><span id="scannedRegistrationText"><span lang="de">Matrikelnummer:</span><span lang="en">Registration Number:</span></span><select id="selectRegistration" autocomplete="on"></select></span><span id="replacementSheet"><span id="replacementSheetText"><span lang="de">Ersatzbeleg:</span><span lang="en">Replacement sheet:</span></span></span><span id="scannedSheetID"><span id="scannedSheetIDText"><span lang="de">Klausur-ID:</span><span lang="en">Exam ID:</span></span><select id="inputSheetID" autocomplete="on"></select></span><span id="scannedScramblingID"><span id="scannedScramblingIDText"><span lang="de">Variante:</span><span lang="en">Scrambling:</span></span><input id="inputScramblingID"/></span><span id="scannedTypeID"><span id="scannedTypeIDText"><span lang="de">Belegart:</span><span lang="en">Type:</span></span><input id="inputTypeID"/></span><table id="scannedAnswers"></table></div></div><div id="inspectScanButtons"><button id="cancleInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">ESC</span><span lang="en">ESC</span></span><span class="iconButton"><i class="fa-solid fa-xmark"></i></span><span class="textButton"><span lang="de">Abbrechen</span><span lang="en">Cancle</span></span></button><button id="applyInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">ENTER</span><span lang="en">ENTER</span></span><span class="iconButton"><i class="fa-solid fa-check"></i></span><span class="textButton"><span lang="de">Übernehmen</span><span lang="en">Accept</span></span></button><button id="applyInspectNext" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">LEERTASTE</span><span lang="en">SPACE</span></span><span class="iconButton"><i class="fa-solid fa-list-check"></i></span><span class="textButton"><span lang="de">Übernehmen & Nächter Scan</span><span lang="en">Accept & Next Scan</span></span></button></div>');
 	
 	// populate input fields
 	let registrations = iuf['examEvaluation']['scans_reg_fullJoinData'].filter(x => x.scan === 'NA').map(x => x.registration);

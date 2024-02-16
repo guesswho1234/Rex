@@ -38,7 +38,7 @@
 	</ul>
 	<div id="navMisc">
 		<div id="latexActiveContainer">
-			<span id="latexButtons" class="buttonModeSelector"><span lang="de">Latex</span><span lang="en">Latex</span><i class="fa-regular fa-circle-dot"></i></span>
+			<span id="latexButtons" class="buttonModeSelector"><span lang="de">TeX Modus</span><span lang="en">TeX mode</span><i class="fa-regular fa-circle-dot"></i></span>
 		</div>
 		<div id="hotkeysActiveContainer">
 			<span id="hotkeyButtons" class="buttonModeSelector"><span lang="de">Tastenkürzel</span><span lang="en">Hotkeys</span><i class="fa-regular fa-circle-dot"></i></span>
@@ -66,11 +66,14 @@
 </nav>
 <main>
 	<div id="exercises" class="mainSection active">
+		<h1>
+			<span lang="de">Aufgaben</span><span lang="en">Exercises</span>
+		</h1>
 		<div class="sectionHeader">
 			<div class="settings">
-				<h1>
+				<h2>
 					<span lang="de">Einstellungen</span><span lang="en">Settings</span>
-				</h1>
+				</h2>
 				<div>
 					<div>
 						<label for="seedValueExercises"><span lang="de">Seed</span><span lang="en">Seed</span></label>
@@ -79,9 +82,9 @@
 				</div>
 			</div>
 			<div class="summary">
-				<h1>
-					<span lang="de">Zusammenfassung</span><span lang="en">Summary</span>
-				</h1>
+				<h2>
+					<span lang="de">Übersicht Prüfungsaufgaben</span><span lang="en">Overview exam exercises</span>
+				</h2>
 				<table>
 					<tr>
 						<th><span lang="de">Seed</span><span lang="en">Seed</span></th>
@@ -98,14 +101,15 @@
 				</table>
 			</div>
 		</div>
-		<h1>
-			<span lang="de">Aufgaben</span><span lang="en">Exercises</span>
-		</h1>
+		<h2>
+			<span lang="de">Einstellungen</span><span lang="en">Settings</span>
+		</h2>
 		<div class="contentWrapper">
 			<div class="sidebar">
 				<div id="exercise_list" class="itemList">
 					<div id="exerciseListButtons" class="listButtons">
 						<div id="newExercise" class="listButton">
+							<span class="hotkeyInfo"><span lang="de">A</span><span lang="en">A</span></span>
 							<div class="list_butttonIcon">
 								<span class="iconButton"><i class="fa-solid fa-plus"></i></span>
 								<span class="textButton"><span lang="de">Neu</span><span lang="en">New</span></span>
@@ -119,21 +123,25 @@
 							<input type="file" id="file-upload_exercises" onchange='loadExercisesFileDialog(this.files);' multiple>
 						</label>
 						<label id="exerciseDownloadAll" class="listButton" for="downloadExercises">
+						<span class="hotkeyInfo"><span lang="de">SHIFT S</span><span lang="en">SHIFT S</span></span>
 							{{ button_downloadExercises }} 
 						</label>
 						<div id="examExerciseAll" class="listButton">
+							<span class="hotkeyInfo"><span lang="de">SHIFT E</span><span lang="en">SHIFT E</span></span>
 							<div class="list_butttonIcon">
 								<span class="iconButton"><i class="fa-solid fa-star"></i></span>
 								<span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span>
 							</div>
 						</div>								
 						<div id="exerciseRemoveAll" class="listButton">
+							<span class="hotkeyInfo"><span lang="de">SHIFT D</span><span lang="en">SHIFT D</span></span>
 							<div class="list_butttonIcon">
 								<span class="iconButton"><i class="fa-solid fa-trash"></i></span>
 								<span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span>
 							</div>
 						</div>
 						<div id="exerciseParseAll" class="listButton">
+							<span class="hotkeyInfo"><span lang="de">SHIFT R</span><span lang="en">SHIFT R</span></span>
 							<div class="list_butttonIcon">
 								<span class="iconButton"><i class="fa-solid fa-rotate"></i></span>
 								<span class="textButton"><span lang="de">Berechnen</span><span lang="en">Parse</span></span>
@@ -195,6 +203,7 @@
 				
 				<div id="exercise_info_buttons">
 					<label id="exerciseDownload" for="downloadExercise">
+						<span class="hotkeyInfo"><span lang="de">S</span><span lang="en">S</span></span>
 						{{ button_downloadExercise }}  
 					</label>
 				</div>
