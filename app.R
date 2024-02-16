@@ -196,7 +196,7 @@ parseExercise = function(exercise, seed, collectWarnings, dir){
       choices_raw[length(choices_raw)] = paste0(rev(rev(strsplit(choices_raw[length(choices_raw)], "")[[1]])[-c(1:2)]), collapse="") #trim
       choices_raw = Reduce(c, lapply(choices_raw, \(x) paste0(rev(rev(strsplit(x, "")[[1]])[-c(1)]), collapse=""))) # trim
       
-      seed = if(is.na(seed)) NULL else seed
+      seed = if(seed == "") NULL else seed
       
       file = tempfile(fileext = ".Rnw")
       writeLines(text=exercise$exerciseCode, con=file)
@@ -1069,7 +1069,7 @@ server = function(input, output, session) {
   # (sync, send values to frontend and load into dom)
   exerciseParsing = eventReactive(input$parseExercise, {
     startWait(session)
-
+    
     x = callr::r_bg(
       func = parseExercise,
       args = list(isolate(input$parseExercise), isolate(input$seedValueExercises), collectWarnings, getDir(session)),

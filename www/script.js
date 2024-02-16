@@ -618,6 +618,7 @@ $("#seedValueExercises").change(function(){
 	const seed = getIntegerInput(1, 999999999999, null, $(this).val());
 	$(this).val(seed);
 	$('#s_initialSeed').html(itemSingle(seed, 'greenLabelValue'));
+	Shiny.onInputChange("seedValueExercises", $('#seedValueExercises').val());
 	
 	if(iuf.exercises.length > 0) viewExercise(getID());
 }); 
@@ -1919,6 +1920,7 @@ function removeAdditionalPdf(element) {
 
 $('#seedValueExam').change(function(){
 	$(this).val(getIntegerInput(1, 99999999, 1, $(this).val()));
+	Shiny.onInputChange("seedValueExam", $('#seedValueExam').val());
 }); 
 
 $('#additionalPdf_list_items').on('click', '.additionalPdfItem', function() {
