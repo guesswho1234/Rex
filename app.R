@@ -66,11 +66,11 @@ getMessageCode = function(message){
   code = 0
   
   if(type == 2) {
-    code = ifelse(strsplit(message$value$message, ":")[[1]][1] %in% names(errorCodes), message$value$message, paste0("E1000:", message$value$message))
+    code = strsplit(message$value$message, ":")[[1]][1]
   }
-  
+
   if(type == 1) {
-    code = ifelse(strsplit(message$value, ":")[[1]][1] %in% names(warningCodes), message$value, paste0("W1000:", message$value)) 
+    code = strsplit(message$value, ":")[[1]][1]
   }
   
   code
@@ -294,8 +294,8 @@ loadExercise = function(session, id, seed, html, figure, message) {
     session$sendCustomMessage("setExerciseResultMchoice", result)
   }
 
-  session$sendCustomMessage("setExerciseMessage", myMessage(message, "exercise"))
-  session$sendCustomMessage("setExerciseE", getMessageCode(message))
+  session$sendCustomMessage("setExerciseStatusMessage", myMessage(message, "exercise"))
+  session$sendCustomMessage("setExerciseStatusCode", getMessageCode(message))
   session$sendCustomMessage("setExerciseId", -1)
 }
 
