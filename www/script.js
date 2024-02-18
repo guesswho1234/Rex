@@ -4,7 +4,7 @@
 */
 
 /* --------------------------------------------------------------
-DEBUG 
+ DEBUG 
 -------------------------------------------------------------- */
 Shiny.addCustomMessageHandler('debugMessage', function(message) {
 	console.log("DEBUG MESSAGE:\n")
@@ -13,7 +13,7 @@ Shiny.addCustomMessageHandler('debugMessage', function(message) {
 });
 
 /* --------------------------------------------------------------
-APP INIT
+ APP INIT
 -------------------------------------------------------------- */
 $(document).on('shiny:idle', function(event) {
 	initApp();
@@ -63,7 +63,7 @@ function initApp(){
 }
 
 /* --------------------------------------------------------------
-RSHINY CONNECTION 
+ RSHINY CONNECTION 
 -------------------------------------------------------------- */
 let connected = false;
 $(document).on('shiny:disconnected', function(event) {
@@ -74,7 +74,7 @@ $(document).on('shiny:disconnected', function(event) {
 });
 
 /* --------------------------------------------------------------
-LOGOUT 
+ LOGOUT 
 -------------------------------------------------------------- */
 $('body').on('click', '#logout-button', function() {
 	location.reload();
@@ -286,6 +286,7 @@ document.onkeydown = function(evt) {
 	
 	// EXERCISES
 	if($('#disableOverlay').hasClass("active")) return;
+	
 	if( $('#exercises').hasClass('active') ) {	
 		if ($(evtobj.target).is('input') && evtobj.keyCode == 13) { // enter
 			$(evtobj.target).change();
@@ -299,7 +300,8 @@ document.onkeydown = function(evt) {
 				$(evtobj.target).blur();
 			} else {
 				$('#searchExercises input').val("");
-				$('.exerciseItem').removeClass("filtered");
+			
+				searchExercises();
 			}
 		}
 		
@@ -319,7 +321,7 @@ document.onkeydown = function(evt) {
 							exerciseRemoveAll();
 							break;
 						case 83: // shift+s
-							exerciseDownloadAll();
+							$("#downloadExercises")[0].click();
 							break;
 						case 82: // shift+r 
 							exerciseParseAll()
@@ -344,23 +346,14 @@ document.onkeydown = function(evt) {
 							updateView = true;
 							break;
 						case 68: // d
-							resetOutputFields();	
-							
-							const exerciseID = $('.exerciseItem.active:not(.filtered)').closest('.exerciseItem:not(.filtered)').index('.exerciseItem:not(.filtered)')
+							const exerciseID = $('.exerciseItem.active:not(.filtered)').closest('.exerciseItem:not(.filtered)').index('.exerciseItem')
 							removeExercise(exerciseID);
-							$('.exerciseItem.active:not(.filtered)').closest('.exerciseItem:not(.filtered)').remove();
-							
-							if($('.exerciseItem:not(.filtered)').length > 0) {
-								$('.exerciseItem.active:not(.filtered)').removeClass('active');
-								$('.exerciseItem:not(.filtered)').eq(Math.min(exerciseID, $('.exerciseItem:not(.filtered)').length - 1)).addClass('active');
-							}
-							updateView = true;
 							break;
 						case 82: // r 
 							viewExercise($('.exerciseItem.active:not(.filtered)').first().index('.exerciseItem'));
 							break;
 						case 83: // s 
-							exerciseDownload();
+							$("#downloadExercise")[0].click();
 							break;
 					}
 				}
@@ -370,7 +363,7 @@ document.onkeydown = function(evt) {
 				}
 			} 
 			
-			if (evtobj.keyCode == 65) // c
+			if (evtobj.keyCode == 65) // a
 				newSimpleExercise();
 		}
 	}
@@ -420,6 +413,45 @@ Shiny.addCustomMessageHandler('wait', function(status) {
 		$('#logoutContainer').removeClass("disabled");
 	}
 });
+
+/* --------------------------------------------------------------
+ CONFIRM  
+-------------------------------------------------------------- */
+function confirmDialog(deMessage, enMessage, deButtonYes, enButtonYes, iconButtonYes, deButtonNo, enButtonNo, iconButtonNo, callback, ...args) {
+	$('#confirmdialogOverlayContent span[lang="de"]').html(deMessage);
+	$('#confirmdialogOverlayContent span[lang="en"]').html(enMessage);
+	$('#confirmdialogYes .textButton span[lang="de"]').html(deButtonYes);
+	$('#confirmdialogYes .textButton span[lang="en"]').html(enButtonYes);
+	$('#confirmdialogYes .iconButton').html(iconButtonYes);
+	$('#confirmdialogNo .textButton span[lang="de"]').html(deButtonNo);
+	$('#confirmdialogNo .textButton span[lang="en"]').html(enButtonNo);
+	$('#confirmdialogNo .iconButton').html(iconButtonNo);
+		
+	$('#confirmdialogOverlay').addClass("active");
+	$('nav .nav.navbar-nav li').addClass("disabled");
+	$('#logoutContainer').addClass("disabled");
+	
+	$('#confirmdialogYes').one('click', function() {
+        $('#confirmdialogOverlay').removeClass("active");
+		$('nav .nav.navbar-nav li').removeClass("disabled");
+		$('#logoutContainer').removeClass("disabled");
+		
+		$('#confirmdialogNo').off();
+		
+        callback(true, ...args);
+    });
+    $('#confirmdialogNo').one('click', function() {
+        $('#confirmdialogOverlay').removeClass("active");
+		$('nav .nav.navbar-nav li').removeClass("disabled");
+		$('#logoutContainer').removeClass("disabled");
+		
+		$('#confirmdialogYes').off();
+				
+        callback(false, ...args);
+    });
+	
+	return;
+}
 
 /* --------------------------------------------------------------
  NAV 
@@ -699,19 +731,25 @@ function examExerciseAll(){
 }
 
 function exerciseRemoveAll(){
-	const removeIndices = $('.exerciseItem:not(.filtered)').map(function() {
-		return $(this).index();
-	}).get();
-	
-	for (let i = removeIndices.length -1; i >= 0; i--) {
-		iuf['exercises'].splice(removeIndices[i],1);
-		exercises = exercises - 1;
-	}
-	
-	$('.exerciseItem:not(.filtered)').remove();
+	confirmDialog('Alle Aufgaben löschen?', 'Delete all exercises?', 'Ja', 'Yes', '<i class="fa-solid fa-check"></i>', 'Nein', 'No', '<i class="fa-solid fa-xmark"></i>',
+		function(remove) {
+			if(!remove)
+				return;
+			
+			const removeIndices = $('.exerciseItem:not(.filtered)').map(function() {
+			return $(this).index();
+			}).get();
+			
+			for (let i = removeIndices.length -1; i >= 0; i--) {
+				iuf['exercises'].splice(removeIndices[i],1);
+				exercises = exercises - 1;
+			}
+			
+			$('.exerciseItem:not(.filtered)').remove();
 
-	examExercisesSummary();
-	resetOutputFields();	
+			resetOutputFields();
+			examExercisesSummary();
+	});
 }
 
 function exerciseParseAll(){
@@ -774,6 +812,12 @@ $('#exerciseParseAll').click(function () {
 });
 
 $('#searchExercises input').change(function () {
+	searchExercises();
+});
+
+function searchExercises() {
+	$this = $('#searchExercises input');
+	
 	// no exercises 
 	if($('.exerciseItem').length <= 0) {
 		return;
@@ -782,10 +826,19 @@ $('#searchExercises input').change(function () {
 	// no search input
 	if($('#searchExercises input').val() == 0) {
 		$('.exerciseItem').removeClass("filtered");
+		
+		resetOutputFields();
+		$('.exerciseItem.active').removeClass('active');
+		
+		if($('.exerciseItem:not(.filtered)').length > 0) {
+			$('.exerciseItem:not(.filtered)').first().addClass('active');
+			viewExercise($('.exerciseItem.active:not(.filtered)').first().index('.exerciseItem'));
+		}
+		
 		return;
 	}
 	
-	const userInput = $(this).val().split(";");
+	const userInput = $this.val().split(";");
 
 	let matches = new Set();
 	
@@ -954,7 +1007,15 @@ $('#searchExercises input').change(function () {
 			$('.exerciseItem:nth-child(' + (index + 1) + ')').addClass('filtered');
 		}
 	});
-});
+	
+	resetOutputFields();
+	$('.exerciseItem.active').removeClass('active');
+	
+	if($('.exerciseItem:not(.filtered)').length > 0) {
+		$('.exerciseItem:not(.filtered)').first().addClass('active');
+		viewExercise($('.exerciseItem.active:not(.filtered)').first().index('.exerciseItem'));
+	}
+}
 
 /* --------------------------------------------------------------
  EXERCISES 
@@ -1165,6 +1226,9 @@ function getMaxExercisesPerBlock(){
 
 function viewExercise(exerciseID) {
 	resetOutputFields();
+	
+	$('.exerciseItem').removeClass('active');
+	$('.exerciseItem').eq(exerciseID).addClass('active');
 		
 	if(exerciseShouldbeParsed(exerciseID)) {
 		parseExercise(exerciseID);	
@@ -1527,10 +1591,26 @@ function addExercise() {
 }
 
 function removeExercise(exerciseID) {
-	iuf['exercises'].splice(exerciseID, 1);
-	exercises = exercises - 1;
-	
-	examExercisesSummary();
+	confirmDialog('Aufgabe "' + iuf['exercises'][exerciseID]['name'] + '" löschen?', 'Delete exercises "' + iuf['exercises'][exerciseID]['name'] + '" ?', 'Ja', 'Yes', '<i class="fa-solid fa-check"></i>', 'Nein', 'No', '<i class="fa-solid fa-xmark"></i>',
+		function(remove) {
+			if(!remove)
+				return;
+			
+			iuf['exercises'].splice(exerciseID, 1);
+			exercises = exercises - 1;
+			
+			$('.exerciseItem').eq(exerciseID).remove();
+					
+			resetOutputFields();
+					
+			if($('.exerciseItem:not(.filtered)').length > 0) {
+				$('.exerciseItem.active:not(.filtered)').removeClass('active');
+				$('.exerciseItem:not(.filtered)').eq(Math.min(exerciseID, $('.exerciseItem:not(.filtered)').length - 1)).addClass('active');
+				viewExercise($('.exerciseItem.active:not(.filtered)').first().index('.exerciseItem'));
+			}
+			
+			examExercisesSummary();
+	}, exerciseID);	
 }
 
 function changeExerciseBlock(exerciseID, b) {
@@ -1604,22 +1684,9 @@ $('#exercise_list_items').on('click', '.examExercise', function(e) {
 $('#exercise_list_items').on('click', '.exerciseRemove', function(e) {
 	e.preventDefault();
 	e.stopPropagation();
-	
-	resetOutputFields();
-	
-	if($(this).closest('.exerciseItem').hasClass('active')) {
-		Shiny.onInputChange("resetExerciseOutputFields", 1);
-	}
-	
-	const exerciseID = $(this).closest('.exerciseItem').index('.exerciseItem');
+		
+	const exerciseID = $(this).closest('.exerciseItem:not(.filtered)').index('.exerciseItem')
 	removeExercise(exerciseID);
-	$(this).closest('.exerciseItem').remove();
-	
-	if($('.exerciseItem').length > 0) {
-		$('.exerciseItem.active').removeClass('active');
-		$('.exerciseItem:nth-child(' + Math.min(exerciseID + 1, $('.exerciseItem').length) + ')').addClass('active');
-		viewExercise($('.exerciseItem.active').first().index('.exerciseItem'));
-	}
 });
 
 $('#exercise_list_items').on('click', '.exerciseItem', function() {
@@ -2245,7 +2312,7 @@ $('body').on('click', '.compareListItem:not(.notAssigned)', function() {
 	
 	const scanFocused = iuf['examEvaluation']['scans_reg_fullJoinData'][parseInt($(this).find('.evalIndex').html())];
 			
-	$('#inspectScan').append('<div id="inspectScanContent"><div id="inspectScanImage"><img src="data:image/png;base64, ' + scanFocused.blob + '"/></div><div id="inspectScanTemplate"><span id="scannedRegistration"><span id="scannedRegistrationText"><span lang="de">Matrikelnummer:</span><span lang="en">Registration Number:</span></span><select id="selectRegistration" autocomplete="on"></select></span><span id="replacementSheet"><span id="replacementSheetText"><span lang="de">Ersatzbeleg:</span><span lang="en">Replacement sheet:</span></span></span><span id="scannedSheetID"><span id="scannedSheetIDText"><span lang="de">Klausur-ID:</span><span lang="en">Exam ID:</span></span><select id="inputSheetID" autocomplete="on"></select></span><span id="scannedScramblingID"><span id="scannedScramblingIDText"><span lang="de">Variante:</span><span lang="en">Scrambling:</span></span><input id="inputScramblingID"/></span><span id="scannedTypeID"><span id="scannedTypeIDText"><span lang="de">Belegart:</span><span lang="en">Type:</span></span><input id="inputTypeID"/></span><table id="scannedAnswers"></table></div></div><div id="inspectScanButtons"><button id="cancleInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">ESC</span><span lang="en">ESC</span></span><span class="iconButton"><i class="fa-solid fa-xmark"></i></span><span class="textButton"><span lang="de">Abbrechen</span><span lang="en">Cancle</span></span></button><button id="applyInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">ENTER</span><span lang="en">ENTER</span></span><span class="iconButton"><i class="fa-solid fa-check"></i></span><span class="textButton"><span lang="de">Übernehmen</span><span lang="en">Accept</span></span></button><button id="applyInspectNext" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">LEERTASTE</span><span lang="en">SPACE</span></span><span class="iconButton"><i class="fa-solid fa-list-check"></i></span><span class="textButton"><span lang="de">Übernehmen & Nächter Scan</span><span lang="en">Accept & Next Scan</span></span></button></div>');
+	$('#inspectScan').append('<div id="inspectScanContent"><div id="inspectScanImage"><img src="data:image/png;base64, ' + scanFocused.blob + '"/></div><div id="inspectScanTemplate"><span id="scannedRegistration"><span id="scannedRegistrationText"><span lang="de">Matrikelnummer:</span><span lang="en">Registration Number:</span></span><select id="selectRegistration" autocomplete="on"></select></span><span id="replacementSheet"><span id="replacementSheetText"><span lang="de">Ersatzbeleg:</span><span lang="en">Replacement sheet:</span></span></span><span id="scannedSheetID"><span id="scannedSheetIDText"><span lang="de">Klausur-ID:</span><span lang="en">Exam ID:</span></span><select id="inputSheetID" autocomplete="on"></select></span><span id="scannedScramblingID"><span id="scannedScramblingIDText"><span lang="de">Variante:</span><span lang="en">Scrambling:</span></span><input id="inputScramblingID"/></span><span id="scannedTypeID"><span id="scannedTypeIDText"><span lang="de">Belegart:</span><span lang="en">Type:</span></span><input id="inputTypeID"/></span><div id="scannedAnswers"></div></div></div><div id="inspectScanButtons"><button id="cancleInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">ESC</span><span lang="en">ESC</span></span><span class="iconButton"><i class="fa-solid fa-xmark"></i></span><span class="textButton"><span lang="de">Abbrechen</span><span lang="en">Cancle</span></span></button><button id="applyInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">ENTER</span><span lang="en">ENTER</span></span><span class="iconButton"><i class="fa-solid fa-check"></i></span><span class="textButton"><span lang="de">Übernehmen</span><span lang="en">Accept</span></span></button><button id="applyInspectNext" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">LEERTASTE</span><span lang="en">SPACE</span></span><span class="iconButton"><i class="fa-solid fa-list-check"></i></span><span class="textButton"><span lang="de">Übernehmen & Nächter Scan</span><span lang="en">Accept & Next Scan</span></span></button></div>');
 	
 	// populate input fields
 	let registrations = iuf['examEvaluation']['scans_reg_fullJoinData'].filter(x => x.scan === 'NA').map(x => x.registration);
@@ -2286,9 +2353,11 @@ $('body').on('click', '.compareListItem:not(.notAssigned)', function() {
 		
 		scannedAnswersHeader = scannedAnswersHeader + '</tr>';
 		
-		let scannedAnswerItems;
+		const scannedAnswerBlockStart = '<table class="scannedAnswerBlock">' + scannedAnswersHeader;
+		let scannedAnswerBlocks = scannedAnswerBlockStart;
+		let scannedAnswerItems = '';
 		
-		for (let i = 0; i < numExercises; i++) {
+		for (let i = 0; i < numExercises; i++) {	
 			let scannedAnswer = '<tr class="scannedAnswer"><td class="scannedAnswerId">' + (i + 1) + '</td>';
 			
 			for (let j = 0; j < numChoices; j++) {
@@ -2300,10 +2369,20 @@ $('body').on('click', '.compareListItem:not(.notAssigned)', function() {
 			}
 			
 			scannedAnswerItems = scannedAnswerItems + scannedAnswer + '</tr>';
+			
+			const blockComplete = (i + 1) >= 5 && (i + 1) % 5 == 0;
+			const lastItem = (i + 1) == numExercises;
+			
+			if(blockComplete || lastItem)
+				scannedAnswerBlocks = scannedAnswerBlocks + scannedAnswerItems + '</span>';
+			
+			if(blockComplete && !lastItem) {
+				scannedAnswerItems = '';
+				scannedAnswerBlocks = scannedAnswerBlocks + scannedAnswerBlockStart;
+			}
 		}
 		
-		$('#scannedAnswers').append(scannedAnswersHeader);
-		$('#scannedAnswers').append(scannedAnswerItems);
+		$('#scannedAnswers').append(scannedAnswerBlocks);
 	}
 	
 	$(this).addClass('focus');
