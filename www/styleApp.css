@@ -58,41 +58,70 @@ main {
 	border: 2px solid var(---main);
 }
 
-#disableOverlay {
+#disableOverlay,
+#confirmdialogOverlay {
 	width: 100%;
 	height: 100%;
-	filter: opacity(0.7);
 	display: none;
 	position: fixed;
 	z-index: 998;
-	background: black;
+	background: var(---background4);
 }
 
-#disableOverlay.active {
+#disableOverlay.active,
+#confirmdialogOverlay.active {
 	display: block !important;
 }
 
-#disableOverlay div {
+#disableOverlay div,
+#confirmdialogOverlayContent {
 	position: absolute;
 	top: 0;
 	left: 0;
 	width: 100vw;
 	height: 100vh;
-	background: var(---background2);
+	background: var(---transparent);
 	z-index: 999;
 	display: flex;
 	justify-content: center;
 	align-items: center;
 }
 
-#disableOverlay div span {
-	display: flex;
+#disableOverlay div span,
+#confirmdialogOverlayContentBox {
 	width: fit-content;
 	height: fit-content;
-	background: var(---background);
 	font-weight: bold;
 	padding: 10px;
 	border-radius: 3px;
+}
+
+#disableOverlay div span {
+	display: flex;
+	background: var(---background);
+}
+
+#confirmdialogOverlayContentBox {
+	display: block;
+	background: white;
+}
+
+#confirmdialogOverlayContentButtons {
+	display: flex;
+	justify-content: space-around;
+}
+
+#confirmdialogOverlayContentButtons .confirmDialogButton {
+	margin: 0.5rem;
+	padding: 0.5rem;
+	cursor: pointer;
+	background: var(---gray_passive);
+	border: 2px solid var(---gray_passive);
+	border-radius: 5px;	
+}
+
+#confirmdialogOverlayContentButtons .confirmDialogButton:hover {
+	border: 2px solid var(---main);
 }
 
 .container-fluid {
@@ -944,7 +973,7 @@ main > * {
 	width: 50%;
 }
 
-.magnify{
+.magnify {
   border-radius: 50%;
   border: 2px solid black;
   position: absolute;
@@ -974,12 +1003,23 @@ main > * {
 	gap: 10px;
 }
 
+#scannedAnswers  {
+	display: grid;
+	grid-template-rows: 1fr 1fr 1fr;
+	grid-template-rows: repeat(auto-fill, minmax(100px, 1fr));
+	grid-auto-flow: column;
+}
+
 #scannedAnswersHeader th {
 	text-align: center;
 }
 
 #scannedAnswers td {
 	padding-left: 0.25rem;
+}
+
+.scannedAnswerBlock {
+	display: block;
 }
 
 #inspectScanButtons {
