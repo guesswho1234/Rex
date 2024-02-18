@@ -1472,7 +1472,6 @@ document.addEventListener('dblclick', (event) => {
 
 function loadExerciseFromObject(exerciseID) {
 	const editable = iuf.exercises[exerciseID].editable; 
-	const error = iuf.exercises[exerciseID].statusCode.charAt(0) === "E"; 
 	
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').removeClass("editable");
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseParse').removeClass("disabled");
@@ -1567,9 +1566,7 @@ function loadExerciseFromObject(exerciseID) {
 		
 	$('.exerciseItem.active').removeClass('active');
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').addClass('active');
-	
-	if(!error)
-		$('#exercise_info').removeClass('hidden');
+	$('#exercise_info').removeClass('hidden');
 	
 	f_langDeEn();
 }
