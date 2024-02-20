@@ -966,6 +966,7 @@ main > * {
 #inspectScanContent {
 	display: flex;
 	width: 100%;
+	margin-bottom: 1rem;
 }
 
 #inspectScanImage,
@@ -1006,13 +1007,18 @@ main > * {
 #scannedAnswers  {
 	display: grid;
 	grid-template-columns: 1fr 1fr 1fr;
-	grid-template-rows: repeat(auto-fill, minmax(100px, 1fr));
-	/*todo:*/ /* grid-template-rows: 1fr 1fr 1fr; */
+	grid-template-rows: 1fr 1fr 1fr;
 	grid-auto-flow: column;
+	overflow-x: auto;
+	padding: 0 1rem 1rem 0;
 }
 
 #scannedAnswersHeader th {
 	text-align: center;
+}
+
+#scannedAnswersHeader th:first-of-type {
+	width: 25px;
 }
 
 #scannedAnswers td {
@@ -1021,6 +1027,18 @@ main > * {
 
 .scannedAnswerBlock {
 	display: block;
+	border-right: 1px solid;
+	padding-right: 1rem;
+	padding-left: 1rem;
+}
+
+.scannedAnswerBlock:not(.answerColumn3) {
+	padding-right: 1rem;
+}
+
+.scannedAnswerBlock:not(.answerColumn1) {
+	padding-left: 1rem;
+	border-left: 1px solid;
 }
 
 #inspectScanButtons {

@@ -2362,8 +2362,11 @@ $('body').on('click', '.compareListItem:not(.notAssigned)', function() {
 		
 		scannedAnswersHeader = scannedAnswersHeader + '</tr>';
 		
-		const scannedAnswerBlockStart = '<table class="scannedAnswerBlock">' + scannedAnswersHeader;
-		let scannedAnswerBlocks = scannedAnswerBlockStart;
+		let answerBlock = 1;
+		let answerRow = 1;
+		let answerColumn = 1;
+		
+		let scannedAnswerBlocks = '<table class="scannedAnswerBlock answerBlock' + answerBlock + ' answerRow' + answerRow + ' answerColumn' + answerColumn + '">' + scannedAnswersHeader;
 		let scannedAnswerItems = '';
 		
 		for (let i = 0; i < numExercises; i++) {	
@@ -2387,7 +2390,12 @@ $('body').on('click', '.compareListItem:not(.notAssigned)', function() {
 			
 			if(blockComplete && !lastItem) {
 				scannedAnswerItems = '';
-				scannedAnswerBlocks = scannedAnswerBlocks + scannedAnswerBlockStart;
+				
+				answerBlock += 1; 
+				answerRow = (answerBlock - 1) % 3 + 1;
+				answerColumn = Math.ceil(answerBlock / 3);
+				
+				scannedAnswerBlocks = scannedAnswerBlocks + '<table class="scannedAnswerBlock answerBlock' + answerBlock + ' answerRow' + answerRow + ' answerColumn' + answerColumn + '">' + scannedAnswersHeader;
 			}
 		}
 		

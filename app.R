@@ -405,7 +405,6 @@ createExam = function(exam, settings, input, collectWarnings, dir) {
                           nsamp = nsamp,
                           name = name,
                           dir = dir,
-                          solution=TRUE,
                           seed = seed)
 
         # create exam
@@ -1101,7 +1100,34 @@ server = function(input, output, session) {
 
   examCreation = eventReactive(input$createExam, {
     startWait(session)
-
+    
+    exerciseNames = as.list(make.unique(unlist(input$createExam$exerciseNames), sep="_"))
+    exerciseFiles = setNames(seq_along(exerciseNames), exerciseNames)
+    
+    numberOfExams = as.numeric(input$numberOfExams)
+    blocks = as.numeric(input$createExam$blocks)
+    uniqueBlocks = unique(blocks)
+    numberOfExercises = as.numeric(input$numberOfExercises)
+    exercisesPerBlock = numberOfExercises / length(uniqueBlocks)
+    exercises = lapply(uniqueBlocks, function(x) exerciseFiles[blocks==x])
+    
+    seedList = matrix(1, nrow=numberOfExams, ncol=length(exerciseNames))
+    seedList = seedList * as.numeric(paste0(if(is.na(is.numeric(input$seedValueExam))) NULL else input$seedValueExam, 1:numberOfExams))
+    
+    #todo: fix html and pdf having different order for exercises
+    
+    # print(exercises)
+    # print(seedList)
+    
+    # per block a list element exists
+    # each list element contains a vector of exercises for this block
+    # [[1]]
+    # a b c 
+    # 1 2 3 
+    # 
+    # [,1]      [,2]      [,3]
+    # [1,] 202402181 202402181 202402181
+    
     settings = list(exerciseMin=exerciseMin,
                     exerciseMax=exerciseMax,
                     seedMin=seedMin,
