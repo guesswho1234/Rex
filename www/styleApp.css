@@ -1027,9 +1027,6 @@ main > * {
 
 .scannedAnswerBlock {
 	display: block;
-	border-right: 1px solid;
-	padding-right: 1rem;
-	padding-left: 1rem;
 }
 
 .scannedAnswerBlock:not(.answerColumn3) {
