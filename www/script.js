@@ -294,9 +294,9 @@ document.onkeydown = function(evt) {
 		const targetEditable = $(evtobj.target).attr('contenteditable');
 	
 		if (evtobj.keyCode == 27) { // ESC
-			if(targetEditable) {
-				$(evtobj.target).blur();
-			} else {
+			$(evtobj.target).blur();
+		
+			if(!targetEditable) {
 				$('#searchExercises input').val("");
 			
 				searchExercises();
