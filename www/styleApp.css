@@ -1005,8 +1005,9 @@ main > * {
 
 #scannedAnswers  {
 	display: grid;
-	grid-template-rows: 1fr 1fr 1fr;
+	grid-template-columns: 1fr 1fr 1fr;
 	grid-template-rows: repeat(auto-fill, minmax(100px, 1fr));
+	/*todo:*/ /* grid-template-rows: 1fr 1fr 1fr; */
 	grid-auto-flow: column;
 }
 
