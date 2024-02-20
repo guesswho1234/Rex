@@ -1348,7 +1348,7 @@ $('body').on('focus', '[contenteditable]', function() {
 			
 		if ($this.hasClass('exerciseNameText')) {
 			content = contenteditable_getPlain(content);
-			content = contentTextSanitize(content);
+			content = contentTextSanitize(content, false);
 			
 			$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseName').text(content);
 			iuf.exercises[exerciseID].name = content;
@@ -1425,7 +1425,10 @@ function contenteditable_getSpecial(content) {
 	return content;
 }
 
-function contentTextSanitize(content){
+function contentTextSanitize(content, allowSpace=true){
+	if(allowSpace)
+		return content.replace(/[^a-z0-9\_\- ]/gi, '');
+	
 	return content.replace(/[^a-z0-9\_\-]/gi, '');
 }
 
