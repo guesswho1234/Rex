@@ -7,9 +7,9 @@
  DEBUG 
 -------------------------------------------------------------- */
 Shiny.addCustomMessageHandler('debugMessage', function(message) {
-	console.log("DEBUG MESSAGE:\n")
-	console.log(message)
-	console.log("\n\n")
+	console.log("DEBUG MESSAGE:\n");
+	console.log(message);
+	console.log("\n\n");
 });
 
 /* --------------------------------------------------------------
@@ -23,15 +23,15 @@ function initApp(){
 	if( initApp.fired ) return;
 	initApp.fired = true;
 	 
-	iuf['exercises'] = new Array();
-	iuf['examAdditionalPdf'] = new Array(); 
-	iuf['examEvaluation'] = new Array();
-	iuf['examEvaluation']['scans'] = new Array(); 
-	iuf['examEvaluation']['registeredParticipants'] = new Array();
-	iuf['examEvaluation']['solutions'] = new Array();
-	iuf['examEvaluation']['examIds'] = new Array();
-	iuf['examEvaluation']['changeHistory'] = null;
-	iuf['examEvaluation']['scans_reg_fullJoinData'] = new Array();
+	iuf.exercises = [];
+	iuf.examAdditionalPdf = []; 
+	iuf.examEvaluation = [];
+	iuf.examEvaluation.scans = []; 
+	iuf.examEvaluation.registeredParticipants = [];
+	iuf.examEvaluation.solutions = [];
+	iuf.examEvaluation.examIds = [];
+	iuf.examEvaluation.changeHistory = null;
+	iuf.examEvaluation.scans_reg_fullJoinData = [];
 	
 	$('#s_initialSeed').html(itemSingle($('#seedValueExercises').val(), 'greenLabelValue'));
 	$('#s_numberOfExams').html(itemSingle($('#numberOfExams').val(), 'grayLabelValue'));
@@ -51,7 +51,7 @@ function initApp(){
 	
 	const linkElements = ['<link rel="stylesheet" href="styleApp.css" type="text/css">',
 	'<link rel="stylesheet" href="/fontawesome/css/fontawesome.min.css" type="text/css">',
-	'<link rel="stylesheet" href="/fontawesome/css/all.min.css" type="text/css">']	
+	'<link rel="stylesheet" href="/fontawesome/css/all.min.css" type="text/css">'];	
 	
 	if( $('#addons .sidebarListItem').length > 0 && $('#addons .contentTab').length > 0 && $('#addons .sidebarListItem').length == $('#addons .contentTab').length) {
 		$('.noAddons').removeClass('noAddons');
@@ -95,14 +95,12 @@ sheet =>
 	...Array.from(sheet.cssRules).reduce(
 	  (def, rule) =>
 		(def =
-		  rule.selectorText === ".color-theme"
-			? [
+		  rule.selectorText === ".color-theme" ? [
 				...def,
 				...Array.from(rule.style).filter(name =>
 				  name.startsWith("--")
 				)
-			  ]
-			: def),
+			  ] : def),
 	  []
 	)
   ]),
@@ -118,12 +116,14 @@ Shiny.addCustomMessageHandler('heartbeat', function(heartbeat) {
 
 function ping(){
 	$('#heart').addClass("ping");
-
+	const heartbeat = true;
+	
 	setTimeout(pong, 300); 
 }
 
 function pong(){
 	$('#heart').removeClass("ping");
+	Shiny.onInputChange("pong", "heartbeat", {priority: 'event'});
 }
 
 $('body').on('click', '#heart.ping', function(e) {
@@ -132,7 +132,7 @@ $('body').on('click', '#heart.ping', function(e) {
 
 function changeHeartColor(increment = 1) {
 	let colorId = getHeartColorCookie();
-	colorId = colorId === null ? 14 : parseInt(colorId) + increment;
+	colorId = colorId === null ? 0 : parseInt(colorId) + increment;
 	colorId = colorId > (myColors.length - 1) ? 0 : colorId;
 	
 	$('#heart span').css('background', 'var(' + myColors[colorId] + ')');
@@ -249,7 +249,7 @@ document.onkeyup = function(evt) {
 	if($('#disableOverlay').hasClass("active")) return;
 	if(!getHotkeysCookie()) return;
 	
-	const evtobj = window.event? event : evt
+	const evtobj = window.event? event : evt;
 	
 	if( $('#exercises').hasClass('active') ) {
 		const targetEditable = $(evtobj.target).attr('contenteditable');
@@ -262,12 +262,12 @@ document.onkeyup = function(evt) {
 			searchField[0].setSelectionRange(searchValLength, searchValLength);
 		}
 	}
-}
+};
 
 document.onkeydown = function(evt) {
 	if(!getHotkeysCookie()) return;
 	
-	const evtobj = window.event? event : evt
+	const evtobj = window.event? event : evt;
 	
 	// INSPECT SCAN
 	if( $('#inspectScanButtons').length == 1 ) {
@@ -296,9 +296,9 @@ document.onkeydown = function(evt) {
 		const targetEditable = $(evtobj.target).attr('contenteditable');
 	
 		if (evtobj.keyCode == 27) { // ESC
-			if(targetEditable) {
-				$(evtobj.target).blur();
-			} else {
+			$(evtobj.target).blur();
+		
+			if(!targetEditable) {
 				$('#searchExercises input').val("");
 			
 				searchExercises();
@@ -324,7 +324,7 @@ document.onkeydown = function(evt) {
 							$("#downloadExercises")[0].click();
 							break;
 						case 82: // shift+r 
-							exerciseParseAll()
+							exerciseParseAll();
 							break;
 					}
 				} 
@@ -346,7 +346,7 @@ document.onkeydown = function(evt) {
 							updateView = true;
 							break;
 						case 68: // d
-							const exerciseID = $('.exerciseItem.active:not(.filtered)').closest('.exerciseItem:not(.filtered)').index('.exerciseItem')
+							const exerciseID = $('.exerciseItem.active:not(.filtered)').closest('.exerciseItem:not(.filtered)').index('.exerciseItem');
 							removeExercise(exerciseID);
 							break;
 						case 82: // r 
@@ -495,7 +495,7 @@ function f_buttonMode() {
 	$('body').removeClass("iconButtonMode");
 	$('body').removeClass("textButtonMode");
 	
-	buttonMode = getButtonModeCookie()
+	buttonMode = getButtonModeCookie();
 	
 	if (buttonMode === 'iconbuttons') {
 		$('body').addClass("iconButtonMode");
@@ -535,10 +535,10 @@ $('#languageSwitchContainer span').click(function () {
 });
 
 function f_langDeEn() {
-	lang = getLanguageCookie()
+	lang = getLanguageCookie();
 	
 	if (lang === 'en') {
-		iuf['language'] = 'en';
+		iuf.language = 'en';
 		
 		$('html').attr('lang', 'en');
 		$('html').attr('xml:lang', 'en');
@@ -546,7 +546,7 @@ function f_langDeEn() {
 		$('[lang="de"]').hide();
 		$('[lang="en"]').show();
 	} else {
-		iuf['language'] = 'de';
+		iuf.language = 'de';
 		
 		$('html').attr('lang', 'de');
 		$('html').attr('xml:lang', 'de');
@@ -673,7 +673,7 @@ function examExercisesSummary() {
 	let totalPoints = 0;
 	let topics = [];
 		
-	iuf['exercises'].forEach((item, index) => {
+	iuf.exercises.forEach((item, index) => {
 		if(item.exam) {
 			numberOfExamExercisesCounter++;
 			totalPoints += Number(item.points);
@@ -718,11 +718,11 @@ function examExerciseAll(){
 		}
 		
 		$(this).removeClass('exam');
-		iuf['exercises'][index]['exam'] = false;
+		iuf.exercises[index].exam = false;
 				
 		if (!$(this).find('.examExercise').hasClass('disabled') && !examExerciseAllButton.hasClass('allAdded')) {	
 			$(this).addClass('exam');
-			iuf['exercises'][index]['exam'] = true;
+			iuf.exercises[index].exam = true;
 		}
 	});
 	
@@ -741,7 +741,7 @@ function exerciseRemoveAll(){
 			}).get();
 			
 			for (let i = removeIndices.length -1; i >= 0; i--) {
-				iuf['exercises'].splice(removeIndices[i],1);
+				iuf.exercises.splice(removeIndices[i],1);
 				exercises = exercises - 1;
 			}
 			
@@ -951,13 +951,24 @@ function searchExercises() {
 			filterExercises(fieldsToFilter, filterBy);
 		}
 		
-		if (input.includes("e:")) {
+		if (input.includes("statusMessage:")) {
 			const fieldsToFilter = iuf.exercises.map(exercise => {
-				if( exercise.e === null) {
+				if( exercise.statusMessage === null) {
 					return "";
 				} 
 				
-				return exercise.e;
+				return exercise.statusMessage;
+			})
+			filterExercises(fieldsToFilter, filterBy);
+		}
+		
+		if (input.includes("statusCode:")) {
+			const fieldsToFilter = iuf.exercises.map(exercise => {
+				if( exercise.statusCode === null) {
+					return "";
+				} 
+				
+				return exercise.statusCode;
 			})
 			filterExercises(fieldsToFilter, filterBy);
 		}
@@ -1139,8 +1150,8 @@ function createExercise(exerciseID, name='exercise',
 						    question='',
 						    choices=[],
 							result=[],
-							message=null,
-							e=null,
+							statusMessage=null,
+							statusCode=null,
 							editable=false,
 							type=null,
 							block=1,
@@ -1153,27 +1164,27 @@ function createExercise(exerciseID, name='exercise',
 							points=1,
 							tags=null,
 							figure=null){
-	iuf['exercises'][exerciseID]['file'] = file;
-	iuf['exercises'][exerciseID]['name'] = name;
-	iuf['exercises'][exerciseID]['seed'] = seed;
-	iuf['exercises'][exerciseID]['exam'] = exam;
-	iuf['exercises'][exerciseID]['question'] = question;
-	iuf['exercises'][exerciseID]['question_raw'] = question;
-	iuf['exercises'][exerciseID]['choices'] = choices;
-	iuf['exercises'][exerciseID]['choices_raw'] = choices;
-	iuf['exercises'][exerciseID]['result'] = result;
-	iuf['exercises'][exerciseID]['examHistory'] = examHistory;
-	iuf['exercises'][exerciseID]['authoredBy'] = authoredBy;
-	iuf['exercises'][exerciseID]['precision'] = precision;
-	iuf['exercises'][exerciseID]['points'] = points;
-	iuf['exercises'][exerciseID]['topic'] = topic;
-	iuf['exercises'][exerciseID]['tags'] = tags;
-	iuf['exercises'][exerciseID]['type'] = type;
-	iuf['exercises'][exerciseID]['message'] = message;	
-	iuf['exercises'][exerciseID]['e'] = e;	
-	iuf['exercises'][exerciseID]['editable'] = editable;
-	iuf['exercises'][exerciseID]['block'] = block;
-	iuf['exercises'][exerciseID]['figure'] = figure;
+	iuf.exercises[exerciseID]['file'] = file;
+	iuf.exercises[exerciseID]['name'] = name;
+	iuf.exercises[exerciseID]['seed'] = seed;
+	iuf.exercises[exerciseID]['exam'] = exam;
+	iuf.exercises[exerciseID]['question'] = question;
+	iuf.exercises[exerciseID]['question_raw'] = question;
+	iuf.exercises[exerciseID]['choices'] = choices;
+	iuf.exercises[exerciseID]['choices_raw'] = choices;
+	iuf.exercises[exerciseID]['result'] = result;
+	iuf.exercises[exerciseID]['examHistory'] = examHistory;
+	iuf.exercises[exerciseID]['authoredBy'] = authoredBy;
+	iuf.exercises[exerciseID]['precision'] = precision;
+	iuf.exercises[exerciseID]['points'] = points;
+	iuf.exercises[exerciseID]['topic'] = topic;
+	iuf.exercises[exerciseID]['tags'] = tags;
+	iuf.exercises[exerciseID]['type'] = type;
+	iuf.exercises[exerciseID]['statusMessage'] = statusMessage;	
+	iuf.exercises[exerciseID]['statusCode'] = statusCode;	
+	iuf.exercises[exerciseID]['editable'] = editable;
+	iuf.exercises[exerciseID]['block'] = block;
+	iuf.exercises[exerciseID]['figure'] = figure;
 	
 	if( file === null) {
 		setSimpleExerciseFileContents(exerciseID);
@@ -1183,20 +1194,20 @@ function createExercise(exerciseID, name='exercise',
 }
 
 function parseExercise(exerciseID) {	
-	const exerciseCode = iuf['exercises'][exerciseID].file;
+	const exerciseCode = iuf.exercises[exerciseID].file;
 	
 	Shiny.onInputChange("parseExercise", {exerciseCode: exerciseCode, exerciseID: exerciseID}, {priority: 'event'});	
 }
 
 function getNumberOfExerciseBlocks() {
-	return new Set(iuf['exercises'].filter((x) => x.exam).map(x => x.block)).size;
+	return new Set(iuf.exercises.filter((x) => x.exam).map(x => x.block)).size;
 }
 
 function getMaxNumberOfExamExercises() {
 	const numberOfExerciseBlocks = getNumberOfExerciseBlocks();
 	
 	let setNumberOfExamExercises = 0;
-	iuf['exercises'].map(x => setNumberOfExamExercises += x.exam);
+	iuf.exercises.map(x => setNumberOfExamExercises += x.exam);
 	setNumberOfExamExercises = setNumberOfExamExercises - setNumberOfExamExercises % numberOfExerciseBlocks;
 	
 	return Math.min(setNumberOfExamExercises, getMaxExercisesPerBlock()) * numberOfExerciseBlocks;
@@ -1220,7 +1231,7 @@ function checkNumberOfExamExercises(numExercises) {
 }
 
 function getMaxExercisesPerBlock(){
-	const exercisesPerBlock = iuf['exercises'].filter((x) => x.exam).reduce( (acc, x) => (acc[x.block] = (acc[x.block] || 0) + 1, acc), {} );
+	const exercisesPerBlock = iuf.exercises.filter((x) => x.exam).reduce( (acc, x) => (acc[x.block] = (acc[x.block] || 0) + 1, acc), {} );
 	return Math.min(...Object.values(exercisesPerBlock));
 }
 
@@ -1240,8 +1251,8 @@ function viewExercise(exerciseID) {
 }
 
 function exerciseShouldbeParsed(exerciseID){
-	const seedChanged = iuf['exercises'][exerciseID]['seed'] == "" || iuf['exercises'][exerciseID]['seed'] != $("#seedValueExercises").val();
-	const error = iuf['exercises'][exerciseID]['e'] === 2;
+	const seedChanged = iuf.exercises[exerciseID].seed == "" || iuf.exercises[exerciseID].seed != $("#seedValueExercises").val();
+	const error = iuf.exercises[exerciseID].statusCode === null || iuf.exercises[exerciseID].statusCode.charAt(0) === "E"
 	
 	return seedChanged || error;
 }
@@ -1270,13 +1281,13 @@ function resetOutputFields() {
 $('#exercise_info').on('click', '.editTrueFalse', function(e) {
 	const exerciseID = getID();
 	invalidateAfterEdit(exerciseID);
-	const newValue = iuf['exercises'][exerciseID]['result'][$(this).index('.mchoiceResult')] !== true;
+	const newValue = iuf.exercises[exerciseID].result[$(this).index('.mchoiceResult')] !== true;
 		
 	$(this).removeClass("trueMchoiceResult");
 	$(this).removeClass("falseMchoiceResult");
 	$(this).addClass(newValue + "MchoiceResult");
 		
-	iuf['exercises'][exerciseID]['result'][$(this).index('.mchoiceResult')] = newValue;
+	iuf.exercises[exerciseID].result[$(this).index('.mchoiceResult')] = newValue;
 	$(this).html(getTrueFalseText(newValue));
 	
 	setSimpleExerciseFileContents(exerciseID);	
@@ -1300,12 +1311,12 @@ Array.fromList = function(list) {
 
 function invalidateAfterEdit(exerciseID) {
 	setExamExercise(exerciseID, false);
-	iuf['exercises'][exerciseID]['e'] = 2;
-	iuf['exercises'][exerciseID]['message'] = '<span class="exerciseTryCatch tryCatch Error"><span class="responseSign ErrorSign"><i class="fa-solid fa-circle-exclamation"></i></span><span class="exerciseTryCatchText tryCatchText">Exercise needs to be parsed again.</span></span>';
+	iuf.exercises[exerciseID].statusCode = "E000";
+	iuf.exercises[exerciseID].statusMessage = '<span class="exerciseTryCatch tryCatch Error"><span class="responseSign ErrorSign"><i class="fa-solid fa-circle-exclamation"></i></span><span class="exerciseTryCatchText tryCatchText"><span lang="de">Aufgabe muss neu berechnet werden.</span><span lang="en">Exercise needs to be parsed again.</span></span></span>';
 	
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .examExercise').addClass('disabled');
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseTryCatch').remove();
-	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').prepend(iuf['exercises'][exerciseID]['message']);
+	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').prepend(iuf.exercises[exerciseID].statusMessage);
 }
 
 //latex test string $ % & \ ^ _ { } ~ #
@@ -1314,11 +1325,11 @@ $('body').on('focus', '[contenteditable]', function() {
 	const exerciseID = getID();
 	
 	if ($this.hasClass('questionText')) {
-		$this.html(iuf['exercises'][exerciseID]['question_raw']);
+		$this.html(iuf.exercises[exerciseID].question_raw);
 	}
 	
 	if ($this.hasClass('choiceText')) {
-		$this.html(iuf['exercises'][exerciseID]['choices_raw'][$this.index('.choiceText')]);
+		$this.html(iuf.exercises[exerciseID].choices_raw[$this.index('.choiceText')]);
 	}
 	
     $this.data('before', $this.html());
@@ -1339,10 +1350,10 @@ $('body').on('focus', '[contenteditable]', function() {
 			
 		if ($this.hasClass('exerciseNameText')) {
 			content = contenteditable_getPlain(content);
-			content = contentTextSanitize(content);
+			content = contentTextSanitize(content, true);
 			
 			$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseName').text(content);
-			iuf['exercises'][exerciseID]['name'] = content;
+			iuf.exercises[exerciseID].name = content;
 		}
 		
 		if ($this.hasClass('questionText')) {
@@ -1351,29 +1362,29 @@ $('body').on('focus', '[contenteditable]', function() {
 			if(!$('#latexActiveContainer span').hasClass('active'))
 				content = contentLatexSanitize(content);
 
-			iuf['exercises'][exerciseID]['question'] = content;
-			iuf['exercises'][exerciseID]['question_raw'] = content;
+			iuf.exercises[exerciseID].question = content;
+			iuf.exercises[exerciseID].question_raw = content;
 		}
 		
 		if ($this.hasClass('choiceText')) {
 			content = contenteditable_getPlain(content);
 			content = contentLatexSanitize(content);
 
-			iuf['exercises'][exerciseID]['choices'][$this.index('.choiceText')] = content;
-			iuf['exercises'][exerciseID]['choices_raw'][$this.index('.choiceText')] = content;
+			iuf.exercises[exerciseID].choices[$this.index('.choiceText')] = content;
+			iuf.exercises[exerciseID].choices_raw[$this.index('.choiceText')] = content;
 		}
 		
 		if ($this.hasClass('points')) {
 			content = contenteditable_getPlain(content);
 			content = getIntegerInput(0, null, 1, content);
-			iuf['exercises'][exerciseID]['points'] = content;
+			iuf.exercises[exerciseID].points = content;
 		}
 		
 		if ($this.hasClass('topicText')) {
 			content = contenteditable_getPlain(content);
 			content = contentTextSanitize(content);
 			
-			iuf['exercises'][exerciseID]['topic'] = content;
+			iuf.exercises[exerciseID].topic = content;
 		}
 
 		$this.html(content);
@@ -1381,12 +1392,12 @@ $('body').on('focus', '[contenteditable]', function() {
 		setSimpleExerciseFileContents(exerciseID);	
 		examExercisesSummary();
     } else {
-		if(iuf['exercises'][exerciseID]['e'] == 0) {
+		if(iuf.exercises[exerciseID].statusCode === "S000") {
 			if ($this.hasClass('questionText'))
-				$this.html(iuf['exercises'][exerciseID]['question']);
+				$this.html(iuf.exercises[exerciseID].question);
 	
 			if ($this.hasClass('choiceText'))
-				$this.html(iuf['exercises'][exerciseID]['choices'][$this.index('.choiceText')]);
+				$this.html(iuf.exercises[exerciseID].choices[$this.index('.choiceText')]);
 		}
 	}
 });
@@ -1416,7 +1427,10 @@ function contenteditable_getSpecial(content) {
 	return content;
 }
 
-function contentTextSanitize(content){
+function contentTextSanitize(content, isFileName=false){
+	if(!isFileName)
+		return content.replace(/[^a-z0-9\_\- \u00c4\u00e4\u00d6\u00f6\u00dc\u00fc\u00df]/gi, '');
+	
 	return content.replace(/[^a-z0-9\_\-]/gi, '');
 }
 
@@ -1462,27 +1476,26 @@ document.addEventListener('dblclick', (event) => {
 })
 
 function loadExerciseFromObject(exerciseID) {
-	const e = iuf['exercises'][exerciseID]['e']; 
-	const editable = iuf['exercises'][exerciseID]['editable']; 
+	const editable = iuf.exercises[exerciseID].editable; 
 	
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').removeClass("editable");
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseParse').removeClass("disabled");
 	
-	if(iuf['exercises'][exerciseID]['name'] !== null) {	
+	if(iuf.exercises[exerciseID].name !== null) {	
 		const field = 'exerciseName'
-		const content = '<span class="exerciseNameText" contenteditable="' + editable + '" spellcheck="false">' + iuf['exercises'][exerciseID]['name'] + '</span>';
+		const content = '<span class="exerciseNameText" contenteditable="' + editable + '" spellcheck="false">' + iuf.exercises[exerciseID].name + '</span>';
 		
 		setExerciseFieldFromObject(field, content);
 	}
 	
-	if(iuf['exercises'][exerciseID]['question'] !== null) {
+	if(iuf.exercises[exerciseID].question !== null) {
 		const field = 'question'
 		let content = ''
 		
-		if(Array.isArray(iuf['exercises'][exerciseID][field])) {
-			content = '<span class="questionText" contenteditable="' + editable + '" spellcheck="false">' + iuf['exercises'][exerciseID][field].join('') + '</span>';
+		if(Array.isArray(iuf.exercises[exerciseID][field])) {
+			content = '<span class="questionText" contenteditable="' + editable + '" spellcheck="false">' + iuf.exercises[exerciseID][field].join('') + '</span>';
 		} else {
-			content = '<span class="questionText" contenteditable="' + editable + '" spellcheck="false">' + iuf['exercises'][exerciseID][field] + '</span>';
+			content = '<span class="questionText" contenteditable="' + editable + '" spellcheck="false">' + iuf.exercises[exerciseID][field] + '</span>';
 		}
 		
 		setExerciseFieldFromObject(field, content);
@@ -1491,64 +1504,64 @@ function loadExerciseFromObject(exerciseID) {
 	if(editable) {
 		const field = 'figure'
 		
-		const imgContet = iuf['exercises'][exerciseID]['figure'] !== null ? '<div class="exerciseFigureItem"><span class="exerciseFigureName"><img src="data:image/png;base64, ' + iuf['exercises'][exerciseID][field][2] + '"/></span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>' : '';
+		const imgContet = iuf.exercises[exerciseID].figure !== null ? '<div class="exerciseFigureItem"><span class="exerciseFigureName"><img src="data:image/png;base64, ' + iuf.exercises[exerciseID][field][2] + '"/></span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>' : '';
 		
 		const content = '<label class="exerciseFigureUpload" for="file-upload_exerciseFigure"><div class="exerciseFigureButton"><span class="iconButton"><i class="fa-solid fa-upload"></i></span><span class="textButton"><span lang="de">Importieren</span><span lang="en">Import</span></span></div><input type="file" id="file-upload_exerciseFigure" onchange="loadExerciseFigureFileDialog(this.files);" multiple="" class="shiny-bound-input"></label><div id="exerciseFigureFiles"><div id="exerciseFigure_list" class="itemList"><div id="exerciseFigure_list_items">' + imgContet + '</div></div></div></div>';
 		
 		setExerciseFieldFromObject(field, content);
 	}
 	
-	if(iuf['exercises'][exerciseID]['points'] !== null) {	
+	if(iuf.exercises[exerciseID].points !== null) {	
 		const field = 'points'
 				
-		const content = '<span class="points" contenteditable="' + editable + '" spellcheck="false">' + iuf['exercises'][exerciseID][field] + '</span>';
+		const content = '<span class="points" contenteditable="' + editable + '" spellcheck="false">' + iuf.exercises[exerciseID][field] + '</span>';
 		
 		setExerciseFieldFromObject(field, content);
 	}
 			
-	if(iuf['exercises'][exerciseID]['type'] === "mchoice" || iuf['exercises'][exerciseID]['editable']) {
+	if(iuf.exercises[exerciseID].type === "mchoice" || iuf.exercises[exerciseID].editable) {
 		const field = 'result'
-		const zip = iuf['exercises'][exerciseID][field].map((x, i) => [x, iuf['exercises'][exerciseID]['choices'][i]]);
+		const zip = iuf.exercises[exerciseID][field].map((x, i) => [x, iuf.exercises[exerciseID].choices[i]]);
 		let content = '<div id="resultContent">' + zip.map(i => '<p>' + (editable ? '<button type="button" class="removeAnswer btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></button>' : '') + '<span class=\"result mchoiceResult ' + (i[0] + 'MchoiceResult ') + (editable ? 'editTrueFalse' : '') + '\">' + getTrueFalseText(i[0]) + '</span><span class="choice"><span class="choiceText" contenteditable="' + editable + '" spellcheck="false">' + i[1] + '</span></span></p>').join('') + '</div>';
 		
-		if( iuf['exercises'][exerciseID]['editable'] ) {
+		if( iuf.exercises[exerciseID].editable ) {
 			content = '<button id="addNewAnswer" type="button" class="btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-plus"></i></span><span class="textButton"><span lang="de">Neue Antwortmöglichkeit</span><span lang="en">New Answer</span></span></button>' + content;
 		}
 		
 		setExerciseFieldFromObject(field, content);
 	}
 	
-	if(iuf['exercises'][exerciseID]['examHistory'] !== null) {
+	if(iuf.exercises[exerciseID].examHistory !== null) {
 		const field = 'examHistory'
-		const content = iuf['exercises'][exerciseID][field].map(i => '<span>' + i + '</span>').join('');
+		const content = iuf.exercises[exerciseID][field].map(i => '<span>' + i + '</span>').join('');
 		
 		setExerciseFieldFromObject(field, content);
 	}
 	
-	if(iuf['exercises'][exerciseID]['authoredBy'] !== null) {
+	if(iuf.exercises[exerciseID].authoredBy !== null) {
 		const field = 'authoredBy'
-		const content = iuf['exercises'][exerciseID][field].map(i => '<span>' + i + '</span>').join('');
+		const content = iuf.exercises[exerciseID][field].map(i => '<span>' + i + '</span>').join('');
 		
 		setExerciseFieldFromObject(field, content);
 	}
 	
-	if(iuf['exercises'][exerciseID]['precision'] !== null) {
+	if(iuf.exercises[exerciseID].precision !== null) {
 		const field = 'precision'
-		const content = '<span>' + iuf['exercises'][exerciseID][field] + '</span>';
+		const content = '<span>' + iuf.exercises[exerciseID][field] + '</span>';
 		
 		setExerciseFieldFromObject(field, content);
 	}
 
-	if(iuf['exercises'][exerciseID]['topic'] !== null) {
+	if(iuf.exercises[exerciseID].topic !== null) {
 		const field = 'topic'
-		const content = '<span class="topicText" contenteditable="' + editable + '" spellcheck="false">' + iuf['exercises'][exerciseID][field] + '</span>';
+		const content = '<span class="topicText" contenteditable="' + editable + '" spellcheck="false">' + iuf.exercises[exerciseID][field] + '</span>';
 		
 		setExerciseFieldFromObject(field, content);
 	}
 	
-	if(iuf['exercises'][exerciseID]['tags'] !== null) {
+	if(iuf.exercises[exerciseID].tags !== null) {
 		const field = 'tags'
-		const content = iuf['exercises'][exerciseID][field].map(i => '<span>' + i + '</span>').join('');
+		const content = iuf.exercises[exerciseID][field].map(i => '<span>' + i + '</span>').join('');
 		
 		setExerciseFieldFromObject(field, content);
 	}
@@ -1566,18 +1579,16 @@ function loadExerciseFromObject(exerciseID) {
 function setSimpleExerciseFileContents(exerciseID){
 	let fileText = rnwTemplate;
 		
-	fileText = fileText.replace("?rnwTemplate_q", '"' + iuf['exercises'][exerciseID]['question_raw'].replaceAll('\\', '\\\\') + '"');
-	fileText = fileText.replace("?rnwTemplate_c", 'c(' + iuf['exercises'][exerciseID]['choices_raw'].map(c=>'"' + c.replaceAll('\\', '\\\\') + '"').join(',') + ')');
-	fileText = fileText.replace("?rnwTemplate_s", 'c(' + iuf['exercises'][exerciseID]['result'].map(s=>s?"T":"F").join(',') + ')');
-	fileText = fileText.replace("?rnwTemplate_p", iuf['exercises'][exerciseID]['points']);
-	fileText = fileText.replace("?rnwTemplate_t", iuf['exercises'][exerciseID]['topic']);
-	fileText = fileText.replace("?rnwTemplate_f", iuf['exercises'][exerciseID]['figure'] !== null ? 'c(' + iuf['exercises'][exerciseID]['figure'].map(c=>'"' + c + '"').join(',') + ')' : '""');
+	fileText = fileText.replace("?rnwTemplate_q", '"' + iuf.exercises[exerciseID].question_raw.replaceAll('\\', '\\\\') + '"');
+	fileText = fileText.replace("?rnwTemplate_c", 'c(' + iuf.exercises[exerciseID].choices_raw.map(c=>'"' + c.replaceAll('\\', '\\\\') + '"').join(',') + ')');
+	fileText = fileText.replace("?rnwTemplate_s", 'c(' + iuf.exercises[exerciseID].result.map(s=>s?"T":"F").join(',') + ')');
+	fileText = fileText.replace("?rnwTemplate_p", iuf.exercises[exerciseID].points);
+	fileText = fileText.replace("?rnwTemplate_t", iuf.exercises[exerciseID].topic);
+	fileText = fileText.replace("?rnwTemplate_f", iuf.exercises[exerciseID].figure !== null ? 'c(' + iuf.exercises[exerciseID].figure.map(c=>'"' + c + '"').join(',') + ')' : '""');
 	fileText = fileText.replaceAll("\n", "\r\n");
 
-	iuf['exercises'][exerciseID]['file'] = fileText;
+	iuf.exercises[exerciseID].file = fileText;
 }
-
-
 
 function setExerciseFieldFromObject(field, content) {
 	$('#' + field).html(content);
@@ -1587,16 +1598,16 @@ function setExerciseFieldFromObject(field, content) {
 
 function addExercise() {
 	exercises = exercises + 1;	
-	iuf['exercises'].splice(exercises, 0, new Array());
+	iuf.exercises.splice(exercises, 0, []);
 }
 
 function removeExercise(exerciseID) {
-	confirmDialog('Aufgabe "' + iuf['exercises'][exerciseID]['name'] + '" löschen?', 'Delete exercises "' + iuf['exercises'][exerciseID]['name'] + '" ?', 'Ja', 'Yes', '<i class="fa-solid fa-check"></i>', 'Nein', 'No', '<i class="fa-solid fa-xmark"></i>',
+	confirmDialog('Aufgabe "' + iuf.exercises[exerciseID].name + '" löschen?', 'Delete exercises "' + iuf.exercises[exerciseID].name + '" ?', 'Ja', 'Yes', '<i class="fa-solid fa-check"></i>', 'Nein', 'No', '<i class="fa-solid fa-xmark"></i>',
 		function(remove) {
 			if(!remove)
 				return;
 			
-			iuf['exercises'].splice(exerciseID, 1);
+			iuf.exercises.splice(exerciseID, 1);
 			exercises = exercises - 1;
 			
 			$('.exerciseItem').eq(exerciseID).remove();
@@ -1615,7 +1626,7 @@ function removeExercise(exerciseID) {
 
 function changeExerciseBlock(exerciseID, b) {
 	const b_ = getIntegerInput(1, null, 1, b)
-	iuf['exercises'][exerciseID]['block'] = b_;
+	iuf.exercises[exerciseID].block = b_;
 	examExercisesSummary();
 	
 	return b_;
@@ -1653,7 +1664,7 @@ function setExamExercise(exerciseID, b) {
 	else
 		$('.exerciseItem').eq(exerciseID).removeClass('exam');	
 	
-	iuf['exercises'][exerciseID]['exam'] = b;
+	iuf.exercises[exerciseID].exam = b;
 	
 	examExercisesSummary();
 }
@@ -1699,9 +1710,9 @@ $('#exercise_list_items').on('click', '.exerciseItem', function() {
 $('#exercise_info').on('click', '#addNewAnswer', function() {
 	const exerciseID = getID();
 	
-	iuf['exercises'][exerciseID]['choices'].push(d_answerText);
-	iuf['exercises'][exerciseID]['choices_raw'].push(d_answerText);
-	iuf['exercises'][exerciseID]['result'].push(d_result);
+	iuf.exercises[exerciseID].choices.push(d_answerText);
+	iuf.exercises[exerciseID].choices_raw.push(d_answerText);
+	iuf.exercises[exerciseID].result.push(d_result);
 	
 	invalidateAfterEdit(exerciseID);
 	setSimpleExerciseFileContents(exerciseID);
@@ -1714,10 +1725,10 @@ $('#exercise_info').on('click', '.removeAnswer', function() {
 	const exerciseID = getID();
 	const choicesID = $(this).index('.removeAnswer');
 	
-	if( iuf['exercises'][exerciseID]['choices'].length > 0 && iuf['exercises'][exerciseID]['choices_raw'].length > 0 ) {	
-		iuf['exercises'][exerciseID]['choices'].splice(choicesID, 1);
-		iuf['exercises'][exerciseID]['choices_raw'].splice(choicesID, 1);
-		iuf['exercises'][exerciseID]['result'].splice(choicesID, 1);
+	if( iuf.exercises[exerciseID].choices.length > 0 && iuf.exercises[exerciseID].choices_raw.length > 0 ) {	
+		iuf.exercises[exerciseID].choices.splice(choicesID, 1);
+		iuf.exercises[exerciseID].choices_raw.splice(choicesID, 1);
+		iuf.exercises[exerciseID].result.splice(choicesID, 1);
 	} 
 	
 	invalidateAfterEdit(exerciseID);
@@ -1750,10 +1761,10 @@ function addExerciseFigureFile(file) {
 
 		fileReader.onload = function(fileLoadedEvent) {
 			base64 = fileLoadedEvent.target.result;
-			iuf['exercises'][exerciseID]['figure'] = [fileName, fileExt, base64.split(',')[1]];
+			iuf.exercises[exerciseID].figure = [fileName, fileExt, base64.split(',')[1]];
 			
 			$('#figure').empty();
-			$('#figure').append('<label class="exerciseFigureUpload" for="file-upload_exerciseFigure"><div class="exerciseFigureButton"><span class="iconButton"><i class="fa-solid fa-upload"></i></span><span class="textButton"><span lang="de">Importieren</span><span lang="en">Import</span></span></div><input type="file" id="file-upload_exerciseFigure" onchange="loadExerciseFigureFileDialog(this.files);" multiple="" class="shiny-bound-input"></label><div id="exerciseFigureFiles"><div id="exerciseFigure_list" class="itemList"><div id="exerciseFigure_list_items"><div class="exerciseFigureItem"><span class="exerciseFigureName"><img src="data:image/png;base64, ' + iuf['exercises'][getID()]['figure'][2] + '"/></span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div></div></div></div></div>');
+			$('#figure').append('<label class="exerciseFigureUpload" for="file-upload_exerciseFigure"><div class="exerciseFigureButton"><span class="iconButton"><i class="fa-solid fa-upload"></i></span><span class="textButton"><span lang="de">Importieren</span><span lang="en">Import</span></span></div><input type="file" id="file-upload_exerciseFigure" onchange="loadExerciseFigureFileDialog(this.files);" multiple="" class="shiny-bound-input"></label><div id="exerciseFigureFiles"><div id="exerciseFigure_list" class="itemList"><div id="exerciseFigure_list_items"><div class="exerciseFigureItem"><span class="exerciseFigureName"><img src="data:image/png;base64, ' + iuf.exercises[getID()].figure[2] + '"/></span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div></div></div></div></div>');
 			
 			setSimpleExerciseFileContents(exerciseID);
 			loadExerciseFromObject(exerciseID);
@@ -1766,7 +1777,7 @@ function addExerciseFigureFile(file) {
 function removeExerciseFigure(element) {
 	const exerciseID = getID();
 	
-	iuf['exercises'][exerciseID]['figure'] = null;
+	iuf.exercises[exerciseID].figure = null;
 	element.remove();
 	
 	setSimpleExerciseFileContents(exerciseID);
@@ -1786,91 +1797,91 @@ Shiny.addCustomMessageHandler('setExerciseId', function(exerciseID) {
 });
 
 Shiny.addCustomMessageHandler('setExerciseSeed', function(seed) {
-	iuf['exercises'][getID()]['seed'] = seed;
+	iuf.exercises[getID()].seed = seed;
 });
 
 Shiny.addCustomMessageHandler('setExerciseExamHistory', function(jsonData) {
 	const examHistory = JSON.parse(jsonData);
-	iuf['exercises'][getID()]['examHistory'] = examHistory;
+	iuf.exercises[getID()].examHistory = examHistory;
 });
 
 Shiny.addCustomMessageHandler('setExerciseAuthoredBy', function(jsonData) {
 	const exerciseAuthors = JSON.parse(jsonData);
-	iuf['exercises'][getID()]['authoredBy'] = exerciseAuthors;
+	iuf.exercises[getID()].authoredBy = exerciseAuthors;
 });
 
 Shiny.addCustomMessageHandler('seExercisetPrecision', function(exercisePrecision) {
-	iuf['exercises'][getID()]['precision'] = exercisePrecision;
+	iuf.exercises[getID()].precision = exercisePrecision;
 });
 
 Shiny.addCustomMessageHandler('setExercisePoints', function(exercisePoints) {
-	iuf['exercises'][getID()]['points'] = exercisePoints;
+	iuf.exercises[getID()].points = exercisePoints;
 });
 
 Shiny.addCustomMessageHandler('setExerciseTopic', function(exerciseTopic) {
-	iuf['exercises'][getID()]['topic'] = exerciseTopic;
+	iuf.exercises[getID()].topic = exerciseTopic;
 });
 
 Shiny.addCustomMessageHandler('setExerciseTags', function(jsonData) {
 	const exerciseTags = JSON.parse(jsonData);
-	iuf['exercises'][getID()]['tags'] = exerciseTags;
+	iuf.exercises[getID()].tags = exerciseTags;
 });
 
 Shiny.addCustomMessageHandler('setExerciseType', function(exerciseType) {
-	iuf['exercises'][getID()]['type'] = exerciseType;
+	iuf.exercises[getID()].type = exerciseType;
 });
 
 Shiny.addCustomMessageHandler('setExerciseQuestion', function(exerciseQuestion) {
-	iuf['exercises'][getID()]['question'] = exerciseQuestion;
+	iuf.exercises[getID()].question = exerciseQuestion;
 });
 
 Shiny.addCustomMessageHandler('setExerciseQuestionRaw', function(exerciseQuestionRaw) {
-	iuf['exercises'][getID()]['question_raw'] = exerciseQuestionRaw;
+	iuf.exercises[getID()].question_raw = exerciseQuestionRaw;
 });
 
 Shiny.addCustomMessageHandler('setExerciseFigure', function(jsonData) {
 	const figure = JSON.parse(jsonData);
-	iuf['exercises'][getID()]['figure'] = figure[0] === "" ? null : figure;
+	iuf.exercises[getID()].figure = figure[0] === "" ? null : figure;
 });
 
 Shiny.addCustomMessageHandler('setExerciseChoices', function(jsonData) {
 	const exerciseChoices = JSON.parse(jsonData);
-	iuf['exercises'][getID()]['choices'] = exerciseChoices;
+	iuf.exercises[getID()].choices = exerciseChoices;
 });
 
 Shiny.addCustomMessageHandler('setExerciseChoicesRaw', function(jsonData) {
 	const exerciseChoicesRaw = JSON.parse(jsonData);
-	iuf['exercises'][getID()]['choices_raw'] = exerciseChoicesRaw;
+	iuf.exercises[getID()].choices_raw = exerciseChoicesRaw;
 });
 
 Shiny.addCustomMessageHandler('setExerciseResultMchoice', function(jsonData) {
 	const exerciseResult = JSON.parse(jsonData);
-	iuf['exercises'][getID()]['result'] = exerciseResult;
+	iuf.exercises[getID()].result = exerciseResult;
 });
 
 Shiny.addCustomMessageHandler('setExerciseResultNumeric', function(exerciseResult) {
-	iuf['exercises'][getID()]['result'] = exerciseResult;
+	iuf.exercises[getID()].result = exerciseResult;
 });
 
 Shiny.addCustomMessageHandler('setExerciseEditable', function(editable) {
-	iuf['exercises'][getID()]['editable'] = (editable === 1);
+	iuf.exercises[getID()].editable = (editable === 1);
 });
 
-Shiny.addCustomMessageHandler('setExerciseMessage', function(message) {
+Shiny.addCustomMessageHandler('setExerciseStatusMessage', function(statusMessage) {
 	const exerciseID = getID();
 	
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseTryCatch').remove();
-	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').prepend(message);
+	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').prepend(statusMessage);
 	
-	iuf['exercises'][exerciseID]['message'] = message;
+	iuf.exercises[exerciseID].statusMessage = statusMessage;
 });
 
-Shiny.addCustomMessageHandler('setExerciseE', function(e) {
+Shiny.addCustomMessageHandler('setExerciseStatusCode', function(statusCode) {
 	const exerciseID = getID();
 	
-	iuf['exercises'][exerciseID]['e'] = e;
+	iuf.exercises[exerciseID].statusCode = statusCode === 0 ? "S000" : statusCode;
 
-	if(e === 0 || e.charAt(0) === "W")
+	if(iuf.exercises[exerciseID].statusCode === "S000" || iuf.exercises[exerciseID].statusCode.charAt(0) === "W")
 		$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .examExercise').removeClass('disabled');
 		loadExerciseFromObject(exerciseID);
 });
@@ -2044,12 +2055,12 @@ $("#createExamEvent").click(function(){
 }); 
 
 async function createExamEvent() {
-	const examExercises = iuf['exercises'].filter((exercise) => exercise.exam & exercise.file !== null);
+	const examExercises = iuf.exercises.filter((exercise) => exercise.exam & exercise.file !== null);
 	const exerciseNames = examExercises.map((exercise) => exercise.name);
 	const exerciseCodes = examExercises.map((exercise) => exercise.file);
 	const blocks = examExercises.map((exercise) => exercise.block);
-	const additionalPdfNames = iuf.examAdditionalPdf.map(pdf => pdf[0]);
-	const additionalPdfFiles = iuf.examAdditionalPdf.map(pdf => pdf[1]);
+	const additionalPdfNames = iuf['examAdditionalPdf'].map(pdf => pdf[0]);
+	const additionalPdfFiles = iuf['examAdditionalPdf'].map(pdf => pdf[1]);
 	
 	Shiny.onInputChange("createExam", {exerciseNames: exerciseNames, exerciseCodes:exerciseCodes, blocks: blocks, additionalPdfNames: additionalPdfNames, additionalPdfFiles: additionalPdfFiles}, {priority: 'event'});
 }
@@ -2221,10 +2232,6 @@ $("#fixedPointsExamEvaluate").change(function(){
 	$(this).val(getIntegerInput(1, null, null, $(this).val()));
 }); 
 
-$("#markThreshold1").change(function(){
-	$(this).val(getFloatInput(0, null, 0, $(this).val()));
-}); 
-
 $("#markThreshold2").change(function(){
 	$(this).val(getFloatInput(0, null, 0.5, $(this).val()));
 }); 
@@ -2353,8 +2360,11 @@ $('body').on('click', '.compareListItem:not(.notAssigned)', function() {
 		
 		scannedAnswersHeader = scannedAnswersHeader + '</tr>';
 		
-		const scannedAnswerBlockStart = '<table class="scannedAnswerBlock">' + scannedAnswersHeader;
-		let scannedAnswerBlocks = scannedAnswerBlockStart;
+		let answerBlock = 1;
+		let answerRow = 1;
+		let answerColumn = 1;
+		
+		let scannedAnswerBlocks = '<table class="scannedAnswerBlock answerBlock' + answerBlock + ' answerRow' + answerRow + ' answerColumn' + answerColumn + '">' + scannedAnswersHeader;
 		let scannedAnswerItems = '';
 		
 		for (let i = 0; i < numExercises; i++) {	
@@ -2378,7 +2388,12 @@ $('body').on('click', '.compareListItem:not(.notAssigned)', function() {
 			
 			if(blockComplete && !lastItem) {
 				scannedAnswerItems = '';
-				scannedAnswerBlocks = scannedAnswerBlocks + scannedAnswerBlockStart;
+				
+				answerBlock += 1; 
+				answerRow = (answerBlock - 1) % 3 + 1;
+				answerColumn = Math.ceil(answerBlock / 3);
+				
+				scannedAnswerBlocks = scannedAnswerBlocks + '<table class="scannedAnswerBlock answerBlock' + answerBlock + ' answerRow' + answerRow + ' answerColumn' + answerColumn + '">' + scannedAnswersHeader;
 			}
 		}
 		
@@ -2509,7 +2524,6 @@ function populateCompareTable() {
 	$('#scanStats').append('<span id="scansnotAssignedCount" class="scanStat myLabel"><span class="scanStatText label_key yellowLabelKey"><span lang="de">Nicht zugeordnete Matrikelnummern</span><span lang="en">Registration numbers not assigned</span></span><span class="scanStatValue label_value yellowLabelValue">' + notAssignedCount + '</span></span>')
 	
 	$('.loadingCompareScanRegistrationDataTable').hide();
-	setNotAssignedVisibility();
 	f_langDeEn();
 }
 
@@ -2584,18 +2598,6 @@ $('body').on('click', '#applyInspect', function() {
 $('body').on('click', '#applyInspectNext', function() {
 	applyInspectNext();
 });
-
-$('body').on('change', '#showNotAssigned', function() {
-	setNotAssignedVisibility();
-});
-
-function setNotAssignedVisibility() {
-	if($('#showNotAssigned').find("input").prop('checked')) {
-		$('#compareScanRegistrationDataTable .compareListItem.notAssigned').css("display", "flex");
-	} else {
-		$('#compareScanRegistrationDataTable .compareListItem.notAssigned').css("display", "none");
-	}
-}
 
 function applyInspectNext(){
 	applyInspect();

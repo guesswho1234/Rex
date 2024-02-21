@@ -16,3 +16,5 @@ E1013;Number of registered participant files must be one.;Anzahl an Dateien für
 E1014;Number of exam solution files must be one.;Anzahl an Dateien für die Prüfungslösungen muss eins sein.
 E1015;The registration file needs to have exactly three columns.;Die Teilnehmerliste muss exakt drei Spalten haben.
 E1016;The column names of the registration file have to be registration, name, and id.;Die Spaltennamen der Teilnehmerliste müssen registration, name und id sein.
+E1017;Invalid grading key;Ungültiger Notenschlüssel.
+E1018;Invalid grading key;Ungültiger Notenschlüssel.
