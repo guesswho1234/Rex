@@ -5,8 +5,17 @@ uibkTools['rexEvaluationLists'] = new Array();
 /* --------------------------------------------------------------
 ADDON DEFAULT INPUT VALUES
 -------------------------------------------------------------- */
-$('#examInstitution').val("Universität Innsbruck");
-Shiny.onInputChange("examInstitution", $('#examInstitution').val());
+function setDefaultValue(field, value){
+	$('#' + field).val(value);
+	Shiny.onInputChange(field, $('#' + field).val());
+}
+
+setDefaultValue("examInstitution", "Universität Innsbruck");
+setDefaultValue("markLabel1", "NGT5");
+setDefaultValue("markLabel2", "GEN4");
+setDefaultValue("markLabel3", "BEF3");
+setDefaultValue("markLabel4", "GUT2");
+setDefaultValue("markLabel5", "SGT1");
 	
 /* --------------------------------------------------------------
 VIS PARTICIPANT FILES

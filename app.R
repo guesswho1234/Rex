@@ -582,7 +582,7 @@ library(shinyauthr) # shinyauthr_1.0.0
                    input$markThreshold5))
           
           labels = c(input$markLabel1,
-                     input$markLabe12,
+                     input$markLabel2,
                      input$markLabel3,
                      input$markLabel4,
                      input$markLabel5)
@@ -984,7 +984,7 @@ server = function(input, output, session) {
       textInput_markLabel1 = textInput("markLabel1", label = NULL, value = NULL),
       
       textInput_markThreshold2 = textInput("markThreshold2", label = NULL, value = 0.5),
-      textInput_markLabe12 = textInput("markLabe12", label = NULL, value = NULL),
+      textInput_markLabel2 = textInput("markLabel2", label = NULL, value = NULL),
     
       textInput_markThreshold3 = textInput("markThreshold3", label = NULL, value = 0.6),
       textInput_markLabel3 = textInput("markLabel3", label = NULL, value = NULL),
