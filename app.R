@@ -33,9 +33,8 @@ library(shinyauthr) # shinyauthr_1.0.0
     temfiles = list.files(dir)
     filesToRemove = temfiles
     
-    if(length(filesToRemove) > 0) {
+    if(length(filesToRemove) > 0) 
       unlink(paste0(dir, "/", filesToRemove), recursive = TRUE)
-    }
   }
 
   # TRY CATCH ------------------------------------------------------
@@ -67,13 +66,11 @@ library(shinyauthr) # shinyauthr_1.0.0
     type = getMessageType(message)
     code = 0
     
-    if(type == 2) {
+    if(type == 2) 
       code = strsplit(message$value$message, ":")[[1]][1]
-    }
   
-    if(type == 1) {
+    if(type == 1) 
       code = strsplit(message$value, ":")[[1]][1]
-    }
     
     code
   }
@@ -235,9 +232,8 @@ library(shinyauthr) # shinyauthr_1.0.0
       return(list(message=list(key=key, value=value), id=exercise$exerciseID, seed=seed, html=htmlPreview, figure=figure))
     },
     error = function(e){
-      if(!grepl("E\\d{4}", e$message)){
+      if(!grepl("E\\d{4}", e$message))
         e$message = paste0("E1001: ", e$message)
-      }
       
       return(list(message=list(key="Error", value=e), id=exercise$exerciseID, seed=NULL, html=NULL))
     })
@@ -308,22 +304,18 @@ library(shinyauthr) # shinyauthr_1.0.0
   createExam = function(exam, settings, input, collectWarnings, dir) {
     out = tryCatch({
       warnings = collectWarnings({
-        if(any(input$seedValueExam < settings$seedMin)){
+        if(any(input$seedValueExam < settings$seedMin))
           stop("E1008")
-        }        
         
-        if(any(input$seedValueExam > settings$seedMax)){
+        if(any(input$seedValueExam > settings$seedMax))
           stop("E1009")
-        }
-        
-        if(length(exam$exerciseNames) < settings$exerciseMin){
+
+        if(length(exam$exerciseNames) < settings$exerciseMin)
           stop("E1010")
-        }
-        
-        if(length(exam$exerciseNames) > settings$exerciseMax){
+
+        if(length(exam$exerciseNames) > settings$exerciseMax)
           stop("E1011")
-        }
-        
+
         exam$exerciseNames = as.list(make.unique(unlist(exam$exerciseNames), sep="_"))
         exerciseFiles = unlist(lapply(setNames(seq_along(exam$exerciseNames), exam$exerciseNames), function(i){
           file = paste0(dir, "/", exam$exerciseNames[[i]], ".rnw")
@@ -452,9 +444,8 @@ library(shinyauthr) # shinyauthr_1.0.0
       return(list(message=list(key=key, value=value), files=list(sourceFiles=preparedExam$sourceFiles, examFiles=preparedExam$examFiles)))
     },
     error = function(e){
-      if(!grepl("E\\d{4}", e$message)){
+      if(!grepl("E\\d{4}", e$message))
         e$message = paste0("E1002: ", e$message)
-      }
   
       return(list(message=list(key="Error", value=e), files=list()))
     })
@@ -597,10 +588,11 @@ library(shinyauthr) # shinyauthr_1.0.0
                      input$markLabel4,
                      input$markLabel5)
           
-          if(any(labels=="")){
+          if(any(labels==""))
             labels = NULL
-          }
         }
+        
+        
   
         language = input$evaluationLanguage
         
@@ -609,28 +601,29 @@ library(shinyauthr) # shinyauthr_1.0.0
                                   files=list(solution=solutionFile, registeredParticipants=registeredParticipantsFile, scans=scanFiles))
         
         with(preparedEvaluation, {
-          if(length(files$scans) < 1){
+          if(length(files$scans) < 1)
             stop("E1012")
-          }
   
-          if(length(files$registeredParticipants) != 1){
+          if(length(files$registeredParticipants) != 1)
             stop("E1013")
-          }
   
-          if(length(files$solution) != 1){
+          if(length(files$solution) != 1)
             stop("E1014")
-          }
-  
+          
+          if(any(order(as.numeric(mark)) != seq_along(mark)))
+            stop("E1017")
+          
+          if(any(as.numeric(mark) < 1) && any(as.numeric(mark) >= 1))
+            stop("E1018")
+
           # read registered participants
           registeredParticipantData = read.csv2(files$registeredParticipants)
   
-          if(ncol(registeredParticipantData) != 3){
+          if(ncol(registeredParticipantData) != 3)
             stop("E1015")
-          }
   
-          if(!all(names(registeredParticipantData)[1:3] == c("registration", "name", "id"))){
+          if(!all(names(registeredParticipantData)[1:3] == c("registration", "name", "id")))
             stop("E1016")
-          }
   
           scanData = exams::nops_scan(images=files$scans,
                            file=FALSE,
@@ -690,10 +683,9 @@ library(shinyauthr) # shinyauthr_1.0.0
                   preparedEvaluation=preparedEvaluation))
     },
     error = function(e){
-      if(!grepl("E\\d{4}", e$message)){
+      if(!grepl("E\\d{4}", e$message))
         e$message = paste0("E1003: ", e$message)
-      }
-  
+
       return(list(message=list(key="Error", value=e), scans_reg_fullJoinData=NULL, examName=NULL, files=list(), data=list()))
     })
   
@@ -798,10 +790,9 @@ library(shinyauthr) # shinyauthr_1.0.0
                   preparedEvaluation=preparedEvaluation))
     },
     error = function(e){
-      if(!grepl("E\\d{4}", e$message)){
+      if(!grepl("E\\d{4}", e$message))
         e$message = paste0("E1004: ", e$message)
-      }
-      
+
       return(list(message=list(key="Error", value=e), examName=NULL, files=list()))
     })
   
@@ -1042,9 +1033,9 @@ server = function(input, output, session) {
 
   observe({
     invalidateLater(1000 * 5, session)
-    if(!initialState) {
+    if(!initialState) 
       session$sendCustomMessage("heartbeat", 1) # ping
-    }
+
     initialState <<- FALSE
   })
   
