@@ -116,12 +116,14 @@ Shiny.addCustomMessageHandler('heartbeat', function(heartbeat) {
 
 function ping(){
 	$('#heart').addClass("ping");
-
+	console.log("heartbeat");
+	
 	setTimeout(pong, 300); 
 }
 
 function pong(){
 	$('#heart').removeClass("ping");
+	Shiny.onInputChange("pong", "heartbeat", {priority: 'event'});
 }
 
 $('body').on('click', '#heart.ping', function(e) {

@@ -1044,9 +1044,13 @@ server = function(input, output, session) {
   observe({
     invalidateLater(1000 * 5, session)
     if(!initialState) {
-      session$sendCustomMessage("heartbeat", 1)
+      session$sendCustomMessage("heartbeat", 1) # ping
     }
     initialState <<- FALSE
+  })
+  
+  observeEvent(input$pong, {
+    cat(input$pong)
   })
 
   # EXPORT SINGLE EXERCISE ------------------------------------------------------
