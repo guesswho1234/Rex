@@ -1312,7 +1312,7 @@ Array.fromList = function(list) {
 function invalidateAfterEdit(exerciseID) {
 	setExamExercise(exerciseID, false);
 	iuf.exercises[exerciseID].statusCode = "E000";
-	iuf.exercises[exerciseID].statusMessage = '<span class="exerciseTryCatch tryCatch Error"><span class="responseSign ErrorSign"><i class="fa-solid fa-circle-exclamation"></i></span><span class="exerciseTryCatchText tryCatchText">Exercise needs to be parsed again.</span></span>';
+	iuf.exercises[exerciseID].statusMessage = '<span class="exerciseTryCatch tryCatch Error"><span class="responseSign ErrorSign"><i class="fa-solid fa-circle-exclamation"></i></span><span class="exerciseTryCatchText tryCatchText"><span lang="de">Aufgabe muss neu berechnet werden.</span><span lang="en">Exercise needs to be parsed again.</span></span></span>';
 	
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .examExercise').addClass('disabled');
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseTryCatch').remove();
