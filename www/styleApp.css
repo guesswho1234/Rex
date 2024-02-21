@@ -1064,7 +1064,7 @@ main > * {
 	font-weight: bold;
 	padding: 10px;
 	border-radius: 3px;
-	border: 2px solid var(--main);
+	border: 2px solid var(---main);
 	margin: auto;
 }
 
