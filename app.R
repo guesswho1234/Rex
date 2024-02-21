@@ -472,6 +472,41 @@ library(shinyauthr) # shinyauthr_1.0.0
       scans_reg_fullJoinData = NULL
       
       warnings = collectWarnings({
+        # settings
+        regLength = input$evaluationRegLength
+        
+        points = input$fixedPointsExamEvaluate
+        if(is.numeric(points) && points > 0) {
+          points = rep(points, numExercises)
+        } else {
+          points = NULL
+        }
+        
+        partial = input$partialPoints
+        negative = input$negativePoints
+        rule = input$rule
+        
+        mark = input$mark
+        labels = NULL
+        
+        if(mark) {
+          mark = as.numeric(c(input$markThreshold2,
+                              input$markThreshold3,
+                              input$markThreshold4,
+                              input$markThreshold5))
+          
+          labels = c(input$markLabel1,
+                     input$markLabel2,
+                     input$markLabel3,
+                     input$markLabel4,
+                     input$markLabel5)
+          
+          if(any(labels==""))
+            labels = NULL
+        }
+        
+        language = input$evaluationLanguage
+        
         # exam
         input$evaluateExam$examSolutionsName = unlist(input$evaluateExam$examSolutionsName)[1]
         
@@ -491,8 +526,10 @@ library(shinyauthr) # shinyauthr_1.0.0
           file = paste0(dir, "/", input$evaluateExam$examRegisteredParticipantsnName[[i]], ".csv")
           content = gsub("\r\n", "\n", input$evaluateExam$examRegisteredParticipantsnFile[[i]])
           content = gsub(",", ";", content)
-          
-          writeLines(text=content, con=file)
+          content = read.table(text=content, sep=";", header = TRUE)
+          content$registration = sprintf(paste0("%0", regLength, "d"), as.numeric(content$registration))
+
+          write.csv2(content, file, row.names = FALSE, quote = FALSE)
           
           return(file)
         }))
@@ -557,41 +594,6 @@ library(shinyauthr) # shinyauthr_1.0.0
         examIds = names(examExerciseMetaData)
         numExercises = length(examExerciseMetaData[[1]])
         numChoices = length(examExerciseMetaData[[1]][[1]]$questionlist)
-        
-        # additional settings
-        regLength = input$evaluationRegLength
-        
-        points = input$fixedPointsExamEvaluate
-        if(is.numeric(points) && points > 0) {
-          points = rep(points, numExercises)
-        } else {
-          points = NULL
-        }
-        
-        partial = input$partialPoints
-        negative = input$negativePoints
-        rule = input$rule
-        
-        mark = input$mark
-        labels = NULL
-        
-        if(mark) {
-          mark = as.numeric(c(input$markThreshold2,
-                   input$markThreshold3,
-                   input$markThreshold4,
-                   input$markThreshold5))
-          
-          labels = c(input$markLabel1,
-                     input$markLabel2,
-                     input$markLabel3,
-                     input$markLabel4,
-                     input$markLabel5)
-          
-          if(any(labels==""))
-            labels = NULL
-        }
-  
-        language = input$evaluationLanguage
         
         preparedEvaluation = list(meta=list(examIds=examIds, examName=examName, numExercises=numExercises, numChoices=numChoices),
                                   fields=list(points=points, regLength=regLength, partial=partial, negative=negative, rule=rule, mark=mark, labels=labels, language=language),
@@ -1216,7 +1218,7 @@ server = function(input, output, session) {
     # process scanData
     scanData = Reduce(c, lapply(input$proceedEvaluation, function(x) paste0(unlist(unname(x)), collapse=" ")))
     scanData = paste0(scanData, collapse="\n")
-    
+
     # write scanData
     scanDatafile = paste0(dir, "/", "Daten.txt")
     writeLines(text=scanData, con=scanDatafile)
