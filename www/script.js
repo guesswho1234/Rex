@@ -116,7 +116,10 @@ Shiny.addCustomMessageHandler('heartbeat', function(heartbeat) {
 
 function ping(){
 	$('#heart').addClass("ping");
-	const heartbeat = true;
+	const heartbeat = new Date();
+	
+	//todo: remove later (for debug)
+	console.log(heartbeat);
 	
 	setTimeout(pong, 300); 
 }
