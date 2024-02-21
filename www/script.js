@@ -2232,10 +2232,6 @@ $("#fixedPointsExamEvaluate").change(function(){
 	$(this).val(getIntegerInput(1, null, null, $(this).val()));
 }); 
 
-$("#markThreshold1").change(function(){
-	$(this).val(getFloatInput(0, null, 0, $(this).val()));
-}); 
-
 $("#markThreshold2").change(function(){
 	$(this).val(getFloatInput(0, null, 0.5, $(this).val()));
 }); 

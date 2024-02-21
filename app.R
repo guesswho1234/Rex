@@ -576,11 +576,10 @@ library(shinyauthr) # shinyauthr_1.0.0
         labels = NULL
         
         if(mark) {
-          mark = c(input$markThreshold1,
-                   input$markThreshold2,
+          mark = as.numeric(c(input$markThreshold2,
                    input$markThreshold3,
                    input$markThreshold4,
-                   input$markThreshold5)
+                   input$markThreshold5))
           
           labels = c(input$markLabel1,
                      input$markLabe12,
@@ -591,8 +590,6 @@ library(shinyauthr) # shinyauthr_1.0.0
           if(any(labels==""))
             labels = NULL
         }
-        
-        
   
         language = input$evaluationLanguage
         
@@ -983,9 +980,9 @@ server = function(input, output, session) {
       selectInput_rule = selectInput("rule", label = NULL, choices = rules, selected = NULL, multiple = FALSE),
       checkboxInput_mark = checkboxInput("mark", label = NULL, value = NULL), 
     
-      textInput_markThreshold1 = textInput("markThreshold1", label = NULL, value = 0),
+      textInput_markThreshold1 = disabled(textInput("markThreshold1", label = NULL, value = 0)),
       textInput_markLabel1 = textInput("markLabel1", label = NULL, value = NULL),
-    
+      
       textInput_markThreshold2 = textInput("markThreshold2", label = NULL, value = 0.5),
       textInput_markLabe12 = textInput("markLabe12", label = NULL, value = NULL),
     
