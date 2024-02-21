@@ -707,7 +707,6 @@ library(shinyauthr) # shinyauthr_1.0.0
       
       if (!is.null(scans_reg_fullJoinData)) 
         tagList(
-          myCheckBox(id="showNotAssigned", "Nicht zugeordnete Matrikelnummern anzeigen", "Show registrations without assignment"),
           tags$div(id="scanStats"),
           tags$div(id="inspectScan"),
           tags$div(id="compareScanRegistrationDataTable", HTML('<div class="loadingCompareScanRegistrationDataTable"><span lang="de" class="loadingCompareScanRegistrationDataTable">BITTE WARTEN ...</span><span lang="en" class="loadingCompareScanRegistrationDataTable">PLEASE WAIT ...</span></div>')),
@@ -1050,7 +1049,7 @@ server = function(input, output, session) {
   })
   
   observeEvent(input$pong, {
-    cat(input$pong)
+    heartbeat = TRUE
   })
 
   # EXPORT SINGLE EXERCISE ------------------------------------------------------

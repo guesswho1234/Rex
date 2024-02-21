@@ -116,7 +116,7 @@ Shiny.addCustomMessageHandler('heartbeat', function(heartbeat) {
 
 function ping(){
 	$('#heart').addClass("ping");
-	console.log("heartbeat");
+	const heartbeat = true;
 	
 	setTimeout(pong, 300); 
 }
@@ -2528,7 +2528,6 @@ function populateCompareTable() {
 	$('#scanStats').append('<span id="scansnotAssignedCount" class="scanStat myLabel"><span class="scanStatText label_key yellowLabelKey"><span lang="de">Nicht zugeordnete Matrikelnummern</span><span lang="en">Registration numbers not assigned</span></span><span class="scanStatValue label_value yellowLabelValue">' + notAssignedCount + '</span></span>')
 	
 	$('.loadingCompareScanRegistrationDataTable').hide();
-	setNotAssignedVisibility();
 	f_langDeEn();
 }
 
@@ -2603,18 +2602,6 @@ $('body').on('click', '#applyInspect', function() {
 $('body').on('click', '#applyInspectNext', function() {
 	applyInspectNext();
 });
-
-$('body').on('change', '#showNotAssigned', function() {
-	setNotAssignedVisibility();
-});
-
-function setNotAssignedVisibility() {
-	if($('#showNotAssigned').find("input").prop('checked')) {
-		$('#compareScanRegistrationDataTable .compareListItem.notAssigned').css("display", "flex");
-	} else {
-		$('#compareScanRegistrationDataTable .compareListItem.notAssigned').css("display", "none");
-	}
-}
 
 function applyInspectNext(){
 	applyInspect();
