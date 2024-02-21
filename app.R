@@ -526,8 +526,10 @@ library(shinyauthr) # shinyauthr_1.0.0
           file = paste0(dir, "/", input$evaluateExam$examRegisteredParticipantsnName[[i]], ".csv")
           content = gsub("\r\n", "\n", input$evaluateExam$examRegisteredParticipantsnFile[[i]])
           content = gsub(",", ";", content)
-          
-          writeLines(text=content, con=file)
+          content = read.table(text=content, sep=";", header = TRUE)
+          content$registration = sprintf(paste0("%0", regLength, "d"), as.numeric(content$registration))
+
+          write.csv2(content, file, row.names = FALSE, quote = FALSE)
           
           return(file)
         }))
