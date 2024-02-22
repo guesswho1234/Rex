@@ -208,7 +208,7 @@ library(shinyauthr) # shinyauthr_1.0.0
         htmlPreview$exam1$exercise1$question_raw = question_raw
         htmlPreview$exam1$exercise1$choices_raw = choices_raw
         
-        if (htmlPreview$exam1$exercise1$metainfo$type != "mchoice") {
+        if (!htmlPreview$exam1$exercise1$metainfo$type %in% c("schoice", "mchoice")) {
           stop("E1005")
         }
         

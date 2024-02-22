@@ -1522,7 +1522,7 @@ function loadExerciseFromObject(exerciseID) {
 		setExerciseFieldFromObject(field, content);
 	}
 			
-	if(iuf.exercises[exerciseID].type === "mchoice" || iuf.exercises[exerciseID].editable) {
+	if(iuf.exercises[exerciseID].type === "schoice" || iuf.exercises[exerciseID].type === "mchoice" || iuf.exercises[exerciseID].editable) {
 		const field = 'result'
 		const zip = iuf.exercises[exerciseID][field].map((x, i) => [x, iuf.exercises[exerciseID].choices[i]]);
 		let content = '<div id="resultContent">' + zip.map(i => '<p>' + (editable ? '<button type="button" class="removeAnswer btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></button>' : '') + '<span class=\"result mchoiceResult ' + (i[0] + 'MchoiceResult ') + (editable ? 'editTrueFalse' : '') + '\">' + getTrueFalseText(i[0]) + '</span><span class="choice"><span class="choiceText" contenteditable="' + editable + '" spellcheck="false">' + i[1] + '</span></span></p>').join('') + '</div>';
