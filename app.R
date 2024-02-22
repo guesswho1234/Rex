@@ -1039,7 +1039,7 @@ server = function(input, output, session) {
   })
   
   observeEvent(input$pong, {
-    heartbeat = TRUE
+    # pong
   })
 
   # EXPORT SINGLE EXERCISE ------------------------------------------------------
