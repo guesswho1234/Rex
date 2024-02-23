@@ -135,8 +135,7 @@ $('body').on('click', '#heart.ping', function(e) {
 
 function changeHeartColor(increment = 1) {
 	let colorId = getHeartColorCookie();
-	colorId = colorId === null ? 0 : parseInt(colorId) + increment;
-	colorId = colorId > (myColors.length - 1) ? 0 : colorId;
+	colorId = colorId === null ? 0 : 1 - parseInt(colorId);
 	
 	$('#heart span').css('background', 'var(' + myColors[colorId] + ')');
 	$('#heart span').css('-webkit-background-clip', 'text');

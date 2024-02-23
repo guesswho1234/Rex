@@ -2,9 +2,8 @@ myActionButton = function(id, deText, enText, icon){
   tags$button(id = id, class = "btn btn-default action-button shiny-bound-input", type="button", myButtonStyle(deText, enText, icon))
 }
 
-myDownloadButton = function(id, deText="Speichern", enText="Save"){
-  tags$a(id = id, class = "btn btn-default shiny-download-link", href = "", 
-         target = "_blank", type = "button", download = NA, NULL, myButtonStyle(deText, enText, "fa-solid fa-download"))
+myDownloadButton = function(id, deText="Speichern", enText="Save", icon="fa-solid fa-download"){
+  tags$a(id = id, class = "btn btn-default shiny-download-link", href = "", target = "_blank", type = "button", download = NA, NULL, myButtonStyle(deText, enText, icon))
 }
 
 myCheckBox = function(id, deText, enText) {

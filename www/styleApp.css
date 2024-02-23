@@ -12,14 +12,6 @@ nav .nav.navbar-nav a.disabled {
 	height: 51px;
 }
 
-nav .addonTab {
-	background-color: var(---yellow_warning_fade) !important;
-}
-
-nav .active .addonTab {
-	background-color: var(---yellow_warning) !important;
-}
-
 main {
 	margin-top: 51px;
 }
@@ -251,13 +243,13 @@ body.textButtonMode .textButton {
 } 
 
 #heart span { 
-	-webkit-text-fill-color: transparent;
+	-webkit-text-fill-color: var(---transparent);
 } 
 
 #heart span.dead { 
 	background: var(---main) !important;
 	-webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: var(---transparent) !important;
 } 
 
 #heart.ping {
@@ -530,7 +522,7 @@ main > * {
 	border: none;
 	margin: 0;
 	padding: 0;
-	background: transparent;
+	background: var(---transparent);
 }
 
 #searchExercises input {

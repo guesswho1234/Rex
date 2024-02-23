@@ -67,9 +67,13 @@
 	padding: 0.5rem;
 	background: var(---yellow_warning);
 	border-radius: 5px;
-	border: 2px solid var(---background);
+	border: 2px solid var(---transparent);
 }
 
 .uibkToolsFileButton:hover {
 	border: 2px solid var(---main);
+}
+
+#uibkTools a.btn {
+	margin-top: 25px;
 }

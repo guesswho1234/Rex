@@ -1,3 +1,6 @@
+/* --------------------------------------------------------------
+DATA
+-------------------------------------------------------------- */
 let uibkTools = new Object();
 uibkTools['visParticipantLists'] = new Array();
 uibkTools['rexEvaluationLists'] = new Array(); 
@@ -147,16 +150,16 @@ $('#visGradingListFile_list_items').on('click', '.visGradingListFileItem', funct
 
 
 /* --------------------------------------------------------------
-...
+DOWNLOAD CONVERTED LISTS
 -------------------------------------------------------------- */
-$('body').on('click', '#downloadRexParticipantsList', function() {
+$('body').on('click', '#createRexParticipantsList-uibkToolsDl', function() {
 	Shiny.onInputChange("callAddonFunction", {func: "createRexParticipantsList", args: uibkTools['visParticipantLists']}, {priority: 'event'});
 });
 
-$('body').on('click', '#downloadOlatEvalList', function() {
+$('body').on('click', '#createOlatEvalList-uibkToolsDl', function() {
 	Shiny.onInputChange("callAddonFunction", {func: "createOlatEvalList", args: uibkTools['rexEvaluationLists']}, {priority: 'event'});
 });
 
-$('body').on('click', '#downloadVISgradingList', function() {
+$('body').on('click', '#createGradingLists-uibkToolsDl', function() {
 	Shiny.onInputChange("callAddonFunction", {func: "createGradingLists", args: {rexEvaluationLists: uibkTools['rexEvaluationLists'], visGradingLists: uibkTools['visGradingLists']}}, {priority: 'event'});
 });

@@ -3,14 +3,14 @@ source("source/customElements.R")
 
 uibkToolsData = reactiveVal()
 
-uibkTools_downloadObjUI <- function(id, deText, enText) {
+uibkTools_downloadObjUI <- function(id, deText, enText, icon) {
   ns <- NS(id)
   
-  myDownloadButton(ns("data_download"), deText, enText)
+  myDownloadButton(ns("uibkToolsDl"), deText, enText, icon)
 }
 
 uibkTools_downloadObj <- function(input, output, session) {
-  output$data_download <- downloadHandler(
+  output$uibkToolsDl <- downloadHandler(
     filename = function() {
       uibkToolsData()$name
     },
@@ -30,9 +30,9 @@ uibkTools_downloadObj <- function(input, output, session) {
   )
 }
 
-uibkTools_fields = list(button_createRexParticipantsList = uibkTools_downloadObjUI(id = "createRexParticipantsList", "Rex Teilnehmerliste erstellen", "Create Rex registered participant list"),
-                        button_createOlatEvalList = uibkTools_downloadObjUI(id = "createOlatEvalList", "OLAT Massenbewertungliste erstellen", "Create OLAT mass evaluation list"),
-                        button_createGradingLists = uibkTools_downloadObjUI(id = "createGradingLists", "Notenlisten erstellen", "Create grading lists"))
+uibkTools_fields = list(button_createRexParticipantsList = uibkTools_downloadObjUI(id = "createRexParticipantsList", "Rex Teilnehmerliste erstellen", "Create Rex registered participant list", "fa-solid fa-users"),
+                        button_createOlatEvalList = uibkTools_downloadObjUI(id = "createOlatEvalList", "OLAT Massenbewertungliste erstellen", "Create OLAT mass evaluation list", "fa-solid fa-file-circle-check"),
+                        button_createGradingLists = uibkTools_downloadObjUI(id = "createGradingLists", "Notenlisten erstellen", "Create grading lists", "fa-solid fa-graduation-cap"))
 
 uibkTools_callModules = function(){
   callModule(uibkTools_downloadObj, id = "createRexParticipantsList")
@@ -54,7 +54,9 @@ createRexParticipantsList = function(args) {
   name = "registredParticipants.csv"
   contentType = "text/csv"
   
-  if(length(args))
+  print(args)
+  
+  if(length(args)==0)
     return(list(name=name, files=NULL, data=NULL,  contentType=contentType))
   
   data = Reduce(rbind, lapply(args, \(x){
@@ -75,7 +77,7 @@ createOlatEvalList = function(args) {
   name = "olatEvalList.csv"
   contentType = "text/csv"
   
-  if(length(args))
+  if(length(args)==0)
     return(list(name=name, files=NULL, data=NULL,  contentType=contentType))
   
   data = Reduce(rbind, lapply(args, \(x){
@@ -95,7 +97,7 @@ createGradingLists = function(args) {
   name = "gradingLists.zip"
   contentType = "application/zip"
   
-  if(length(args))
+  if(length(args)==0)
     return(list(name=name, files=NULL, data=NULL,  contentType=contentType))
 
   evalData = Reduce(rbind, lapply(args$rexEvaluationLists, \(x){
