@@ -116,7 +116,11 @@ Shiny.addCustomMessageHandler('heartbeat', function(heartbeat) {
 
 function ping(){
 	$('#heart').addClass("ping");
-	
+
+	//todo: remove later - for debugging
+	const heartbeat = new Date();
+	console.log(heartbeat);
+
 	setTimeout(pong, 300); 
 }
 
@@ -131,8 +135,7 @@ $('body').on('click', '#heart.ping', function(e) {
 
 function changeHeartColor(increment = 1) {
 	let colorId = getHeartColorCookie();
-	colorId = colorId === null ? 0 : parseInt(colorId) + increment;
-	colorId = colorId > (myColors.length - 1) ? 0 : colorId;
+	colorId = colorId === null ? 0 : 1 - parseInt(colorId);
 	
 	$('#heart span').css('background', 'var(' + myColors[colorId] + ')');
 	$('#heart span').css('-webkit-background-clip', 'text');
@@ -773,8 +776,9 @@ function exerciseDownload() {
 	
 	const exerciseName = iuf.exercises[exerciseID].name;
 	const exerciseCode = iuf.exercises[exerciseID].file;
+	const exerciseExt = iuf.exercises[exerciseID].ext;
 			
-	Shiny.onInputChange("exerciseToDownload", {exerciseName:exerciseName, exerciseCode: exerciseCode}, {priority: 'event'});	
+	Shiny.onInputChange("exerciseToDownload", {exerciseName:exerciseName, exerciseCode: exerciseCode, exerciseExt: exerciseExt}, {priority: 'event'});	
 }
 
 $('#exerciseDownloadAll').click(function () {
@@ -790,8 +794,9 @@ function exerciseDownloadAll() {
 	
 	const exerciseNames = filteredTasks.map(exercise => exercise.name);
 	const exerciseCodes = filteredTasks.map(exercise => exercise.file);
+	const exerciseExts = filteredTasks.map(exercise => exercise.ext);
 	
-	Shiny.onInputChange("exercisesToDownload", {exerciseNames:exerciseNames, exerciseCodes: exerciseCodes}, {priority: 'event'});	
+	Shiny.onInputChange("exercisesToDownload", {exerciseNames:exerciseNames, exerciseCodes: exerciseCodes, exerciseExts: exerciseExts}, {priority: 'event'});	
 }
 
 $('#newExercise').click(function () {
@@ -1097,7 +1102,8 @@ function loadExercise(file, block = 1) {
 	
 	switch(fileExt) {
 		case 'rnw':
-			newComplexExercise(file, block);
+		case 'rmd':
+			newComplexExercise(file, fileExt, block);
 			break;
 	}
 }
@@ -1112,6 +1118,7 @@ function newSimpleExercise(file = '', block = 1) {
 		addExercise();
 		createExercise(exerciseID, d_exerciseName, 
 					       null, 
+						   null,
 					       d_questionText,
 					       [d_answerText + '1', d_answerText + '2'],
 					       [d_result, d_result],
@@ -1124,7 +1131,7 @@ function newSimpleExercise(file = '', block = 1) {
 		viewExercise(exerciseID);
 }
 
-async function newComplexExercise(file, block) {
+async function newComplexExercise(file, ext, block) {
 	const fileText = await file.text();
 	const exerciseID = exercises + 1
 	
@@ -1132,6 +1139,7 @@ async function newComplexExercise(file, block) {
 	
 	createExercise(exerciseID, file.name.split('.')[0], 
 					   fileText,
+					   ext, 
 					   '',
 					   [],
 					   [],
@@ -1146,6 +1154,7 @@ async function newComplexExercise(file, block) {
 
 function createExercise(exerciseID, name='exercise', 
 							file=null,
+							ext=null,
 						    question='',
 						    choices=[],
 							result=[],
@@ -1164,6 +1173,7 @@ function createExercise(exerciseID, name='exercise',
 							tags=null,
 							figure=null){
 	iuf.exercises[exerciseID]['file'] = file;
+	iuf.exercises[exerciseID]['ext'] = ext;
 	iuf.exercises[exerciseID]['name'] = name;
 	iuf.exercises[exerciseID]['seed'] = seed;
 	iuf.exercises[exerciseID]['exam'] = exam;
@@ -1194,8 +1204,9 @@ function createExercise(exerciseID, name='exercise',
 
 function parseExercise(exerciseID) {	
 	const exerciseCode = iuf.exercises[exerciseID].file;
+	const exerciseExt = iuf.exercises[exerciseID].ext;
 	
-	Shiny.onInputChange("parseExercise", {exerciseCode: exerciseCode, exerciseID: exerciseID}, {priority: 'event'});	
+	Shiny.onInputChange("parseExercise", {exerciseCode: exerciseCode, exerciseExt: exerciseExt, exerciseID: exerciseID}, {priority: 'event'});	
 }
 
 function getNumberOfExerciseBlocks() {
@@ -2057,11 +2068,12 @@ async function createExamEvent() {
 	const examExercises = iuf.exercises.filter((exercise) => exercise.exam & exercise.file !== null);
 	const exerciseNames = examExercises.map((exercise) => exercise.name);
 	const exerciseCodes = examExercises.map((exercise) => exercise.file);
+	const exerciseExts = examExercises.map((exercise) => exercise.ext);
 	const blocks = examExercises.map((exercise) => exercise.block);
 	const additionalPdfNames = iuf['examAdditionalPdf'].map(pdf => pdf[0]);
 	const additionalPdfFiles = iuf['examAdditionalPdf'].map(pdf => pdf[1]);
 	
-	Shiny.onInputChange("createExam", {exerciseNames: exerciseNames, exerciseCodes:exerciseCodes, blocks: blocks, additionalPdfNames: additionalPdfNames, additionalPdfFiles: additionalPdfFiles}, {priority: 'event'});
+	Shiny.onInputChange("createExam", {exerciseNames: exerciseNames, exerciseCodes:exerciseCodes, exerciseExts:exerciseExts, blocks: blocks, additionalPdfNames: additionalPdfNames, additionalPdfFiles: additionalPdfFiles}, {priority: 'event'});
 }
 
 /* --------------------------------------------------------------
