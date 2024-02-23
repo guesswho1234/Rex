@@ -118,7 +118,7 @@ function ping(){
 	$('#heart').addClass("ping");
 	const heartbeat = new Date();
 	
-	//todo: remove later (for debug)
+	//todo: remove later - for debugging
 	console.log(heartbeat);
 	
 	setTimeout(pong, 300); 
