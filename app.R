@@ -950,7 +950,7 @@ server = function(input, output, session) {
   )
 
   # PARSE EXERCISES -------------------------------------------------------------
-  # TODO: (sync, prepare function) send list of exercises with javascript exerciseID and exerciseCode;
+  #todo: (sync, prepare function) send list of exercises with javascript exerciseID and exerciseCode;
   # (sync, prepare function) store all files in temp;
   # (a sync, parse function) parse all exercises ans store results as one list and add to exerciseID;
   # (sync, send values to frontend and load into dom)
@@ -1003,7 +1003,6 @@ server = function(input, output, session) {
     seedList = seedList * as.numeric(paste0(if(is.na(is.numeric(input$seedValueExam))) NULL else input$seedValueExam, 1:numberOfExams))
     
     #todo: fix html and pdf having different order for exercises
-    
     # print(exercises)
     # print(seedList)
     
@@ -1177,35 +1176,10 @@ server = function(input, output, session) {
   })
   
   # ADDONS ------------------------------------------------------------------
-  #todo: workinprogress
   lapply(addons, \(addon) {
     get(paste0(addon, "_callModules"))()
     get(paste0(addon, "_observers"))(input)
   })
-  
-  # addonCall = eventReactive(input$callAddonFunction, {
-  #   # startWait(session)
-  # 
-  #   # background exercise
-  #   x = callr::r_bg(
-  #     func = get(input$callAddonFunction$func),
-  #     args = list(input, output, session, input$callAddonFunction$args),
-  #     supervise = TRUE
-  #   )
-  # 
-  #   return(x)
-  # })
-  # 
-  # observe({
-  #   if (addonCall()$is_alive()) {
-  #     invalidateLater(millis = 100, session = session)
-  #   } else {
-  #     result = addonCall()$get_result()
-  # 
-  #     print(result)
-  #     session$sendCustomMessage("debugMessage", result)
-  #   }
-  # })
 }
 
 # RUN APP -----------------------------------------------------------------
