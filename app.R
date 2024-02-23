@@ -21,125 +21,12 @@ library(qpdf) # qpdf_1.3.2
 library(openssl) # openssl_2.1.1
 library(shinyauthr) # shinyauthr_1.0.0
 
+# SOURCE ------------------------------------------------------------------
+source("source/filesAndDirectories.R")
+source("source/customElements.R")
+source("source/tryCatch.R")
+
 # FUNCTIONS ----------------------------------------------------------------
-  # FILES AND DIRECTORIES ---------------------------------------------------
-  getDir = function(session) {
-    paste0(tempdir(), "/", session$token)
-  }
-  
-  removeRuntimeFiles = function(session) {
-    dir = getDir(session)
-    
-    temfiles = list.files(dir)
-    filesToRemove = temfiles
-    
-    if(length(filesToRemove) > 0) 
-      unlink(paste0(dir, "/", filesToRemove), recursive = TRUE)
-  }
-
-  # TRY CATCH ------------------------------------------------------
-  getErrorCodeMessage = function(errorCode) {
-    errorMessage = lapply(names(errorCodes[[errorCode]]), function(lang){
-      paste0("<span lang=\"", lang, "\">", errorCodes[[errorCode]][[lang]], "</span>")  
-    })
-    errorMessage = paste0(errorMessage, collapse="")
-    errorMessage = paste0("<span class=\"errorMessage\">", errorCode, ": ", errorMessage, "</span>", collapse="")
-  
-    errorMessage
-  }
-  
-  getWarningCodeMessage = function(warningCode) {
-    warningMessage = lapply(names(warningCodes[[warningCode]]), function(lang){
-      paste0("<span lang=\"", lang, "\">", warningCodes[[warningCode]][[lang]], "</span>")  
-    })
-    warningMessage = paste0(warningMessage, collapse="")
-    warningMessage = paste0("<span class=\"warningMessage\">", warningCode, ": ", warningMessage, "</span>", collapse="")
-    
-    warningMessage
-  }
-  
-  getMessageType = function(message){
-    which(message$key==c("Success", "Warning", "Error")) - 1
-  }
-  
-  getMessageCode = function(message){
-    type = getMessageType(message)
-    code = 0
-    
-    if(type == 2) 
-      code = strsplit(message$value$message, ":")[[1]][1]
-  
-    if(type == 1) 
-      code = strsplit(message$value, ":")[[1]][1]
-    
-    code
-  }
-  
-  myMessage = function(message, class) {
-    type = getMessageType(message)
-    
-    if(type == 2) {
-      if (message$value$message %in% names(errorCodes)) {
-        message$value = getErrorCodeMessage(message$value$message)
-      } else {
-        message$value = ifelse(!grepl("E\\d{4}", message$value$message), paste0("W1000: ", message$value$message), message$value$message)
-      }
-    }
-    
-    if(type == 1) {
-      if (message$value %in% names(warningCodes)) {
-        message$value = getWarningCodeMessage(message$value)
-      } else {
-        message$value = ifelse(!grepl("W\\d{4}", message$value), paste0("W1000: ", message$value), message$value)
-      }
-    }
-    
-    message$value = gsub("\"", "'", message$value)
-    message$value = gsub("[\r\n]", "<br>", trimws(message$value))
-    message$value = gsub("[\r]", "",message$value)
-    message$value = gsub("[\n]", "", message$value)
-  
-    messageSign = paste0('<span class="responseSign ', message$key, 'Sign">', messageSymbols[type + 1], '</span>')
-    messageText = paste0('<span class="', paste0(class, 'TryCatchText'), ' tryCatchText">', message$value , '</span>')
-    messageObject = paste0('<span class="', paste0(class, 'TryCatch'), ' tryCatch ', message$key, '">', messageSign, messageText, '</span>')
-    
-    HTML(messageObject)
-  }
-
-  collectWarnings = function(expr) {
-    warnings = NULL
-    wHandler = function(w) {
-      warnings <<- c(warnings, list(w))
-      invokeRestart("muffleWarning")
-    }
-    
-    withCallingHandlers(expr, warning = wHandler)
-    
-    return(warnings)
-  }
-
-  # CUSTOM ELEMENTS ---------------------------------------------------------
-  myActionButton = function(id, deText, enText, icon){
-    tags$button(id = id, class = "btn btn-default action-button shiny-bound-input", type="button", myButtonStyle(deText, enText, icon))
-  }
-  
-  myDownloadButton = function(id){
-    tags$a(id = id, class = "btn btn-default shiny-download-link", href = "", 
-           target = "_blank", type = "button", download = NA, NULL, myButtonStyle("Speichern", "Save", "fa-solid fa-download"))
-  }
-  
-  myCheckBox = function(id, deText, enText) {
-    text = paste0('<span class="checkBoxText"><span lang="de">', deText, ':</span><span lang="en">', enText, ':</span></span>')
-    tags$span(id = id, HTML(text), tags$input(type="checkbox"))
-  }
-  
-  myButtonStyle = function(deText, enText, icon) {
-    icon = paste0('<span class="iconButton"><i class="', icon, '"></i></span>')
-    text = paste0('<span class="textButton"><span lang="de">', deText, '</span><span lang="en">', enText, '</span></span>')
-    
-    return(tags$span(HTML(paste0(icon, text, collapse=""))))
-  }
-
   # PREPARE DOWNLOAD EXERCISES ----------------------------------------------
   prepareExerciseDownloadFiles = function(session, exercises){
     dir = getDir(session)
@@ -147,7 +34,7 @@ library(shinyauthr) # shinyauthr_1.0.0
     exercises$exerciseNames = as.list(make.unique(unlist(exercises$exerciseNames), sep="_"))
     
     exerciseFiles = unlist(lapply(setNames(seq_along(exercises$exerciseNames), exercises$exerciseNames), function(i){
-      file = paste0(dir, "/", exercises$exerciseNames[[i]], ".rnw")
+      file = paste0(dir, "/", exercises$exerciseNames[[i]], ".", exercises$exerciseExts[[i]])
       writeLines(text=gsub("\r\n", "\n", exercises$exerciseCodes[[i]]), con=file)
   
       return(file)
@@ -200,7 +87,7 @@ library(shinyauthr) # shinyauthr_1.0.0
         
         seed = if(seed == "") NULL else seed
         
-        file = tempfile(fileext = ".Rnw")
+        file = tempfile(fileext = paste0(".", exercise$exerciseExt))
         writeLines(text=exercise$exerciseCode, con=file)
   
         htmlPreview = exams::exams2html(file, dir = dir, seed = seed, base64 = TRUE)
@@ -318,7 +205,7 @@ library(shinyauthr) # shinyauthr_1.0.0
 
         exam$exerciseNames = as.list(make.unique(unlist(exam$exerciseNames), sep="_"))
         exerciseFiles = unlist(lapply(setNames(seq_along(exam$exerciseNames), exam$exerciseNames), function(i){
-          file = paste0(dir, "/", exam$exerciseNames[[i]], ".rnw")
+          file = paste0(dir, "/", exam$exerciseNames[[i]], ".", exam$exerciseExts[[i]])
           writeLines(text=gsub("\r\n", "\n", exam$exerciseCodes[[i]]), con=file, sep="")
           
           return(file)
@@ -527,6 +414,10 @@ library(shinyauthr) # shinyauthr_1.0.0
           content = gsub("\r\n", "\n", input$evaluateExam$examRegisteredParticipantsnFile[[i]])
           content = gsub(",", ";", content)
           content = read.table(text=content, sep=";", header = TRUE)
+          
+          if(all(content$id==content$registration))
+            content$id = sprintf(paste0("%0", regLength, "d"), as.numeric(content$id))
+          
           content$registration = sprintf(paste0("%0", regLength, "d"), as.numeric(content$registration))
 
           write.csv2(content, file, row.names = FALSE, quote = FALSE)
@@ -884,15 +775,6 @@ library(shinyauthr) # shinyauthr_1.0.0
   #               "tr")
   rules = list("- 1/max(nwrong, 2)"="false2", "- 1/nwrong"="false", "- 1/ncorrect"="true", "- 1"="all", "- 0"="none")
 
-  # TRY CATCH ------------------------------------------------------
-  messageSymbols = c('<i class=\"fa-solid fa-circle-check\"></i>', '<i class=\"fa-solid fa-triangle-exclamation\"></i>', '<i class=\"fa-solid fa-circle-exclamation\"></i>')
-  
-  errorCodes = read.csv2("tryCatch/errorCodes.csv")
-  errorCodes = setNames(apply(errorCodes[,-1], 1, FUN=as.list), errorCodes[,1])
-  
-  warningCodes = read.csv2("tryCatch/warningCodes.csv")
-  warningCodes = setNames(apply(warningCodes[,-1], 1, FUN=as.list), warningCodes[,1])
-  
   # ADDONS ------------------------------------------------------------------
   addons_path = "addons/"
   addons_path_www = "www/addons/"
@@ -1017,7 +899,7 @@ server = function(input, output, session) {
     }),
     
     lapply(addons, \(addon) {
-      tags$style(src=paste0(addons_path, addon, "/", addon, "_style.css"))
+      tags$link(rel="stylesheet", type="text/css", href=paste0(addons_path, addon, "/", addon, "_style.css"))
     })
    )
   })
@@ -1045,13 +927,13 @@ server = function(input, output, session) {
   # EXPORT SINGLE EXERCISE ------------------------------------------------------
   output$downloadExercise = downloadHandler(
     filename = function() {
-      paste0(isolate(input$exerciseToDownload$exerciseName), ".rnw")
+      paste0(isolate(input$exerciseToDownload$exerciseName), ".", input$exerciseToDownload$exerciseExt)
     },
     content = function(fname) {
       writeLines(text=gsub("\r\n", "\n", isolate(input$exerciseToDownload$exerciseCode)), con=fname)
       removeRuntimeFiles(session)
     },
-    contentType = "text/rnw",
+    contentType = paste0("text/", input$exerciseToDownload$exerciseExt),
   )
 
   # EXPORT ALL EXERCISES ------------------------------------------------------
@@ -1295,31 +1177,35 @@ server = function(input, output, session) {
   })
   
   # ADDONS ------------------------------------------------------------------
-  addonCall = eventReactive(input$callAddonFunction, {
-    # startWait(session)
-    
-    # background exercise
-    x = callr::r_bg(
-      # func = evaluateExamScans,
-      func = get(input$callAddonFunction$func),
-      args = list(),
-      supervise = TRUE
-    )
-    
-    return(x)
+  #todo: workinprogress
+  lapply(addons, \(addon) {
+    get(paste0(addon, "_callModules"))()
+    get(paste0(addon, "_observers"))(input)
   })
   
-  observe({
-    if (addonCall()$is_alive()) {
-      invalidateLater(millis = 100, session = session)
-    } else {
-      result = addonCall()$get_result()
-      
-      #todo: workinprogress
-      print(result)
-      session$sendCustomMessage("debugMessage", result)
-    }
-  })
+  # addonCall = eventReactive(input$callAddonFunction, {
+  #   # startWait(session)
+  # 
+  #   # background exercise
+  #   x = callr::r_bg(
+  #     func = get(input$callAddonFunction$func),
+  #     args = list(input, output, session, input$callAddonFunction$args),
+  #     supervise = TRUE
+  #   )
+  # 
+  #   return(x)
+  # })
+  # 
+  # observe({
+  #   if (addonCall()$is_alive()) {
+  #     invalidateLater(millis = 100, session = session)
+  #   } else {
+  #     result = addonCall()$get_result()
+  # 
+  #     print(result)
+  #     session$sendCustomMessage("debugMessage", result)
+  #   }
+  # })
 }
 
 # RUN APP -----------------------------------------------------------------
