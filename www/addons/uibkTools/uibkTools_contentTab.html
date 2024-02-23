@@ -1,0 +1,76 @@
+<div id="uibkTools" class="contentTab active">
+	<h2><span lang="de">LFU Innsbruck</span><span lang="en">LFU Innsbruck</span></h2>
+	<div>
+		<div>
+			<label><span lang="de">VIS Teilnehmerlisten</span><span lang="en">VIS registered participant lists</span></label>
+			</br>
+			<span class="infoField"><span lang="de">VIS Teilnehmerlisten als *.csv Dateien ("OLAT Export").</span><span lang="en">VIS registered participant lists as *.csv files ("OLAT Export").</span></span>
+			<div id="visParticipantListsContainer">
+				<label class="uibkToolsFileUpload" for="file-upload_visParticipantLists">
+					<div class="uibkToolsFileButton">
+						<span class="iconButton"><i class="fa-solid fa-upload"></i></span>
+						<span class="textButton"><span lang="de">Importieren</span><span lang="en">Import</span></span>
+					</div>
+					<input type="file" id="file-upload_visParticipantLists" onchange='loadVisParticipantListsFileDialog(this.files);' multiple>
+				</label>
+				<div id="visParticipantListFiles">
+					<div id="visParticipantListFiles_list" class="itemList">
+						<div id="visParticipantListFile_list_items">
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<label><span lang="de">Rex Auswertungslisten</span><span lang="en">Rex evaluation lists</span></label>
+			</br>
+			<span class="infoField"><span lang="de">Rex Auswertungsdateien (*_nops_eval.csv).</span><span lang="en">Rex evaluation (*_nops_eval.csv) files.</span></span>
+			<div id="rexEvaluationListsContainer">
+				<label class="uibkToolsFileUpload" for="file-upload_rexEvaluationLists">
+					<div class="uibkToolsFileButton">
+						<span class="iconButton"><i class="fa-solid fa-upload"></i></span>
+						<span class="textButton"><span lang="de">Importieren</span><span lang="en">Import</span></span>
+					</div>
+					<input type="file" id="file-upload_rexEvaluationLists" onchange='loadRexEvaluationListsFileDialog(this.files);' multiple>
+				</label>
+				<div id="rexEvaluationListFiles">
+					<div id="rexEvaluationListFiles_list" class="itemList">
+						<div id="rexEvaluationListFile_list_items">
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<label><span lang="de">VIS Notenlisten</span><span lang="en">VIS grading lists</span></label>
+			</br>
+			<span class="infoField"><span lang="de">VIS Notenlisten als *.csv Dateien ("Notenlste Voralge").</span><span lang="en">VIS grading lists as *.csv files ("Notenlste Voralge").</span></span>
+			<div id="visGradingListsContainer">
+				<label class="uibkToolsFileUpload" for="file-upload_visGradingLists">
+					<div class="uibkToolsFileButton">
+						<span class="iconButton"><i class="fa-solid fa-upload"></i></span>
+						<span class="textButton"><span lang="de">Importieren</span><span lang="en">Import</span></span>
+					</div>
+					<input type="file" id="file-upload_visGradingLists" onchange='loadvisGradingListsFileDialog(this.files);' multiple>
+				</label>
+				<div id="visGradingListFiles">
+					<div id="visGradingListFiles_list" class="itemList">
+						<div id="visGradingListFile_list_items">
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<label id="downloadRexParticipantsList" class="listButton" for="createRexParticipantsList">
+				{{ init$button_createRexParticipantsList }}
+			</label>
+			
+			<label id="downloadOlatEvalList" class="listButton" for="createOlatEvalList"> 
+				{{ init$button_createOlatEvalList }}
+			</label>
+			
+			<label id="downloadVISgradingList" class="listButton" for="createGradingLists">
+				{{ init$button_createGradingLists }}
+			</label>
+		</div>
+	</div>
+</div>	
+
