@@ -549,7 +549,7 @@ source("source/tryCatch.R")
           # set "XXXXXXX" as registration number for scans which show "ERROR" in any field
           scans_reg_fullJoinData$registration[apply(scans_reg_fullJoinData, 1, function(x) any(x=="ERROR"))] = "XXXXXXX"
   
-          # pad zeroes to registration number and answers
+          # pad zeroes to registration numbers and answers
           scans_reg_fullJoinData$registration[scans_reg_fullJoinData$registration != "XXXXXXX"] = sprintf(paste0("%0", fields$regLength, "d"), as.numeric(scans_reg_fullJoinData$registration[scans_reg_fullJoinData$registration != "XXXXXXX"]))
           scans_reg_fullJoinData[,as.character(1:meta$numExercises)] = apply(scans_reg_fullJoinData[,as.character(1:meta$numExercises)], 2, function(x){
             x[is.na(x)] = 0
@@ -582,12 +582,12 @@ source("source/tryCatch.R")
     return(out)
   }
   
-  evaluateExamScansResponse = function(session, message, preparedEvaluation, scans_reg_fullJoinData) {
+  evaluateExamScansResponse = function(session, result) {
     showModal(modalDialog(
       title = tags$span(HTML('<span lang="de">Scans überprüfen</span><span lang="en">Check scans</span>')),
-      tags$span(id="responseMessage", myMessage(message, "modal")),
+      tags$span(id="responseMessage", myMessage(result$message, "modal")),
       
-      if (!is.null(scans_reg_fullJoinData)) 
+      if (!is.null(result$scans_reg_fullJoinData)) 
         tagList(
           tags$div(id="scanStats"),
           tags$div(id="inspectScan"),
@@ -596,7 +596,7 @@ source("source/tryCatch.R")
       
       footer = tagList(
         myActionButton("dismiss_evaluateExamScansResponse", "Abbrechen", "Cancle", "fa-solid fa-xmark"),
-        if (!is.null(scans_reg_fullJoinData)) 
+        if (!is.null(result$scans_reg_fullJoinData)) 
           myActionButton("proceedEval", "Weiter", "Proceed", "fa-solid fa-circle-right")
       ),
       size = "l"
@@ -604,34 +604,50 @@ source("source/tryCatch.R")
     session$sendCustomMessage("f_langDeEn", 1)
     
     # display scanData in modal
-    if (!is.null(scans_reg_fullJoinData) && nrow(scans_reg_fullJoinData) > 0) {
+    if (!is.null(result$scans_reg_fullJoinData) && nrow(result$scans_reg_fullJoinData) > 0) {
       scans_reg_fullJoinData_json = rjs_vectorToJsonArray(
-        apply(scans_reg_fullJoinData, 1, function(x) {
-          rjs_keyValuePairsToJsonObject(names(scans_reg_fullJoinData), x)
+        apply(result$scans_reg_fullJoinData, 1, function(x) {
+          rjs_keyValuePairsToJsonObject(names(result$scans_reg_fullJoinData), x)
         })
       )
       
-      examIds_json = rjs_vectorToJsonStringArray(preparedEvaluation$meta$examIds)
+      examIds_json = rjs_vectorToJsonStringArray(result$preparedEvaluation$meta$examIds)
   
       session$sendCustomMessage("setExanIds", examIds_json)
       session$sendCustomMessage("compareScanRegistrationData", scans_reg_fullJoinData_json)
     } 
     
     # display scanData again after going back from "evaluateExamFinalizeResponse"
-    if (!is.null(scans_reg_fullJoinData) && nrow(scans_reg_fullJoinData) == 0) {
+    if (!is.null(result$scans_reg_fullJoinData) && nrow(result$scans_reg_fullJoinData) == 0) {
       session$sendCustomMessage("backTocompareScanRegistrationData", 1)
     }
   }
   
-  evaluateExamFinalize = function(preparedEvaluation, collectWarnings, dir){
+  evaluateExamFinalize = function(preparedEvaluation, proceedEvaluation, collectWarnings, dir){
     out = tryCatch({
-      # file path and name settings
-      nops_evaluation_fileNames = "evaluation.html"
-      nops_evaluation_fileNamePrefix = gsub("_+", "_", paste0(preparedEvaluation$meta$examName, "_nops_eval"))
-      preparedEvaluation$files$nops_evaluationCsv = paste0(dir, "/", nops_evaluation_fileNamePrefix, ".csv")
-      preparedEvaluation$files$nops_evaluationZip = paste0(dir, "/", nops_evaluation_fileNamePrefix, ".zip")
-  
       warnings = collectWarnings({
+        # process scanData
+        scanData = Reduce(c, lapply(proceedEvaluation, function(x) paste0(unlist(unname(x)), collapse=" ")))
+        scanData = paste0(scanData, collapse="\n")
+
+        # write scanData
+        scanDatafile = paste0(dir, "/", "Daten.txt")
+        writeLines(text=scanData, con=scanDatafile)
+
+        # create *_nops_scan.zip file needed for exams::nops_eval
+        zipFile = gsub("_+", "_", paste0(dir, "/", preparedEvaluation$meta$examName, "_nops_scan.zip"))
+        zip(zipFile, c(preparedEvaluation$files$scans, scanDatafile), flags='-r9XjFS')
+
+        # manage preparedEvaluation data
+        preparedEvaluation$files$scanEvaluation = zipFile
+        preparedEvaluation$files = within(preparedEvaluation$files, rm(list=c("scans")))
+        
+        # file path and name settings
+        nops_evaluation_fileNames = "evaluation.html"
+        nops_evaluation_fileNamePrefix = gsub("_+", "_", paste0(preparedEvaluation$meta$examName, "_nops_eval"))
+        preparedEvaluation$files$nops_evaluationCsv = paste0(dir, "/", nops_evaluation_fileNamePrefix, ".csv")
+        preparedEvaluation$files$nops_evaluationZip = paste0(dir, "/", nops_evaluation_fileNamePrefix, ".zip")
+        
         with(preparedEvaluation, {
           # finalize evaluation
           exams::nops_eval(
@@ -649,10 +665,16 @@ source("source/tryCatch.R")
             interactive = TRUE
           )
   
-          # add additional exercise columns
           solutionData = readRDS(files$solution)
           evaluationData = read.csv2(files$nops_evaluationCsv)
+          
+          # pad zeroes to registration numbers and ids (if same as registrations numbers)
+          if(all(evaluationData$id==evaluationData$registration))
+            evaluationData$id = sprintf(paste0("%0", fields$regLength, "d"), as.numeric(evaluationData$id))
+          
+          evaluationData$registration = sprintf(paste0("%0", fields$regLength, "d"), as.numeric(evaluationData$registration))
   
+          # add additional exercise columns
           exerciseTable = as.data.frame(Reduce(rbind, lapply(evaluationData$exam, \(exam) {
             exerciseNames = Reduce(cbind, lapply(solutionData[[as.character(exam)]], \(exercise) exercise$metainfo$file))
           })))
@@ -689,18 +711,55 @@ source("source/tryCatch.R")
     return(out)
   }
   
-  evaluateExamFinalizeResponse = function(session, message, downloadable) {
+  evaluateExamFinalizeResponse = function(session, result) {
     showModal(modalDialog(
       title = tags$span(HTML('<span lang="de">Prüfung auswerten</span><span lang="en">Evaluate exam</span>')),
-      tags$span(id='responseMessage', myMessage(message, "modal")),
+      tags$span(id='responseMessage', myMessage(result$message, "modal")),
       footer = tagList(
         myActionButton("dismiss_evaluateExamFinalizeResponse", "Schließen", "Close", "fa-solid fa-xmark"),
         myActionButton("backTo_evaluateExamScansResponse", "Zurück", "Back", "fa-solid fa-arrow-left"),
-        if (downloadable)
+        if (length(unlist(result$preparedEvaluation$files, recursive = TRUE)) > 0)
           myDownloadButton('downloadEvaluationFiles')
       )
     ))
     session$sendCustomMessage("f_langDeEn", 1)
+    
+    # display statistics in modal
+    if (!is.null(result$preparedEvaluation$files$nops_evaluationCsv) && length(unlist(result$preparedEvaluation$files, recursive = TRUE)) > 0) {
+      evaluationResultsData = read.csv2(result$preparedEvaluation$files$nops_evaluationCsv)
+      
+      exerciseNames = unique(unlist(evaluationResultsData[,grepl("exercise.*", names(evaluationResultsData))]))
+      
+      exercisePoints = Reduce(cbind, lapply(exerciseNames, \(exercise){
+        summary(apply(evaluationResultsData, 1, \(participant){
+
+          if(!exercise %in% participant)
+            return(NULL)
+          
+          as.numeric(participant[gsub("exercise", "points", names(evaluationResultsData)[participant==exercise])])
+        }))
+      }))
+      
+      exercisePoints = cbind(exerciseNames, exercisePoints)
+      
+      marks = table(factor(evaluationResultsData$mark, levels=result$preparedEvaluation$fields$labels))
+      marks = cbind(marks, marks/sum(marks), cumsum(marks)/sum(marks))
+      marks = cbind(result$preparedEvaluation$fields$labels, marks)
+      
+      evaluationStatistics = list(
+        exercisePoints=exercisePoints,
+        totalPoints=summary(evaluationResultsData$points),
+        marks=marks
+      )
+
+      evaluationStatistics_json = rjs_vectorToJsonArray(
+        Reduce(c, lapply(evaluationStatistics, \(x) {
+          rjs_keyValuePairsToJsonObject(x[,1], x[-1])
+        }))
+      )
+
+      session$sendCustomMessage("evaluationStatistics", evaluationStatistics_json)
+    }
   }
   
   # WAIT --------------------------------------------------------------------
@@ -989,18 +1048,18 @@ server = function(input, output, session) {
   examCreation = eventReactive(input$createExam, {
     startWait(session)
     
-    exerciseNames = as.list(make.unique(unlist(input$createExam$exerciseNames), sep="_"))
-    exerciseFiles = setNames(seq_along(exerciseNames), exerciseNames)
-    
-    numberOfExams = as.numeric(input$numberOfExams)
-    blocks = as.numeric(input$createExam$blocks)
-    uniqueBlocks = unique(blocks)
-    numberOfExercises = as.numeric(input$numberOfExercises)
-    exercisesPerBlock = numberOfExercises / length(uniqueBlocks)
-    exercises = lapply(uniqueBlocks, function(x) exerciseFiles[blocks==x])
-    
-    seedList = matrix(1, nrow=numberOfExams, ncol=length(exerciseNames))
-    seedList = seedList * as.numeric(paste0(if(is.na(is.numeric(input$seedValueExam))) NULL else input$seedValueExam, 1:numberOfExams))
+    # exerciseNames = as.list(make.unique(unlist(input$createExam$exerciseNames), sep="_"))
+    # exerciseFiles = setNames(seq_along(exerciseNames), exerciseNames)
+    # 
+    # numberOfExams = as.numeric(input$numberOfExams)
+    # blocks = as.numeric(input$createExam$blocks)
+    # uniqueBlocks = unique(blocks)
+    # numberOfExercises = as.numeric(input$numberOfExercises)
+    # exercisesPerBlock = numberOfExercises / length(uniqueBlocks)
+    # exercises = lapply(uniqueBlocks, function(x) exerciseFiles[blocks==x])
+    # 
+    # seedList = matrix(1, nrow=numberOfExams, ncol=length(exerciseNames))
+    # seedList = seedList * as.numeric(paste0(if(is.na(is.numeric(input$seedValueExam))) NULL else input$seedValueExam, 1:numberOfExams))
     
     #todo: fix html and pdf having different order for exercises
     # print(exercises)
@@ -1083,10 +1142,7 @@ server = function(input, output, session) {
       examScanEvaluationData(result)
       
       # open modal
-      evaluateExamScansResponse(session,
-                       result$message,
-                       result$preparedEvaluation,
-                       result$scans_reg_fullJoinData)
+      evaluateExamScansResponse(session, result)
     }
   })
 
@@ -1094,29 +1150,11 @@ server = function(input, output, session) {
   examFinalizeEvaluation = eventReactive(input$proceedEvaluation, {
     dir = getDir(session)
     removeModal()
-    preparedEvaluation = isolate(examScanEvaluationData()$preparedEvaluation)
-    
-    # process scanData
-    scanData = Reduce(c, lapply(input$proceedEvaluation, function(x) paste0(unlist(unname(x)), collapse=" ")))
-    scanData = paste0(scanData, collapse="\n")
-
-    # write scanData
-    scanDatafile = paste0(dir, "/", "Daten.txt")
-    writeLines(text=scanData, con=scanDatafile)
-
-    # create *_nops_scan.zip file needed for exams::nops_eval
-    zipFile = gsub("_+", "_", paste0(dir, "/", preparedEvaluation$meta$examName, "_nops_scan.zip"))
-    zip(zipFile, c(preparedEvaluation$files$scans, scanDatafile), flags='-r9XjFS')
-
-    # manage preparedEvaluation data
-    preparedEvaluation$files$scanEvaluation = zipFile
-    preparedEvaluation$files = within(preparedEvaluation$files, rm(list=c("scans")))
-    examFinalizeEvaluationData(preparedEvaluation)
 
     # background exercise
     x = callr::r_bg(
       func = evaluateExamFinalize,
-      args = list(isolate(examFinalizeEvaluationData()), collectWarnings, dir),
+      args = list(isolate(examScanEvaluationData()$preparedEvaluation), isolate(input$proceedEvaluation), collectWarnings, dir),
       supervise = TRUE
     )
 
@@ -1129,12 +1167,12 @@ server = function(input, output, session) {
       invalidateLater(millis = 100, session = session)
     } else {
       result = examFinalizeEvaluation()$get_result()
-
+      
       # save result in reactive value
       examFinalizeEvaluationData(result)
-
+      
       # open modal
-      evaluateExamFinalizeResponse(session, result$message, length(unlist(result$preparedEvaluation$files, recursive = TRUE)) > 0)
+      evaluateExamFinalizeResponse(session, result)
     }
   })
 
@@ -1157,11 +1195,7 @@ server = function(input, output, session) {
     
     result = isolate(examScanEvaluationData())
     
-    
-    evaluateExamScansResponse(session,
-                              result$message,
-                              result$preparedEvaluation,
-                              data.frame())
+    evaluateExamScansResponse(session, result)
   })
 
   # modal close

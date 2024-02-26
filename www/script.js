@@ -2743,6 +2743,10 @@ Shiny.addCustomMessageHandler('backTocompareScanRegistrationData', function(x) {
 	sortCompareListItems();
 });
 
+Shiny.addCustomMessageHandler('evaluationStatistics', function(jsonData) {
+	console.log(jsonData);
+});
+
 $('body').on('click', '#proceedEval', function() {
 	const properties = ['scan', 'sheet', 'scrambling', 'type', 'replacement', 'registration'].concat(new Array(45).fill(1).map( (_, i) => i+1 ));
 	
