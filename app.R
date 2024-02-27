@@ -754,25 +754,14 @@ source("source/tryCatch.R")
         marks=marks
       )
       
-      print(evaluationStatistics)
-
-      # evaluationStatistics_json = rjs_vectorToJsonArray(Reduce(c, lapply(seq_along(evaluationStatistics), \(x) {
-      #   rjs_vectorToJsonArray(Reduce(c, lapply(1:nrow(evaluationStatistics[[x]]), \(y) {
-      #     rjs_keyValuePairsToJsonObject(c("name", colnames(evaluationStatistics[[x]])),
-      #                                   c(rownames(evaluationStatistics[[x]])[y], evaluationStatistics[[x]][y,]),
-      #                                   c(TRUE, rep(FALSE, length(evaluationStatistics[[x]][y,]))))
-      #   })))
-      # })))
-      
       evaluationStatistics_json = rjs_vectorToJsonArray(Reduce(c, lapply(seq_along(evaluationStatistics), \(x) {
-        rjs_keyValuePairsToJsonObject(names(evaluationStatistics)[x], rjs_vectorToJsonArray(Reduce(c, lapply(1:nrow(evaluationStatistics[[x]]), \(y) {
-            rjs_keyValuePairsToJsonObject(c("name", colnames(evaluationStatistics[[x]])),
-                                          c(rownames(evaluationStatistics[[x]])[y], evaluationStatistics[[x]][y,]),
-                                          c(TRUE, rep(FALSE, length(evaluationStatistics[[x]][y,]))))
-          }))), FALSE)
+        rjs_keyValuePairsToJsonObject(names(evaluationStatistics)[x], 
+                                      rjs_vectorToJsonArray(Reduce(c, lapply(1:nrow(evaluationStatistics[[x]]), \(y) {
+                                        rjs_keyValuePairsToJsonObject(c("name", colnames(evaluationStatistics[[x]])),
+                                                                      c(rownames(evaluationStatistics[[x]])[y], evaluationStatistics[[x]][y,]),
+                                                                      c(TRUE, rep(FALSE, length(evaluationStatistics[[x]][y,]))))
+                                      }))), FALSE)
       })))
-      
-      print(evaluationStatistics_json)
 
       session$sendCustomMessage("evaluationStatistics", evaluationStatistics_json)
     }
