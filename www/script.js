@@ -2107,11 +2107,12 @@ async function createExamEvent() {
 	const exerciseNames = examExercises.map((exercise) => exercise.name);
 	const exerciseCodes = examExercises.map((exercise) => exercise.file);
 	const exerciseExts = examExercises.map((exercise) => exercise.ext);
+	const exerciseTypes = examExercises.map((exercise) => exercise.type);
 	const blocks = examExercises.map((exercise) => exercise.block);
 	const additionalPdfNames = rex.examAdditionalPdf.map(pdf => pdf[0]);
 	const additionalPdfFiles = rex.examAdditionalPdf.map(pdf => pdf[1]);
 	
-	Shiny.onInputChange("createExam", {exerciseNames: exerciseNames, exerciseCodes:exerciseCodes, exerciseExts:exerciseExts, blocks: blocks, additionalPdfNames: additionalPdfNames, additionalPdfFiles: additionalPdfFiles}, {priority: 'event'});
+	Shiny.onInputChange("createExam", {exerciseNames: exerciseNames, exerciseCodes:exerciseCodes, exerciseExts:exerciseExts, exerciseTypes:exerciseTypes, blocks: blocks, additionalPdfNames: additionalPdfNames, additionalPdfFiles: additionalPdfFiles}, {priority: 'event'});
 }
 
 /* --------------------------------------------------------------

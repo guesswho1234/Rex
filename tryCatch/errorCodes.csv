@@ -4,7 +4,7 @@ E1001;;
 E1002;;
 E1003;;
 E1004;;
-E1005;Exercise type is not 'mchoice'.; Aufgabentyp ist nicht 'mchoice'.
+E1005;Exercise type is not 'schoice' or 'mchoice'.; Aufgabentyp ist nicht 'schoice' oder 'mchoice'.
 E1006;Exercise needs at least two choices.;Aufgabe benötigt mindestens zwei Antwortmöglichkeiten.
 E1007;Exercise has indentical choices.;Aufgabe hat identische Antwortmöglichkeiten.
 E1008;Seed must at least be one.;Anzahl an Prüfungsaufgaben muss mindestens eins sein.
@@ -18,3 +18,5 @@ E1015;The registration file needs to have exactly three columns.;Die Teilnehmerl
 E1016;The column names of the registration file have to be registration, name, and id.;Die Spaltennamen der Teilnehmerliste müssen registration, name und id sein.
 E1017;Invalid grading key;Ungültiger Notenschlüssel.
 E1018;Invalid grading key;Ungültiger Notenschlüssel.
+E1019;Exercises have varying types;Aufgaben haben verschiedene Typen.
+E1020;Exercises types all have to either be 'schoice' or 'mchoice';Aufgabentypen müssen alle entweder 'schoice' oder 'mchoice' sein.

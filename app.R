@@ -202,6 +202,12 @@ source("source/tryCatch.R")
 
         if(length(exam$exerciseNames) > settings$exerciseMax)
           stop("E1011")
+        
+        if(length(unique(exam$exerciseTypes)) > 1)
+          stop("E1019")
+        
+        if(!all(unique(exam$exerciseTypes) %in% c("schoice", "mchoice")))
+          stop("E1020")
 
         exam$exerciseNames = as.list(make.unique(unlist(exam$exerciseNames), sep="_"))
         exerciseFiles = unlist(lapply(setNames(seq_along(exam$exerciseNames), exam$exerciseNames), function(i){
