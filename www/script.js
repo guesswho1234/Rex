@@ -1120,7 +1120,7 @@ function newSimpleExercise(file = '', block = 1) {
 		addExercise();
 		createExercise(exerciseID, d_exerciseName, 
 					       null, 
-						   null,
+						   "rnw",
 					       d_questionText,
 					       [d_answerText + '1', d_answerText + '2'],
 					       [d_result, d_result],
@@ -1156,7 +1156,7 @@ async function newComplexExercise(file, ext, block) {
 
 function createExercise(exerciseID, name='exercise', 
 							file=null,
-							ext=null,
+							ext="rnw",
 						    question='',
 						    choices=[],
 							result=[],
