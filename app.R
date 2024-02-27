@@ -856,7 +856,7 @@ source("source/tryCatch.R")
   #               "sl",
   #               "es",
   #               "tr")
-  rules = list("- 1/max(nwrong, 2)"="false2", "- 1/nwrong"="false", "- 1/ncorrect"="true", "- 1"="all", "- 0"="none")
+  rules = list("- 1/nwrong"="false", "- 1/max(nwrong, 2)"="false2", "- 1/ncorrect"="true", "- 1"="all", "- 0"="none")
 
   # ADDONS ------------------------------------------------------------------
   addons_path = "addons/"
