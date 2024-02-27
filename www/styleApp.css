@@ -163,6 +163,8 @@ main {
 	display: grid;
 	margin: auto;
 	font-size: 100px;
+	position: relative;
+	width: 100%;
 }
 
 .modalTryCatch .responseSign {
@@ -172,6 +174,9 @@ main {
 .modalTryCatchText {
 	margin: auto;
 	margin-top: 10px !important;
+	position: absolute;
+	width: 100%;
+	top: 90px;
 }
 
 #exerciseUpload {

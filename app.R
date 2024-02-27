@@ -591,7 +591,7 @@ source("source/tryCatch.R")
         tagList(
           tags$div(id="scanStats"),
           tags$div(id="inspectScan"),
-          tags$div(id="compareScanRegistrationDataTable", HTML('<div class="loadingCompareScanRegistrationDataTable"><span lang="de" class="loadingCompareScanRegistrationDataTable">BITTE WARTEN ...</span><span lang="en" class="loadingCompareScanRegistrationDataTable">PLEASE WAIT ...</span></div>')),
+          tags$div(id="compareScanRegistrationDataTable", HTML('<div class="loadingCompareScanRegistrationDataTable"><span lang="de">BITTE WARTEN ...</span><span lang="en">PLEASE WAIT ...</span></div>')),
         ),
       
       footer = tagList(
@@ -730,7 +730,7 @@ source("source/tryCatch.R")
       
       exerciseNames = unique(unlist(evaluationResultsData[,grepl("exercise.*", names(evaluationResultsData))]))
       
-      exercisePoints = Reduce(cbind, lapply(exerciseNames, \(exercise){
+      exercisePoints = Reduce(rbind, lapply(exerciseNames, \(exercise){
         summary(apply(evaluationResultsData, 1, \(participant){
 
           if(!exercise %in% participant)
@@ -739,24 +739,40 @@ source("source/tryCatch.R")
           as.numeric(participant[gsub("exercise", "points", names(evaluationResultsData)[participant==exercise])])
         }))
       }))
+      rownames(exercisePoints) = exerciseNames
       
-      exercisePoints = cbind(exerciseNames, exercisePoints)
+      totalPoints = t(summary(as.numeric(evaluationResultsData$points)))
+      rownames(totalPoints) = "totalPoints"
       
       marks = table(factor(evaluationResultsData$mark, levels=result$preparedEvaluation$fields$labels))
-      marks = cbind(marks, marks/sum(marks), cumsum(marks)/sum(marks))
-      marks = cbind(result$preparedEvaluation$fields$labels, marks)
+      marks = cbind(marks, marks/sum(marks), rev(cumsum(rev(marks)))/sum(marks))
+      colnames(marks) = c("absolute", "relative", "relative cumulative")
       
       evaluationStatistics = list(
         exercisePoints=exercisePoints,
-        totalPoints=summary(evaluationResultsData$points),
+        totalPoints=totalPoints,
         marks=marks
       )
+      
+      print(evaluationStatistics)
 
-      evaluationStatistics_json = rjs_vectorToJsonArray(
-        Reduce(c, lapply(evaluationStatistics, \(x) {
-          rjs_keyValuePairsToJsonObject(x[,1], x[-1])
-        }))
-      )
+      # evaluationStatistics_json = rjs_vectorToJsonArray(Reduce(c, lapply(seq_along(evaluationStatistics), \(x) {
+      #   rjs_vectorToJsonArray(Reduce(c, lapply(1:nrow(evaluationStatistics[[x]]), \(y) {
+      #     rjs_keyValuePairsToJsonObject(c("name", colnames(evaluationStatistics[[x]])),
+      #                                   c(rownames(evaluationStatistics[[x]])[y], evaluationStatistics[[x]][y,]),
+      #                                   c(TRUE, rep(FALSE, length(evaluationStatistics[[x]][y,]))))
+      #   })))
+      # })))
+      
+      evaluationStatistics_json = rjs_vectorToJsonArray(Reduce(c, lapply(seq_along(evaluationStatistics), \(x) {
+        rjs_keyValuePairsToJsonObject(names(evaluationStatistics)[x], rjs_vectorToJsonArray(Reduce(c, lapply(1:nrow(evaluationStatistics[[x]]), \(y) {
+            rjs_keyValuePairsToJsonObject(c("name", colnames(evaluationStatistics[[x]])),
+                                          c(rownames(evaluationStatistics[[x]])[y], evaluationStatistics[[x]][y,]),
+                                          c(TRUE, rep(FALSE, length(evaluationStatistics[[x]][y,]))))
+          }))), FALSE)
+      })))
+      
+      print(evaluationStatistics_json)
 
       session$sendCustomMessage("evaluationStatistics", evaluationStatistics_json)
     }
@@ -791,15 +807,26 @@ source("source/tryCatch.R")
     return(x)
   }
   
-  rjs_keyValuePairsToJsonObject = function(keys, values){
-    values = gsub("\"", "\\\\\"", values)
-    values = gsub(":", "\\:", values)
-    values = gsub("\\n", " ", values)
-  
-    x = paste0("\"", keys, "\":")
-    y = paste0("\"", gsub(":", "\\:", values), "\"")
-    x = paste0(x, y, collapse=", ")
+  rjs_keyValuePairsToJsonObject = function(keys, values, escapeValues=TRUE){
+    if(length(escapeValues) < length(values))
+      escapeValues = rep(TRUE, length(values))
+    
+    values = sapply(seq_along(values), \(x){
+      if(escapeValues[x]) {
+        values[x] = gsub("\"", "\\\\\"", values[x])
+        values[x] = gsub(":", "\\:", values[x])
+        values[x] = gsub("\\n", " ", values[x])
+        values[x] = paste0("\"", values[x], "\"")
+      }
+        
+      return(values[x])
+    })
+
+    keys = paste0("\"", keys, "\":")
+    
+    x = paste0(keys, values, collapse=", ")
     x = paste0("{", x, "}")
+    
     return(x)
   }
 
@@ -921,7 +948,7 @@ server = function(input, output, session) {
       checkboxInput_partialPoints = checkboxInput("partialPoints", label = NULL, value = TRUE),
       checkboxInput_negativePoints = checkboxInput("negativePoints", label = NULL, value = NULL),
       selectInput_rule = selectInput("rule", label = NULL, choices = rules, selected = NULL, multiple = FALSE),
-      checkboxInput_mark = checkboxInput("mark", label = NULL, value = NULL), 
+      checkboxInput_mark = checkboxInput("mark", label = NULL, value = TRUE), 
     
       textInput_markThreshold1 = disabled(textInput("markThreshold1", label = NULL, value = 0)),
       textInput_markLabel1 = textInput("markLabel1", label = NULL, value = NULL),

@@ -23,15 +23,16 @@ function initApp(){
 	if( initApp.fired ) return;
 	initApp.fired = true;
 	 
-	iuf.exercises = [];
-	iuf.examAdditionalPdf = []; 
-	iuf.examEvaluation = [];
-	iuf.examEvaluation.scans = []; 
-	iuf.examEvaluation.registeredParticipants = [];
-	iuf.examEvaluation.solutions = [];
-	iuf.examEvaluation.examIds = [];
-	iuf.examEvaluation.changeHistory = null;
-	iuf.examEvaluation.scans_reg_fullJoinData = [];
+	rex.exercises = [];
+	rex.examAdditionalPdf = []; 
+	rex.examEvaluation = [];
+	rex.examEvaluation.scans = []; 
+	rex.examEvaluation.registeredParticipants = [];
+	rex.examEvaluation.solutions = [];
+	rex.examEvaluation.examIds = [];
+	rex.examEvaluation.changeHistory = null;
+	rex.examEvaluation.scans_reg_fullJoinData = [];
+	rex.examEvaluation.statistics = [];
 	
 	$('#s_initialSeed').html(itemSingle($('#seedValueExercises').val(), 'greenLabelValue'));
 	$('#s_numberOfExams').html(itemSingle($('#numberOfExams').val(), 'grayLabelValue'));
@@ -59,7 +60,8 @@ function initApp(){
 
 	linkElements.forEach(style => $("head").append(style));
 	
-	changeHeartColor(0);
+	$('#heart span').css('background', 'var(---heartRed)');
+	$('#heart span').css('-webkit-background-clip', 'text');
 }
 
 /* --------------------------------------------------------------
@@ -133,7 +135,7 @@ $('body').on('click', '#heart.ping', function(e) {
 	changeHeartColor();
 });
 
-function changeHeartColor(increment = 1) {
+function changeHeartColor() {
 	let colorId = getHeartColorCookie();
 	colorId = colorId === null ? 0 : 1 - parseInt(colorId);
 	
@@ -540,7 +542,7 @@ function f_langDeEn() {
 	lang = getLanguageCookie();
 	
 	if (lang === 'en') {
-		iuf.language = 'en';
+		rex.language = 'en';
 		
 		$('html').attr('lang', 'en');
 		$('html').attr('xml:lang', 'en');
@@ -548,7 +550,7 @@ function f_langDeEn() {
 		$('[lang="de"]').hide();
 		$('[lang="en"]').show();
 	} else {
-		iuf.language = 'de';
+		rex.language = 'de';
 		
 		$('html').attr('lang', 'de');
 		$('html').attr('xml:lang', 'de');
@@ -603,7 +605,7 @@ const languages = {en:["Englisch", "English"],
 /* --------------------------------------------------------------
  DATA 
 -------------------------------------------------------------- */
-let iuf = new Object();
+let rex = new Object();
 let exercises = -1;
 let exerciseID_hook = -1;
 
@@ -654,7 +656,7 @@ $("#seedValueExercises").change(function(){
 	$('#s_initialSeed').html(itemSingle(seed, 'greenLabelValue'));
 	Shiny.onInputChange("seedValueExercises", $('#seedValueExercises').val());
 	
-	if(iuf.exercises.length > 0) viewExercise(getID());
+	if(rex.exercises.length > 0) viewExercise(getID());
 }); 
 
 /* --------------------------------------------------------------
@@ -675,7 +677,7 @@ function examExercisesSummary() {
 	let totalPoints = 0;
 	let topics = [];
 		
-	iuf.exercises.forEach((item, index) => {
+	rex.exercises.forEach((item, index) => {
 		if(item.exam) {
 			numberOfExamExercisesCounter++;
 			totalPoints += Number(item.points);
@@ -720,11 +722,11 @@ function examExerciseAll(){
 		}
 		
 		$(this).removeClass('exam');
-		iuf.exercises[index].exam = false;
+		rex.exercises[index].exam = false;
 				
 		if (!$(this).find('.examExercise').hasClass('disabled') && !examExerciseAllButton.hasClass('allAdded')) {	
 			$(this).addClass('exam');
-			iuf.exercises[index].exam = true;
+			rex.exercises[index].exam = true;
 		}
 	});
 	
@@ -743,7 +745,7 @@ function exerciseRemoveAll(){
 			}).get();
 			
 			for (let i = removeIndices.length -1; i >= 0; i--) {
-				iuf.exercises.splice(removeIndices[i],1);
+				rex.exercises.splice(removeIndices[i],1);
 				exercises = exercises - 1;
 			}
 			
@@ -755,7 +757,7 @@ function exerciseRemoveAll(){
 }
 
 function exerciseParseAll(){
-	iuf.exercises.forEach((t, index) => {
+	rex.exercises.forEach((t, index) => {
 		if( $('.exerciseItem:nth-child(' + (index + 1) + ')').hasClass('filtered')) {
 			return;
 		}
@@ -771,12 +773,12 @@ $("#exerciseDownload").click(function(){
 function exerciseDownload() {	
 	const exerciseID = getID();
 	
-	if(iuf.exercises[exerciseID].editable)
+	if(rex.exercises[exerciseID].editable)
 		setSimpleExerciseFileContents(exerciseID);
 	
-	const exerciseName = iuf.exercises[exerciseID].name;
-	const exerciseCode = iuf.exercises[exerciseID].file;
-	const exerciseExt = iuf.exercises[exerciseID].ext;
+	const exerciseName = rex.exercises[exerciseID].name;
+	const exerciseCode = rex.exercises[exerciseID].file;
+	const exerciseExt = rex.exercises[exerciseID].ext;
 			
 	Shiny.onInputChange("exerciseToDownload", {exerciseName:exerciseName, exerciseCode: exerciseCode, exerciseExt: exerciseExt}, {priority: 'event'});	
 }
@@ -786,8 +788,8 @@ $('#exerciseDownloadAll').click(function () {
 });
 
 function exerciseDownloadAll() {	
-	const filteredTasks = iuf.exercises.filter((x, index) => {
-		if(iuf.exercises[index].editable)
+	const filteredTasks = rex.exercises.filter((x, index) => {
+		if(rex.exercises[index].editable)
 			setSimpleExerciseFileContents(index);
 		return !$('.exerciseItem:nth-child(' + (index + 1) + ')').hasClass('filtered')
 	});
@@ -857,7 +859,7 @@ function searchExercises() {
 		const filterBy = input.split(":")[1];
 		
 		if (input.includes("name:")) {
-			const fieldsToFilter = iuf.exercises.map(exercise => {
+			const fieldsToFilter = rex.exercises.map(exercise => {
 				if( exercise.name === null) {
 					return "";
 				} 
@@ -868,7 +870,7 @@ function searchExercises() {
 		}
 		
 		if (input.includes("examHistory:")) {
-			const fieldsToFilter = iuf.exercises.map(exercise => {
+			const fieldsToFilter = rex.exercises.map(exercise => {
 				if( exercise.examHistory === null) {
 					return "";
 				} 
@@ -879,7 +881,7 @@ function searchExercises() {
 		}
 		
 		if (input.includes("authoredBy:")) {
-			const fieldsToFilter = iuf.exercises.map(exercise => {
+			const fieldsToFilter = rex.exercises.map(exercise => {
 				if( exercise.authoredBy === null) {
 					return "";
 				} 
@@ -890,7 +892,7 @@ function searchExercises() {
 		}
 		
 		if (input.includes("topic:")) {
-			const fieldsToFilter = iuf.exercises.map(exercise => {
+			const fieldsToFilter = rex.exercises.map(exercise => {
 				if( exercise.topic === null) {
 					return "";
 				} 
@@ -901,7 +903,7 @@ function searchExercises() {
 		}
 		
 		if (input.includes("tags:")) {
-			const fieldsToFilter = iuf.exercises.map(exercise => {
+			const fieldsToFilter = rex.exercises.map(exercise => {
 				if( exercise.tags === null) {
 					return "";
 				} 
@@ -912,7 +914,7 @@ function searchExercises() {
 		}
 		
 		if (input.includes("precision:")) {
-			const fieldsToFilter = iuf.exercises.map(exercise => {
+			const fieldsToFilter = rex.exercises.map(exercise => {
 				if( exercise.precision === null) {
 					return "";
 				} 
@@ -923,7 +925,7 @@ function searchExercises() {
 		}
 		
 		if (input.includes("points:")) {
-			const fieldsToFilter = iuf.exercises.map(exercise => {
+			const fieldsToFilter = rex.exercises.map(exercise => {
 				if( exercise.points === null) {
 					return "";
 				} 
@@ -934,7 +936,7 @@ function searchExercises() {
 		}
 		
 		if (input.includes("type:")) {
-			const fieldsToFilter = iuf.exercises.map(exercise => {
+			const fieldsToFilter = rex.exercises.map(exercise => {
 				if( exercise.type === null) {
 					return "";
 				} 
@@ -945,7 +947,7 @@ function searchExercises() {
 		}
 		
 		if (input.includes("question:")) {
-			const fieldsToFilter = iuf.exercises.map(exercise => {
+			const fieldsToFilter = rex.exercises.map(exercise => {
 				if( exercise.question === null) {
 					return "";
 				} 
@@ -956,7 +958,7 @@ function searchExercises() {
 		}
 		
 		if (input.includes("statusMessage:")) {
-			const fieldsToFilter = iuf.exercises.map(exercise => {
+			const fieldsToFilter = rex.exercises.map(exercise => {
 				if( exercise.statusMessage === null) {
 					return "";
 				} 
@@ -967,7 +969,7 @@ function searchExercises() {
 		}
 		
 		if (input.includes("statusCode:")) {
-			const fieldsToFilter = iuf.exercises.map(exercise => {
+			const fieldsToFilter = rex.exercises.map(exercise => {
 				if( exercise.statusCode === null) {
 					return "";
 				} 
@@ -978,7 +980,7 @@ function searchExercises() {
 		}
 		
 		if (input.includes("exam:")) {
-			const fieldsToFilter = iuf.exercises.map(exercise => {
+			const fieldsToFilter = rex.exercises.map(exercise => {
 				if( !exercise.exam ) {
 					return "0";
 				} 
@@ -990,7 +992,7 @@ function searchExercises() {
 		}
 		
 		if (input.includes("editable:")) {
-			const fieldsToFilter = iuf.exercises.map(exercise => {
+			const fieldsToFilter = rex.exercises.map(exercise => {
 				if( !exercise.editable ) {
 					return "0";
 				} 
@@ -1002,7 +1004,7 @@ function searchExercises() {
 		}
 		
 		if (!input.includes(":")) {
-			const fieldsToFilter = iuf.exercises.map(exercise => {
+			const fieldsToFilter = rex.exercises.map(exercise => {
 				if( exercise.name === null) {
 					return "";
 				} 
@@ -1172,28 +1174,28 @@ function createExercise(exerciseID, name='exercise',
 							points=1,
 							tags=null,
 							figure=null){
-	iuf.exercises[exerciseID]['file'] = file;
-	iuf.exercises[exerciseID]['ext'] = ext;
-	iuf.exercises[exerciseID]['name'] = name;
-	iuf.exercises[exerciseID]['seed'] = seed;
-	iuf.exercises[exerciseID]['exam'] = exam;
-	iuf.exercises[exerciseID]['question'] = question;
-	iuf.exercises[exerciseID]['question_raw'] = question;
-	iuf.exercises[exerciseID]['choices'] = choices;
-	iuf.exercises[exerciseID]['choices_raw'] = choices;
-	iuf.exercises[exerciseID]['result'] = result;
-	iuf.exercises[exerciseID]['examHistory'] = examHistory;
-	iuf.exercises[exerciseID]['authoredBy'] = authoredBy;
-	iuf.exercises[exerciseID]['precision'] = precision;
-	iuf.exercises[exerciseID]['points'] = points;
-	iuf.exercises[exerciseID]['topic'] = topic;
-	iuf.exercises[exerciseID]['tags'] = tags;
-	iuf.exercises[exerciseID]['type'] = type;
-	iuf.exercises[exerciseID]['statusMessage'] = statusMessage;	
-	iuf.exercises[exerciseID]['statusCode'] = statusCode;	
-	iuf.exercises[exerciseID]['editable'] = editable;
-	iuf.exercises[exerciseID]['block'] = block;
-	iuf.exercises[exerciseID]['figure'] = figure;
+	rex.exercises[exerciseID]['file'] = file;
+	rex.exercises[exerciseID]['ext'] = ext;
+	rex.exercises[exerciseID]['name'] = name;
+	rex.exercises[exerciseID]['seed'] = seed;
+	rex.exercises[exerciseID]['exam'] = exam;
+	rex.exercises[exerciseID]['question'] = question;
+	rex.exercises[exerciseID]['question_raw'] = question;
+	rex.exercises[exerciseID]['choices'] = choices;
+	rex.exercises[exerciseID]['choices_raw'] = choices;
+	rex.exercises[exerciseID]['result'] = result;
+	rex.exercises[exerciseID]['examHistory'] = examHistory;
+	rex.exercises[exerciseID]['authoredBy'] = authoredBy;
+	rex.exercises[exerciseID]['precision'] = precision;
+	rex.exercises[exerciseID]['points'] = points;
+	rex.exercises[exerciseID]['topic'] = topic;
+	rex.exercises[exerciseID]['tags'] = tags;
+	rex.exercises[exerciseID]['type'] = type;
+	rex.exercises[exerciseID]['statusMessage'] = statusMessage;	
+	rex.exercises[exerciseID]['statusCode'] = statusCode;	
+	rex.exercises[exerciseID]['editable'] = editable;
+	rex.exercises[exerciseID]['block'] = block;
+	rex.exercises[exerciseID]['figure'] = figure;
 	
 	if( file === null) {
 		setSimpleExerciseFileContents(exerciseID);
@@ -1203,21 +1205,21 @@ function createExercise(exerciseID, name='exercise',
 }
 
 function parseExercise(exerciseID) {	
-	const exerciseCode = iuf.exercises[exerciseID].file;
-	const exerciseExt = iuf.exercises[exerciseID].ext;
+	const exerciseCode = rex.exercises[exerciseID].file;
+	const exerciseExt = rex.exercises[exerciseID].ext;
 	
 	Shiny.onInputChange("parseExercise", {exerciseCode: exerciseCode, exerciseExt: exerciseExt, exerciseID: exerciseID}, {priority: 'event'});	
 }
 
 function getNumberOfExerciseBlocks() {
-	return new Set(iuf.exercises.filter((x) => x.exam).map(x => x.block)).size;
+	return new Set(rex.exercises.filter((x) => x.exam).map(x => x.block)).size;
 }
 
 function getMaxNumberOfExamExercises() {
 	const numberOfExerciseBlocks = getNumberOfExerciseBlocks();
 	
 	let setNumberOfExamExercises = 0;
-	iuf.exercises.map(x => setNumberOfExamExercises += x.exam);
+	rex.exercises.map(x => setNumberOfExamExercises += x.exam);
 	setNumberOfExamExercises = setNumberOfExamExercises - setNumberOfExamExercises % numberOfExerciseBlocks;
 	
 	return Math.min(setNumberOfExamExercises, getMaxExercisesPerBlock()) * numberOfExerciseBlocks;
@@ -1241,7 +1243,7 @@ function checkNumberOfExamExercises(numExercises) {
 }
 
 function getMaxExercisesPerBlock(){
-	const exercisesPerBlock = iuf.exercises.filter((x) => x.exam).reduce( (acc, x) => (acc[x.block] = (acc[x.block] || 0) + 1, acc), {} );
+	const exercisesPerBlock = rex.exercises.filter((x) => x.exam).reduce( (acc, x) => (acc[x.block] = (acc[x.block] || 0) + 1, acc), {} );
 	return Math.min(...Object.values(exercisesPerBlock));
 }
 
@@ -1261,8 +1263,8 @@ function viewExercise(exerciseID) {
 }
 
 function exerciseShouldbeParsed(exerciseID){
-	const seedChanged = iuf.exercises[exerciseID].seed == "" || iuf.exercises[exerciseID].seed != $("#seedValueExercises").val();
-	const error = iuf.exercises[exerciseID].statusCode === null || iuf.exercises[exerciseID].statusCode.charAt(0) === "E"
+	const seedChanged = rex.exercises[exerciseID].seed == "" || rex.exercises[exerciseID].seed != $("#seedValueExercises").val();
+	const error = rex.exercises[exerciseID].statusCode === null || rex.exercises[exerciseID].statusCode.charAt(0) === "E"
 	
 	return seedChanged || error;
 }
@@ -1291,13 +1293,13 @@ function resetOutputFields() {
 $('#exercise_info').on('click', '.editTrueFalse', function(e) {
 	const exerciseID = getID();
 	invalidateAfterEdit(exerciseID);
-	const newValue = iuf.exercises[exerciseID].result[$(this).index('.mchoiceResult')] !== true;
+	const newValue = rex.exercises[exerciseID].result[$(this).index('.mchoiceResult')] !== true;
 		
 	$(this).removeClass("trueMchoiceResult");
 	$(this).removeClass("falseMchoiceResult");
 	$(this).addClass(newValue + "MchoiceResult");
 		
-	iuf.exercises[exerciseID].result[$(this).index('.mchoiceResult')] = newValue;
+	rex.exercises[exerciseID].result[$(this).index('.mchoiceResult')] = newValue;
 	$(this).html(getTrueFalseText(newValue));
 	
 	setSimpleExerciseFileContents(exerciseID);	
@@ -1321,12 +1323,12 @@ Array.fromList = function(list) {
 
 function invalidateAfterEdit(exerciseID) {
 	setExamExercise(exerciseID, false);
-	iuf.exercises[exerciseID].statusCode = "E000";
-	iuf.exercises[exerciseID].statusMessage = '<span class="exerciseTryCatch tryCatch Error"><span class="responseSign ErrorSign"><i class="fa-solid fa-circle-exclamation"></i></span><span class="exerciseTryCatchText tryCatchText"><span lang="de">Aufgabe muss neu berechnet werden.</span><span lang="en">Exercise needs to be parsed again.</span></span></span>';
+	rex.exercises[exerciseID].statusCode = "E000";
+	rex.exercises[exerciseID].statusMessage = '<span class="exerciseTryCatch tryCatch Error"><span class="responseSign ErrorSign"><i class="fa-solid fa-circle-exclamation"></i></span><span class="exerciseTryCatchText tryCatchText"><span lang="de">Aufgabe muss neu berechnet werden.</span><span lang="en">Exercise needs to be parsed again.</span></span></span>';
 	
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .examExercise').addClass('disabled');
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseTryCatch').remove();
-	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').prepend(iuf.exercises[exerciseID].statusMessage);
+	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').prepend(rex.exercises[exerciseID].statusMessage);
 }
 
 //latex test string $ % & \ ^ _ { } ~ #
@@ -1335,11 +1337,11 @@ $('body').on('focus', '[contenteditable]', function() {
 	const exerciseID = getID();
 	
 	if ($this.hasClass('questionText')) {
-		$this.html(iuf.exercises[exerciseID].question_raw);
+		$this.html(rex.exercises[exerciseID].question_raw);
 	}
 	
 	if ($this.hasClass('choiceText')) {
-		$this.html(iuf.exercises[exerciseID].choices_raw[$this.index('.choiceText')]);
+		$this.html(rex.exercises[exerciseID].choices_raw[$this.index('.choiceText')]);
 	}
 	
     $this.data('before', $this.html());
@@ -1363,7 +1365,7 @@ $('body').on('focus', '[contenteditable]', function() {
 			content = contentTextSanitize(content, true);
 			
 			$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseName').text(content);
-			iuf.exercises[exerciseID].name = content;
+			rex.exercises[exerciseID].name = content;
 		}
 		
 		if ($this.hasClass('questionText')) {
@@ -1372,29 +1374,29 @@ $('body').on('focus', '[contenteditable]', function() {
 			if(!$('#latexActiveContainer span').hasClass('active'))
 				content = contentLatexSanitize(content);
 
-			iuf.exercises[exerciseID].question = content;
-			iuf.exercises[exerciseID].question_raw = content;
+			rex.exercises[exerciseID].question = content;
+			rex.exercises[exerciseID].question_raw = content;
 		}
 		
 		if ($this.hasClass('choiceText')) {
 			content = contenteditable_getPlain(content);
 			content = contentLatexSanitize(content);
 
-			iuf.exercises[exerciseID].choices[$this.index('.choiceText')] = content;
-			iuf.exercises[exerciseID].choices_raw[$this.index('.choiceText')] = content;
+			rex.exercises[exerciseID].choices[$this.index('.choiceText')] = content;
+			rex.exercises[exerciseID].choices_raw[$this.index('.choiceText')] = content;
 		}
 		
 		if ($this.hasClass('points')) {
 			content = contenteditable_getPlain(content);
 			content = getIntegerInput(0, null, 1, content);
-			iuf.exercises[exerciseID].points = content;
+			rex.exercises[exerciseID].points = content;
 		}
 		
 		if ($this.hasClass('topicText')) {
 			content = contenteditable_getPlain(content);
 			content = contentTextSanitize(content);
 			
-			iuf.exercises[exerciseID].topic = content;
+			rex.exercises[exerciseID].topic = content;
 		}
 
 		$this.html(content);
@@ -1402,12 +1404,12 @@ $('body').on('focus', '[contenteditable]', function() {
 		setSimpleExerciseFileContents(exerciseID);	
 		examExercisesSummary();
     } else {
-		if(iuf.exercises[exerciseID].statusCode === "S000") {
+		if(rex.exercises[exerciseID].statusCode === "S000") {
 			if ($this.hasClass('questionText'))
-				$this.html(iuf.exercises[exerciseID].question);
+				$this.html(rex.exercises[exerciseID].question);
 	
 			if ($this.hasClass('choiceText'))
-				$this.html(iuf.exercises[exerciseID].choices[$this.index('.choiceText')]);
+				$this.html(rex.exercises[exerciseID].choices[$this.index('.choiceText')]);
 		}
 	}
 });
@@ -1486,26 +1488,26 @@ document.addEventListener('dblclick', (event) => {
 })
 
 function loadExerciseFromObject(exerciseID) {
-	const editable = iuf.exercises[exerciseID].editable; 
+	const editable = rex.exercises[exerciseID].editable; 
 	
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').removeClass("editable");
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseParse').removeClass("disabled");
 	
-	if(iuf.exercises[exerciseID].name !== null) {	
+	if(rex.exercises[exerciseID].name !== null) {	
 		const field = 'exerciseName'
-		const content = '<span class="exerciseNameText" contenteditable="' + editable + '" spellcheck="false">' + iuf.exercises[exerciseID].name + '</span>';
+		const content = '<span class="exerciseNameText" contenteditable="' + editable + '" spellcheck="false">' + rex.exercises[exerciseID].name + '</span>';
 		
 		setExerciseFieldFromObject(field, content);
 	}
 	
-	if(iuf.exercises[exerciseID].question !== null) {
+	if(rex.exercises[exerciseID].question !== null) {
 		const field = 'question'
 		let content = ''
 		
-		if(Array.isArray(iuf.exercises[exerciseID][field])) {
-			content = '<span class="questionText" contenteditable="' + editable + '" spellcheck="false">' + iuf.exercises[exerciseID][field].join('') + '</span>';
+		if(Array.isArray(rex.exercises[exerciseID][field])) {
+			content = '<span class="questionText" contenteditable="' + editable + '" spellcheck="false">' + rex.exercises[exerciseID][field].join('') + '</span>';
 		} else {
-			content = '<span class="questionText" contenteditable="' + editable + '" spellcheck="false">' + iuf.exercises[exerciseID][field] + '</span>';
+			content = '<span class="questionText" contenteditable="' + editable + '" spellcheck="false">' + rex.exercises[exerciseID][field] + '</span>';
 		}
 		
 		setExerciseFieldFromObject(field, content);
@@ -1514,64 +1516,64 @@ function loadExerciseFromObject(exerciseID) {
 	if(editable) {
 		const field = 'figure'
 		
-		const imgContet = iuf.exercises[exerciseID].figure !== null ? '<div class="exerciseFigureItem"><span class="exerciseFigureName"><img src="data:image/png;base64, ' + iuf.exercises[exerciseID][field][2] + '"/></span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>' : '';
+		const imgContet = rex.exercises[exerciseID].figure !== null ? '<div class="exerciseFigureItem"><span class="exerciseFigureName"><img src="data:image/png;base64, ' + rex.exercises[exerciseID][field][2] + '"/></span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>' : '';
 		
 		const content = '<label class="exerciseFigureUpload" for="file-upload_exerciseFigure"><div class="exerciseFigureButton"><span class="iconButton"><i class="fa-solid fa-upload"></i></span><span class="textButton"><span lang="de">Importieren</span><span lang="en">Import</span></span></div><input type="file" id="file-upload_exerciseFigure" onchange="loadExerciseFigureFileDialog(this.files);" multiple="" class="shiny-bound-input"></label><div id="exerciseFigureFiles"><div id="exerciseFigure_list" class="itemList"><div id="exerciseFigure_list_items">' + imgContet + '</div></div></div></div>';
 		
 		setExerciseFieldFromObject(field, content);
 	}
 	
-	if(iuf.exercises[exerciseID].points !== null) {	
+	if(rex.exercises[exerciseID].points !== null) {	
 		const field = 'points'
 				
-		const content = '<span class="points" contenteditable="' + editable + '" spellcheck="false">' + iuf.exercises[exerciseID][field] + '</span>';
+		const content = '<span class="points" contenteditable="' + editable + '" spellcheck="false">' + rex.exercises[exerciseID][field] + '</span>';
 		
 		setExerciseFieldFromObject(field, content);
 	}
 			
-	if(iuf.exercises[exerciseID].type === "schoice" || iuf.exercises[exerciseID].type === "mchoice" || iuf.exercises[exerciseID].editable) {
+	if(rex.exercises[exerciseID].type === "schoice" || rex.exercises[exerciseID].type === "mchoice" || rex.exercises[exerciseID].editable) {
 		const field = 'result'
-		const zip = iuf.exercises[exerciseID][field].map((x, i) => [x, iuf.exercises[exerciseID].choices[i]]);
+		const zip = rex.exercises[exerciseID][field].map((x, i) => [x, rex.exercises[exerciseID].choices[i]]);
 		let content = '<div id="resultContent">' + zip.map(i => '<p>' + (editable ? '<button type="button" class="removeAnswer btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></button>' : '') + '<span class=\"result mchoiceResult ' + (i[0] + 'MchoiceResult ') + (editable ? 'editTrueFalse' : '') + '\">' + getTrueFalseText(i[0]) + '</span><span class="choice"><span class="choiceText" contenteditable="' + editable + '" spellcheck="false">' + i[1] + '</span></span></p>').join('') + '</div>';
 		
-		if( iuf.exercises[exerciseID].editable ) {
+		if( rex.exercises[exerciseID].editable ) {
 			content = '<button id="addNewAnswer" type="button" class="btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-plus"></i></span><span class="textButton"><span lang="de">Neue Antwortmöglichkeit</span><span lang="en">New Answer</span></span></button>' + content;
 		}
 		
 		setExerciseFieldFromObject(field, content);
 	}
 	
-	if(iuf.exercises[exerciseID].examHistory !== null) {
+	if(rex.exercises[exerciseID].examHistory !== null) {
 		const field = 'examHistory'
-		const content = iuf.exercises[exerciseID][field].map(i => '<span>' + i + '</span>').join('');
+		const content = rex.exercises[exerciseID][field].map(i => '<span>' + i + '</span>').join('');
 		
 		setExerciseFieldFromObject(field, content);
 	}
 	
-	if(iuf.exercises[exerciseID].authoredBy !== null) {
+	if(rex.exercises[exerciseID].authoredBy !== null) {
 		const field = 'authoredBy'
-		const content = iuf.exercises[exerciseID][field].map(i => '<span>' + i + '</span>').join('');
+		const content = rex.exercises[exerciseID][field].map(i => '<span>' + i + '</span>').join('');
 		
 		setExerciseFieldFromObject(field, content);
 	}
 	
-	if(iuf.exercises[exerciseID].precision !== null) {
+	if(rex.exercises[exerciseID].precision !== null) {
 		const field = 'precision'
-		const content = '<span>' + iuf.exercises[exerciseID][field] + '</span>';
+		const content = '<span>' + rex.exercises[exerciseID][field] + '</span>';
 		
 		setExerciseFieldFromObject(field, content);
 	}
 
-	if(iuf.exercises[exerciseID].topic !== null) {
+	if(rex.exercises[exerciseID].topic !== null) {
 		const field = 'topic'
-		const content = '<span class="topicText" contenteditable="' + editable + '" spellcheck="false">' + iuf.exercises[exerciseID][field] + '</span>';
+		const content = '<span class="topicText" contenteditable="' + editable + '" spellcheck="false">' + rex.exercises[exerciseID][field] + '</span>';
 		
 		setExerciseFieldFromObject(field, content);
 	}
 	
-	if(iuf.exercises[exerciseID].tags !== null) {
+	if(rex.exercises[exerciseID].tags !== null) {
 		const field = 'tags'
-		const content = iuf.exercises[exerciseID][field].map(i => '<span>' + i + '</span>').join('');
+		const content = rex.exercises[exerciseID][field].map(i => '<span>' + i + '</span>').join('');
 		
 		setExerciseFieldFromObject(field, content);
 	}
@@ -1589,15 +1591,15 @@ function loadExerciseFromObject(exerciseID) {
 function setSimpleExerciseFileContents(exerciseID){
 	let fileText = rnwTemplate;
 		
-	fileText = fileText.replace("?rnwTemplate_q", '"' + iuf.exercises[exerciseID].question_raw.replaceAll('\\', '\\\\') + '"');
-	fileText = fileText.replace("?rnwTemplate_c", 'c(' + iuf.exercises[exerciseID].choices_raw.map(c=>'"' + c.replaceAll('\\', '\\\\') + '"').join(',') + ')');
-	fileText = fileText.replace("?rnwTemplate_s", 'c(' + iuf.exercises[exerciseID].result.map(s=>s?"T":"F").join(',') + ')');
-	fileText = fileText.replace("?rnwTemplate_p", iuf.exercises[exerciseID].points);
-	fileText = fileText.replace("?rnwTemplate_t", iuf.exercises[exerciseID].topic);
-	fileText = fileText.replace("?rnwTemplate_f", iuf.exercises[exerciseID].figure !== null ? 'c(' + iuf.exercises[exerciseID].figure.map(c=>'"' + c + '"').join(',') + ')' : '""');
+	fileText = fileText.replace("?rnwTemplate_q", '"' + rex.exercises[exerciseID].question_raw.replaceAll('\\', '\\\\') + '"');
+	fileText = fileText.replace("?rnwTemplate_c", 'c(' + rex.exercises[exerciseID].choices_raw.map(c=>'"' + c.replaceAll('\\', '\\\\') + '"').join(',') + ')');
+	fileText = fileText.replace("?rnwTemplate_s", 'c(' + rex.exercises[exerciseID].result.map(s=>s?"T":"F").join(',') + ')');
+	fileText = fileText.replace("?rnwTemplate_p", rex.exercises[exerciseID].points);
+	fileText = fileText.replace("?rnwTemplate_t", rex.exercises[exerciseID].topic);
+	fileText = fileText.replace("?rnwTemplate_f", rex.exercises[exerciseID].figure !== null ? 'c(' + rex.exercises[exerciseID].figure.map(c=>'"' + c + '"').join(',') + ')' : '""');
 	fileText = fileText.replaceAll("\n", "\r\n");
 
-	iuf.exercises[exerciseID].file = fileText;
+	rex.exercises[exerciseID].file = fileText;
 }
 
 function setExerciseFieldFromObject(field, content) {
@@ -1608,16 +1610,16 @@ function setExerciseFieldFromObject(field, content) {
 
 function addExercise() {
 	exercises = exercises + 1;	
-	iuf.exercises.splice(exercises, 0, []);
+	rex.exercises.splice(exercises, 0, []);
 }
 
 function removeExercise(exerciseID) {
-	confirmDialog('Aufgabe "' + iuf.exercises[exerciseID].name + '" löschen?', 'Delete exercises "' + iuf.exercises[exerciseID].name + '" ?', 'Ja', 'Yes', '<i class="fa-solid fa-check"></i>', 'Nein', 'No', '<i class="fa-solid fa-xmark"></i>',
+	confirmDialog('Aufgabe "' + rex.exercises[exerciseID].name + '" löschen?', 'Delete exercises "' + rex.exercises[exerciseID].name + '" ?', 'Ja', 'Yes', '<i class="fa-solid fa-check"></i>', 'Nein', 'No', '<i class="fa-solid fa-xmark"></i>',
 		function(remove) {
 			if(!remove)
 				return;
 			
-			iuf.exercises.splice(exerciseID, 1);
+			rex.exercises.splice(exerciseID, 1);
 			exercises = exercises - 1;
 			
 			$('.exerciseItem').eq(exerciseID).remove();
@@ -1636,7 +1638,7 @@ function removeExercise(exerciseID) {
 
 function changeExerciseBlock(exerciseID, b) {
 	const b_ = getIntegerInput(1, null, 1, b)
-	iuf.exercises[exerciseID].block = b_;
+	rex.exercises[exerciseID].block = b_;
 	examExercisesSummary();
 	
 	return b_;
@@ -1674,7 +1676,7 @@ function setExamExercise(exerciseID, b) {
 	else
 		$('.exerciseItem').eq(exerciseID).removeClass('exam');	
 	
-	iuf.exercises[exerciseID].exam = b;
+	rex.exercises[exerciseID].exam = b;
 	
 	examExercisesSummary();
 }
@@ -1720,9 +1722,9 @@ $('#exercise_list_items').on('click', '.exerciseItem', function() {
 $('#exercise_info').on('click', '#addNewAnswer', function() {
 	const exerciseID = getID();
 	
-	iuf.exercises[exerciseID].choices.push(d_answerText);
-	iuf.exercises[exerciseID].choices_raw.push(d_answerText);
-	iuf.exercises[exerciseID].result.push(d_result);
+	rex.exercises[exerciseID].choices.push(d_answerText);
+	rex.exercises[exerciseID].choices_raw.push(d_answerText);
+	rex.exercises[exerciseID].result.push(d_result);
 	
 	invalidateAfterEdit(exerciseID);
 	setSimpleExerciseFileContents(exerciseID);
@@ -1735,10 +1737,10 @@ $('#exercise_info').on('click', '.removeAnswer', function() {
 	const exerciseID = getID();
 	const choicesID = $(this).index('.removeAnswer');
 	
-	if( iuf.exercises[exerciseID].choices.length > 0 && iuf.exercises[exerciseID].choices_raw.length > 0 ) {	
-		iuf.exercises[exerciseID].choices.splice(choicesID, 1);
-		iuf.exercises[exerciseID].choices_raw.splice(choicesID, 1);
-		iuf.exercises[exerciseID].result.splice(choicesID, 1);
+	if( rex.exercises[exerciseID].choices.length > 0 && rex.exercises[exerciseID].choices_raw.length > 0 ) {	
+		rex.exercises[exerciseID].choices.splice(choicesID, 1);
+		rex.exercises[exerciseID].choices_raw.splice(choicesID, 1);
+		rex.exercises[exerciseID].result.splice(choicesID, 1);
 	} 
 	
 	invalidateAfterEdit(exerciseID);
@@ -1771,10 +1773,10 @@ function addExerciseFigureFile(file) {
 
 		fileReader.onload = function(fileLoadedEvent) {
 			base64 = fileLoadedEvent.target.result;
-			iuf.exercises[exerciseID].figure = [fileName, fileExt, base64.split(',')[1]];
+			rex.exercises[exerciseID].figure = [fileName, fileExt, base64.split(',')[1]];
 			
 			$('#figure').empty();
-			$('#figure').append('<label class="exerciseFigureUpload" for="file-upload_exerciseFigure"><div class="exerciseFigureButton"><span class="iconButton"><i class="fa-solid fa-upload"></i></span><span class="textButton"><span lang="de">Importieren</span><span lang="en">Import</span></span></div><input type="file" id="file-upload_exerciseFigure" onchange="loadExerciseFigureFileDialog(this.files);" multiple="" class="shiny-bound-input"></label><div id="exerciseFigureFiles"><div id="exerciseFigure_list" class="itemList"><div id="exerciseFigure_list_items"><div class="exerciseFigureItem"><span class="exerciseFigureName"><img src="data:image/png;base64, ' + iuf.exercises[getID()].figure[2] + '"/></span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div></div></div></div></div>');
+			$('#figure').append('<label class="exerciseFigureUpload" for="file-upload_exerciseFigure"><div class="exerciseFigureButton"><span class="iconButton"><i class="fa-solid fa-upload"></i></span><span class="textButton"><span lang="de">Importieren</span><span lang="en">Import</span></span></div><input type="file" id="file-upload_exerciseFigure" onchange="loadExerciseFigureFileDialog(this.files);" multiple="" class="shiny-bound-input"></label><div id="exerciseFigureFiles"><div id="exerciseFigure_list" class="itemList"><div id="exerciseFigure_list_items"><div class="exerciseFigureItem"><span class="exerciseFigureName"><img src="data:image/png;base64, ' + rex.exercises[getID()].figure[2] + '"/></span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div></div></div></div></div>');
 			
 			setSimpleExerciseFileContents(exerciseID);
 			loadExerciseFromObject(exerciseID);
@@ -1787,7 +1789,7 @@ function addExerciseFigureFile(file) {
 function removeExerciseFigure(element) {
 	const exerciseID = getID();
 	
-	iuf.exercises[exerciseID].figure = null;
+	rex.exercises[exerciseID].figure = null;
 	element.remove();
 	
 	setSimpleExerciseFileContents(exerciseID);
@@ -1807,74 +1809,74 @@ Shiny.addCustomMessageHandler('setExerciseId', function(exerciseID) {
 });
 
 Shiny.addCustomMessageHandler('setExerciseSeed', function(seed) {
-	iuf.exercises[getID()].seed = seed;
+	rex.exercises[getID()].seed = seed;
 });
 
 Shiny.addCustomMessageHandler('setExerciseExamHistory', function(jsonData) {
 	const examHistory = JSON.parse(jsonData);
-	iuf.exercises[getID()].examHistory = examHistory;
+	rex.exercises[getID()].examHistory = examHistory;
 });
 
 Shiny.addCustomMessageHandler('setExerciseAuthoredBy', function(jsonData) {
 	const exerciseAuthors = JSON.parse(jsonData);
-	iuf.exercises[getID()].authoredBy = exerciseAuthors;
+	rex.exercises[getID()].authoredBy = exerciseAuthors;
 });
 
 Shiny.addCustomMessageHandler('seExercisetPrecision', function(exercisePrecision) {
-	iuf.exercises[getID()].precision = exercisePrecision;
+	rex.exercises[getID()].precision = exercisePrecision;
 });
 
 Shiny.addCustomMessageHandler('setExercisePoints', function(exercisePoints) {
-	iuf.exercises[getID()].points = exercisePoints;
+	rex.exercises[getID()].points = exercisePoints;
 });
 
 Shiny.addCustomMessageHandler('setExerciseTopic', function(exerciseTopic) {
-	iuf.exercises[getID()].topic = exerciseTopic;
+	rex.exercises[getID()].topic = exerciseTopic;
 });
 
 Shiny.addCustomMessageHandler('setExerciseTags', function(jsonData) {
 	const exerciseTags = JSON.parse(jsonData);
-	iuf.exercises[getID()].tags = exerciseTags;
+	rex.exercises[getID()].tags = exerciseTags;
 });
 
 Shiny.addCustomMessageHandler('setExerciseType', function(exerciseType) {
-	iuf.exercises[getID()].type = exerciseType;
+	rex.exercises[getID()].type = exerciseType;
 });
 
 Shiny.addCustomMessageHandler('setExerciseQuestion', function(exerciseQuestion) {
-	iuf.exercises[getID()].question = exerciseQuestion;
+	rex.exercises[getID()].question = exerciseQuestion;
 });
 
 Shiny.addCustomMessageHandler('setExerciseQuestionRaw', function(exerciseQuestionRaw) {
-	iuf.exercises[getID()].question_raw = exerciseQuestionRaw;
+	rex.exercises[getID()].question_raw = exerciseQuestionRaw;
 });
 
 Shiny.addCustomMessageHandler('setExerciseFigure', function(jsonData) {
 	const figure = JSON.parse(jsonData);
-	iuf.exercises[getID()].figure = figure[0] === "" ? null : figure;
+	rex.exercises[getID()].figure = figure[0] === "" ? null : figure;
 });
 
 Shiny.addCustomMessageHandler('setExerciseChoices', function(jsonData) {
 	const exerciseChoices = JSON.parse(jsonData);
-	iuf.exercises[getID()].choices = exerciseChoices;
+	rex.exercises[getID()].choices = exerciseChoices;
 });
 
 Shiny.addCustomMessageHandler('setExerciseChoicesRaw', function(jsonData) {
 	const exerciseChoicesRaw = JSON.parse(jsonData);
-	iuf.exercises[getID()].choices_raw = exerciseChoicesRaw;
+	rex.exercises[getID()].choices_raw = exerciseChoicesRaw;
 });
 
 Shiny.addCustomMessageHandler('setExerciseResultMchoice', function(jsonData) {
 	const exerciseResult = JSON.parse(jsonData);
-	iuf.exercises[getID()].result = exerciseResult;
+	rex.exercises[getID()].result = exerciseResult;
 });
 
 Shiny.addCustomMessageHandler('setExerciseResultNumeric', function(exerciseResult) {
-	iuf.exercises[getID()].result = exerciseResult;
+	rex.exercises[getID()].result = exerciseResult;
 });
 
 Shiny.addCustomMessageHandler('setExerciseEditable', function(editable) {
-	iuf.exercises[getID()].editable = (editable === 1);
+	rex.exercises[getID()].editable = (editable === 1);
 });
 
 Shiny.addCustomMessageHandler('setExerciseStatusMessage', function(statusMessage) {
@@ -1883,15 +1885,15 @@ Shiny.addCustomMessageHandler('setExerciseStatusMessage', function(statusMessage
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseTryCatch').remove();
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').prepend(statusMessage);
 	
-	iuf.exercises[exerciseID].statusMessage = statusMessage;
+	rex.exercises[exerciseID].statusMessage = statusMessage;
 });
 
 Shiny.addCustomMessageHandler('setExerciseStatusCode', function(statusCode) {
 	const exerciseID = getID();
 	
-	iuf.exercises[exerciseID].statusCode = statusCode === 0 ? "S000" : statusCode;
+	rex.exercises[exerciseID].statusCode = statusCode === 0 ? "S000" : statusCode;
 
-	if(iuf.exercises[exerciseID].statusCode === "S000" || iuf.exercises[exerciseID].statusCode.charAt(0) === "W")
+	if(rex.exercises[exerciseID].statusCode === "S000" || rex.exercises[exerciseID].statusCode.charAt(0) === "W")
 		$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .examExercise').removeClass('disabled');
 		loadExerciseFromObject(exerciseID);
 });
@@ -1991,7 +1993,7 @@ function addAdditionalPdf(file) {
 
 		fileReader.onload = function(fileLoadedEvent) {
 			base64 = fileLoadedEvent.target.result;
-			iuf['examAdditionalPdf'].push([fileName, base64.split(',')[1]]);
+			rex.examAdditionalPdf.push([fileName, base64.split(',')[1]]);
 		};
 
 		fileReader.readAsDataURL(file);
@@ -2002,7 +2004,7 @@ function addAdditionalPdf(file) {
 
 function removeAdditionalPdf(element) {
 	const additionalPdfID = element.index('.additionalPdfItem');
-	iuf['examAdditionalPdf'].splice(additionalPdfID, 1);
+	rex.examAdditionalPdf.splice(additionalPdfID, 1);
 	element.remove();
 }
 
@@ -2065,13 +2067,13 @@ $("#createExamEvent").click(function(){
 }); 
 
 async function createExamEvent() {
-	const examExercises = iuf.exercises.filter((exercise) => exercise.exam & exercise.file !== null);
+	const examExercises = rex.exercises.filter((exercise) => exercise.exam & exercise.file !== null);
 	const exerciseNames = examExercises.map((exercise) => exercise.name);
 	const exerciseCodes = examExercises.map((exercise) => exercise.file);
 	const exerciseExts = examExercises.map((exercise) => exercise.ext);
 	const blocks = examExercises.map((exercise) => exercise.block);
-	const additionalPdfNames = iuf['examAdditionalPdf'].map(pdf => pdf[0]);
-	const additionalPdfFiles = iuf['examAdditionalPdf'].map(pdf => pdf[1]);
+	const additionalPdfNames = rex.examAdditionalPdf.map(pdf => pdf[0]);
+	const additionalPdfFiles = rex.examAdditionalPdf.map(pdf => pdf[1]);
 	
 	Shiny.onInputChange("createExam", {exerciseNames: exerciseNames, exerciseCodes:exerciseCodes, exerciseExts:exerciseExts, blocks: blocks, additionalPdfNames: additionalPdfNames, additionalPdfFiles: additionalPdfFiles}, {priority: 'event'});
 }
@@ -2182,7 +2184,7 @@ function addExamEvaluationFile(file) {
 
 			fileReader.onload = function(fileLoadedEvent) {
 				base64 = fileLoadedEvent.target.result;
-				iuf['examEvaluation']['scans'].push([fileName, fileExt, base64.split(',')[1]]);
+				rex.examEvaluation['scans'].push([fileName, fileExt, base64.split(',')[1]]);
 			};
 
 			fileReader.readAsDataURL(file);
@@ -2195,7 +2197,7 @@ function addExamEvaluationFile(file) {
 
 			fileReader.onload = function(fileLoadedEvent) {
 				base64 = fileLoadedEvent.target.result;
-				iuf['examEvaluation']['solutions'] = [fileName, fileExt, base64.split(',')[1]];
+				rex.examEvaluation['solutions'] = [fileName, fileExt, base64.split(',')[1]];
 			};
 
 			fileReader.readAsDataURL(file);
@@ -2209,7 +2211,7 @@ function addExamEvaluationFile(file) {
 
 			fileReader.onload = function(fileLoadedEvent) {
 				csv = fileLoadedEvent.target.result;
-				iuf['examEvaluation']['registeredParticipants'] = [fileName, fileExt, csv];
+				rex.examEvaluation['registeredParticipants'] = [fileName, fileExt, csv];
 			};
 
 			fileReader.readAsText(file);
@@ -2222,7 +2224,7 @@ function addExamEvaluationFile(file) {
 
 function removeExamScan(element) {
 	const examScanID = element.index('.examScanItem');
-	iuf['examEvaluation']['scans'].splice(examScanID, 1);
+	rex.examEvaluation['scans'].splice(examScanID, 1);
 	element.remove();
 }
 
@@ -2231,7 +2233,7 @@ $('#examScan_list_items').on('click', '.examScanItem', function() {
 });
 
 function removeSolutions(element) {
-	iuf['examEvaluation']['solutions'] = [];
+	rex.examEvaluation['solutions'] = [];
 	element.remove();
 }
 
@@ -2292,7 +2294,7 @@ $('body').on('change', '#inputTypeID', function() {
 });
 
 function removeRegisteredParticipants(element) {
-	iuf['examEvaluation']['registeredParticipants'] = [];
+	rex.examEvaluation['registeredParticipants'] = [];
 	element.remove();
 }
 
@@ -2304,17 +2306,17 @@ $('#evaluateExamEvent').click(function () {
 	evaluateExamEvent();
 });
 async function evaluateExamEvent() {
-	const examSolutionsName = iuf['examEvaluation']['solutions'][0];
-	const examSolutionsFile = iuf['examEvaluation']['solutions'][2];
+	const examSolutionsName = rex.examEvaluation['solutions'][0];
+	const examSolutionsFile = rex.examEvaluation['solutions'][2];
 	
-	const examRegisteredParticipantsnName = iuf['examEvaluation']['registeredParticipants'][0];
-	const examRegisteredParticipantsnFile = iuf['examEvaluation']['registeredParticipants'][2];
+	const examRegisteredParticipantsnName = rex.examEvaluation['registeredParticipants'][0];
+	const examRegisteredParticipantsnFile = rex.examEvaluation['registeredParticipants'][2];
 	
-	const examScanPdf = iuf['examEvaluation']['scans'].filter(x => x[1] == 'pdf')
+	const examScanPdf = rex.examEvaluation['scans'].filter(x => x[1] == 'pdf')
 	const examScanPdfNames = examScanPdf.map(x => x[0]);
 	const examScanPdfFiles = examScanPdf.map(x => x[2]);
 	
-	const examScanPng = iuf['examEvaluation']['scans'].filter(x => x[1] == 'png')
+	const examScanPng = rex.examEvaluation['scans'].filter(x => x[1] == 'png')
 	const examScanPngNames = examScanPng.map(x => x[0]);
 	const examScanPngFiles = examScanPng.map(x => x[2]);
 	
@@ -2328,12 +2330,12 @@ $('body').on('click', '.compareListItem:not(.notAssigned)', function() {
 	resetInspect();
 	sortCompareListItems();
 	
-	const scanFocused = iuf['examEvaluation']['scans_reg_fullJoinData'][parseInt($(this).find('.evalIndex').html())];
+	const scanFocused = rex.examEvaluation.scans_reg_fullJoinData[parseInt($(this).find('.evalIndex').html())];
 			
 	$('#inspectScan').append('<div id="inspectScanContent"><div id="inspectScanImage"><img src="data:image/png;base64, ' + scanFocused.blob + '"/></div><div id="inspectScanTemplate"><span id="scannedRegistration"><span id="scannedRegistrationText"><span lang="de">Matrikelnummer:</span><span lang="en">Registration Number:</span></span><select id="selectRegistration" autocomplete="on"></select></span><span id="replacementSheet"><span id="replacementSheetText"><span lang="de">Ersatzbeleg:</span><span lang="en">Replacement sheet:</span></span></span><span id="scannedSheetID"><span id="scannedSheetIDText"><span lang="de">Klausur-ID:</span><span lang="en">Exam ID:</span></span><select id="inputSheetID" autocomplete="on"></select></span><span id="scannedScramblingID"><span id="scannedScramblingIDText"><span lang="de">Variante:</span><span lang="en">Scrambling:</span></span><input id="inputScramblingID"/></span><span id="scannedTypeID"><span id="scannedTypeIDText"><span lang="de">Belegart:</span><span lang="en">Type:</span></span><input id="inputTypeID"/></span><div id="scannedAnswers"></div></div></div><div id="inspectScanButtons"><button id="cancleInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">ESC</span><span lang="en">ESC</span></span><span class="iconButton"><i class="fa-solid fa-xmark"></i></span><span class="textButton"><span lang="de">Abbrechen</span><span lang="en">Cancle</span></span></button><button id="applyInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">ENTER</span><span lang="en">ENTER</span></span><span class="iconButton"><i class="fa-solid fa-check"></i></span><span class="textButton"><span lang="de">Übernehmen</span><span lang="en">Accept</span></span></button><button id="applyInspectNext" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">LEERTASTE</span><span lang="en">SPACE</span></span><span class="iconButton"><i class="fa-solid fa-list-check"></i></span><span class="textButton"><span lang="de">Übernehmen & Nächter Scan</span><span lang="en">Accept & Next Scan</span></span></button></div>');
 	
 	// populate input fields
-	let registrations = iuf['examEvaluation']['scans_reg_fullJoinData'].filter(x => x.scan === 'NA').map(x => x.registration);
+	let registrations = rex.examEvaluation.scans_reg_fullJoinData.filter(x => x.scan === 'NA').map(x => x.registration);
 	
 	$('#replacementSheet').append('<input type="checkbox"' + (scanFocused.replacement === "1" ? ' checked="checked"' : '') + '>');
 	
@@ -2347,7 +2349,7 @@ $('body').on('click', '.compareListItem:not(.notAssigned)', function() {
 		$('#selectRegistration').append($('<option></option>').val(p).html(p));
 	});
 			
-	let examIds = iuf['examEvaluation']['examIds'];
+	let examIds = rex.examEvaluation['examIds'];
 	examIds.sort()
 	
 	$.each(examIds, function (i, p) {
@@ -2500,7 +2502,7 @@ function populateCompareTable() {
 	let validCount = 0; 
 	let notAssignedCount = 0;
 	
-	iuf['examEvaluation']['scans_reg_fullJoinData'].forEach((element, index) => {	
+	rex.examEvaluation.scans_reg_fullJoinData.forEach((element, index) => {	
 		let stateClass = null;
 				
 		// invalid
@@ -2539,7 +2541,7 @@ function populateCompareTable() {
 }
 
 function scanInvalid(scan) {
-	return scan.scan !== 'NA' && (scan.registration === d_registration || !iuf['examEvaluation']['examIds'].includes(scan.sheet) || isNaN(scan.sheet) || isNaN(scan.scrambling) || isNaN(scan.type) || (scan.replacement !== "0" && scan.replacement !== "1"))
+	return scan.scan !== 'NA' && (scan.registration === d_registration || !rex.examEvaluation['examIds'].includes(scan.sheet) || isNaN(scan.sheet) || isNaN(scan.scrambling) || isNaN(scan.type) || (scan.replacement !== "0" && scan.replacement !== "1"))
 }
 
 function scanNotAssiged(scan) {
@@ -2622,16 +2624,16 @@ const zeroPad = (num, places) => isNaN(num) ? "NA" : String(num).padStart(places
 
 function applyInspect(){	
 	const scanFocusedIndex = parseInt($('#compareScanRegistrationDataTable .compareListItem.focus .evalIndex').html());
-	iuf['examEvaluation']['scans_reg_fullJoinData'] = iuf['examEvaluation']['scans_reg_fullJoinData'].map(obj => {
+	rex.examEvaluation.scans_reg_fullJoinData = rex.examEvaluation.scans_reg_fullJoinData.map(obj => {
 		return { ...obj, changeHistory: "0" }
 	});
-	iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].changeHistory = "1";
+	rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].changeHistory = "1";
 	
-	const registrationUnchanged = $('#selectRegistration').find(":selected").text() === iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].registration;
-	const replacementUnchanged = ($('#replacementSheet').find("input").prop('checked') ? "1" : "0") === iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].replacement;
-	const inputSheetIDUnchanged = zeroPad($('#inputSheetID').val(), 11) === iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].sheet;
-	const scramblingIDUnchanged = zeroPad($('#inputScramblingID').val(), 2) === iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].scrambling;
-	const inputTypeIDUnchanged = zeroPad($('#inputTypeID').val(), 3) === iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].type;
+	const registrationUnchanged = $('#selectRegistration').find(":selected").text() === rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].registration;
+	const replacementUnchanged = ($('#replacementSheet').find("input").prop('checked') ? "1" : "0") === rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].replacement;
+	const inputSheetIDUnchanged = zeroPad($('#inputSheetID').val(), 11) === rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].sheet;
+	const scramblingIDUnchanged = zeroPad($('#inputScramblingID').val(), 2) === rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].scrambling;
+	const inputTypeIDUnchanged = zeroPad($('#inputTypeID').val(), 3) === rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].type;
 	const answersUnchanged = $('#scannedAnswers .scannedAnswer').map(function (index) {
         let exerciseAnswers = $(this).find('input').map(function () {
             return $(this).prop('checked') ? "1" : "0";
@@ -2645,7 +2647,7 @@ function applyInspect(){
 		
 		exerciseAnswers = exerciseAnswers.join('');
 		
-		return iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex][index + 1] === exerciseAnswers;
+		return rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex][index + 1] === exerciseAnswers;
     }).get().every(x => x === true);
 	
 	if(registrationUnchanged && replacementUnchanged && inputSheetIDUnchanged && scramblingIDUnchanged && inputTypeIDUnchanged && answersUnchanged) {
@@ -2658,30 +2660,30 @@ function applyInspect(){
 	let itemsToRemove = null;
 	
 	if(!registrationUnchanged) {
-		if(iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].registration !== d_registration) {
-			itemsToAdd = JSON.parse(JSON.stringify(iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex])); // clone byValue
+		if(rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].registration !== d_registration) {
+			itemsToAdd = JSON.parse(JSON.stringify(rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex])); // clone byValue
 			Object.keys(itemsToAdd).forEach(x => itemsToAdd[x] = "NA");
-			itemsToAdd.registration = iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].registration;
-			itemsToAdd.name = iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].name;
-			itemsToAdd.id = iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].id;	
+			itemsToAdd.registration = rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].registration;
+			itemsToAdd.name = rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].name;
+			itemsToAdd.id = rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].id;	
 		}
 		
 		if($('#selectRegistration').find(":selected").text() === d_registration) {	
-			iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].name = "NA"
-			iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].id = "NA"
+			rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].name = "NA"
+			rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].id = "NA"
 		} else {
-			itemsToRemove = iuf['examEvaluation']['scans_reg_fullJoinData'].map(function(x) { return x.registration; }).indexOf($('#selectRegistration').find(":selected").text()); 
+			itemsToRemove = rex.examEvaluation.scans_reg_fullJoinData.map(function(x) { return x.registration; }).indexOf($('#selectRegistration').find(":selected").text()); 
 			
-			iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].name = iuf['examEvaluation']['scans_reg_fullJoinData'][itemsToRemove].name
-			iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].id = iuf['examEvaluation']['scans_reg_fullJoinData'][itemsToRemove].id 
+			rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].name = rex.examEvaluation.scans_reg_fullJoinData[itemsToRemove].name
+			rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].id = rex.examEvaluation.scans_reg_fullJoinData[itemsToRemove].id 
 		}
 	}
 	
-	iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].registration = $('#selectRegistration').find(":selected").text();	
-	iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].replacement = ($('#replacementSheet').find("input").prop('checked') ? "1" : "0");	
-	iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].sheet = zeroPad($('#inputSheetID').val(), 11);	
-	iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].scrambling = zeroPad($('#inputScramblingID').val(), 2);	
-	iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex].type = zeroPad($('#inputTypeID').val(), 3);	
+	rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].registration = $('#selectRegistration').find(":selected").text();	
+	rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].replacement = ($('#replacementSheet').find("input").prop('checked') ? "1" : "0");	
+	rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].sheet = zeroPad($('#inputSheetID').val(), 11);	
+	rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].scrambling = zeroPad($('#inputScramblingID').val(), 2);	
+	rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].type = zeroPad($('#inputTypeID').val(), 3);	
 	
 	$('#scannedAnswers .scannedAnswer').map(function (index) {
         let exerciseAnswers = $(this).find('input').map(function () {
@@ -2696,14 +2698,14 @@ function applyInspect(){
 		
 		exerciseAnswers = exerciseAnswers.join('');
 		
-		iuf['examEvaluation']['scans_reg_fullJoinData'][scanFocusedIndex][index + 1] = exerciseAnswers;
+		rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex][index + 1] = exerciseAnswers;
     });
 	
 	if(itemsToRemove !== null) 
-		iuf['examEvaluation']['scans_reg_fullJoinData'].splice(itemsToRemove, 1);
+		rex.examEvaluation.scans_reg_fullJoinData.splice(itemsToRemove, 1);
 	
 	if(itemsToAdd !== null)
-		iuf['examEvaluation']['scans_reg_fullJoinData'].push(itemsToAdd);
+		rex.examEvaluation.scans_reg_fullJoinData.push(itemsToAdd);
 	
 	resetInspect();
 	populateCompareTable();
@@ -2724,13 +2726,13 @@ $('body').on('click', '#shiny-modal button[data-dismiss="modal"]', function() {
 });
 
 Shiny.addCustomMessageHandler('setExanIds', function(jsonData) {
-	iuf['examEvaluation']['examIds'] = JSON.parse(jsonData);
+	rex.examEvaluation['examIds'] = JSON.parse(jsonData);
 });
 
 Shiny.addCustomMessageHandler('compareScanRegistrationData', function(jsonData) {
-	iuf['examEvaluation']['scans_reg_fullJoinData'] = JSON.parse(jsonData);
+	rex.examEvaluation.scans_reg_fullJoinData = JSON.parse(jsonData);
 		
-	iuf['examEvaluation']['scans_reg_fullJoinData'] = iuf['examEvaluation']['scans_reg_fullJoinData'].map(obj => {
+	rex.examEvaluation.scans_reg_fullJoinData = rex.examEvaluation.scans_reg_fullJoinData.map(obj => {
 		return { ...obj, sheet: zeroPad(obj.sheet, 11), scrambling: zeroPad(obj.scrambling, 2), type: zeroPad(obj.type, 3), changeHistory: "0" }
 	});
 
@@ -2744,13 +2746,13 @@ Shiny.addCustomMessageHandler('backTocompareScanRegistrationData', function(x) {
 });
 
 Shiny.addCustomMessageHandler('evaluationStatistics', function(jsonData) {
-	console.log(jsonData);
+	rex.examEvaluation.statistics = JSON.parse(jsonData);	
 });
 
 $('body').on('click', '#proceedEval', function() {
 	const properties = ['scan', 'sheet', 'scrambling', 'type', 'replacement', 'registration'].concat(new Array(45).fill(1).map( (_, i) => i+1 ));
 	
-	const datenTxt = Object.assign({}, iuf['examEvaluation']['scans_reg_fullJoinData'].filter(x => scanValid(x)).map(x => Object.assign({}, properties.map(y => x[y] === undefined ? "00000" : x[y], {}))));
+	const datenTxt = Object.assign({}, rex.examEvaluation.scans_reg_fullJoinData.filter(x => scanValid(x)).map(x => Object.assign({}, properties.map(y => x[y] === undefined ? "00000" : x[y], {}))));
 
 	Shiny.onInputChange("proceedEvaluation", datenTxt, {priority: 'event'});
 });
