@@ -179,7 +179,7 @@ source("source/tryCatch.R")
       session$sendCustomMessage("setExerciseEditable", editable)
       session$sendCustomMessage("setExerciseChoices", choices)
       session$sendCustomMessage("setExerciseChoicesRaw", choices_raw)
-      session$sendCustomMessage("setExerciseResultMchoice", result)
+      session$sendCustomMessage("setExerciseResultChoices", result)
     }
   
     session$sendCustomMessage("setExerciseStatusMessage", myMessage(message, "exercise"))

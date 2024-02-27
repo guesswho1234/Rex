@@ -750,6 +750,7 @@ main > * {
 	border-radius: 3px;
 }
 
+#type span, 
 #precision span,
 #difficulty span,
 #points span,
@@ -800,11 +801,11 @@ main > * {
 	display:flex;
 }
 
-#resultContent .mchoiceResult.trueMchoiceResult {
+#resultContent .choiceResult.truechoiceResult {
 	background: var(---green_success_fade);
 }
 
-#resultContent .mchoiceResult.falseMchoiceResult {
+#resultContent .choiceResult.falsechoiceResult {
 	background: var(---red_error_fade);
 }
 
@@ -838,16 +839,19 @@ main > * {
 	margin-right: 0.5rem;
 }
 
+.editType, 
 .editTrueFalse {
 	cursor: pointer;
 }
 
 *[contenteditable="true"]:not(.exerciseName),
+.editType, 
 .editTrueFalse {
 	padding: 2px;
 }
 
 *[contenteditable="true"],
+.editType, 
 .editTrueFalse {
 	padding: 2px;
 	border: 2px solid var(---highlight_values) !important;
