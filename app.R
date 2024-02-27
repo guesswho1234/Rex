@@ -285,6 +285,7 @@ source("source/tryCatch.R")
         
         with(preparedExam$examFields, {
           # create exam html preview with solutions
+          set.seed(1)
           exams::exams2html(file = file,
                             n = n,
                             nsamp = nsamp,
@@ -293,6 +294,7 @@ source("source/tryCatch.R")
                             seed = seed)
   
           # create exam
+          set.seed(1)
           exams::exams2nops(file = file,
                             n = n,
                             nsamp = nsamp,
