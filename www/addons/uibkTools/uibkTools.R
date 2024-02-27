@@ -25,8 +25,6 @@ source("source/customElements.R")
           lapply(names(uibkToolsData()$data), \(x){
             write.csv2(uibkToolsData()$data[[x]], paste0(dir, "/", x), row.names = FALSE, quote = FALSE)
           })
-          
-          print(paste0(dir, "/", names(uibkToolsData()$data)))
             
           zip(zipfile=fname, files=paste0(dir, "/", names(uibkToolsData()$data)), flags='-r9XjFS')
           
@@ -56,8 +54,6 @@ source("source/customElements.R")
   createRexParticipantsList = function(args) {
     name = "registredParticipants.csv"
     contentType = "text/csv"
-    
-    print(args)
     
     if(length(args)==0)
       return(list(name=name, data=NULL,  contentType=contentType))
