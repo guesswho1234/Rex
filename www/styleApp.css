@@ -750,7 +750,7 @@ main > * {
 	border-radius: 3px;
 }
 
-#type span, 
+#type span span, 
 #precision span,
 #difficulty span,
 #points span,
