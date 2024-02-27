@@ -69,6 +69,13 @@ source("source/customElements.R")
     data = data[rowSums(is.na(data))==0,]
     colnames(data) = c("registration", "name", "id")
     
+    maxRegLength = max(sapply(strsplit(as.character(data$registration), ""), length))
+    
+    if(data$id == data$registration)
+      data$id = sprintf(paste0("%0", maxRegLength, "d"), as.numeric(data$id))
+    
+    data$registration = sprintf(paste0("%0", maxRegLength, "d"), as.numeric(data$registration))
+    
     return(list(name=name, data=data, contentType=contentType))
   }
   
@@ -80,7 +87,7 @@ source("source/customElements.R")
       return(list(name=name, data=NULL,  contentType=contentType))
     
     data = Reduce(rbind, lapply(args, \(x){
-      content = read.table(text=x[[3]], sep=";", header = TRUE)
+      content = read.table(text=x[[3]], sep=";", header = TRUE, colClasses = "character")
     }))
     
     if(is.null(data))
