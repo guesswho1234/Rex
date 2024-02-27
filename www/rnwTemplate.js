@@ -3,14 +3,13 @@ var rnwTemplate = `<<echo=FALSE, results=hide>>=
 %% \\exextra[editable,numeric]{1}
 %% \\exextra[examHistory,character]{}
 %% \\exextra[authoredBy,character]{}
-%% \\exextra[topic,character]{?rnwTemplate_t}
+%% \\exextra[topic,character]{?rnwTemplate_topic}
 %% \\exextra[tags,character]{}
 <<echo=FALSE, results=tex>>=
-rnwTemplate_question=?rnwTemplate_q
-rnwTemplate_choices=?rnwTemplate_c
-rnwTemplate_solutions=?rnwTemplate_s
-rnwTemplate_points=?rnwTemplate_p
-rnwTemplate_figure=?rnwTemplate_f
+rnwTemplate_question=?rnwTemplate_question
+rnwTemplate_choices=?rnwTemplate_choices
+rnwTemplate_solutions=?rnwTemplate_solutions
+rnwTemplate_figure=?rnwTemplate_figure
 rnwTemplate_maxChoices=5
 if(!is.null(rnwTemplate_maxChoices)){
 	limit=min(length(rnwTemplate_choices), rnwTemplate_maxChoices)
@@ -43,6 +42,6 @@ exams::answerlist(ifelse(rnwTemplate_solutions, "Richtig", "Falsch"))
 @
 \\end{solution}
 %% META-INFORMATION
-%% \\extype{mchoice}
+%% \\extype{?rnwTemplate_type}
 %% \\exsolution{\\Sexpr{exams::mchoice2string(rnwTemplate_solutions)}}
-%% \\expoints{\\Sexpr{rnwTemplate_points}}`
+%% \\expoints{?rnwTemplate_points}`

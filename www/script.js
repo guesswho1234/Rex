@@ -1625,13 +1625,14 @@ function loadExerciseFromObject(exerciseID) {
 
 function setSimpleExerciseFileContents(exerciseID){
 	let fileText = rnwTemplate;
-		
-	fileText = fileText.replace("?rnwTemplate_q", '"' + rex.exercises[exerciseID].question_raw.replaceAll('\\', '\\\\') + '"');
-	fileText = fileText.replace("?rnwTemplate_c", 'c(' + rex.exercises[exerciseID].choices_raw.map(c=>'"' + c.replaceAll('\\', '\\\\') + '"').join(',') + ')');
-	fileText = fileText.replace("?rnwTemplate_s", 'c(' + rex.exercises[exerciseID].result.map(s=>s?"T":"F").join(',') + ')');
-	fileText = fileText.replace("?rnwTemplate_p", rex.exercises[exerciseID].points);
-	fileText = fileText.replace("?rnwTemplate_t", rex.exercises[exerciseID].topic);
-	fileText = fileText.replace("?rnwTemplate_f", rex.exercises[exerciseID].figure !== null ? 'c(' + rex.exercises[exerciseID].figure.map(c=>'"' + c + '"').join(',') + ')' : '""');
+			
+	fileText = fileText.replace("?rnwTemplate_type", rex.exercises[exerciseID].type);
+	fileText = fileText.replace("?rnwTemplate_question", '"' + rex.exercises[exerciseID].question_raw.replaceAll('\\', '\\\\') + '"');
+	fileText = fileText.replace("?rnwTemplate_choices", 'c(' + rex.exercises[exerciseID].choices_raw.map(c=>'"' + c.replaceAll('\\', '\\\\') + '"').join(',') + ')');
+	fileText = fileText.replace("?rnwTemplate_solutions", 'c(' + rex.exercises[exerciseID].result.map(s=>s?"T":"F").join(',') + ')');
+	fileText = fileText.replace("?rnwTemplate_points", rex.exercises[exerciseID].points);
+	fileText = fileText.replace("?rnwTemplate_topic", rex.exercises[exerciseID].topic);
+	fileText = fileText.replace("?rnwTemplate_figure", rex.exercises[exerciseID].figure !== null ? 'c(' + rex.exercises[exerciseID].figure.map(c=>'"' + c + '"').join(',') + ')' : '""');
 	fileText = fileText.replaceAll("\n", "\r\n");
 
 	rex.exercises[exerciseID].file = fileText;
