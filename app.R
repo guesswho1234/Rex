@@ -54,11 +54,12 @@ source("source/tryCatch.R")
         exercise$exerciseCode = sub("maxChoices=5", "maxChoices=NULL", exercise$exerciseCode)
         
         # remove image from question when viewing exercises (only relevant for editable exercises)
-        exercise$exerciseCode = sub("rnwTemplate_showFigure = TRUE", "rnwTemplate_showFigure = FALSE", exercise$exerciseCode)
+        exercise$exerciseCode = sub("rnwTemplate_showFigure=TRUE", "rnwTemplate_showFigure=FALSE", exercise$exerciseCode)
   
         # extract figure to display it in the respective field when viewing a exercise (only relevant for editable exercises)
         figure = strsplit(exercise$exerciseCode, "rnwTemplate_figure=")[[1]][2]
-        figure = strsplit(figure, "rnwTemplate_maxChoices")[[1]][1]
+        # figure = strsplit(figure, "rnwTemplate_maxChoices")[[1]][1] #todo: try to replace this with trying to find endofline or something
+        figure = strsplit(figure, ";")[[1]][1] #todo: try to replace this with trying to find endofline or something
         
         figure_split = strsplit(figure,",")[[1]]
         figure = ""
@@ -73,13 +74,15 @@ source("source/tryCatch.R")
         
         # extract raw question text
         question_raw = strsplit(exercise$exerciseCode, "rnwTemplate_question=")[[1]][2]
-        question_raw = strsplit(question_raw, "rnwTemplate_choices")[[1]][1]
+        # question_raw = strsplit(question_raw, "rnwTemplate_choices")[[1]][1] #todo: try to replace this with trying to find endofline or something
+        question_raw = strsplit(question_raw, ";")[[1]][1] #todo: try to replace this with trying to find endofline or something
         question_raw = paste0(rev(rev(strsplit(question_raw, "")[[1]][-1])[-c(1:2)]), collapse="") # trim
         question_raw = gsub("\\\\", "\\", question_raw, fixed=TRUE)
         
         # extract raw choice texts
         choices_raw = strsplit(exercise$exerciseCode, "rnwTemplate_choices=")[[1]][2]
-        choices_raw = strsplit(choices_raw, "rnwTemplate_solutions")[[1]][1]
+        # choices_raw = strsplit(choices_raw, "rnwTemplate_solutions")[[1]][1] #todo: try to replace this with trying to find endofline or something
+        choices_raw = strsplit(choices_raw, ";")[[1]][1] #todo: try to replace this with trying to find endofline or something
         choices_raw = strsplit(choices_raw, ",\"")[[1]]
         choices_raw[1] = paste0(strsplit(choices_raw[1], "")[[1]][-c(1:3)], collapse="")
         choices_raw[length(choices_raw)] = paste0(rev(rev(strsplit(choices_raw[length(choices_raw)], "")[[1]])[-c(1:2)]), collapse="") #trim

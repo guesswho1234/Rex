@@ -6,19 +6,19 @@
 %% \exextra[topic,character]{Text}
 %% \exextra[tags,character]{}
 <<echo=FALSE, results=tex>>=
-rnwTemplate_question="b"
-rnwTemplate_choices=c("b1","b2")
-rnwTemplate_solutions=c(F,T)
-rnwTemplate_points=1
-rnwTemplate_figure=""
-rnwTemplate_maxChoices=5
+rnwTemplate_question="b";
+rnwTemplate_choices=c("b1","b2");
+rnwTemplate_solutions=c(F,T);
+rnwTemplate_points=1;
+rnwTemplate_showFigure=TRUE;
+rnwTemplate_figure="";
+rnwTemplate_maxChoices=5;
 if(!is.null(rnwTemplate_maxChoices)){
 	limit=min(length(rnwTemplate_choices), rnwTemplate_maxChoices)
 	sel=sample(1:length(rnwTemplate_choices), limit)
 	rnwTemplate_choices=rnwTemplate_choices[sel]
 	rnwTemplate_solutions=rnwTemplate_solutions[sel]
 }
-rnwTemplate_showFigure = TRUE
 @
 \begin{question}
 <<echo=FALSE, results=tex>>=
