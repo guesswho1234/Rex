@@ -741,7 +741,7 @@ main > * {
 	display: none !important;
 }
 
-#exercise_info label {
+#exercise_info label:not(#exerciseDownload) {
 	font-weight: bold;
 	height: 25px;
 }
