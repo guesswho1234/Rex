@@ -58,8 +58,7 @@ source("source/tryCatch.R")
   
         # extract figure to display it in the respective field when viewing a exercise (only relevant for editable exercises)
         figure = strsplit(exercise$exerciseCode, "rnwTemplate_figure=")[[1]][2]
-        # figure = strsplit(figure, "rnwTemplate_maxChoices")[[1]][1] #todo: try to replace this with trying to find endofline or something
-        figure = strsplit(figure, ";")[[1]][1] #todo: try to replace this with trying to find endofline or something
+        figure = strsplit(figure, ";")[[1]][1]
         
         figure_split = strsplit(figure,",")[[1]]
         figure = ""
@@ -74,15 +73,13 @@ source("source/tryCatch.R")
         
         # extract raw question text
         question_raw = strsplit(exercise$exerciseCode, "rnwTemplate_question=")[[1]][2]
-        # question_raw = strsplit(question_raw, "rnwTemplate_choices")[[1]][1] #todo: try to replace this with trying to find endofline or something
-        question_raw = strsplit(question_raw, ";")[[1]][1] #todo: try to replace this with trying to find endofline or something
+        question_raw = strsplit(question_raw, ";")[[1]][1]
         question_raw = paste0(rev(rev(strsplit(question_raw, "")[[1]][-1])[-c(1:2)]), collapse="") # trim
         question_raw = gsub("\\\\", "\\", question_raw, fixed=TRUE)
         
         # extract raw choice texts
         choices_raw = strsplit(exercise$exerciseCode, "rnwTemplate_choices=")[[1]][2]
-        # choices_raw = strsplit(choices_raw, "rnwTemplate_solutions")[[1]][1] #todo: try to replace this with trying to find endofline or something
-        choices_raw = strsplit(choices_raw, ";")[[1]][1] #todo: try to replace this with trying to find endofline or something
+        choices_raw = strsplit(choices_raw, ";")[[1]][1]
         choices_raw = strsplit(choices_raw, ",\"")[[1]]
         choices_raw[1] = paste0(strsplit(choices_raw[1], "")[[1]][-c(1:3)], collapse="")
         choices_raw[length(choices_raw)] = paste0(rev(rev(strsplit(choices_raw[length(choices_raw)], "")[[1]])[-c(1:2)]), collapse="") #trim
@@ -1074,32 +1071,6 @@ server = function(input, output, session) {
 
   examCreation = eventReactive(input$createExam, {
     startWait(session)
-    
-    # exerciseNames = as.list(make.unique(unlist(input$createExam$exerciseNames), sep="_"))
-    # exerciseFiles = setNames(seq_along(exerciseNames), exerciseNames)
-    # 
-    # numberOfExams = as.numeric(input$numberOfExams)
-    # blocks = as.numeric(input$createExam$blocks)
-    # uniqueBlocks = unique(blocks)
-    # numberOfExercises = as.numeric(input$numberOfExercises)
-    # exercisesPerBlock = numberOfExercises / length(uniqueBlocks)
-    # exercises = lapply(uniqueBlocks, function(x) exerciseFiles[blocks==x])
-    # 
-    # seedList = matrix(1, nrow=numberOfExams, ncol=length(exerciseNames))
-    # seedList = seedList * as.numeric(paste0(if(is.na(is.numeric(input$seedValueExam))) NULL else input$seedValueExam, 1:numberOfExams))
-    
-    #todo: fix html and pdf having different order for exercises
-    # print(exercises)
-    # print(seedList)
-    
-    # per block a list element exists
-    # each list element contains a vector of exercises for this block
-    # [[1]]
-    # a b c 
-    # 1 2 3 
-    # 
-    # [,1]      [,2]      [,3]
-    # [1,] 202402181 202402181 202402181
     
     settings = list(exerciseMin=exerciseMin,
                     exerciseMax=exerciseMax,
