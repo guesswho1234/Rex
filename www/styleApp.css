@@ -24,6 +24,10 @@ main {
 	z-index: 997;
 }
 
+#logoApp {
+	cursor: pointer;
+}
+
 #logoutContainer {
 	position: relative;
 }
@@ -199,15 +203,15 @@ body.textButtonMode .textButton {
 	display: block !important;
 }
 
-#latexActiveContainer i {
+#texActiveContainer i {
 	margin-left: 0.25rem;
 }
 
-#latexActiveContainer span i {
+#texActiveContainer span i {
 	color: var(---red_error);
 }
 
-#latexActiveContainer span.active i {
+#texActiveContainer span.active i {
 	color: var(---green_success);
 }
 
@@ -310,6 +314,7 @@ main > * {
 
 .contentWrapper > div {
 	margin: 1rem;
+	height: fit-content;
 }
 
 .contentWrapper > div:first-of-type {
@@ -728,17 +733,22 @@ main > * {
 	width: 100%;
 }
 
+#exercise_info h2 {
+	height: 35px;
+}
+
 #exercise_info.hidden {
 	display: none !important;
 }
 
 #exercise_info label {
 	font-weight: bold;
+	height: 25px;
 }
 
 #exercise_info > * {
-	margin-bottom: 0px;
-	margin-left: 1rem;
+	padding: 0px;
+	margin: 1px;
 }
 
 #examHistory span,
@@ -1247,7 +1257,7 @@ main > * {
 	position: relative;
 }
 
-#latexActiveContainer,
+#texActiveContainer,
 #hotkeysActiveContainer {
 	margin-left: -2px;
 	margin-right: -2px;
@@ -1285,18 +1295,24 @@ main > * {
 /* --------------------------------------------------------------
  TEX MODE
 -------------------------------------------------------------- */
-#latexButtons span {
+ #texButtons span {
+	border: 2px solid var(---transparent);
+	border-radius: 3px;
+	padding: 2px;
+}
+
+.texInputsEnabled #texButtons span {
 	border: 2px solid var(---highlight_values2) !important;
 	border-radius: 3px;
 	padding: 2px;
 }
 
-#examIntro,
-.questionText[contenteditable="true"] {
+.texInputsEnabled #examIntro,
+.texInputsEnabled .questionText[contenteditable="true"] {
 	border: 2px solid var(---highlight_values2) !important;
 }
 
-.questionText[contenteditable="true"]:focus {
+.texInputsEnabled .questionText[contenteditable="true"]:focus {
 	background-color: var(---highlight_values2) !important;
 }
 

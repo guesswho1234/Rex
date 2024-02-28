@@ -6,18 +6,18 @@ var rnwTemplate = `<<echo=FALSE, results=hide>>=
 %% \\exextra[topic,character]{?rnwTemplate_topic}
 %% \\exextra[tags,character]{}
 <<echo=FALSE, results=tex>>=
-rnwTemplate_question=?rnwTemplate_question
-rnwTemplate_choices=?rnwTemplate_choices
-rnwTemplate_solutions=?rnwTemplate_solutions
-rnwTemplate_figure=?rnwTemplate_figure
-rnwTemplate_maxChoices=5
+rnwTemplate_question=?rnwTemplate_question;
+rnwTemplate_choices=?rnwTemplate_choices;
+rnwTemplate_solutions=?rnwTemplate_solutions;
+rnwTemplate_showFigure=TRUE;
+rnwTemplate_figure=?rnwTemplate_figure;
+rnwTemplate_maxChoices=5;
 if(!is.null(rnwTemplate_maxChoices)){
 	limit=min(length(rnwTemplate_choices), rnwTemplate_maxChoices)
 	sel=sample(1:length(rnwTemplate_choices), limit)
 	rnwTemplate_choices=rnwTemplate_choices[sel]
 	rnwTemplate_solutions=rnwTemplate_solutions[sel]
 }
-rnwTemplate_showFigure = TRUE
 @
 \\begin{question}
 <<echo=FALSE, results=tex>>=

@@ -42,7 +42,7 @@ function initApp(){
 	dndAdditionalPdf.init();
 	dndExamEvaluation.init();
 	
-	f_latex();
+	f_tex();
 	f_hotKeys();
 	f_buttonMode();
 	f_langDeEn();
@@ -110,6 +110,17 @@ sheet =>
 );
 
 /* --------------------------------------------------------------
+ SCROLL TOP 
+-------------------------------------------------------------- */
+$('#logoApp').on('click', function() {
+	scrollTop();
+});
+
+function scrollTop(){
+	window.scrollTo(0, 0);
+}
+
+/* --------------------------------------------------------------
  HEARTBEAT 
 -------------------------------------------------------------- */
 Shiny.addCustomMessageHandler('heartbeat', function(heartbeat) {
@@ -166,30 +177,33 @@ function getHeartColorCookie() {
 /* --------------------------------------------------------------
  LATEX
 -------------------------------------------------------------- */
-$('#latexActiveContainer').click(function () {
-	setLatexCookie(+!getLatexCookie());
-	f_latex();
+$('#texActiveContainer').click(function () {
+	setTexCookie(+!getTexCookie());
+	f_tex();
 });
 
-function f_latex() {
-	if (getLatexCookie()) {
-		$('#latexActiveContainer span').addClass('active');
-		return;
-	} 
+function f_tex() {
+	$('#texActiveContainer span').removeClass('active');
+	$('.texMode').removeClass('texInputsEnabled');
+	$('.texMode').addClass('texInputsEscaped');
 	
-	$('#latexActiveContainer span').removeClass('active');
+	if (getTexCookie()) {
+		$('#texActiveContainer span').addClass('active');
+		$('.texMode').removeClass('texInputsEscaped');
+		$('.texMode').addClass('texInputsEnabled');
+	} 
 }
 
-Shiny.addCustomMessageHandler('f_latex', function(x) {
-	f_latex();
+Shiny.addCustomMessageHandler('f_tex', function(x) {
+	f_tex();
 });
 
-function setLatexCookie(latexActive) {
-    document.cookie = 'REX_JS_latex=' + latexActive + ';path=/;SameSite=Lax';
+function setTexCookie(texActive) {
+    document.cookie = 'REX_JS_tex=' + texActive + ';path=/;SameSite=Lax';
 }
 
-function getLatexCookie() {
-    const name = 'REX_JS_latex';
+function getTexCookie() {
+    const name = 'REX_JS_tex';
     const ca = document.cookie.split(';');
 	
     for(let i=0;i < ca.length;i++) {
@@ -272,6 +286,14 @@ document.onkeydown = function(evt) {
 	if(!getHotkeysCookie()) return;
 	
 	const evtobj = window.event? event : evt;
+	const targetInput = $(evtobj.target).is('input') || $(evtobj.target).is('textarea');
+	const targetEditable = $(evtobj.target).attr('contenteditable');
+	
+	// SCROLL TOP
+	if (!targetInput && !targetEditable) {
+		if (evtobj.keyCode == 84) // t
+			scrollTop();
+	}
 	
 	// INSPECT SCAN
 	if( $('#inspectScanButtons').length == 1 ) {
@@ -280,7 +302,8 @@ document.onkeydown = function(evt) {
 				applyInspect();
 				break;
 			case 32: // space
-				applyInspectNext();
+				if (!targetInput && !targetEditable) 
+					applyInspectNext();
 				break;
 			case 27: // ESC
 				cancleInspect();
@@ -288,16 +311,14 @@ document.onkeydown = function(evt) {
 		}
 	} 
 	
-	// EXERCISES
 	if($('#disableOverlay').hasClass("active")) return;
-	
+		
+	// EXERCISES
 	if( $('#exercises').hasClass('active') ) {	
 		if ($(evtobj.target).is('input') && evtobj.keyCode == 13) { // enter
 			$(evtobj.target).change();
 			$(evtobj.target).blur();
 		}
-		
-		const targetEditable = $(evtobj.target).attr('contenteditable');
 	
 		if (evtobj.keyCode == 27) { // ESC
 			$(evtobj.target).blur();
@@ -309,7 +330,6 @@ document.onkeydown = function(evt) {
 			}
 		}
 		
-		const targetInput = $(evtobj.target).is('input');
 		const itemsExist = $('.exerciseItem').length > 0;
 			
 		if (!targetInput && !targetEditable) {
@@ -1399,8 +1419,8 @@ $('body').on('focus', '[contenteditable]', function() {
 		if ($this.hasClass('questionText')) {
 			content = contenteditable_getSpecial(content);
 			
-			if(!$('#latexActiveContainer span').hasClass('active'))
-				content = contentLatexSanitize(content);
+			if(!$('#texActiveContainer span').hasClass('active'))
+				content = contentTexSanitize(content);
 
 			rex.exercises[exerciseID].question = content;
 			rex.exercises[exerciseID].question_raw = content;
@@ -1408,7 +1428,7 @@ $('body').on('focus', '[contenteditable]', function() {
 		
 		if ($this.hasClass('choiceText')) {
 			content = contenteditable_getPlain(content);
-			content = contentLatexSanitize(content);
+			content = contentTexSanitize(content);
 
 			rex.exercises[exerciseID].choices[$this.index('.choiceText')] = content;
 			rex.exercises[exerciseID].choices_raw[$this.index('.choiceText')] = content;
@@ -1475,7 +1495,7 @@ function contentTextSanitize(content, isFileName=false){
 }
 
 //latex test string: $ % & \ ^ _ { } ~ #
-function contentLatexSanitize(content_raw){
+function contentTexSanitize(content_raw){
 	// content_raw = content_raw.replaceAll('\\textbackslash', '\\'); # does not work
 	// content_raw = content_raw.replaceAll('\\symbol{92}', '\\'); # causes problems in json
 	content_raw = content_raw.replaceAll('\\~{}', '~');
@@ -2094,8 +2114,8 @@ $("#examCourse").change(function(){
 }); 
 
 $("#examIntro").change(function(){
-	if(!$('#latexActiveContainer span').hasClass('active'))
-		$(this).val(contentLatexSanitize($(this).val()));
+	if(!$('#texActiveContainer span').hasClass('active'))
+		$(this).val(contentTexSanitize($(this).val()));
 }); 
 
 $("#createExamEvent").click(function(){

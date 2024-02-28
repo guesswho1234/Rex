@@ -30,6 +30,7 @@
 	<ul class="nav navbar-nav" data-tabsetid="9289">
 		<li>
 			<img id="logoApp" class="logo" src="logo.svg">
+			<span class="hotkeyInfo"><span lang="de">T</span><span lang="en">T</span></span>
 		</li>
 		<li class="active">
 			<a href="#tab-9289-1" data-toggle="tab" data-bs-toggle="tab" data-value="exercises">
@@ -57,8 +58,8 @@
 		</li>
 	</ul>
 	<div id="navMisc">
-		<div id="latexActiveContainer">
-			<span id="latexButtons" class="buttonModeSelector"><span lang="de">TeX Modus</span><span lang="en">TeX mode</span><i class="fa-regular fa-circle-dot"></i></span>
+		<div id="texActiveContainer" class="texMode texInputsEscaped">
+			<span id="texButtons" class="buttonModeSelector"><span lang="de">TeX Modus</span><span lang="en">TeX mode</span><i class="fa-regular fa-circle-dot"></i></span>
 		</div>
 		<div id="hotkeysActiveContainer">
 			<span id="hotkeyButtons" class="buttonModeSelector"><span lang="de">Tastenkürzel</span><span lang="en">Hotkeys</span><i class="fa-regular fa-circle-dot"></i></span>
@@ -202,7 +203,7 @@
 				<div id="tags"></div>
 										
 				<label for="question"><span lang="de">Frage</span><span lang="en">Question</span></label>
-				<div id="question"></div>
+				<div id="question" class="texMode texInputsEscaped"></div>
 										
 				<label for="figure"><span lang="de">Grafik</span><span lang="en">Figure</span></label>
 				<div id="figure">
@@ -338,7 +339,7 @@
 							<label for="examCourse"><span lang="de">Kurs</span><span lang="en">Course</span></label>
 							{{ textInput_examCourse }}
 						</div>
-						<div>
+						<div class="texMode texInputsEscaped">
 							<label for="examIntro"><span lang="de">Einleitung</span><span lang="en">Intro</span></label>
 							{{ textInput_examIntro }}
 						</div>
