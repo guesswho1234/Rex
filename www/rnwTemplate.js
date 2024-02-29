@@ -9,6 +9,7 @@ var rnwTemplate = `<<echo=FALSE, results=hide>>=
 rnwTemplate_question=?rnwTemplate_question;
 rnwTemplate_choices=?rnwTemplate_choices;
 rnwTemplate_solutions=?rnwTemplate_solutions;
+rnwTemplate_solutionNotes=?rnwTemplate_solutionNotes;
 rnwTemplate_showFigure=TRUE;
 rnwTemplate_figure=?rnwTemplate_figure;
 rnwTemplate_maxChoices=5;
@@ -38,7 +39,7 @@ exams::answerlist(rnwTemplate_choices)
 
 \\begin{solution}
 <<echo=FALSE, results=tex>>=
-exams::answerlist(ifelse(rnwTemplate_solutions, "Richtig", "Falsch"))
+exams::answerlist(rnwTemplate_solutionNotes)
 @
 \\end{solution}
 %% META-INFORMATION

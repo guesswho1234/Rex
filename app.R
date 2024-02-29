@@ -82,8 +82,16 @@ source("source/tryCatch.R")
         choices_raw = strsplit(choices_raw, ";")[[1]][1]
         choices_raw = strsplit(choices_raw, ",\"")[[1]]
         choices_raw[1] = paste0(strsplit(choices_raw[1], "")[[1]][-c(1:3)], collapse="")
-        choices_raw[length(choices_raw)] = paste0(rev(rev(strsplit(choices_raw[length(choices_raw)], "")[[1]])[-c(1:2)]), collapse="") #trim
+        choices_raw[length(choices_raw)] = paste0(rev(rev(strsplit(choices_raw[length(choices_raw)], "")[[1]])[-1]), collapse="") #trim
         choices_raw = Reduce(c, lapply(choices_raw, \(x) paste0(rev(rev(strsplit(x, "")[[1]])[-c(1)]), collapse=""))) # trim
+        
+        # extract raw solution note texts
+        solutionNotes_raw = strsplit(exercise$exerciseCode, "rnwTemplate_solutionNotes=")[[1]][2]
+        solutionNotes_raw = strsplit(solutionNotes_raw, ";")[[1]][1]
+        solutionNotes_raw = strsplit(solutionNotes_raw, ",\"")[[1]]
+        solutionNotes_raw[1] = paste0(strsplit(solutionNotes_raw[1], "")[[1]][-c(1:3)], collapse="")
+        solutionNotes_raw[length(solutionNotes_raw)] = paste0(rev(rev(strsplit(solutionNotes_raw[length(solutionNotes_raw)], "")[[1]])[-1]), collapse="") #trim
+        solutionNotes_raw = Reduce(c, lapply(solutionNotes_raw, \(x) paste0(rev(rev(strsplit(x, "")[[1]])[-c(1)]), collapse=""))) # trim
         
         seed = if(seed == "") NULL else seed
         
@@ -94,7 +102,8 @@ source("source/tryCatch.R")
         
         htmlPreview$exam1$exercise1$question_raw = question_raw
         htmlPreview$exam1$exercise1$choices_raw = choices_raw
-        
+        htmlPreview$exam1$exercise1$solutionNotes = solutionNotes_raw
+
         if (!htmlPreview$exam1$exercise1$metainfo$type %in% c("schoice", "mchoice")) {
           stop("E1005")
         }
@@ -153,6 +162,8 @@ source("source/tryCatch.R")
         tags = rjs_vectorToJsonStringArray(tags)
       }
       
+      print(html$exam1$exercise1)
+
       precision = html$exam1$exercise1$metainfo$precision
       points = html$exam1$exercise1$metainfo$points
       topic = html$exam1$exercise1$metainfo$topic
@@ -163,7 +174,9 @@ source("source/tryCatch.R")
       editable = ifelse(html$exam1$exercise1$metainfo$editable == 1, 1, 0)
       choices = rjs_vectorToJsonStringArray(html$exam1$exercise1$questionlist)
       choices_raw = rjs_vectorToJsonStringArray(html$exam1$exercise1$choices_raw)
-      result = rjs_vectorToJsonArray(tolower(as.character(html$exam1$exercise1$metainfo$solution)))
+      solutions = rjs_vectorToJsonArray(tolower(as.character(html$exam1$exercise1$metainfo$solution)))
+      solutionNotes = rjs_vectorToJsonStringArray(tolower(as.character(html$exam1$exercise1$solutionlist)))
+      solutionNotes_raw = rjs_vectorToJsonStringArray(html$exam1$exercise1$solutionNotes_raw)
       
       session$sendCustomMessage("setExerciseExamHistory", examHistory)
       session$sendCustomMessage("setExerciseAuthoredBy", authoredBy)
@@ -179,7 +192,9 @@ source("source/tryCatch.R")
       session$sendCustomMessage("setExerciseEditable", editable)
       session$sendCustomMessage("setExerciseChoices", choices)
       session$sendCustomMessage("setExerciseChoicesRaw", choices_raw)
-      session$sendCustomMessage("setExerciseResultChoices", result)
+      session$sendCustomMessage("setExerciseSolutions", solutions)
+      session$sendCustomMessage("setExerciseSolutionNotes", solutionNotes)
+      session$sendCustomMessage("setExerciseSolutionNotesRaw", solutionNotes_raw)
     }
   
     session$sendCustomMessage("setExerciseStatusMessage", myMessage(message, "exercise"))

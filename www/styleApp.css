@@ -783,7 +783,7 @@ main > * {
 	border: 1px solid black;
 }
 
-#result {
+#answers {
 	display: block;
 }
 
@@ -792,13 +792,10 @@ main > * {
 	margin-left: 0px;
 }
 
-#resultContent .result {
+#answerContent .solution {
 	font-weight: bold;
 	width: max-content;
 	border-radius: 3px;
-	margin-right: 0.5rem;
-	padding-left: 0.5rem;
-	padding-right: 0.5rem;
 	border: 2px solid var(---transparent);
 	border-radius: 3px;
 	padding: 2px;
@@ -806,47 +803,46 @@ main > * {
 	text-align: center;
 }
 
-#resultContent .choice {
+#answerContent .answerText {
 	height: 100%;
 	display:flex;
 }
 
-#resultContent .choiceResult.truechoiceResult {
+#answerContent .solution.trueSolution {
 	background: var(---green_success_fade);
 }
 
-#resultContent .choiceResult.falsechoiceResult {
+#answerContent .solution.falseSolution {
 	background: var(---red_error_fade);
 }
 
-#resultContent .choice input {
+#answerContent .answerText input {
 	margin: 0px;
 }
 
-
-#resultContent > * {
+#answerContent > * {
 	font-weight: bold;
 }
 
-#resultContent > p {
+#answerContent > p {
 	display: flex;
 	align-items: center;
 }
 
-#resultContent > span {
+#answerContent > span {
 	margin-left: 1rem;
 }
 
-#resultContent input[type=text] {
+#answerContent input[type=text] {
 	max-width: 150px;
 }
 
-#resultContent .choiceText {
-	margin-left: 0.25rem;
+#answerContent p > span {
+	margin-left: 0.75rem;
 }
 
-#resultContent .removeAnswer {
-	margin-right: 0.5rem;
+.solutionNoteText {
+  color: var(---background2);
 }
 
 .editType, 

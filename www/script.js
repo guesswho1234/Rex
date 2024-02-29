@@ -1132,8 +1132,9 @@ function loadExercise(file, block = 1) {
 
 const d_exerciseName = 'Name';
 const d_questionText = 'Text';
-const d_answerText = 'Text';
-const d_result = false;
+const d_choiceText = 'Text';
+const d_solution = false;
+const d_solutionNoteText = "";
 
 function newSimpleExercise(file = '', block = 1) {
 	const exerciseID = exercises + 1
@@ -1142,8 +1143,9 @@ function newSimpleExercise(file = '', block = 1) {
 					       null, 
 						   "rnw",
 					       d_questionText,
-					       [d_answerText + '1', d_answerText + '2'],
-					       [d_result, d_result],
+					       [d_choiceText + '1', d_choiceText + '2'],
+					       [d_solution, d_solution],
+						   [d_solutionNoteText, d_solutionNoteText],
 					       null,
 						   null,
 					       true,
@@ -1165,6 +1167,7 @@ async function newComplexExercise(file, ext, block) {
 					   '',
 					   [],
 					   [],
+					   [],
 					   null,
 					   null,
 					   false,
@@ -1179,7 +1182,8 @@ function createExercise(exerciseID, name='exercise',
 							ext="rnw",
 						    question='',
 						    choices=[],
-							result=[],
+							solution=[],
+							solutionNotes=[],
 							statusMessage=null,
 							statusCode=null,
 							editable=false,
@@ -1203,7 +1207,9 @@ function createExercise(exerciseID, name='exercise',
 	rex.exercises[exerciseID]['question_raw'] = question;
 	rex.exercises[exerciseID]['choices'] = choices;
 	rex.exercises[exerciseID]['choices_raw'] = choices;
-	rex.exercises[exerciseID]['result'] = result;
+	rex.exercises[exerciseID]['solution'] = solution;
+	rex.exercises[exerciseID]['solutionNotes'] = solutionNotes;
+	rex.exercises[exerciseID]['solutionNotes_raw'] = solutionNotes;
 	rex.exercises[exerciseID]['examHistory'] = examHistory;
 	rex.exercises[exerciseID]['authoredBy'] = authoredBy;
 	rex.exercises[exerciseID]['precision'] = precision;
@@ -1297,7 +1303,7 @@ function resetOutputFields() {
 				  'type',
 				  'figure',
 			      'points',
-			      'result',
+			      'answers',
 			      'examHistory',
 			      'authoredBy',
 			      'precision',
@@ -1331,13 +1337,13 @@ $('#exercise_info').on('click', '.editType', function(e) {
 $('#exercise_info').on('click', '.editTrueFalse', function(e) {
 	const exerciseID = getID();
 	invalidateAfterEdit(exerciseID);
-	const newValue = rex.exercises[exerciseID].result[$(this).index('.choiceResult')] !== true;
+	const newValue = rex.exercises[exerciseID].solution[$(this).index('.choiceSolution')] !== true;
 		
-	$(this).removeClass("truechoiceResult");
-	$(this).removeClass("falsechoiceResult");
-	$(this).addClass(newValue + "choiceResult");
+	$(this).removeClass("truechoiceSolution");
+	$(this).removeClass("falsechoiceSolution");
+	$(this).addClass(newValue + "choiceSolution");
 		
-	rex.exercises[exerciseID].result[$(this).index('.choiceResult')] = newValue;
+	rex.exercises[exerciseID].solution[$(this).index('.choiceSolution')] = newValue;
 	$(this).html(getTrueFalseText(newValue));
 	
 	setSimpleExerciseFileContents(exerciseID);	
@@ -1432,6 +1438,14 @@ $('body').on('focus', '[contenteditable]', function() {
 
 			rex.exercises[exerciseID].choices[$this.index('.choiceText')] = content;
 			rex.exercises[exerciseID].choices_raw[$this.index('.choiceText')] = content;
+		}
+		
+		if ($this.hasClass('solutionNoteText')) {
+			content = contenteditable_getPlain(content);
+			content = contentTexSanitize(content);
+
+			rex.exercises[exerciseID].solutionNotes[$this.index('.solutionNoteText')] = content;
+			rex.exercises[exerciseID].solutionNotes_raw[$this.index('.solutionNoteText')] = content;
 		}
 		
 		if ($this.hasClass('points')) {
@@ -1587,9 +1601,9 @@ function loadExerciseFromObject(exerciseID) {
 	}
 			
 	if(rex.exercises[exerciseID].type === "schoice" || rex.exercises[exerciseID].type === "mchoice" || rex.exercises[exerciseID].editable) {
-		const field = 'result';
-		const zip = rex.exercises[exerciseID][field].map((x, i) => [x, rex.exercises[exerciseID].choices[i]]);
-		let content = '<div id="resultContent">' + zip.map(i => '<p>' + (editable ? '<button type="button" class="removeAnswer btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></button>' : '') + '<span class=\"result choiceResult ' + (i[0] + 'choiceResult ') + (editable ? 'editTrueFalse' : '') + '\">' + getTrueFalseText(i[0]) + '</span><span class="choice"><span class="choiceText" contenteditable="' + editable + '" spellcheck="false">' + i[1] + '</span></span></p>').join('') + '</div>';
+		const field = 'answers';
+		const zip = rex.exercises[exerciseID].solution.map((x, i) => [x, rex.exercises[exerciseID].choices[i], rex.exercises[exerciseID].solutionNotes[i]]);
+		let content = '<div id="answerContent">' + zip.map(i => '<p>' + (editable ? '<button type="button" class="removeAnswer btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></button>' : '') + '<span class=\"solution ' + (i[0] + 'Solution ') + (editable ? 'editTrueFalse' : '') + '\">' + getTrueFalseText(i[0]) + '</span><span class="answerText choice"><span class="choiceText" contenteditable="' + editable + '" spellcheck="false">' + i[1] + '</span></span><span class="answerText solutionNote"><span class="solutionNoteText" contenteditable="' + editable + '" spellcheck="false">' + i[2] + '</span></span></p>').join('') + '</div>';
 		
 		if( rex.exercises[exerciseID].editable ) {
 			content = '<button id="addNewAnswer" type="button" class="btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-plus"></i></span><span class="textButton"><span lang="de">Neue Antwortmöglichkeit</span><span lang="en">New Answer</span></span></button>' + content;
@@ -1649,7 +1663,8 @@ function setSimpleExerciseFileContents(exerciseID){
 	fileText = fileText.replace("?rnwTemplate_type", rex.exercises[exerciseID].type);
 	fileText = fileText.replace("?rnwTemplate_question", '"' + rex.exercises[exerciseID].question_raw.replaceAll('\\', '\\\\') + '"');
 	fileText = fileText.replace("?rnwTemplate_choices", 'c(' + rex.exercises[exerciseID].choices_raw.map(c=>'"' + c.replaceAll('\\', '\\\\') + '"').join(',') + ')');
-	fileText = fileText.replace("?rnwTemplate_solutions", 'c(' + rex.exercises[exerciseID].result.map(s=>s?"T":"F").join(',') + ')');
+	fileText = fileText.replace("?rnwTemplate_solutions", 'c(' + rex.exercises[exerciseID].solution.map(s=>s?"T":"F").join(',') + ')');
+	fileText = fileText.replace("?rnwTemplate_solutionNotes", 'c(' + rex.exercises[exerciseID].solutionNotes_raw.map(c=>'"' + c.replaceAll('\\', '\\\\') + '"').join(',') + ')');
 	fileText = fileText.replace("?rnwTemplate_points", rex.exercises[exerciseID].points);
 	fileText = fileText.replace("?rnwTemplate_topic", rex.exercises[exerciseID].topic);
 	fileText = fileText.replace("?rnwTemplate_figure", rex.exercises[exerciseID].figure !== null ? 'c(' + rex.exercises[exerciseID].figure.map(c=>'"' + c + '"').join(',') + ')' : '""');
@@ -1778,9 +1793,11 @@ $('#exercise_list_items').on('click', '.exerciseItem', function() {
 $('#exercise_info').on('click', '#addNewAnswer', function() {
 	const exerciseID = getID();
 	
-	rex.exercises[exerciseID].choices.push(d_answerText);
-	rex.exercises[exerciseID].choices_raw.push(d_answerText);
-	rex.exercises[exerciseID].result.push(d_result);
+	rex.exercises[exerciseID].solution.push(d_solution);
+	rex.exercises[exerciseID].choices.push(d_choiceText);
+	rex.exercises[exerciseID].choices_raw.push(d_choiceText);
+	rex.exercises[exerciseID].solutionNotes.push(d_solutionNoteText);
+	rex.exercises[exerciseID].solutionNotes_raw.push(d_solutionNoteText);
 	
 	invalidateAfterEdit(exerciseID);
 	setSimpleExerciseFileContents(exerciseID);
@@ -1793,10 +1810,12 @@ $('#exercise_info').on('click', '.removeAnswer', function() {
 	const exerciseID = getID();
 	const choicesID = $(this).index('.removeAnswer');
 	
-	if( rex.exercises[exerciseID].choices.length > 0 && rex.exercises[exerciseID].choices_raw.length > 0 ) {	
+	if( rex.exercises[exerciseID].choices.length > 0 && rex.exercises[exerciseID].choices_raw.length > 0 ) {
+		rex.exercises[exerciseID].solution.splice(choicesID, 1);		
 		rex.exercises[exerciseID].choices.splice(choicesID, 1);
 		rex.exercises[exerciseID].choices_raw.splice(choicesID, 1);
-		rex.exercises[exerciseID].result.splice(choicesID, 1);
+		rex.exercises[exerciseID].solutionNotes.splice(choicesID, 1);
+		rex.exercises[exerciseID].solutionNotes_raw.splice(choicesID, 1);
 	} 
 	
 	invalidateAfterEdit(exerciseID);
@@ -1922,13 +1941,19 @@ Shiny.addCustomMessageHandler('setExerciseChoicesRaw', function(jsonData) {
 	rex.exercises[getID()].choices_raw = exerciseChoicesRaw;
 });
 
-Shiny.addCustomMessageHandler('setExerciseResultChoices', function(jsonData) {
-	const exerciseResult = JSON.parse(jsonData);
-	rex.exercises[getID()].result = exerciseResult;
+Shiny.addCustomMessageHandler('setExerciseSolutions', function(jsonData) {
+	const exerciseSolution = JSON.parse(jsonData);
+	rex.exercises[getID()].solution = exerciseSolution;
 });
 
-Shiny.addCustomMessageHandler('setExerciseResultNumeric', function(exerciseResult) {
-	rex.exercises[getID()].result = exerciseResult;
+Shiny.addCustomMessageHandler('setExerciseSolutionNotes', function(jsonData) {
+	const exerciseSolutionNotes = JSON.parse(jsonData);
+	rex.exercises[getID()].solutionNotes = exerciseSolutionNotes;
+});
+
+Shiny.addCustomMessageHandler('setExerciseSolutionNotesRaw', function(jsonData) {
+	const exerciseSolutionNotesRaw = JSON.parse(jsonData);
+	rex.exercises[getID()].solutionNotes_raw = exerciseSolutionNotesRaw;
 });
 
 Shiny.addCustomMessageHandler('setExerciseEditable', function(editable) {
