@@ -175,10 +175,7 @@ source("source/tryCatch.R")
       solutions = rjs_vectorToJsonArray(tolower(as.character(html$exam1$exercise1$metainfo$solution)))
       solutionNotes = rjs_vectorToJsonStringArray(tolower(as.character(html$exam1$exercise1$solutionlist)))
       solutionNotes_raw = rjs_vectorToJsonStringArray(html$exam1$exercise1$solutionNotes_raw)
-      
-      print(html$exam1$exercise1$solutionNotes_raw)
-      print(solutionNotes_raw)
-      
+
       session$sendCustomMessage("setExerciseExamHistory", examHistory)
       session$sendCustomMessage("setExerciseAuthoredBy", authoredBy)
       session$sendCustomMessage("setExercisePrecision", precision)
