@@ -74,7 +74,7 @@ source("source/tryCatch.R")
         # extract raw question text
         question_raw = strsplit(exercise$exerciseCode, "rnwTemplate_question=")[[1]][2]
         question_raw = strsplit(question_raw, ";")[[1]][1]
-        question_raw = paste0(rev(rev(strsplit(question_raw, "")[[1]][-1])[-c(1:2)]), collapse="") # trim
+        question_raw = paste0(rev(rev(strsplit(question_raw, "")[[1]][-1])[-1]), collapse="") # trim
         question_raw = gsub("\\\\", "\\", question_raw, fixed=TRUE)
         
         # extract raw choice texts
@@ -102,7 +102,7 @@ source("source/tryCatch.R")
         
         htmlPreview$exam1$exercise1$question_raw = question_raw
         htmlPreview$exam1$exercise1$choices_raw = choices_raw
-        htmlPreview$exam1$exercise1$solutionNotes = solutionNotes_raw
+        htmlPreview$exam1$exercise1$solutionNotes_raw = solutionNotes_raw
 
         if (!htmlPreview$exam1$exercise1$metainfo$type %in% c("schoice", "mchoice")) {
           stop("E1005")
@@ -161,8 +161,6 @@ source("source/tryCatch.R")
         tags = trimws(strsplit(html$exam1$exercise1$metainfo$tags, ",")[[1]], "both")
         tags = rjs_vectorToJsonStringArray(tags)
       }
-      
-      print(html$exam1$exercise1)
 
       precision = html$exam1$exercise1$metainfo$precision
       points = html$exam1$exercise1$metainfo$points
@@ -177,6 +175,9 @@ source("source/tryCatch.R")
       solutions = rjs_vectorToJsonArray(tolower(as.character(html$exam1$exercise1$metainfo$solution)))
       solutionNotes = rjs_vectorToJsonStringArray(tolower(as.character(html$exam1$exercise1$solutionlist)))
       solutionNotes_raw = rjs_vectorToJsonStringArray(html$exam1$exercise1$solutionNotes_raw)
+      
+      print(html$exam1$exercise1$solutionNotes_raw)
+      print(solutionNotes_raw)
       
       session$sendCustomMessage("setExerciseExamHistory", examHistory)
       session$sendCustomMessage("setExerciseAuthoredBy", authoredBy)
