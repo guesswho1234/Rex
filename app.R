@@ -10,7 +10,7 @@ library(shiny) # shiny_1.8.0
 library(shinyjs) # shinyjs_2.1.0
 library(shinyWidgets) # shinyWidgets_0.8.0
 library(shinycssloaders) #shinycssloaders_1.0.0
-library(exams) #exams_2.4-0
+library(exams) #exams_2.4-1
 library(png) #png_0.1-8 
 library(tth) #tth_4.12-0-1 
 library(xtable) #xtable_1.8-4
@@ -175,6 +175,7 @@ source("source/tryCatch.R")
       solutions = rjs_vectorToJsonArray(tolower(as.character(html$exam1$exercise1$metainfo$solution)))
       solutionNotes = rjs_vectorToJsonStringArray(tolower(as.character(html$exam1$exercise1$solutionlist)))
       solutionNotes_raw = rjs_vectorToJsonStringArray(html$exam1$exercise1$solutionNotes_raw)
+      section = html$exam1$exercise1$metainfo$section
 
       session$sendCustomMessage("setExerciseExamHistory", examHistory)
       session$sendCustomMessage("setExerciseAuthoredBy", authoredBy)
@@ -183,6 +184,7 @@ source("source/tryCatch.R")
       session$sendCustomMessage("setExerciseTopic", topic)
       session$sendCustomMessage("setExerciseType", type)
       session$sendCustomMessage("setExerciseTags", tags)
+      session$sendCustomMessage("setExerciseSection", section)
       session$sendCustomMessage("setExerciseSeed", seed)
       session$sendCustomMessage("setExerciseQuestion", question)
       session$sendCustomMessage("setExerciseQuestionRaw", question_raw)
@@ -222,9 +224,12 @@ source("source/tryCatch.R")
         if(!all(unique(exam$exerciseTypes) %in% c("schoice", "mchoice")))
           stop("E1020")
 
+        edir = paste0(dir, "/", settings$edirName)
+        dir.create(file.path(edir), showWarnings = TRUE)
+        
         exam$exerciseNames = as.list(make.unique(unlist(exam$exerciseNames), sep="_"))
         exerciseFiles = unlist(lapply(setNames(seq_along(exam$exerciseNames), exam$exerciseNames), function(i){
-          file = paste0(dir, "/", exam$exerciseNames[[i]], ".", exam$exerciseExts[[i]])
+          file = paste0(edir, "/", exam$exerciseNames[[i]], ".", exam$exerciseExts[[i]])
           writeLines(text=gsub("\r\n", "\n", exam$exerciseCodes[[i]]), con=file, sep="")
           
           return(file)
@@ -265,6 +270,7 @@ source("source/tryCatch.R")
         
         examFields = list(
           file = exercises,
+          edir = edir,
           n = numberOfExams,
           nsamp = exercisesPerBlock,
           name = name,
@@ -306,6 +312,7 @@ source("source/tryCatch.R")
           # create exam html preview with solutions
           set.seed(1)
           exams::exams2html(file = file,
+                            edir = edir,
                             n = n,
                             nsamp = nsamp,
                             name = name,
@@ -315,6 +322,7 @@ source("source/tryCatch.R")
           # create exam
           set.seed(1)
           exams::exams2nops(file = file,
+                            edir = edir,
                             n = n,
                             nsamp = nsamp,
                             name = name,
@@ -698,6 +706,8 @@ source("source/tryCatch.R")
           # add additional exercise columns
           exerciseTable = as.data.frame(Reduce(rbind, lapply(evaluationData$exam, \(exam) {
             exerciseNames = Reduce(cbind, lapply(solutionData[[as.character(exam)]], \(exercise) exercise$metainfo$file))
+            if(grepl(paste0(edirName, "_"), exerciseNames)) 
+              exerciseNames = strsplit(exerciseNames, paste0(edirName, "_"))[[1]][2]
           })))
           
           names(exerciseTable) = paste0("exercise.", 1:ncol(exerciseTable))
@@ -750,6 +760,8 @@ source("source/tryCatch.R")
       evaluationResultsData = read.csv2(result$preparedEvaluation$files$nops_evaluationCsv)
       
       exerciseNames = unique(unlist(evaluationResultsData[,grepl("exercise.*", names(evaluationResultsData))]))
+      if(grepl(paste0(edirName, "_"), exerciseNames)) 
+         exerciseNames = strsplit(exerciseNames, paste0(edirName, "_"))[[1]][2]
       
       exercisePoints = Reduce(rbind, lapply(exerciseNames, \(exercise){
         summary(apply(evaluationResultsData, 1, \(participant){
@@ -842,6 +854,7 @@ source("source/tryCatch.R")
 
 # PARAMETERS --------------------------------------------------------------
   # REXAMS ------------------------------------------------------------------
+  edirName = "exercises"
   exerciseMin = 1
   exerciseMax = 45
   seedMin = 1
@@ -1085,7 +1098,8 @@ server = function(input, output, session) {
   examCreation = eventReactive(input$createExam, {
     startWait(session)
     
-    settings = list(exerciseMin=exerciseMin,
+    settings = list(edirName=edirName,
+                    exerciseMin=exerciseMin,
                     exerciseMax=exerciseMax,
                     seedMin=seedMin,
                     seedMax=seedMax)

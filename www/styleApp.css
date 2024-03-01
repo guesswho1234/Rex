@@ -765,6 +765,7 @@ main > * {
 #difficulty span,
 #points span,
 #topic span,
+#section span,
 #tags span {
 	margin: 5px;
 	padding: 3px;

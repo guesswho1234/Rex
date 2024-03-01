@@ -1197,6 +1197,7 @@ function createExercise(exerciseID, name='exercise',
 							precision=null,
 							points=1,
 							tags=null,
+							section=null,
 							figure=null){
 	rex.exercises[exerciseID]['file'] = file;
 	rex.exercises[exerciseID]['ext'] = ext;
@@ -1221,6 +1222,7 @@ function createExercise(exerciseID, name='exercise',
 	rex.exercises[exerciseID]['statusCode'] = statusCode;	
 	rex.exercises[exerciseID]['editable'] = editable;
 	rex.exercises[exerciseID]['block'] = block;
+	rex.exercises[exerciseID]['section'] = section;
 	rex.exercises[exerciseID]['figure'] = figure;
 	
 	if( file === null) {
@@ -1640,6 +1642,13 @@ function loadExerciseFromObject(exerciseID) {
 		setExerciseFieldFromObject(field, content);
 	}
 	
+	if(rex.exercises[exerciseID].section !== null) {
+		const field = 'section';
+		const content = '<span>' + rex.exercises[exerciseID][field] + '</span>';
+		
+		setExerciseFieldFromObject(field, content);
+	}
+	
 	if(rex.exercises[exerciseID].tags !== null) {
 		const field = 'tags';
 		const content = rex.exercises[exerciseID][field].map(i => '<span>' + i + '</span>').join('');
@@ -1668,6 +1677,11 @@ function setSimpleExerciseFileContents(exerciseID){
 	fileText = fileText.replace("?rnwTemplate_points", rex.exercises[exerciseID].points);
 	fileText = fileText.replace("?rnwTemplate_topic", rex.exercises[exerciseID].topic);
 	fileText = fileText.replace("?rnwTemplate_figure", rex.exercises[exerciseID].figure !== null ? 'c(' + rex.exercises[exerciseID].figure.map(c=>'"' + c + '"').join(',') + ')' : '""');
+		
+	// placeholder - not implemented for editabel tasks
+	fileText = fileText.replace("?rnwTemplate_tag", 'NULL');
+	fileText = fileText.replace("?rnwTemplate_section", 'NULL');
+	
 	fileText = fileText.replaceAll("\n", "\r\n");
 
 	rex.exercises[exerciseID].file = fileText;
@@ -1924,6 +1938,10 @@ Shiny.addCustomMessageHandler('setExerciseQuestion', function(exerciseQuestion) 
 
 Shiny.addCustomMessageHandler('setExerciseQuestionRaw', function(exerciseQuestionRaw) {
 	rex.exercises[getID()].question_raw = exerciseQuestionRaw;
+});
+
+Shiny.addCustomMessageHandler('setExerciseSection', function(exerciseSection) {
+	rex.exercises[getID()].section = exerciseSection;
 });
 
 Shiny.addCustomMessageHandler('setExerciseFigure', function(jsonData) {

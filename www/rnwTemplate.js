@@ -45,4 +45,6 @@ exams::answerlist(rnwTemplate_solutionNotes)
 %% META-INFORMATION
 %% \\extype{?rnwTemplate_type}
 %% \\exsolution{\\Sexpr{exams::mchoice2string(rnwTemplate_solutions)}}
-%% \\expoints{?rnwTemplate_points}`
+%% \\expoints{?rnwTemplate_points}
+%% \\exsection{?rnwTemplate_section}
+%% \\extag{?rnwTemplate_tag}`

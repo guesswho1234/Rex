@@ -101,3 +101,5 @@ exams::answerlist(ifelse(solutions, "Richtig", "Falsch"))
 %% \extype{mchoice}
 %% \exsolution{\Sexpr{exams::mchoice2string(solutions)}}
 %% \expoints{\Sexpr{iuftools::getDifficulty(diff)}}
+%% \exsection{test/test}
+%% \extag{test=1|test2|test}
