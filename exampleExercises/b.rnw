@@ -9,7 +9,7 @@
 rnwTemplate_question="b";
 rnwTemplate_choices=c("b1","b2");
 rnwTemplate_solutions=c(F,T);
-rnwTemplate_points=1;
+rnwTemplate_solutionNotes=c("","");
 rnwTemplate_showFigure=TRUE;
 rnwTemplate_figure="";
 rnwTemplate_maxChoices=5;
@@ -39,10 +39,12 @@ exams::answerlist(rnwTemplate_choices)
 
 \begin{solution}
 <<echo=FALSE, results=tex>>=
-exams::answerlist(ifelse(rnwTemplate_solutions, "Richtig", "Falsch"))
+exams::answerlist(rnwTemplate_solutionNotes)
 @
 \end{solution}
 %% META-INFORMATION
 %% \extype{mchoice}
 %% \exsolution{\Sexpr{exams::mchoice2string(rnwTemplate_solutions)}}
-%% \expoints{\Sexpr{rnwTemplate_points}}
+%% \expoints{1}
+%% \exsection{}
+%% \extag{}

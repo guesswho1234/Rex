@@ -652,7 +652,7 @@ source("source/tryCatch.R")
     }
   }
   
-  evaluateExamFinalize = function(preparedEvaluation, proceedEvaluation, collectWarnings, dir){
+  evaluateExamFinalize = function(preparedEvaluation, proceedEvaluation, settings, collectWarnings, dir){
     out = tryCatch({
       warnings = collectWarnings({
         # process scanData
@@ -706,8 +706,8 @@ source("source/tryCatch.R")
           # add additional exercise columns
           exerciseTable = as.data.frame(Reduce(rbind, lapply(evaluationData$exam, \(exam) {
             exerciseNames = Reduce(cbind, lapply(solutionData[[as.character(exam)]], \(exercise) exercise$metainfo$file))
-            if(grepl(paste0(edirName, "_"), exerciseNames)) 
-              exerciseNames = strsplit(exerciseNames, paste0(edirName, "_"))[[1]][2]
+            if(all(grepl(paste0(settings$edirName, "_"), exerciseNames))) 
+              exerciseNames = sapply(strsplit(exerciseNames, paste0(settings$edirName, "_")), \(name) name[2])
           })))
           
           names(exerciseTable) = paste0("exercise.", 1:ncol(exerciseTable))
@@ -760,8 +760,8 @@ source("source/tryCatch.R")
       evaluationResultsData = read.csv2(result$preparedEvaluation$files$nops_evaluationCsv)
       
       exerciseNames = unique(unlist(evaluationResultsData[,grepl("exercise.*", names(evaluationResultsData))]))
-      if(grepl(paste0(edirName, "_"), exerciseNames)) 
-         exerciseNames = strsplit(exerciseNames, paste0(edirName, "_"))[[1]][2]
+      if(all(grepl(paste0(edirName, "_"), exerciseNames)) )
+        exerciseNames = sapply(strsplit(exerciseNames, paste0(edirName, "_")), \(name) name[2])
       
       exercisePoints = Reduce(rbind, lapply(exerciseNames, \(exercise){
         summary(apply(evaluationResultsData, 1, \(participant){
@@ -1175,11 +1175,13 @@ server = function(input, output, session) {
   examFinalizeEvaluation = eventReactive(input$proceedEvaluation, {
     dir = getDir(session)
     removeModal()
+    
+    settings = list(edirName=edirName)
 
     # background exercise
     x = callr::r_bg(
       func = evaluateExamFinalize,
-      args = list(isolate(examScanEvaluationData()$preparedEvaluation), isolate(input$proceedEvaluation), collectWarnings, dir),
+      args = list(isolate(examScanEvaluationData()$preparedEvaluation), isolate(input$proceedEvaluation), settings, collectWarnings, dir),
       supervise = TRUE
     )
 

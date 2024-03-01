@@ -1133,6 +1133,8 @@ function loadExercise(file, block = 1) {
 const d_exerciseName = 'Name';
 const d_questionText = 'Text';
 const d_choiceText = 'Text';
+const d_topicText = 'Text';
+const d_sectionText = 'Text';
 const d_solution = false;
 const d_solutionNoteText = "";
 
@@ -1151,7 +1153,8 @@ function newSimpleExercise(file = '', block = 1) {
 					       true,
 						   "mchoice",
 						   block,
-						   'Text');
+						   d_topicText,
+						   d_sectionText);
 		viewExercise(exerciseID);
 }
 
@@ -1190,6 +1193,7 @@ function createExercise(exerciseID, name='exercise',
 							type=null,
 							block=1,
 							topic=null,
+							section=null,
 							seed=null, 
 						    exam=false, 
 							examHistory=null,
@@ -1197,7 +1201,6 @@ function createExercise(exerciseID, name='exercise',
 							precision=null,
 							points=1,
 							tags=null,
-							section=null,
 							figure=null){
 	rex.exercises[exerciseID]['file'] = file;
 	rex.exercises[exerciseID]['ext'] = ext;
@@ -1418,7 +1421,7 @@ $('body').on('focus', '[contenteditable]', function() {
 			
 		if ($this.hasClass('exerciseNameText')) {
 			content = contenteditable_getPlain(content);
-			content = contentTextSanitize(content, true);
+			content = contentFileNameSanitize(content);
 			
 			$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseName').text(content);
 			rex.exercises[exerciseID].name = content;
@@ -1462,6 +1465,13 @@ $('body').on('focus', '[contenteditable]', function() {
 			
 			rex.exercises[exerciseID].topic = content;
 		}
+		
+		if ($this.hasClass('sectionText')) {
+			content = contenteditable_getPlain(content);
+			content = contentSectionSanitize(content);
+			
+			rex.exercises[exerciseID].section = content;
+		}
 
 		$this.html(content);
 		
@@ -1503,11 +1513,16 @@ function contenteditable_getSpecial(content) {
 	return content;
 }
 
-function contentTextSanitize(content, isFileName=false){
-	if(!isFileName)
-		return content.replace(/[^a-z0-9\_\- \u00c4\u00e4\u00d6\u00f6\u00dc\u00fc\u00df]/gi, '');
-	
+function contentTextSanitize(content){
 	return content.replace(/[^a-z0-9\_\-]/gi, '');
+}
+
+function contentFileNameSanitize(content){
+	return content.replace(/[^a-z0-9\_\- \u00c4\u00e4\u00d6\u00f6\u00dc\u00fc\u00df]/gi, '');
+}
+
+function contentSectionSanitize(content){
+	return content.replace(/[^a-z0-9\_\-\/]/gi, '');
 }
 
 //latex test string: $ % & \ ^ _ { } ~ #
@@ -1644,7 +1659,7 @@ function loadExerciseFromObject(exerciseID) {
 	
 	if(rex.exercises[exerciseID].section !== null) {
 		const field = 'section';
-		const content = '<span>' + rex.exercises[exerciseID][field] + '</span>';
+		const content = '<span class="sectionText" contenteditable="' + editable + '" spellcheck="false">' + rex.exercises[exerciseID][field] + '</span>';
 		
 		setExerciseFieldFromObject(field, content);
 	}
@@ -1676,11 +1691,11 @@ function setSimpleExerciseFileContents(exerciseID){
 	fileText = fileText.replace("?rnwTemplate_solutionNotes", 'c(' + rex.exercises[exerciseID].solutionNotes_raw.map(c=>'"' + c.replaceAll('\\', '\\\\') + '"').join(',') + ')');
 	fileText = fileText.replace("?rnwTemplate_points", rex.exercises[exerciseID].points);
 	fileText = fileText.replace("?rnwTemplate_topic", rex.exercises[exerciseID].topic);
+	fileText = fileText.replace("?rnwTemplate_section", rex.exercises[exerciseID].section);
 	fileText = fileText.replace("?rnwTemplate_figure", rex.exercises[exerciseID].figure !== null ? 'c(' + rex.exercises[exerciseID].figure.map(c=>'"' + c + '"').join(',') + ')' : '""');
 		
-	// placeholder - not implemented for editabel tasks
-	fileText = fileText.replace("?rnwTemplate_tag", 'NULL');
-	fileText = fileText.replace("?rnwTemplate_section", 'NULL');
+	// placeholder - not yet implemented for editabel tasks
+	fileText = fileText.replace("?rnwTemplate_tag", '');
 	
 	fileText = fileText.replaceAll("\n", "\r\n");
 
