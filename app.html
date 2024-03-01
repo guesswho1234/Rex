@@ -422,35 +422,19 @@
 							{{ checkboxInput_mark }}
 						</div>
 						<div>
-							<label for="marks"><span lang="de">Notenschlüssel</span><span lang="en">Grading key</span></label>
+							<label for="gradingKey"><span lang="de">Notenschlüssel</span><span lang="en">Grading key</span></label>
 
 							</br>
 							<span class="infoField"><span lang="de">Zahlen kleiner als 1 werden als Prozent gewertet. Werte werden nicht gerundet. Schwellenwerte zählen noch zur Note der selben Zeile.</span><span lang="en">Numbers smaller than 1 are evaluated as percent. Values are not rounded. Thresholds count towards the mark of the same row.</span></span>
-							<table id="marks">
+							<table id="gradingKey">
 								<tr>
 									<th><span lang="de">Punkte</span><span lang="en">Points</span></th>
 									<th><span lang="de">Note</span><span lang="en">Mark</span></th>
+									<th></th>
 								</tr>
-								<tr>
-									<td>{{ textInput_markThreshold1 }}</td>
-									<td>{{ textInput_markLabel1 }}</td>
-								</tr>
-								<tr>
-									<td>{{ textInput_markThreshold2 }}</td>
-									<td>{{ textInput_markLabel2 }}</td>
-								</tr>
-								<tr>
-									<td>{{ textInput_markThreshold3 }}</td>
-									<td>{{ textInput_markLabel3 }}</td>
-								</tr>
-								<tr>
-									<td>{{ textInput_markThreshold4 }}</td>
-									<td>{{ textInput_markLabel4 }}</td>
-								</tr>
-								<tr>
-									<td>{{ textInput_markThreshold5 }}</td>
-									<td>{{ textInput_markLabel5 }}</td>
-								</tr>
+								
+								{{ gradingKey }}
+								
 							</table>
 						</div>
 						<div>

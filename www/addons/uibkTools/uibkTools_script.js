@@ -15,6 +15,13 @@ function setDefaultValue(field, value){
 }
 
 setDefaultValue("examInstitution", "Universität Innsbruck");
+
+setDefaultValue("markThreshold1", 0);
+setDefaultValue("markThreshold2", 0.5);
+setDefaultValue("markThreshold3", 0.6);
+setDefaultValue("markThreshold4", 0.75);
+setDefaultValue("markThreshold5", 0.85);
+
 setDefaultValue("markLabel1", "NGD5");
 setDefaultValue("markLabel2", "GEN4");
 setDefaultValue("markLabel3", "BEF3");

@@ -972,6 +972,8 @@ server = function(input, output, session) {
       checkboxInput_negativePoints = checkboxInput("negativePoints", label = NULL, value = NULL),
       selectInput_rule = selectInput("rule", label = NULL, choices = rules, selected = NULL, multiple = FALSE),
       checkboxInput_mark = checkboxInput("mark", label = NULL, value = TRUE), 
+      
+      gradingKey = myGradingKey(5),
     
       textInput_markThreshold1 = disabled(textInput("markThreshold1", label = NULL, value = 0)),
       textInput_markLabel1 = textInput("markLabel1", label = NULL, value = NULL),
@@ -1141,10 +1143,26 @@ server = function(input, output, session) {
   # EVALUATE EXAM -------------------------------------------------------------
   examScanEvaluationData = reactiveVal()
   examFinalizeEvaluationData = reactiveVal()
-
+  
+  # add / remove grading key item
+  observeEvent(input$addGradingKeyitem, {
+    gradingKeyItemID = isolate(input$addGradingKeyitem)
+    newGradingKeyItem = myGradingkeyItem(gradingKeyItemID)
+    
+    insertUI(selector='#gradingKey tbody', where = "beforeEnd", ui=HTML(newGradingKeyItem), immediate = TRUE)
+  })
+  
+  observeEvent(input$removeGradingKeyItem, {
+    gradingKeyItem = isolate(input$removeGradingKeyItem)
+    
+    removeUI(selector=gradingKeyItem, immediate = TRUE)
+  })
+  
   # evaluate scans - trigger
   examScanEvaluation = eventReactive(input$evaluateExam, {
     startWait(session)
+    
+    print(reactiveValuesToList(input))
 
     # background exercise
     x = callr::r_bg(

@@ -1084,26 +1084,36 @@ main > * {
 	margin: auto;
 }
 
-#marks {
-	width: 300px;
-}
-
-#marks tr td:first-of-type {
-	width: 100px;
-}
-
-#marks tr td:last-of-type {
+#gradingKey tr td {
 	width: 200px;
 }
 
-#marks td > * {
+#gradingKey tr th:first-of-type,
+#gradingKey tr td:first-of-type {
+	width: 100px;
+}
+
+#gradingKey tr th:last-of-type,
+#gradingKey tr td:last-of-type {
+	width: 200px;
+}
+
+#gradingKey td > * {
 	width: unset !important;
 }
 
-#marks tr > th:last-of-type,
-#marks tr > td:last-of-type {
-	margin-left: 10px;
-	display: block;
+#gradingKey tr > th:not(:last-of-type),
+#gradingKey tr > td:not(:last-of-type) {
+	margin-right: 10px;
+	display: inline-block;
+}
+
+#gradingKey .modifyGradingkeyItems {
+	display:none;
+}
+
+#gradingKey .removable:last-of-type .modifyGradingkeyItems {
+	display:block;
 }
 
 #figure,

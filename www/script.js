@@ -1921,11 +1921,6 @@ Shiny.addCustomMessageHandler('setExerciseExamHistory', function(jsonData) {
 	rex.exercises[getID()].examHistory = examHistory;
 });
 
-Shiny.addCustomMessageHandler('setExerciseAuthoredBy', function(jsonData) {
-	const exerciseAuthors = JSON.parse(jsonData);
-	rex.exercises[getID()].authoredBy = exerciseAuthors;
-});
-
 Shiny.addCustomMessageHandler('seExercisetPrecision', function(exercisePrecision) {
 	rex.exercises[getID()].precision = exercisePrecision;
 });
@@ -2360,41 +2355,29 @@ $("#fixedPointsExamEvaluate").change(function(){
 	$(this).val(getIntegerInput(1, null, null, $(this).val()));
 }); 
 
-$("#markThreshold2").change(function(){
-	$(this).val(getFloatInput(0, null, 0.5, $(this).val()));
+$('#gradingKey').on('click', '.addGradingKeyItem', function() {
+	addGradingKeyItem();
+});
+
+$('#gradingKey').on('click', '.removeGradingKeyItem', function() {
+	removeGradingKeyItem();
+});
+ 
+function addGradingKeyItem() {
+	Shiny.onInputChange("addGradingKeyitem", $('#gradingKey .gradingKeyItem:last-of-type').index()+1, {priority: 'event'});
+}
+
+function removeGradingKeyItem() {
+	Shiny.onInputChange("removeGradingKeyItem", '#gradingKey .gradingKeyItem:last-of-type', {priority: 'event'});
+}
+
+$(".markThreshold").change(function(){
+	$(this).val(getFloatInput(0, null, 0, $(this).val()));
 }); 
 
-$("#markThreshold3").change(function(){
-	$(this).val(getFloatInput(0, null, 0.6, $(this).val()));
-}); 
-
-$("#markThreshold4").change(function(){
-	$(this).val(getFloatInput(0, null, 0.75, $(this).val()));
-}); 
-
-$("#markThreshold5").change(function(){
-	$(this).val(getFloatInput(0, null, 0.85, $(this).val()));
-}); 
-
-$("#markLabel1").change(function(){
+$(".markLabel").change(function(){
 	$(this).val(contentTextSanitize($(this).val()));
-}); 
-
-$("#markLabel2").change(function(){
-	$(this).val(contentTextSanitize($(this).val()));
-}); 
-
-$("#markLabel3").change(function(){
-	$(this).val(contentTextSanitize($(this).val()));
-}); 
-
-$("#markLabel4").change(function(){
-	$(this).val(contentTextSanitize($(this).val()));
-}); 
-
-$("#markLabel5").change(function(){
-	$(this).val(contentTextSanitize($(this).val()));
-}); 
+});
 
 $('body').on('change', '#inputSheetID', function() {
 	$(this).val(getIntegerInput(0, 99999999999, 0, $(this).val()));
