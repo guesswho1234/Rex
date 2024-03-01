@@ -1342,13 +1342,13 @@ $('#exercise_info').on('click', '.editType', function(e) {
 $('#exercise_info').on('click', '.editTrueFalse', function(e) {
 	const exerciseID = getID();
 	invalidateAfterEdit(exerciseID);
-	const newValue = rex.exercises[exerciseID].solution[$(this).index('.choiceSolution')] !== true;
+	const newValue = rex.exercises[exerciseID].solution[$(this).index('.solution')] !== true;
 		
-	$(this).removeClass("truechoiceSolution");
-	$(this).removeClass("falsechoiceSolution");
-	$(this).addClass(newValue + "choiceSolution");
+	$(this).removeClass("trueSolution");
+	$(this).removeClass("falseSolution");
+	$(this).addClass(newValue + "Solution");
 		
-	rex.exercises[exerciseID].solution[$(this).index('.choiceSolution')] = newValue;
+	rex.exercises[exerciseID].solution[$(this).index('.solution')] = newValue;
 	$(this).html(getTrueFalseText(newValue));
 	
 	setSimpleExerciseFileContents(exerciseID);	
