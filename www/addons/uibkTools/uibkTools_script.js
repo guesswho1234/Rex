@@ -2,9 +2,9 @@
 DATA
 -------------------------------------------------------------- */
 let uibkTools = new Object();
-uibkTools['visParticipantLists'] = new Array();
-uibkTools['rexEvaluationLists'] = new Array(); 
-uibkTools['visGradingLists'] = new Array();
+uibkTools['visParticipants'] = new Array();
+uibkTools['rexEvaluation'] = new Array(); 
+uibkTools['visGrading'] = new Array();
 
 /* --------------------------------------------------------------
 ADDON DEFAULT INPUT VALUES
@@ -31,17 +31,17 @@ setDefaultValue("markLabel5", "SGT1");
 /* --------------------------------------------------------------
 VIS PARTICIPANT FILES
 -------------------------------------------------------------- */
-function loadVisParticipantListsFileDialog(items) {
+function visParticipantsFileDialog(items) {
 	Array.from(items).forEach(file => {	
 		const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
 			
 		if(fileExt == 'csv') {
-			addVisParticipantListFile(file);
+			addVisParticipantsFile(file);
 		}
 	});
 }
 
-function addVisParticipantListFile(file) {
+function addVisParticipantsFile(file) {
 	const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
 	
 	let fileReader;
@@ -54,26 +54,26 @@ function addVisParticipantListFile(file) {
 			
 			fileReader.onload = function(fileLoadedEvent) {
 				csv = fileLoadedEvent.target.result;
-				uibkTools['visParticipantLists'].push([fileName, fileExt, csv]);
+				uibkTools['visParticipants'].push([fileName, fileExt, csv]);
 			};
 
 			fileReader.readAsText(file);
 			
-			$('#visParticipantListFile_list_items').append('<div class="visParticipantListFileItem"><span class="visParticipantListFileName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
+			$('#visParticipantsFiles_list_items').append('<div class="visParticipantsFileItem"><span class="visParticipantsFileName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
 			break;
 	}
 }
 
-$('#visParticipantListFile_list_items').on('click', '.visParticipantListFileItem', function() {
-	const fileID = $(this).index('.visParticipantListFileItem');
-	uibkTools['visParticipantLists'].splice(fileID, 1);
+$('#visParticipantsFiles_list_items').on('click', '.visParticipantsFileItem', function() {
+	const fileID = $(this).index('.visParticipantsFileItem');
+	uibkTools['visParticipants'].splice(fileID, 1);
 	$(this).remove();
 });
 
 /* --------------------------------------------------------------
 REX EVALUATION FILES
 -------------------------------------------------------------- */
-function loadRexEvaluationListsFileDialog(items) {
+function rexEvaluationFileDialog(items) {
 	Array.from(items).forEach(file => {	
 		const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
 			
@@ -96,19 +96,19 @@ function addRexEvaluationListFile(file) {
 
 			fileReader.onload = function(fileLoadedEvent) {
 				csv = fileLoadedEvent.target.result;
-				uibkTools['rexEvaluationLists'].push([fileName, fileExt, csv]);
+				uibkTools['rexEvaluation'].push([fileName, fileExt, csv]);
 			};
 
 			fileReader.readAsText(file);
 			
-			$('#rexEvaluationListFile_list_items').append('<div class="rexEvaluationListFileItem"><span class="rexEvaluationListFileName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
+			$('#rexEvaluationFiles_list_items').append('<div class="rexEvaluationFileItem"><span class="rexEvaluationFileName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
 			break;
 	}
 }
 
-$('#rexEvaluationListFile_list_items').on('click', '.rexEvaluationListFileItem', function() {
-	const fileID = $(this).index('.rexEvaluationListFileItem');
-	uibkTools['rexEvaluationLists'].splice(fileID, 1);
+$('#rexEvaluationFiles_list_items').on('click', '.rexEvaluationFileItem', function() {
+	const fileID = $(this).index('.rexEvaluationFileItem');
+	uibkTools['rexEvaluation'].splice(fileID, 1);
 	$(this).remove();
 });
 
@@ -116,17 +116,17 @@ $('#rexEvaluationListFile_list_items').on('click', '.rexEvaluationListFileItem',
 /* --------------------------------------------------------------
 VIS GRADING FILES
 -------------------------------------------------------------- */
-function loadvisGradingListsFileDialog(items) {
+function visGradingFileDialog(items) {
 	Array.from(items).forEach(file => {	
 		const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
 			
 		if(fileExt == 'csv') {
-			addVisGradingListFile(file);
+			addVisGradingFile(file);
 		}
 	});
 }
 
-function addVisGradingListFile(file) {
+function addVisGradingFile(file) {
 	const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
 	
 	let fileReader;
@@ -139,34 +139,34 @@ function addVisGradingListFile(file) {
 
 			fileReader.onload = function(fileLoadedEvent) {
 				csv = fileLoadedEvent.target.result;
-				uibkTools['visGradingLists'].push([fileName, fileExt, csv]);
+				uibkTools['visGrading'].push([fileName, fileExt, csv]);
 			};
 
 			fileReader.readAsText(file);
 			
-			$('#visGradingListFile_list_items').append('<div class="visGradingListFileItem"><span class="visGradingListFileName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
+			$('#visGradingFiles_list_items').append('<div class="visGradingFileItem"><span class="visGradingFileName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
 			break;
 	}
 }
 
-$('#visGradingListFile_list_items').on('click', '.visGradingListFileItem', function() {
-	const fileID = $(this).index('.visParticipantListFileItem');
-	uibkTools['visGradingLists'].splice(fileID, 1);
+$('#visGradingFiles_list_items').on('click', '.visGradingFileItem', function() {
+	const fileID = $(this).index('.visParticipantsFileItem');
+	uibkTools['visGrading'].splice(fileID, 1);
 	$(this).remove();
 });
 
 
 /* --------------------------------------------------------------
-DOWNLOAD CONVERTED LISTS
+DOWNLOAD CONVERTED FILES
 -------------------------------------------------------------- */
-$('body').on('click', '#createRexParticipantsList-uibkToolsDl', function() {
-	Shiny.onInputChange("callAddonFunction", {func: "createRexParticipantsList", args: uibkTools['visParticipantLists']}, {priority: 'event'});
+$('body').on('click', '#createRexParticipantFiles-uibkToolsDl', function() {
+	Shiny.onInputChange("callAddonFunction", {func: "createRexParticipantFiles", args: uibkTools['visParticipants']}, {priority: 'event'});
 });
 
-$('body').on('click', '#createOlatEvalList-uibkToolsDl', function() {
-	Shiny.onInputChange("callAddonFunction", {func: "createOlatEvalList", args: uibkTools['rexEvaluationLists']}, {priority: 'event'});
+$('body').on('click', '#createOlatEvaluationFiles-uibkToolsDl', function() {
+	Shiny.onInputChange("callAddonFunction", {func: "createOlatEvaluationFiles", args: uibkTools['rexEvaluation']}, {priority: 'event'});
 });
 
-$('body').on('click', '#createGradingLists-uibkToolsDl', function() {
-	Shiny.onInputChange("callAddonFunction", {func: "createGradingLists", args: {rexEvaluationLists: uibkTools['rexEvaluationLists'], visGradingLists: uibkTools['visGradingLists']}}, {priority: 'event'});
+$('body').on('click', '#createGradingFiles-uibkToolsDl', function() {
+	Shiny.onInputChange("callAddonFunction", {func: "createGradingFiles", args: {rexEvaluationLists: uibkTools['rexEvaluation'], visGradingLists: uibkTools['visGrading']}}, {priority: 'event'});
 });

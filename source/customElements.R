@@ -43,4 +43,37 @@ myGradingkeyItem = function(index) {
   itemRemoveItem = paste0('<td><div class="form-group modifyGradingkeyItems"><span class="modifyGradingkeyItemButtons"><button type="button" class="removeGradingKeyItem btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></button><button type="button" class="addGradingKeyItem btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-plus"></i></span><span class="textButton"><span style="" lang="de">Hinzufügen</span><span lang="en">Add</span></span></button></span></div></td>')
   
   gradingKeyItem = paste0('<tr class="', itemClasses , '">', itemThresholdItem, itemMarkItem, itemRemoveItem, '</tr>')
+  
+  return(gradingKeyItem)
+}
+
+myFileImport = function(name, sectionClass) {
+	idContainer = paste0(name, "Container")
+	idInput = paste0("file-upload_", name)
+	idFiles = paste0(name, "Files")
+	idFileList = paste0(name, "Files_list")
+	idFileListItems = paste0(name, "Files_list_items")
+	labelClass = paste0(sectionClass, "FileUpload")
+	buttonClass = paste0(sectionClass, "FileButton")
+	javascriptFunction = paste0(name, "FileDialog(this.files);")
+
+	fileImport = paste0('',
+	'<div id="', idContainer, '">',
+		'<label class="', labelClass, '" for="', idInput, '">',
+			'<div class="', buttonClass, '">',
+				'<span class="iconButton"><i class="fa-solid fa-upload"></i></span>',
+				'<span class="textButton"><span lang="de">Importieren</span><span lang="en">Import</span></span>',
+			'</div>',
+			'<input type="file" id="', idInput, '" onchange="', javascriptFunction, '" multiple>',
+		'</label>',
+		'<div id="', idFiles, '">',
+			'<div id="', idFileList, '" class="itemList">',
+				'<div id="', idFileListItems, '">',
+				'</div>',
+			'</div>',
+		'</div>',
+	'</div>'
+	)
+	
+	return(HTML(fileImport))
 }

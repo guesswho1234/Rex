@@ -1113,7 +1113,7 @@ function loadExercisesDnD(items) {
 	});
 }
 
-function loadExercisesFileDialog(items) {	
+function exercisesFileDialog(items) {	
 	Array.from(items).forEach(file => {	
 		loadExercise(file);
 	});
@@ -1316,7 +1316,13 @@ function resetOutputFields() {
 			      'tags'];
 			  
 	fields.forEach(field => {	
-		$('#' + field).html('');
+		if(field == 'figure') {
+			$('#exerciseFigureFiles_list_items').empty();
+		} else {
+			$('#' + field).html('');
+		}
+		
+		$('#' + field + '-info').hide();
 		$('#' + field).hide();
 		$('label[for="'+ field +'"]').hide();
 	});	
@@ -1597,7 +1603,7 @@ function loadExerciseFromObject(exerciseID) {
 		
 		const imgContet = rex.exercises[exerciseID].figure !== null ? '<div class="exerciseFigureItem"><span class="exerciseFigureName"><img src="data:image/png;base64, ' + rex.exercises[exerciseID][field][2] + '"/></span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>' : '';
 		
-		const content = '<label class="exerciseFigureUpload" for="file-upload_exerciseFigure"><div class="exerciseFigureButton"><span class="iconButton"><i class="fa-solid fa-upload"></i></span><span class="textButton"><span lang="de">Importieren</span><span lang="en">Import</span></span></div><input type="file" id="file-upload_exerciseFigure" onchange="loadExerciseFigureFileDialog(this.files);" multiple="" class="shiny-bound-input"></label><div id="exerciseFigureFiles"><div id="exerciseFigure_list" class="itemList"><div id="exerciseFigure_list_items">' + imgContet + '</div></div></div></div>';
+		const content = '<div id="exerciseFigureFiles_list_items">' + imgContet + '</div>';
 		
 		setExerciseFieldFromObject(field, content);
 	}
@@ -1703,7 +1709,14 @@ function setSimpleExerciseFileContents(exerciseID){
 }
 
 function setExerciseFieldFromObject(field, content) {
-	$('#' + field).html(content);
+	if(field == 'figure') {
+		$('#exerciseFigureFiles_list_items').empty();
+		$('#exerciseFigureFiles_list_items').append(content);
+	} else {
+		$('#' + field).html(content);
+	}
+			
+	$('#' + field + '-info').show();
 	$('#' + field).show();
 	if($('label[for="'+ field +'"]').length > 0) $('label[for="'+ field +'"]').show();
 }
@@ -1852,7 +1865,7 @@ $('#exercise_info').on('click', '.removeAnswer', function() {
 	loadExerciseFromObject(exerciseID);
 });
 
-function loadExerciseFigureFileDialog(items) {+	
+function exerciseFigureFileDialog(items) {+	
 	Array.from(items).forEach(file => {	
 		const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
 			
@@ -1879,8 +1892,8 @@ function addExerciseFigureFile(file) {
 			base64 = fileLoadedEvent.target.result;
 			rex.exercises[exerciseID].figure = [fileName, fileExt, base64.split(',')[1]];
 			
-			$('#figure').empty();
-			$('#figure').append('<label class="exerciseFigureUpload" for="file-upload_exerciseFigure"><div class="exerciseFigureButton"><span class="iconButton"><i class="fa-solid fa-upload"></i></span><span class="textButton"><span lang="de">Importieren</span><span lang="en">Import</span></span></div><input type="file" id="file-upload_exerciseFigure" onchange="loadExerciseFigureFileDialog(this.files);" multiple="" class="shiny-bound-input"></label><div id="exerciseFigureFiles"><div id="exerciseFigure_list" class="itemList"><div id="exerciseFigure_list_items"><div class="exerciseFigureItem"><span class="exerciseFigureName"><img src="data:image/png;base64, ' + rex.exercises[getID()].figure[2] + '"/></span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div></div></div></div></div>');
+			$('#exerciseFigureFiles_list_items').empty();
+			$('#exerciseFigureFiles_list_items').append('<div class="exerciseFigureItem"><span class="exerciseFigureName"><img src="data:image/png;base64, ' + rex.exercises[getID()].figure[2] + '"/></span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
 			
 			setSimpleExerciseFileContents(exerciseID);
 			loadExerciseFromObject(exerciseID);
@@ -1900,7 +1913,7 @@ function removeExerciseFigure(element) {
 	loadExerciseFromObject(exerciseID);
 }
 
-$('#figure').on('click', '.exerciseFigureItem', function() {
+$('#exerciseFigureFiles_list_items').on('click', '.exerciseFigureItem', function() {
 	removeExerciseFigure($(this));
 });
 
@@ -2077,22 +2090,22 @@ let dndAdditionalPdf = {
 function loadAdditionalPdfDnD(items) {	
 	getFilesDataTransferItems(items).then(async (files) => {
 		Array.from(files).forEach(file => {	
-			addAdditionalPdf(file);
+			additionalPdf(file);
 		});
 	});
 }
 
-function loadAdditionalPdfFileDialog(items) {
+function additionalPdfFileDialog(items) {
 	Array.from(items).forEach(file => {	
 		const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
 			
 		if( fileExt == 'pdf') {
-			addAdditionalPdf(file);
+			additionalPdf(file);
 		}
 	});
 }
 
-function addAdditionalPdf(file) {
+function additionalPdf(file) {
 	const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
 	
 	if ( fileExt == 'pdf') {
@@ -2107,7 +2120,7 @@ function addAdditionalPdf(file) {
 
 		fileReader.readAsDataURL(file);
 		
-		$('#additionalPdf_list_items').append('<div class="additionalPdfItem"><span class="additionalPdfName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
+		$('#additionalPdfFiles_list_items').append('<div class="additionalPdfItem"><span class="additionalPdfName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
 	}
 }
 
@@ -2122,7 +2135,7 @@ $('#seedValueExam').change(function(){
 	Shiny.onInputChange("seedValueExam", $('#seedValueExam').val());
 }); 
 
-$('#additionalPdf_list_items').on('click', '.additionalPdfItem', function() {
+$('#additionalPdfFiles_list_items').on('click', '.additionalPdfItem', function() {
 	removeAdditionalPdf($(this));
 });
 
@@ -2249,7 +2262,7 @@ function loadExamEvaluation(items) {
 	});
 }
 
-function loadExamSolutionsFileDialog(items) {
+function examSolutionsFileDialog(items) {
 	Array.from(items).forEach(file => {	
 		const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
 			
@@ -2259,7 +2272,7 @@ function loadExamSolutionsFileDialog(items) {
 	});
 }
 
-function loadExamRegisteredParticipantsFileDialog(items) {
+function examRegisteredParticipantsFileDialog(items) {
 	Array.from(items).forEach(file => {	
 		const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
 			
@@ -2269,7 +2282,7 @@ function loadExamRegisteredParticipantsFileDialog(items) {
 	});
 }
 
-function loadExamScansFileDialog(items) {
+function examScansFileDialog(items) {
 	Array.from(items).forEach(file => {	
 		const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
 			
@@ -2299,7 +2312,7 @@ function addExamEvaluationFile(file) {
 
 			fileReader.readAsDataURL(file);
 			
-			$('#examScan_list_items').append('<div class="examScanItem"><span class="examScanName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
+			$('#examScansFiles_list_items').append('<div class="examScanItem"><span class="examScanName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
 			break;
 		case 'rds': 
 			fileReader = new FileReader();
@@ -2312,8 +2325,8 @@ function addExamEvaluationFile(file) {
 
 			fileReader.readAsDataURL(file);
 			
-			$('#examSolutions_list_items').empty();
-			$('#examSolutions_list_items').append('<div class="examSolutionsItem"><span class="examSolutionsName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
+			$('#examSolutionsFiles_list_items').empty();
+			$('#examSolutionsFiles_list_items').append('<div class="examSolutionsItem"><span class="examSolutionsName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
 			break;
 		case 'csv':
 			fileReader = new FileReader();
@@ -2326,8 +2339,8 @@ function addExamEvaluationFile(file) {
 
 			fileReader.readAsText(file);
 			
-			$('#examRegisteredParticipants_list_items').empty();
-			$('#examRegisteredParticipants_list_items').append('<div class="examRegisteredParticipantsItem"><span class="examRegisteredParticipantsName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
+			$('#examRegisteredParticipantsFiles_list_items').empty();
+			$('#examRegisteredParticipantsFiles_list_items').append('<div class="examRegisteredParticipantsItem"><span class="examRegisteredParticipantsName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
 			break;
 	}
 }
@@ -2338,7 +2351,7 @@ function removeExamScan(element) {
 	element.remove();
 }
 
-$('#examScan_list_items').on('click', '.examScanItem', function() {
+$('#examScansFiles_list_items').on('click', '.examScanItem', function() {
 	removeExamScan($(this));
 });
 
@@ -2347,7 +2360,7 @@ function removeSolutions(element) {
 	element.remove();
 }
 
-$('#examSolutions_list_items').on('click', '.examSolutionsItem', function() {
+$('#examSolutionsFiles_list_items').on('click', '.examSolutionsItem', function() {
 	removeSolutions($(this));
 });
 
@@ -2396,7 +2409,7 @@ function removeRegisteredParticipants(element) {
 	element.remove();
 }
 
-$('#examRegisteredParticipants_list_items').on('click', '.examRegisteredParticipantsItem', function() {
+$('#examRegisteredParticipantsFiles_list_items').on('click', '.examRegisteredParticipantsItem', function() {
 	removeRegisteredParticipants($(this));
 });
 
@@ -2418,7 +2431,9 @@ async function evaluateExamEvent() {
 	const examScanPngNames = examScanPng.map(x => x[0]);
 	const examScanPngFiles = examScanPng.map(x => x[2]);
 	
-	Shiny.onInputChange("evaluateExam", {examSolutionsName: examSolutionsName, examSolutionsFile: examSolutionsFile, 
+	const numGradingKeyItems = $('#gradingKey .gradingKeyItem:last-of-type').index();
+	
+	Shiny.onInputChange("evaluateExam", {numGradingKeyItems:numGradingKeyItems, examSolutionsName: examSolutionsName, examSolutionsFile: examSolutionsFile, 
 										 examRegisteredParticipantsnName: examRegisteredParticipantsnName, examRegisteredParticipantsnFile: examRegisteredParticipantsnFile, 
 										 examScanPdfNames: examScanPdfNames, examScanPdfFiles: examScanPdfFiles, 
 										 examScanPngNames: examScanPngNames, examScanPngFiles: examScanPngFiles}, {priority: 'event'});

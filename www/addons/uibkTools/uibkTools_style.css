@@ -1,34 +1,34 @@
-#visParticipantListsContainer ,
-#rexEvaluationListsContainer ,
-#visGradingListsContainer {
+#visParticipantsContainer ,
+#rexEvaluationContainer ,
+#visGradingContainer {
 	display: flex;
 	width: 300px;
 }
 
-#file-upload_visParticipantLists ,
-#file-upload_rexEvaluationLists ,
-#file-upload_visGradingLists {
+#file-upload_visParticipants ,
+#file-upload_rexEvaluation ,
+#file-upload_visGrading {
     display: none;
 }
 
-#visParticipantListFiles ,
-#rexEvaluationListFiles ,
-#visGradingListFiles {
+#visParticipantsFiles ,
+#rexEvaluationFiles ,
+#visGradingFiles {
 	min-height: 34px;
 	background: var(---background3);
 }
 
-#visParticipantListFile_list_items ,
-#rexEvaluationListFile_list_items ,
-#visGradingListFile_list_items {
+#visParticipantsFiles_list_items ,
+#rexEvaluationFiles_list_items ,
+#visGradingFiles_list_items {
 	min-width: 200px;
 	display: block;
 	padding: 0.25rem;
 }
 
-.visParticipantListFileItem ,
-.rexEvaluationListFileItem ,
-.visGradingListFileItem {
+.visParticipantsFileItem ,
+.rexEvaluationFileItem ,
+.visGradingFileItem {
 	display: flex;
 	margin: 0.25rem;
 	padding: 0.25rem;
@@ -36,22 +36,22 @@
 	gap: 10px;
 }
 
-.visParticipantListFileName ,
-.rexEvaluationListFileName ,
-.visGradingListFileName {
+.visParticipantsFileName ,
+.rexEvaluationFileName ,
+.visGradingFileName {
 	overflow: hidden;
 	white-space: nowrap;
 }
 
-.visParticipantListFileItem .removeText ,
-.rexEvaluationListFileItem .removeText ,
-.visGradingListFileItem .removeText {
+.visParticipantsFileItem .removeText ,
+.rexEvaluationFileItem .removeText ,
+.visGradingFileItem .removeText {
 	display: block;
 }
 
-.visParticipantListFileItem:hover ,
-.rexEvaluationListFileItem:hover ,
-.visGradingListFileItem:hover {
+.visParticipantsFileItem:hover ,
+.rexEvaluationFileItem:hover ,
+.visGradingFileItem:hover {
 	background: var(---red_error);
 	cursor: pointer;
 }

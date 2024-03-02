@@ -1116,7 +1116,7 @@ main > * {
 	display:block;
 }
 
-#figure,
+#exerciseFigureContainer,
 #additionalPdfContainer,
 #examScansContainer,
 #examSolutionsContainer,
@@ -1126,14 +1126,14 @@ main > * {
 }
 
 #file-upload_exerciseFigure,
-#file-upload_addAdditionalPdf,
+#file-upload_additionalPdf,
 #file-upload_examScans,
 #file-upload_examSolutions,
 #file-upload_examRegisteredParticipants {
     display: none;
 }
 
-.exerciseFigureUpload,
+.exerciseFigureFileUpload,
 .examFileUpload {
 	margin-right: 0.25rem;
 	cursor: pointer;
@@ -1156,6 +1156,7 @@ main > * {
 .infoField {
 	font-size: 12px;
 	color: #aaa;
+	display: block;
 }
 
 .autofillField {
@@ -1172,18 +1173,18 @@ main > * {
 
 #exerciseFigureFiles,
 #additionalPdfFiles,
-#examScanFiles,
-#examSolutionsFile,
-#examRegisteredParticipantsFile {
+#examScansFiles,
+#examSolutionsFiles,
+#examRegisteredParticipantsFiles {
 	min-height: 34px;
 	background: var(---background3);
 }
 
-#exerciseFigure_list_items,
-#additionalPdf_list_items,
-#examScan_list_items,
-#examSolutions_list_items,
-#examRegisteredParticipants_list_items {
+#exerciseFigureFiles_list_items,
+#additionalPdfFiles_list_items,
+#examScansFiles_list_items,
+#examSolutionsFiles_list_items,
+#examRegisteredParticipantsFiles_list_items {
 	min-width: 200px;
 	display: block;
 	padding: 0.25rem;
@@ -1227,7 +1228,7 @@ main > * {
 	cursor: pointer;
 }
 
-.exerciseFigureButton,
+.exerciseFigureFileButton,
 .examFileButton {
 	margin-top: 5px;
 	padding: 0.5rem;
@@ -1236,7 +1237,7 @@ main > * {
 	border: 2px solid var(---background);
 }
 
-.exerciseFigureButton:hover,
+.exerciseFigureFileButton:hover,
 .examFileButton:hover {
 	border: 2px solid var(---main);
 }
