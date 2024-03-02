@@ -65,6 +65,14 @@ function initApp(){
 }
 
 /* --------------------------------------------------------------
+SHINY INPUT VALUE SETTER
+-------------------------------------------------------------- */
+function setShinyInputValue(field, value){
+	$('#' + field).val(value);
+	Shiny.onInputChange(field, $('#' + field).val());
+}
+
+/* --------------------------------------------------------------
  RSHINY CONNECTION 
 -------------------------------------------------------------- */
 let connected = false;
@@ -672,10 +680,9 @@ function getFilesDataTransferItems(dataTransferItems) {
 -------------------------------------------------------------- */
 $("#seedValueExercises").change(function(){
 	const seed = getIntegerInput(1, 999999999999, null, $(this).val());
-	$(this).val(seed);
+	setShinyInputValue("seedValueExercises", seed);
 	$('#s_initialSeed').html(itemSingle(seed, 'greenLabelValue'));
-	Shiny.onInputChange("seedValueExercises", $('#seedValueExercises').val());
-	
+		
 	if(rex.exercises.length > 0) viewExercise(getID());
 }); 
 
@@ -2131,8 +2138,8 @@ function removeAdditionalPdf(element) {
 }
 
 $('#seedValueExam').change(function(){
-	$(this).val(getIntegerInput(1, 99999999, 1, $(this).val()));
-	Shiny.onInputChange("seedValueExam", $('#seedValueExam').val());
+	const seed = getIntegerInput(1, 99999999, 1, $(this).val());
+	setShinyInputValue("seedValueExam", seed);
 }); 
 
 $('#additionalPdfFiles_list_items').on('click', '.additionalPdfItem', function() {
@@ -2140,48 +2147,57 @@ $('#additionalPdfFiles_list_items').on('click', '.additionalPdfItem', function()
 });
 
 $("#numberOfExams").change(function(){
-	$(this).val(getIntegerInput(1, null, 1, $(this).val()));
-	$('#s_numberOfExams').html(itemSingle($(this).val(), 'grayLabelValue'));
+	const numberOfExams = getIntegerInput(1, null, 1, $(this).val());
+	
+	setShinyInputValue("numberOfExams", numberOfExams);
+	$('#s_numberOfExams').html(itemSingle(numberOfExams, 'grayLabelValue'));
 }); 
 
 $("#autofillSeed").click(function(){
 	const seed = getIntegerInput(1, 99999999, 1, $('#examDate input').val().replaceAll("-", ""));
-	$('#seedValueExam').val(seed);
-	Shiny.onInputChange("seedValueExam", $('#seedValueExam').val());
+	setShinyInputValue("seedValueExam", seed);
 }); 
 
 $("#fixedPointsExamCreate").change(function(){
-	$(this).val(getIntegerInput(1, null, null, $(this).val()));
+	const fixedPointsExamCreate = getIntegerInput(1, null, null, $(this).val());
+	setShinyInputValue("fixedPointsExamCreate", fixedPointsExamCreate);
 }); 
 
 $("#numberOfExercises").change(function(){
-	$(this).val(getIntegerInput(0, 45, 0, checkNumberOfExamExercises($(this).val())));
+	const numberOfExercises = getIntegerInput(0, 45, 0, checkNumberOfExamExercises($(this).val()));
+	setShinyInputValue("numberOfExercises", numberOfExercises);
 }); 
 
 $("#numberOfBlanks").change(function(){
-	$(this).val(getIntegerInput(0, null, 0, $(this).val()));
-}); 
+	const numberOfBlanks = getIntegerInput(0, null, 0, $(this).val());
+	setShinyInputValue("numberOfBlanks", numberOfBlanks);
+});
 
 $("#autofillNumberOfExercises").click(function(){
-	$('#numberOfExercises').val(getIntegerInput(0, 45, 0, getMaxNumberOfExamExercises()));
-	Shiny.onInputChange("numberOfExercises", $('#numberOfExercises').val());
+	const NumberOfExercises = getIntegerInput(0, 45, 0, getMaxNumberOfExamExercises());
+	setShinyInputValue("numberOfExercises", NumberOfExercises);
 }); 
 
 $("#examInstitution").change(function(){
-	$(this).val(contentTextSanitize($(this).val()));
+	const examInstitution = contentTextSanitize($(this).val());
+	setShinyInputValue("examInstitution", examInstitution);
 }); 
 
 $("#examTitle").change(function(){
-	$(this).val(contentTextSanitize($(this).val()));
+	const examTitle = contentTextSanitize($(this).val());
+	setShinyInputValue("examTitle", examTitle);
 }); 
 
 $("#examCourse").change(function(){
-	$(this).val(contentTextSanitize($(this).val()));
+	const examCourse = contentTextSanitize($(this).val());
+	setShinyInputValue("examCourse", examCourse);
 }); 
 
 $("#examIntro").change(function(){
-	if(!$('#texActiveContainer span').hasClass('active'))
-		$(this).val(contentTexSanitize($(this).val()));
+	if(!$('#texActiveContainer span').hasClass('active')) {
+		const examIntro = contentTextSanitize($(this).val());
+		setShinyInputValue("examIntro", examIntro);
+	}
 }); 
 
 $("#createExamEvent").click(function(){
@@ -2365,7 +2381,8 @@ $('#examSolutionsFiles_list_items').on('click', '.examSolutionsItem', function()
 });
 
 $("#fixedPointsExamEvaluate").change(function(){
-	$(this).val(getIntegerInput(1, null, null, $(this).val()));
+	const fixedPointsExamEvaluate = getIntegerInput(1, null, null, $(this).val());
+	setShinyInputValue("fixedPointsExamEvaluate", fixedPointsExamEvaluate);
 }); 
 
 $('#gradingKey').on('click', '.addGradingKeyItem', function() {
@@ -2377,31 +2394,45 @@ $('#gradingKey').on('click', '.removeGradingKeyItem', function() {
 });
  
 function addGradingKeyItem() {
-	Shiny.onInputChange("addGradingKeyitem", $('#gradingKey .gradingKeyItem:last-of-type').index()+1, {priority: 'event'});
+	const selector  = '#gradingKey .gradingKeyItem:last-of-type';
+	Shiny.onInputChange("addGradingKeyitem", $(selector).index()+1, {priority: 'event'});
 }
 
 function removeGradingKeyItem() {
-	Shiny.onInputChange("removeGradingKeyItem", '#gradingKey .gradingKeyItem:last-of-type', {priority: 'event'});
+	const selector  = '#gradingKey .gradingKeyItem:last-of-type';
+	const index = $(selector).index();
+	
+	setShinyInputValue("markThreshold" + index, "");
+	setShinyInputValue("markLabel" + index, "");
+	
+	Shiny.onInputChange("removeGradingKeyItem", selector, {priority: 'event'});
 }
 
-$(".markThreshold").change(function(){
-	$(this).val(getFloatInput(0, null, 0, $(this).val()));
+$('#gradingKey').on('change', '.markThreshold', function() {
+	const id = $(this).attr('id');
+	const markThreshold = getFloatInput(0, null, 0, $(this).val());
+	setShinyInputValue(id, markThreshold);
 }); 
 
-$(".markLabel").change(function(){
-	$(this).val(contentTextSanitize($(this).val()));
+$('#gradingKey').on('change', '.markLabel', function() {
+	const id = $(this).attr('id');
+	const markLabel = contentTextSanitize($(this).val());
+	setShinyInputValue(id, markLabel);
 });
 
 $('body').on('change', '#inputSheetID', function() {
-	$(this).val(getIntegerInput(0, 99999999999, 0, $(this).val()));
+	const inputSheetID = getIntegerInput(0, 99999999999, 0, $(this).val());
+	setShinyInputValue("inputSheetID", inputSheetID);
 });
 
 $('body').on('change', '#inputScramblingID', function() {
-	$(this).val(getIntegerInput(0, 99, 0, $(this).val()));
+	const inputScramblingID = getIntegerInput(0, 99, 0, $(this).val());
+	setShinyInputValue("inputScramblingID", inputScramblingID);
 });
 
 $('body').on('change', '#inputTypeID', function() {
-	$(this).val(getIntegerInput(0, 999, 5, $(this).val()));
+	const inputTypeID = getIntegerInput(0, 999, 5, $(this).val());
+	setShinyInputValue("inputTypeID", inputTypeID);
 });
 
 function removeRegisteredParticipants(element) {
@@ -2431,9 +2462,7 @@ async function evaluateExamEvent() {
 	const examScanPngNames = examScanPng.map(x => x[0]);
 	const examScanPngFiles = examScanPng.map(x => x[2]);
 	
-	const numGradingKeyItems = $('#gradingKey .gradingKeyItem:last-of-type').index();
-	
-	Shiny.onInputChange("evaluateExam", {numGradingKeyItems:numGradingKeyItems, examSolutionsName: examSolutionsName, examSolutionsFile: examSolutionsFile, 
+	Shiny.onInputChange("evaluateExam", {examSolutionsName: examSolutionsName, examSolutionsFile: examSolutionsFile, 
 										 examRegisteredParticipantsnName: examRegisteredParticipantsnName, examRegisteredParticipantsnFile: examRegisteredParticipantsnFile, 
 										 examScanPdfNames: examScanPdfNames, examScanPdfFiles: examScanPdfFiles, 
 										 examScanPngNames: examScanPngNames, examScanPngFiles: examScanPngFiles}, {priority: 'event'});

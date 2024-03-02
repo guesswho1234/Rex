@@ -406,19 +406,16 @@ source("source/tryCatch.R")
         labels = NULL
         
         if(mark) {
-          mark = as.numeric(c(input$markThreshold2,
-                              input$markThreshold3,
-                              input$markThreshold4,
-                              input$markThreshold5))
+          markThresholdsInputIds = paste0("markThreshold", 1:length(which(grepl("markThreshold", names(input)))))
+          markLabelsInputIds = paste0("markLabel", 1:length(which(grepl("markLabel", names(input)))))
           
-          labels = c(input$markLabel1,
-                     input$markLabel2,
-                     input$markLabel3,
-                     input$markLabel4,
-                     input$markLabel5)
+          mark = as.numeric(input[markThresholdsInputIds])
+          labels = unlist(input[markLabelsInputIds])
           
-          if(any(labels==""))
-            labels = NULL
+          invalidGradingKeyItems = mark == "" | labels == ""
+          
+          mark = mark[!invalidGradingKeyItems]
+          labels = labels[!invalidGradingKeyItems]
         }
         
         language = input$evaluationLanguage
@@ -1162,19 +1159,19 @@ server = function(input, output, session) {
     newGradingKeyItem = myGradingkeyItem(gradingKeyItemID)
     
     insertUI(selector='#gradingKey tbody', where = "beforeEnd", ui=HTML(newGradingKeyItem), immediate = TRUE)
+    session$sendCustomMessage("f_langDeEn", 1)
   })
   
   observeEvent(input$removeGradingKeyItem, {
     gradingKeyItem = isolate(input$removeGradingKeyItem)
     
     removeUI(selector=gradingKeyItem, immediate = TRUE)
+    session$sendCustomMessage("f_langDeEn", 1)
   })
   
   # evaluate scans - trigger
   examScanEvaluation = eventReactive(input$evaluateExam, {
     startWait(session)
-    
-    print(reactiveValuesToList(input))
 
     # background exercise
     x = callr::r_bg(

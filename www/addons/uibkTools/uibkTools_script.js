@@ -9,24 +9,19 @@ uibkTools['visGrading'] = new Array();
 /* --------------------------------------------------------------
 ADDON DEFAULT INPUT VALUES
 -------------------------------------------------------------- */
-function setDefaultValue(field, value){
-	$('#' + field).val(value);
-	Shiny.onInputChange(field, $('#' + field).val());
-}
+setShinyInputValue("examInstitution", "Universität Innsbruck");
 
-setDefaultValue("examInstitution", "Universität Innsbruck");
+setShinyInputValue("markThreshold1", 0);
+setShinyInputValue("markThreshold2", 0.5);
+setShinyInputValue("markThreshold3", 0.6);
+setShinyInputValue("markThreshold4", 0.75);
+setShinyInputValue("markThreshold5", 0.85);
 
-setDefaultValue("markThreshold1", 0);
-setDefaultValue("markThreshold2", 0.5);
-setDefaultValue("markThreshold3", 0.6);
-setDefaultValue("markThreshold4", 0.75);
-setDefaultValue("markThreshold5", 0.85);
-
-setDefaultValue("markLabel1", "NGD5");
-setDefaultValue("markLabel2", "GEN4");
-setDefaultValue("markLabel3", "BEF3");
-setDefaultValue("markLabel4", "GUT2");
-setDefaultValue("markLabel5", "SGT1");
+setShinyInputValue("markLabel1", "NGD5");
+setShinyInputValue("markLabel2", "GEN4");
+setShinyInputValue("markLabel3", "BEF3");
+setShinyInputValue("markLabel4", "GUT2");
+setShinyInputValue("markLabel5", "SGT1");
 	
 /* --------------------------------------------------------------
 VIS PARTICIPANT FILES
