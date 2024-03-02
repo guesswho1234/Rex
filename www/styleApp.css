@@ -1260,6 +1260,44 @@ main > * {
 	display: block;
 }
 
+figure {
+	margin: 1rem;
+}
+
+figcaption {
+	text-align: center;
+	margin-top: 1rem;
+}
+
+.graph {
+	display: grid;
+	height: 25vh;
+}
+
+.graphBar {
+	grid-row: 1 / -2;
+	background: var(---background3) linear-gradient(to top, var(---yellow_warning) var(--h), transparent var(--h));
+	justify-self: center;
+	width: 45px;
+	height: 100%;
+}
+
+.graphRowLabel {
+	margin-top: -0.5em;
+	text-align: end;
+}
+
+.graphColumnLabel {
+	justify-self: center;
+	margin-top: 6px;
+	font-size: 14pt;
+}
+
+.graphRowLabel::after {
+	display: inline-block;
+	content: "\2000\2000\2014";
+}
+
 /* --------------------------------------------------------------
  HOTKEY MODE
 -------------------------------------------------------------- */

@@ -414,7 +414,7 @@ source("source/tryCatch.R")
           
           invalidGradingKeyItems = mark == "" | labels == ""
           
-          mark = mark[!invalidGradingKeyItems]
+          mark = mark[!invalidGradingKeyItems][-1]
           labels = labels[!invalidGradingKeyItems]
         }
         
@@ -703,8 +703,10 @@ source("source/tryCatch.R")
           # add additional exercise columns
           exerciseTable = as.data.frame(Reduce(rbind, lapply(evaluationData$exam, \(exam) {
             exerciseNames = Reduce(cbind, lapply(solutionData[[as.character(exam)]], \(exercise) exercise$metainfo$file))
-            if(all(grepl(paste0(settings$edirName, "_"), exerciseNames))) 
+            if(all(grepl(paste0(settings$edirName, "_"), exerciseNames)))
               exerciseNames = sapply(strsplit(exerciseNames, paste0(settings$edirName, "_")), \(name) name[2])
+            
+            return(exerciseNames)
           })))
           
           names(exerciseTable) = paste0("exercise.", 1:ncol(exerciseTable))
@@ -740,52 +742,42 @@ source("source/tryCatch.R")
   }
   
   evaluateExamFinalizeResponse = function(session, result) {
-    showModal(modalDialog(
-      title = tags$span(HTML('<span lang="de">Prüfung auswerten</span><span lang="en">Evaluate exam</span>')),
-      tags$span(id='responseMessage', myMessage(result$message, "modal")),
-      footer = tagList(
-        myActionButton("dismiss_evaluateExamFinalizeResponse", "Schließen", "Close", "fa-solid fa-xmark"),
-        myActionButton("backTo_evaluateExamScansResponse", "Zurück", "Back", "fa-solid fa-arrow-left"),
-        if (length(unlist(result$preparedEvaluation$files, recursive = TRUE)) > 0)
-          myDownloadButton('downloadEvaluationFiles')
-      )
-    ))
-    session$sendCustomMessage("f_langDeEn", 1)
-    
     # display statistics in modal
-    if (!is.null(result$preparedEvaluation$files$nops_evaluationCsv) && length(unlist(result$preparedEvaluation$files, recursive = TRUE)) > 0) {
+    showModalStatistics = !is.null(result$preparedEvaluation$files$nops_evaluationCsv) && length(unlist(result$preparedEvaluation$files, recursive = TRUE)) > 0
+
+    if (showModalStatistics) {
       evaluationResultsData = read.csv2(result$preparedEvaluation$files$nops_evaluationCsv)
-      
+
       exerciseNames = unique(unlist(evaluationResultsData[,grepl("exercise.*", names(evaluationResultsData))]))
       if(all(grepl(paste0(edirName, "_"), exerciseNames)) )
         exerciseNames = sapply(strsplit(exerciseNames, paste0(edirName, "_")), \(name) name[2])
-      
+
       exercisePoints = Reduce(rbind, lapply(exerciseNames, \(exercise){
         summary(apply(evaluationResultsData, 1, \(participant){
 
           if(!exercise %in% participant)
             return(NULL)
-          
+
           as.numeric(participant[gsub("exercise", "points", names(evaluationResultsData)[participant==exercise])])
         }))
       }))
       rownames(exercisePoints) = exerciseNames
-      
+
       totalPoints = t(summary(as.numeric(evaluationResultsData$points)))
       rownames(totalPoints) = "totalPoints"
-      
+
       marks = table(factor(evaluationResultsData$mark, levels=result$preparedEvaluation$fields$labels))
       marks = cbind(marks, marks/sum(marks), rev(cumsum(rev(marks)))/sum(marks))
       colnames(marks) = c("absolute", "relative", "relative cumulative")
-      
+
       evaluationStatistics = list(
         exercisePoints=exercisePoints,
         totalPoints=totalPoints,
         marks=marks
       )
-      
+
       evaluationStatistics_json = rjs_vectorToJsonArray(Reduce(c, lapply(seq_along(evaluationStatistics), \(x) {
-        rjs_keyValuePairsToJsonObject(names(evaluationStatistics)[x], 
+        rjs_keyValuePairsToJsonObject(names(evaluationStatistics)[x],
                                       rjs_vectorToJsonArray(Reduce(c, lapply(1:nrow(evaluationStatistics[[x]]), \(y) {
                                         rjs_keyValuePairsToJsonObject(c("name", colnames(evaluationStatistics[[x]])),
                                                                       c(rownames(evaluationStatistics[[x]])[y], evaluationStatistics[[x]][y,]),
@@ -795,6 +787,21 @@ source("source/tryCatch.R")
 
       session$sendCustomMessage("evaluationStatistics", evaluationStatistics_json)
     }
+    
+    # modal
+    showModal(modalDialog(
+      title = tags$span(HTML('<span lang="de">Prüfung auswerten</span><span lang="en">Evaluate exam</span>')),
+      tags$span(id='responseMessage', myMessage(result$message, "modal")),
+      if (showModalStatistics)
+        myCssChart("evaluationPointStatistics", setNames(evaluationStatistics$marks[,2]*100, rownames(evaluationStatistics$marks)), seq(100, 10, 10), "Noten", "Marks"),
+      footer = tagList(
+        myActionButton("dismiss_evaluateExamFinalizeResponse", "Schließen", "Close", "fa-solid fa-xmark"),
+        myActionButton("backTo_evaluateExamScansResponse", "Zurück", "Back", "fa-solid fa-arrow-left"),
+        if (length(unlist(result$preparedEvaluation$files, recursive = TRUE)) > 0)
+          myDownloadButton('downloadEvaluationFiles')
+      )
+    ))
+    session$sendCustomMessage("f_langDeEn", 1)
   }
   
   # WAIT --------------------------------------------------------------------
@@ -1020,7 +1027,7 @@ server = function(input, output, session) {
     # ADDON STYLESHEET
     lapply(addons, \(addon) {
       tags$link(rel="stylesheet", type="text/css", href=paste0(addons_path, addon, "/", addon, "_style.css"))
-    })
+    }),
    )
   })
   
