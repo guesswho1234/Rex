@@ -24,6 +24,10 @@ main {
 	z-index: 997;
 }
 
+.modal-body {
+	overflow: auto;
+}
+
 #logoApp {
 	cursor: pointer;
 }
@@ -1265,13 +1269,14 @@ figure {
 }
 
 figcaption {
-	text-align: center;
 	margin-top: 1rem;
+	font-weight: bold;
 }
 
 .graph {
 	display: grid;
 	height: 25vh;
+	padding: 1rem;
 }
 
 .graphBar {
@@ -1296,6 +1301,14 @@ figcaption {
 .graphRowLabel::after {
 	display: inline-block;
 	content: "\2000\2000\2014";
+}
+
+.absoluteValue  {
+	display: grid;
+	height: 100%;
+	width: 100%;
+	place-content: center;
+	font-weight: bold;
 }
 
 /* --------------------------------------------------------------

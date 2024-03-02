@@ -81,13 +81,13 @@ myFileImport = function(name, sectionClass) {
 myCssChart = function(id, values, valueRange, deCaption, enCaption) {
 	cssChart = paste0('',
 		'<figure id="', id, '" aria-hidden="true">',
-			'<div class="graph" style="grid: repeat(', length(valueRange), ', auto) max-content / max-content repeat(', length(values), ', auto);">',
-				paste0(sapply(valueRange, \(y) paste0('<span class="graphRowLabel">', y, '</span>')), collapse=""),
-				paste0(sapply(seq_along(values), \(v) paste0('<div class="graphBar" style="grid-column: ', v+1, '; --h: ', values[v], '%;"></div>')), collapse=""),
+			paste0('<figcaption><span lang="de">', deCaption, ':</span><span lang="en">', enCaption, ':</span></figcaption>'),
+			'<div class="graph" style="grid: repeat(', length(valueRange), ', auto) max-content / max-content repeat(', nrow(values), ', auto);">',
+				paste0(sapply(valueRange, \(y) paste0('<span class="graphRowLabel">', y, '%</span>')), collapse=""),
+				paste0(sapply(1:nrow(values), \(v) paste0('<div class="graphBar" style="grid-column: ', v+1, '; --h: ', values[v,2]*100, '%;"><span class="absoluteValue">', values[v,1], '</span></div>')), collapse=""),
 				'<span></span>',
-				paste0(sapply(names(values), \(x) paste0('<span class="graphColumnLabel">', x, '</span>')), collapse=""),
+				paste0(sapply(rownames(values), \(x) paste0('<span class="graphColumnLabel">', x, '</span>')), collapse=""),
 			'</div>',
-			paste0('<figcaption><span lang="de">', deCaption, '</span><span lang="en">', enCaption, '</span></figcaption>'),
 		'</figure>'
 	)
 	

@@ -653,12 +653,15 @@ source("source/tryCatch.R")
     out = tryCatch({
       warnings = collectWarnings({
         # process scanData
-        scanData = Reduce(c, lapply(proceedEvaluation, function(x) paste0(unlist(unname(x)), collapse=" ")))
+        scanData = Reduce(c, lapply(proceedEvaluation$datenTxt, function(x) paste0(unlist(unname(x)), collapse=" ")))
         scanData = paste0(scanData, collapse="\n")
 
         # write scanData
         scanDatafile = paste0(dir, "/", "Daten.txt")
         writeLines(text=scanData, con=scanDatafile)
+        
+        # update scans_reg_fullJoinData to capture and store edits from inspects
+        preparedEvaluation$scans_reg_fullJoinData = as.data.frame(Reduce(rbind, proceedEvaluation$scans_reg_fullJoinData))
 
         # create *_nops_scan.zip file needed for exams::nops_eval
         zipFile = gsub("_+", "_", paste0(dir, "/", preparedEvaluation$meta$examName, "_nops_scan.zip"))
@@ -793,7 +796,7 @@ source("source/tryCatch.R")
       title = tags$span(HTML('<span lang="de">Prüfung auswerten</span><span lang="en">Evaluate exam</span>')),
       tags$span(id='responseMessage', myMessage(result$message, "modal")),
       if (showModalStatistics)
-        myCssChart("evaluationPointStatistics", setNames(evaluationStatistics$marks[,2]*100, rownames(evaluationStatistics$marks)), seq(100, 10, 10), "Noten", "Marks"),
+        myCssChart("evaluationGradingStatistics", marks, seq(100, 0, -10), "Noten", "Marks"),
       footer = tagList(
         myActionButton("dismiss_evaluateExamFinalizeResponse", "Schließen", "Close", "fa-solid fa-xmark"),
         myActionButton("backTo_evaluateExamScansResponse", "Zurück", "Back", "fa-solid fa-arrow-left"),
@@ -1231,7 +1234,7 @@ server = function(input, output, session) {
       
       # save result in reactive value
       examFinalizeEvaluationData(result)
-      
+
       # open modal
       evaluateExamFinalizeResponse(session, result)
     }
@@ -1255,7 +1258,8 @@ server = function(input, output, session) {
     unlink(examFinalizeEvaluationData()$preparedEvaluation$files$nops_evaluationZip)
     
     result = isolate(examScanEvaluationData())
-    
+    result$scans_reg_fullJoinData = isolate(examFinalizeEvaluationData()$preparedEvaluation$scans_reg_fullJoinData)
+
     evaluateExamScansResponse(session, result)
   })
 
