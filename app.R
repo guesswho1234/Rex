@@ -806,7 +806,7 @@ source("source/tryCatch.R")
         invalidGradingKeyItems = markThresholds == "" | labels == ""
         
         markThresholds = matrix(markThresholds[!invalidGradingKeyItems], nrow=1)
-        colnames(markThresholds) = labels
+        colnames(markThresholds) = labels[!invalidGradingKeyItems]
       }
       
       chartData = list(ids = list("evaluationPointStatistics", "evaluationGradingStatistics"),
