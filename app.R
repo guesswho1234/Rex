@@ -415,6 +415,7 @@ source("source/tryCatch.R")
           invalidGradingKeyItems = mark == "" | labels == ""
           
           mark = mark[!invalidGradingKeyItems][-1]
+
           labels = labels[!invalidGradingKeyItems]
         }
         
