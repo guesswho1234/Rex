@@ -65,6 +65,14 @@ function initApp(){
 }
 
 /* --------------------------------------------------------------
+SHINY INPUT VALUE SETTER
+-------------------------------------------------------------- */
+function setShinyInputValue(field, value){
+	$('#' + field).val(value);
+	Shiny.onInputChange(field, $('#' + field).val());
+}
+
+/* --------------------------------------------------------------
  RSHINY CONNECTION 
 -------------------------------------------------------------- */
 let connected = false;
@@ -672,10 +680,9 @@ function getFilesDataTransferItems(dataTransferItems) {
 -------------------------------------------------------------- */
 $("#seedValueExercises").change(function(){
 	const seed = getIntegerInput(1, 999999999999, null, $(this).val());
-	$(this).val(seed);
+	setShinyInputValue("seedValueExercises", seed);
 	$('#s_initialSeed').html(itemSingle(seed, 'greenLabelValue'));
-	Shiny.onInputChange("seedValueExercises", $('#seedValueExercises').val());
-	
+		
 	if(rex.exercises.length > 0) viewExercise(getID());
 }); 
 
@@ -1113,7 +1120,7 @@ function loadExercisesDnD(items) {
 	});
 }
 
-function loadExercisesFileDialog(items) {	
+function exercisesFileDialog(items) {	
 	Array.from(items).forEach(file => {	
 		loadExercise(file);
 	});
@@ -1316,7 +1323,13 @@ function resetOutputFields() {
 			      'tags'];
 			  
 	fields.forEach(field => {	
-		$('#' + field).html('');
+		if(field == 'figure') {
+			$('#exerciseFigureFiles_list_items').empty();
+		} else {
+			$('#' + field).html('');
+		}
+		
+		$('#' + field + '-info').hide();
 		$('#' + field).hide();
 		$('label[for="'+ field +'"]').hide();
 	});	
@@ -1597,7 +1610,7 @@ function loadExerciseFromObject(exerciseID) {
 		
 		const imgContet = rex.exercises[exerciseID].figure !== null ? '<div class="exerciseFigureItem"><span class="exerciseFigureName"><img src="data:image/png;base64, ' + rex.exercises[exerciseID][field][2] + '"/></span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>' : '';
 		
-		const content = '<label class="exerciseFigureUpload" for="file-upload_exerciseFigure"><div class="exerciseFigureButton"><span class="iconButton"><i class="fa-solid fa-upload"></i></span><span class="textButton"><span lang="de">Importieren</span><span lang="en">Import</span></span></div><input type="file" id="file-upload_exerciseFigure" onchange="loadExerciseFigureFileDialog(this.files);" multiple="" class="shiny-bound-input"></label><div id="exerciseFigureFiles"><div id="exerciseFigure_list" class="itemList"><div id="exerciseFigure_list_items">' + imgContet + '</div></div></div></div>';
+		const content = '<div id="exerciseFigureFiles_list_items">' + imgContet + '</div>';
 		
 		setExerciseFieldFromObject(field, content);
 	}
@@ -1703,7 +1716,14 @@ function setSimpleExerciseFileContents(exerciseID){
 }
 
 function setExerciseFieldFromObject(field, content) {
-	$('#' + field).html(content);
+	if(field == 'figure') {
+		$('#exerciseFigureFiles_list_items').empty();
+		$('#exerciseFigureFiles_list_items').append(content);
+	} else {
+		$('#' + field).html(content);
+	}
+			
+	$('#' + field + '-info').show();
 	$('#' + field).show();
 	if($('label[for="'+ field +'"]').length > 0) $('label[for="'+ field +'"]').show();
 }
@@ -1852,7 +1872,7 @@ $('#exercise_info').on('click', '.removeAnswer', function() {
 	loadExerciseFromObject(exerciseID);
 });
 
-function loadExerciseFigureFileDialog(items) {+	
+function exerciseFigureFileDialog(items) {+	
 	Array.from(items).forEach(file => {	
 		const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
 			
@@ -1879,8 +1899,8 @@ function addExerciseFigureFile(file) {
 			base64 = fileLoadedEvent.target.result;
 			rex.exercises[exerciseID].figure = [fileName, fileExt, base64.split(',')[1]];
 			
-			$('#figure').empty();
-			$('#figure').append('<label class="exerciseFigureUpload" for="file-upload_exerciseFigure"><div class="exerciseFigureButton"><span class="iconButton"><i class="fa-solid fa-upload"></i></span><span class="textButton"><span lang="de">Importieren</span><span lang="en">Import</span></span></div><input type="file" id="file-upload_exerciseFigure" onchange="loadExerciseFigureFileDialog(this.files);" multiple="" class="shiny-bound-input"></label><div id="exerciseFigureFiles"><div id="exerciseFigure_list" class="itemList"><div id="exerciseFigure_list_items"><div class="exerciseFigureItem"><span class="exerciseFigureName"><img src="data:image/png;base64, ' + rex.exercises[getID()].figure[2] + '"/></span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div></div></div></div></div>');
+			$('#exerciseFigureFiles_list_items').empty();
+			$('#exerciseFigureFiles_list_items').append('<div class="exerciseFigureItem"><span class="exerciseFigureName"><img src="data:image/png;base64, ' + rex.exercises[getID()].figure[2] + '"/></span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
 			
 			setSimpleExerciseFileContents(exerciseID);
 			loadExerciseFromObject(exerciseID);
@@ -1900,7 +1920,7 @@ function removeExerciseFigure(element) {
 	loadExerciseFromObject(exerciseID);
 }
 
-$('#figure').on('click', '.exerciseFigureItem', function() {
+$('#exerciseFigureFiles_list_items').on('click', '.exerciseFigureItem', function() {
 	removeExerciseFigure($(this));
 });
 
@@ -2077,22 +2097,22 @@ let dndAdditionalPdf = {
 function loadAdditionalPdfDnD(items) {	
 	getFilesDataTransferItems(items).then(async (files) => {
 		Array.from(files).forEach(file => {	
-			addAdditionalPdf(file);
+			additionalPdf(file);
 		});
 	});
 }
 
-function loadAdditionalPdfFileDialog(items) {
+function additionalPdfFileDialog(items) {
 	Array.from(items).forEach(file => {	
 		const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
 			
 		if( fileExt == 'pdf') {
-			addAdditionalPdf(file);
+			additionalPdf(file);
 		}
 	});
 }
 
-function addAdditionalPdf(file) {
+function additionalPdf(file) {
 	const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
 	
 	if ( fileExt == 'pdf') {
@@ -2107,7 +2127,7 @@ function addAdditionalPdf(file) {
 
 		fileReader.readAsDataURL(file);
 		
-		$('#additionalPdf_list_items').append('<div class="additionalPdfItem"><span class="additionalPdfName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
+		$('#additionalPdfFiles_list_items').append('<div class="additionalPdfItem"><span class="additionalPdfName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
 	}
 }
 
@@ -2118,57 +2138,66 @@ function removeAdditionalPdf(element) {
 }
 
 $('#seedValueExam').change(function(){
-	$(this).val(getIntegerInput(1, 99999999, 1, $(this).val()));
-	Shiny.onInputChange("seedValueExam", $('#seedValueExam').val());
+	const seed = getIntegerInput(1, 99999999, 1, $(this).val());
+	setShinyInputValue("seedValueExam", seed);
 }); 
 
-$('#additionalPdf_list_items').on('click', '.additionalPdfItem', function() {
+$('#additionalPdfFiles_list_items').on('click', '.additionalPdfItem', function() {
 	removeAdditionalPdf($(this));
 });
 
 $("#numberOfExams").change(function(){
-	$(this).val(getIntegerInput(1, null, 1, $(this).val()));
-	$('#s_numberOfExams').html(itemSingle($(this).val(), 'grayLabelValue'));
+	const numberOfExams = getIntegerInput(1, null, 1, $(this).val());
+	
+	setShinyInputValue("numberOfExams", numberOfExams);
+	$('#s_numberOfExams').html(itemSingle(numberOfExams, 'grayLabelValue'));
 }); 
 
 $("#autofillSeed").click(function(){
 	const seed = getIntegerInput(1, 99999999, 1, $('#examDate input').val().replaceAll("-", ""));
-	$('#seedValueExam').val(seed);
-	Shiny.onInputChange("seedValueExam", $('#seedValueExam').val());
+	setShinyInputValue("seedValueExam", seed);
 }); 
 
 $("#fixedPointsExamCreate").change(function(){
-	$(this).val(getIntegerInput(1, null, null, $(this).val()));
+	const fixedPointsExamCreate = getIntegerInput(1, null, null, $(this).val());
+	setShinyInputValue("fixedPointsExamCreate", fixedPointsExamCreate);
 }); 
 
 $("#numberOfExercises").change(function(){
-	$(this).val(getIntegerInput(0, 45, 0, checkNumberOfExamExercises($(this).val())));
+	const numberOfExercises = getIntegerInput(0, 45, 0, checkNumberOfExamExercises($(this).val()));
+	setShinyInputValue("numberOfExercises", numberOfExercises);
 }); 
 
 $("#numberOfBlanks").change(function(){
-	$(this).val(getIntegerInput(0, null, 0, $(this).val()));
-}); 
+	const numberOfBlanks = getIntegerInput(0, null, 0, $(this).val());
+	setShinyInputValue("numberOfBlanks", numberOfBlanks);
+});
 
 $("#autofillNumberOfExercises").click(function(){
-	$('#numberOfExercises').val(getIntegerInput(0, 45, 0, getMaxNumberOfExamExercises()));
-	Shiny.onInputChange("numberOfExercises", $('#numberOfExercises').val());
+	const NumberOfExercises = getIntegerInput(0, 45, 0, getMaxNumberOfExamExercises());
+	setShinyInputValue("numberOfExercises", NumberOfExercises);
 }); 
 
 $("#examInstitution").change(function(){
-	$(this).val(contentTextSanitize($(this).val()));
+	const examInstitution = contentTextSanitize($(this).val());
+	setShinyInputValue("examInstitution", examInstitution);
 }); 
 
 $("#examTitle").change(function(){
-	$(this).val(contentTextSanitize($(this).val()));
+	const examTitle = contentTextSanitize($(this).val());
+	setShinyInputValue("examTitle", examTitle);
 }); 
 
 $("#examCourse").change(function(){
-	$(this).val(contentTextSanitize($(this).val()));
+	const examCourse = contentTextSanitize($(this).val());
+	setShinyInputValue("examCourse", examCourse);
 }); 
 
 $("#examIntro").change(function(){
-	if(!$('#texActiveContainer span').hasClass('active'))
-		$(this).val(contentTexSanitize($(this).val()));
+	if(!$('#texActiveContainer span').hasClass('active')) {
+		const examIntro = contentTextSanitize($(this).val());
+		setShinyInputValue("examIntro", examIntro);
+	}
 }); 
 
 $("#createExamEvent").click(function(){
@@ -2249,7 +2278,7 @@ function loadExamEvaluation(items) {
 	});
 }
 
-function loadExamSolutionsFileDialog(items) {
+function examSolutionsFileDialog(items) {
 	Array.from(items).forEach(file => {	
 		const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
 			
@@ -2259,7 +2288,7 @@ function loadExamSolutionsFileDialog(items) {
 	});
 }
 
-function loadExamRegisteredParticipantsFileDialog(items) {
+function examRegisteredParticipantsFileDialog(items) {
 	Array.from(items).forEach(file => {	
 		const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
 			
@@ -2269,7 +2298,7 @@ function loadExamRegisteredParticipantsFileDialog(items) {
 	});
 }
 
-function loadExamScansFileDialog(items) {
+function examScansFileDialog(items) {
 	Array.from(items).forEach(file => {	
 		const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
 			
@@ -2299,7 +2328,7 @@ function addExamEvaluationFile(file) {
 
 			fileReader.readAsDataURL(file);
 			
-			$('#examScan_list_items').append('<div class="examScanItem"><span class="examScanName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
+			$('#examScansFiles_list_items').append('<div class="examScanItem"><span class="examScanName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
 			break;
 		case 'rds': 
 			fileReader = new FileReader();
@@ -2312,8 +2341,8 @@ function addExamEvaluationFile(file) {
 
 			fileReader.readAsDataURL(file);
 			
-			$('#examSolutions_list_items').empty();
-			$('#examSolutions_list_items').append('<div class="examSolutionsItem"><span class="examSolutionsName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
+			$('#examSolutionsFiles_list_items').empty();
+			$('#examSolutionsFiles_list_items').append('<div class="examSolutionsItem"><span class="examSolutionsName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
 			break;
 		case 'csv':
 			fileReader = new FileReader();
@@ -2326,8 +2355,8 @@ function addExamEvaluationFile(file) {
 
 			fileReader.readAsText(file);
 			
-			$('#examRegisteredParticipants_list_items').empty();
-			$('#examRegisteredParticipants_list_items').append('<div class="examRegisteredParticipantsItem"><span class="examRegisteredParticipantsName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
+			$('#examRegisteredParticipantsFiles_list_items').empty();
+			$('#examRegisteredParticipantsFiles_list_items').append('<div class="examRegisteredParticipantsItem"><span class="examRegisteredParticipantsName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
 			break;
 	}
 }
@@ -2338,7 +2367,7 @@ function removeExamScan(element) {
 	element.remove();
 }
 
-$('#examScan_list_items').on('click', '.examScanItem', function() {
+$('#examScansFiles_list_items').on('click', '.examScanItem', function() {
 	removeExamScan($(this));
 });
 
@@ -2347,12 +2376,13 @@ function removeSolutions(element) {
 	element.remove();
 }
 
-$('#examSolutions_list_items').on('click', '.examSolutionsItem', function() {
+$('#examSolutionsFiles_list_items').on('click', '.examSolutionsItem', function() {
 	removeSolutions($(this));
 });
 
 $("#fixedPointsExamEvaluate").change(function(){
-	$(this).val(getIntegerInput(1, null, null, $(this).val()));
+	const fixedPointsExamEvaluate = getIntegerInput(1, null, null, $(this).val());
+	setShinyInputValue("fixedPointsExamEvaluate", fixedPointsExamEvaluate);
 }); 
 
 $('#gradingKey').on('click', '.addGradingKeyItem', function() {
@@ -2364,31 +2394,45 @@ $('#gradingKey').on('click', '.removeGradingKeyItem', function() {
 });
  
 function addGradingKeyItem() {
-	Shiny.onInputChange("addGradingKeyitem", $('#gradingKey .gradingKeyItem:last-of-type').index()+1, {priority: 'event'});
+	const selector  = '#gradingKey .gradingKeyItem:last-of-type';
+	Shiny.onInputChange("addGradingKeyitem", $(selector).index()+1, {priority: 'event'});
 }
 
 function removeGradingKeyItem() {
-	Shiny.onInputChange("removeGradingKeyItem", '#gradingKey .gradingKeyItem:last-of-type', {priority: 'event'});
+	const selector  = '#gradingKey .gradingKeyItem:last-of-type';
+	const index = $(selector).index();
+	
+	setShinyInputValue("markThreshold" + index, "");
+	setShinyInputValue("markLabel" + index, "");
+	
+	Shiny.onInputChange("removeGradingKeyItem", selector, {priority: 'event'});
 }
 
-$(".markThreshold").change(function(){
-	$(this).val(getFloatInput(0, null, 0, $(this).val()));
+$('#gradingKey').on('change', '.markThreshold', function() {
+	const id = $(this).attr('id');
+	const markThreshold = getFloatInput(0, null, 0, $(this).val());
+	setShinyInputValue(id, markThreshold);
 }); 
 
-$(".markLabel").change(function(){
-	$(this).val(contentTextSanitize($(this).val()));
+$('#gradingKey').on('change', '.markLabel', function() {
+	const id = $(this).attr('id');
+	const markLabel = contentTextSanitize($(this).val());
+	setShinyInputValue(id, markLabel);
 });
 
 $('body').on('change', '#inputSheetID', function() {
-	$(this).val(getIntegerInput(0, 99999999999, 0, $(this).val()));
+	const inputSheetID = getIntegerInput(0, 99999999999, 0, $(this).val());
+	setShinyInputValue("inputSheetID", inputSheetID);
 });
 
 $('body').on('change', '#inputScramblingID', function() {
-	$(this).val(getIntegerInput(0, 99, 0, $(this).val()));
+	const inputScramblingID = getIntegerInput(0, 99, 0, $(this).val());
+	setShinyInputValue("inputScramblingID", inputScramblingID);
 });
 
 $('body').on('change', '#inputTypeID', function() {
-	$(this).val(getIntegerInput(0, 999, 5, $(this).val()));
+	const inputTypeID = getIntegerInput(0, 999, 5, $(this).val());
+	setShinyInputValue("inputTypeID", inputTypeID);
 });
 
 function removeRegisteredParticipants(element) {
@@ -2396,7 +2440,7 @@ function removeRegisteredParticipants(element) {
 	element.remove();
 }
 
-$('#examRegisteredParticipants_list_items').on('click', '.examRegisteredParticipantsItem', function() {
+$('#examRegisteredParticipantsFiles_list_items').on('click', '.examRegisteredParticipantsItem', function() {
 	removeRegisteredParticipants($(this));
 });
 

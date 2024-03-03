@@ -406,19 +406,16 @@ source("source/tryCatch.R")
         labels = NULL
         
         if(mark) {
-          mark = as.numeric(c(input$markThreshold2,
-                              input$markThreshold3,
-                              input$markThreshold4,
-                              input$markThreshold5))
+          markThresholdsInputIds = paste0("markThreshold", 1:length(which(grepl("markThreshold", names(input)))))
+          markLabelsInputIds = paste0("markLabel", 1:length(which(grepl("markLabel", names(input)))))
           
-          labels = c(input$markLabel1,
-                     input$markLabel2,
-                     input$markLabel3,
-                     input$markLabel4,
-                     input$markLabel5)
+          mark = as.numeric(input[markThresholdsInputIds])
+          labels = unlist(input[markLabelsInputIds])
           
-          if(any(labels==""))
-            labels = NULL
+          invalidGradingKeyItems = mark == "" | labels == ""
+          
+          mark = mark[!invalidGradingKeyItems]
+          labels = labels[!invalidGradingKeyItems]
         }
         
         language = input$evaluationLanguage
@@ -945,6 +942,8 @@ server = function(input, output, session) {
       textInput_seedValueExercises = textInput("seedValueExercises", label = NULL, value = initSeed),
       button_downloadExercises = myDownloadButton('downloadExercises'),
       button_downloadExercise = myDownloadButton('downloadExercise'),
+      
+      exerciseFigureFileImport = myFileImport("exerciseFigure", "exerciseFigure"),
     
       # EXAM CREATE
       dateInput_examDate = dateInput("examDate", label = NULL, value = NULL, format = "yyyy-mm-dd"),
@@ -964,6 +963,8 @@ server = function(input, output, session) {
       textInput_examCourse = textInput("examCourse", label = NULL, value = NULL),
       textInput_examIntro = textAreaInput("examIntro", label = NULL, value = NULL),
       textInput_numberOfBlanks = textInput("numberOfBlanks", label = NULL, value = 5),
+      
+      additionalPdfFileImport = myFileImport("additionalPdf", "exam"),
     
       # EXAM EVALUATE
       textInput_fixedPointsExamEvaluate = textInput("fixedPointsExamEvaluate", label = NULL, value = NULL),
@@ -993,6 +994,11 @@ server = function(input, output, session) {
       selectInput_evaluationLanguage = selectInput("evaluationLanguage", label = NULL, choices = languages, selected = "de", multiple = FALSE),
       checkboxInput_rotateScans = checkboxInput("rotateScans", label = NULL, value = TRUE),
       
+      examSolutionsFileImport = myFileImport("examSolutions", "exam"),
+      examRegisteredParticipantsFileImport = myFileImport("examRegisteredParticipants", "exam"),
+      examScansFileImport = myFileImport("examScans", "exam"),
+      
+      # ADDON CONTENT
       addonSidebarListItems = lapply(addons, \(addon) {
         htmlTemplate(filename = paste0(addons_path_www, addon, "/", addon, "_sidebarListItem.html"))
       }),
@@ -1002,13 +1008,16 @@ server = function(input, output, session) {
       })
     ),
     
+    # SCRIPTS
     tags$script(src="script.js"),
     tags$script(src="rnwTemplate.js"),
     
+    # ADDON SCRIPTS
     lapply(addons, \(addon) {
       tags$script(src=paste0(addons_path, addon, "/", addon, "_script.js"))
     }),
     
+    # ADDON STYLESHEET
     lapply(addons, \(addon) {
       tags$link(rel="stylesheet", type="text/css", href=paste0(addons_path, addon, "/", addon, "_style.css"))
     })
@@ -1150,19 +1159,19 @@ server = function(input, output, session) {
     newGradingKeyItem = myGradingkeyItem(gradingKeyItemID)
     
     insertUI(selector='#gradingKey tbody', where = "beforeEnd", ui=HTML(newGradingKeyItem), immediate = TRUE)
+    session$sendCustomMessage("f_langDeEn", 1)
   })
   
   observeEvent(input$removeGradingKeyItem, {
     gradingKeyItem = isolate(input$removeGradingKeyItem)
     
     removeUI(selector=gradingKeyItem, immediate = TRUE)
+    session$sendCustomMessage("f_langDeEn", 1)
   })
   
   # evaluate scans - trigger
   examScanEvaluation = eventReactive(input$evaluateExam, {
     startWait(session)
-    
-    print(reactiveValuesToList(input))
 
     # background exercise
     x = callr::r_bg(

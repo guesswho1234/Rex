@@ -51,7 +51,7 @@ source("source/customElements.R")
   }
   
   # DATA PROCESSING ---------------------------------------------------------
-  createRexParticipantsList = function(args) {
+  createRexParticipantFiles = function(args) {
     name = "registredParticipants.csv"
     contentType = "text/csv"
     
@@ -79,7 +79,7 @@ source("source/customElements.R")
     return(list(name=name, data=data, contentType=contentType))
   }
   
-  createOlatEvalList = function(args) {
+  createOlatEvaluationFiles = function(args) {
     name = "olatEvalList.csv"
     contentType = "text/csv"
     
@@ -99,7 +99,7 @@ source("source/customElements.R")
     return(list(name=name, data=data, contentType=contentType))
   }
   
-  createGradingLists = function(args) {
+  createGradingFiles = function(args) {
     name = "gradingLists.zip"
     contentType = "application/zip"
     
@@ -143,6 +143,9 @@ source("source/customElements.R")
 # CONTENT ------------------------------------------------------------------
 uibkToolsData = reactiveVal()
 
-uibkTools_fields = list(button_createRexParticipantsList = uibkTools_downloadObjUI(id = "createRexParticipantsList", "Rex Teilnehmerliste erstellen", "Create Rex registered participant list", "fa-solid fa-users"),
+uibkTools_fields = list(visParticipantsFileImport = myFileImport("visParticipants", "uibkTools"),
+                        rexEvaluationFileImport = myFileImport("rexEvaluation", "uibkTools"),
+                        visGradingFileImport = myFileImport("visGrading", "uibkTools"),
+                        button_createRexParticipantsList = uibkTools_downloadObjUI(id = "createRexParticipantsList", "Rex Teilnehmerliste erstellen", "Create Rex registered participant list", "fa-solid fa-users"),
                         button_createOlatEvalList = uibkTools_downloadObjUI(id = "createOlatEvalList", "OLAT Massenbewertungliste erstellen", "Create OLAT mass evaluation list", "fa-solid fa-file-circle-check"),
                         button_createGradingLists = uibkTools_downloadObjUI(id = "createGradingLists", "Notenlisten erstellen", "Create grading lists", "fa-solid fa-graduation-cap"))
