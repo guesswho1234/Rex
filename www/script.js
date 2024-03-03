@@ -940,6 +940,17 @@ function searchExercises() {
 			filterExercises(fieldsToFilter, filterBy);
 		}
 		
+		if (input.includes("section:")) {
+			const fieldsToFilter = rex.exercises.map(exercise => {
+				if( exercise.section === null) {
+					return "";
+				} 
+				
+				return exercise.section.join(',');
+			})
+			filterExercises(fieldsToFilter, filterBy);
+		}
+		
 		if (input.includes("precision:")) {
 			const fieldsToFilter = rex.exercises.map(exercise => {
 				if( exercise.precision === null) {

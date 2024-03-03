@@ -84,31 +84,37 @@ myEvaluationCharts = function(chartData, examMaxPoints, validExams, showGradingC
 	if(!showGradingChart)
 		return(HTML(pointsChart))
 	
-	gradingChart = myGradingChart(chartData$ids[[2]], chartData$values[[2]], chartData$valueRanges[[2]], chartData$deCaptions[[2]], chartData$enCaptions[[2]])
+	gradingChart = myGradingChart(chartData$ids[[2]], chartData$values[[2]], validExams, chartData$deCaptions[[2]], chartData$enCaptions[[2]])
 	
 	return(HTML(paste0(pointsChart, gradingChart)))
 }
 
 myPointsChart = function(id, values, examMaxPoints, deCaption, enCaption) {
-  values = values[order(values)]
-  
+	meanValue = values[1]
+	values = values[values>0]
+	values = rev(values[order(values)])
+	
 	cssChart = paste0('',
 		'<figure id="', id, '" aria-hidden="true">',
-			paste0('<figcaption><span lang="de">', deCaption, ':</span><span lang="en">', enCaption, ':</span></figcaption>'),
+			paste0('<figcaption><span lang="de">', deCaption, ' (', examMaxPoints, ' erreichbare Punkte):</span><span lang="en">', enCaption, ' (Total points: ', examMaxPoints, ' achievable points):</span></figcaption>'),
 		  '<div class="graph rowGraph" style="grid: repeat(1, auto) max-content / max-content repeat(7, auto);">',
-    		# paste0(sapply(values, \(v) paste0('<div class="graphRowBar" style="grid-row: 1; width: ', (v / examMaxPoints) * 100, '%;"></div><span class="absoluteValue">', v, '</span>')), collapse=""),
-    		paste0(sapply(1:(length(values)+2), \(v) paste0('<div class="graphRowBar" style="grid-row: 1; width: ', (rev(c(0, cumsum(values), examMaxPoints))[v] / examMaxPoints) * 100, '%;"></div>')), collapse=""),
+			'<div class="graphRowBar valueBar fullBar" style="grid-row: 1; width: 100%;"></div>',
+    		paste0(sapply(seq_along(values), \(v) paste0('<div class="graphRowBar valueBar ', ifelse(values[v]==meanValue, 'meanValue', ''), '" style="grid-row: 1; width: ', values[v] * 100, '%;"></div>')), collapse=""),
+			'<div class="graphRowBar valueBar nullBar" style="grid-row: 1; width: 0%;"></div>',
+			'<div class="graphRowBar overlayBar" style="grid-row: 1; width: 100%;"><span class="absoluteValue">', meanValue*examMaxPoints, '</span></div>',
 		  '</div>',
 		'</figure>'
 	)
-	
+  	
 	return(cssChart)
 }
 
-myGradingChart = function(id, values, valueRange, deCaption, enCaption) {
+myGradingChart = function(id, values, validExams, deCaption, enCaption) {
+	valueRange = seq(100, 0, -10)
+
 	cssChart = paste0('',
 		'<figure id="', id, '" aria-hidden="true">',
-			paste0('<figcaption><span lang="de">', deCaption, ':</span><span lang="en">', enCaption, ':</span></figcaption>'),
+			paste0('<figcaption><span lang="de">', deCaption, ' (', validExams, ' gültige Prüfungen):</span><span lang="en">', enCaption, ' (', validExams, ' valid exams).</span></figcaption>'),
 			'<div class="graph columnGraph" style="grid: repeat(', length(valueRange), ', auto) max-content / max-content repeat(', nrow(values), ', auto);">',
 				paste0(sapply(valueRange, \(y) paste0('<span class="graphRowLabel">', y, '%</span>')), collapse=""),
 				paste0(sapply(1:nrow(values), \(v) {

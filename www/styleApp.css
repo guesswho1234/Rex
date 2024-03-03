@@ -1312,59 +1312,28 @@ figcaption {
 	grid-column: 1 / -1;
 }
 
-.graphRowBar:nth-child(1) {
-	background-color: red;
-	border-right: 2px solid black;
-}
-
-.graphRowBar:nth-child(2) {
-  background-color: red;
-  border-left: 2px solid black;
-  border-right: 2px solid black;
-}
-
-.graphRowBar:nth-child(3) {
-  background-color: red;
-  border-left: 2px solid black;
-  border-right: 2px solid black;
-}
-
-.graphRowBar:nth-child(4) {
-  background-color: red;
-  border-left: 2px solid black;
-  border-right: 2px solid black;
-}
-
-.graphRowBar:nth-child(5) {
-  background-color: red;
-  border-left: 2px solid black;
-  border-right: 2px solid black;
-}
-
-.graphRowBar:nth-child(6) {
-  background-color: red;
-  border-left: 2px solid black;
-  border-right: 2px solid black;
-}
-
-.graphRowBar:nth-child(7) {
-  background-color: red;
-  border-left: 2px solid black;
-  border-right: 2px solid black;
+.graphRowBar.meanValue {
+	grid-column: 1 / -1;
+	border-right: 2px solid var(---red_error) !important;
 }
 
 .graphRowBar.valueBar {
-	background: var(---yellow_warning_fade);
+	background: var(---transparent);
 	border: 2px solid var(---yellow_warning);
 }
 
-.graphRowBar.backgroundBar {
-	background: var(---background3);
-	border-bottom: 2px solid var(---yellow_warning);
+.graphRowBar.valueBar.fullBar {
+	background: var(---yellow_warning_fade);
+	z-index: 1;
+}
+
+.graphRowBar.valueBar.nullBar {
+	border: unset;
 }
 
 .graphRowBar.overlayBar {
 	background: var(---transparent);
+	z-index: 2;
 }
 
 .graphRowLabel {

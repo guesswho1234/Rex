@@ -759,7 +759,7 @@ source("source/tryCatch.R")
     return(out)
   }
   
-  evaluateExamFinalizeResponse = function(session, settings, result) {
+  evaluateExamFinalizeResponse = function(session, input, result) {
     # process exam statistics
     showModalStatistics = !is.null(result$preparedEvaluation$files$nops_evaluationCsv) && length(unlist(result$preparedEvaluation$files, recursive = TRUE)) > 0
     statisticFields = NULL
@@ -790,15 +790,26 @@ source("source/tryCatch.R")
       rownames(totalPoints) = "totalPoints"
       
       marks = matrix()
-      if(settings$mark) {
+      markThresholds = matrix()
+      if(input$mark) {
         marks = table(factor(evaluationResultsData$mark, levels=result$preparedEvaluation$fields$labels))
         marks = cbind(marks, marks/sum(marks), rev(cumsum(rev(marks)))/sum(marks))
         colnames(marks) = c("absolute", "relative", "relative cumulative")
+        
+        markThresholdsInputIds = paste0("markThreshold", 1:length(which(grepl("markThreshold", names(input)))))
+        markLabelsInputIds = paste0("markLabel", 1:length(which(grepl("markLabel", names(input)))))
+        
+        markThresholds = as.numeric(input[markThresholdsInputIds])
+        labels = unlist(input[markLabelsInputIds])
+        
+        invalidGradingKeyItems = markThresholds == "" | labels == ""
+        
+        markThresholds = matrix(markThresholds[!invalidGradingKeyItems], nrow=1)
+        colnames(markThresholds) = labels
       }
       
       chartData = list(ids = list("evaluationPointStatistics", "evaluationGradingStatistics"),
-                       values = list(totalPoints, marks),
-                       valueRanges = list(c(totalPoints[,1], totalPoints[,6]), seq(100, 0, -10)),
+                       values = list(cbind(mean(as.numeric(evaluationResultsData$points))/examMaxPoints, markThresholds), marks),
                        deCaptions = c("Punkte", "Noten"),
                        enCaptions = c("Points", "Marks"))
       
@@ -807,6 +818,7 @@ source("source/tryCatch.R")
         validExams=validExams,
         exercisePoints=exercisePoints,
         totalPoints=totalPoints,
+        markThresholds=markThresholds,
         marks=marks
       )
 
@@ -827,7 +839,7 @@ source("source/tryCatch.R")
       title = tags$span(HTML('<span lang="de">Prüfung auswerten</span><span lang="en">Evaluate exam</span>')),
       tags$span(id='responseMessage', myMessage(result$message, "modal")),
       if (showModalStatistics)
-        myEvaluationCharts(chartData, examMaxPoints, validExams, settings$mark),
+        myEvaluationCharts(chartData, examMaxPoints, validExams, input$mark),
       footer = tagList(
         myActionButton("dismiss_evaluateExamFinalizeResponse", "Schließen", "Close", "fa-solid fa-xmark"),
         myActionButton("backTo_evaluateExamScansResponse", "Zurück", "Back", "fa-solid fa-arrow-left"),
@@ -1272,10 +1284,8 @@ server = function(input, output, session) {
       # save result in reactive value
       examFinalizeEvaluationData(result)
       
-      settings = list(mark=isolate(input$mark))
-
       # open modal
-      evaluateExamFinalizeResponse(session, settings, result)
+      evaluateExamFinalizeResponse(session, isolate(reactiveValuesToList(input)), result)
     }
   })
 
