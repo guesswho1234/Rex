@@ -702,7 +702,7 @@ source("source/tryCatch.R")
             evaluationData$id = sprintf(paste0("%0", fields$regLength, "d"), as.numeric(evaluationData$id))
           
           evaluationData$registration = sprintf(paste0("%0", fields$regLength, "d"), as.numeric(evaluationData$registration))
-  
+          
           # add additional exercise columns
           exerciseTable = as.data.frame(Reduce(rbind, lapply(evaluationData$exam, \(exam) {
             exerciseNames = Reduce(cbind, lapply(solutionData[[as.character(exam)]], \(exercise) exercise$metainfo$file))
@@ -718,6 +718,19 @@ source("source/tryCatch.R")
   
           evaluationData = cbind(evaluationData, exerciseTable)
           
+          # add max points column
+          examMaxPoints = as.data.frame(Reduce(rbind, lapply(evaluationData$exam, \(exam) {
+            examPoints = sum(as.numeric(sapply(solutionData[[as.character(exam)]], \(exercise) exercise$metainfo$points)))
+            examPoints = matrix(examPoints, nrow=1)
+            
+            return(examPoints)
+          })))
+          
+          names(examMaxPoints) = paste0("examMaxPoints")
+          
+          evaluationData = cbind(evaluationData, examMaxPoints)
+          
+          # pad zeros for answers and solutions
           evaluationData[paste("answer", 1:length(solutionData[[1]]), sep=".")] = sprintf(paste0("%0", 5, "d"), unlist(evaluationData[paste("answer", 1:length(solutionData[[1]]), sep=".")]))
           evaluationData[paste("solution", 1:length(solutionData[[1]]), sep=".")] = sprintf(paste0("%0", 5, "d"), unlist(evaluationData[paste("solution", 1:length(solutionData[[1]]), sep=".")]))
           
@@ -753,6 +766,9 @@ source("source/tryCatch.R")
 
     if (showModalStatistics) {
       evaluationResultsData = read.csv2(result$preparedEvaluation$files$nops_evaluationCsv)
+      
+      examMaxPoints = matrix(max(as.numeric(evaluationResultsData$examMaxPoints)), dimnames=list("examMaxPoints", "value"))
+      validExams = matrix(nrow(evaluationResultsData), dimnames=list("validExams", "value"))
 
       exerciseNames = unique(unlist(evaluationResultsData[,grepl("exercise.*", names(evaluationResultsData))]))
       if(all(grepl(paste0(edirName, "_"), exerciseNames)) )
@@ -787,6 +803,8 @@ source("source/tryCatch.R")
                        enCaptions = c("Points", "Marks"))
       
       evaluationStatistics = list(
+        examMaxPoints=examMaxPoints,
+        validExams=validExams,
         exercisePoints=exercisePoints,
         totalPoints=totalPoints,
         marks=marks
@@ -809,7 +827,7 @@ source("source/tryCatch.R")
       title = tags$span(HTML('<span lang="de">Prüfung auswerten</span><span lang="en">Evaluate exam</span>')),
       tags$span(id='responseMessage', myMessage(result$message, "modal")),
       if (showModalStatistics)
-        myEvaluationCharts(chartData, settings$mark),
+        myEvaluationCharts(chartData, examMaxPoints, validExams, settings$mark),
       footer = tagList(
         myActionButton("dismiss_evaluateExamFinalizeResponse", "Schließen", "Close", "fa-solid fa-xmark"),
         myActionButton("backTo_evaluateExamScansResponse", "Zurück", "Back", "fa-solid fa-arrow-left"),

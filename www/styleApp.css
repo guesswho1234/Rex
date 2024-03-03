@@ -1277,27 +1277,93 @@ figcaption {
 
 .graph {
 	display: grid;
-	height: 25vh;
 	padding: 1rem;
 }
 
-.graphBar {
+.graph.rowGraph {
+	height: 80px;
+}
+
+.graph.columnGraph {
+	height: 25vh;
+}
+
+.graphColumnBar {
 	grid-row: 1 / -2;
 	justify-self: center;
 	width: 45px;
 }
 
-.graphBar.valueBar {
+.graphColumnBar.valueBar {
 	background: var(---yellow_warning_fade);
 	border: 2px solid var(---yellow_warning);
 }
 
-.graphBar.backgroundBar {
+.graphColumnBar.backgroundBar {
 	background: var(---background3);
 	border-bottom: 2px solid var(---yellow_warning);
 }
 
-.graphBar.overlayBar {
+.graphColumnBar.overlayBar {
+	background: var(---transparent);
+}
+
+.graphRowBar {
+	grid-column: 1 / -1;
+}
+
+.graphRowBar:nth-child(1) {
+	background-color: red;
+	border-right: 2px solid black;
+}
+
+.graphRowBar:nth-child(2) {
+  background-color: red;
+  border-left: 2px solid black;
+  border-right: 2px solid black;
+}
+
+.graphRowBar:nth-child(3) {
+  background-color: red;
+  border-left: 2px solid black;
+  border-right: 2px solid black;
+}
+
+.graphRowBar:nth-child(4) {
+  background-color: red;
+  border-left: 2px solid black;
+  border-right: 2px solid black;
+}
+
+.graphRowBar:nth-child(5) {
+  background-color: red;
+  border-left: 2px solid black;
+  border-right: 2px solid black;
+}
+
+.graphRowBar:nth-child(6) {
+  background-color: red;
+  border-left: 2px solid black;
+  border-right: 2px solid black;
+}
+
+.graphRowBar:nth-child(7) {
+  background-color: red;
+  border-left: 2px solid black;
+  border-right: 2px solid black;
+}
+
+.graphRowBar.valueBar {
+	background: var(---yellow_warning_fade);
+	border: 2px solid var(---yellow_warning);
+}
+
+.graphRowBar.backgroundBar {
+	background: var(---background3);
+	border-bottom: 2px solid var(---yellow_warning);
+}
+
+.graphRowBar.overlayBar {
 	background: var(---transparent);
 }
 

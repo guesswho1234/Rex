@@ -78,8 +78,8 @@ myFileImport = function(name, sectionClass) {
 	return(HTML(fileImport))
 }
 
-myEvaluationCharts = function(chartData, showGradingChart) {
-	pointsChart = myPointsChart(chartData$ids[[1]], chartData$values[[1]], chartData$valueRanges[[1]], chartData$deCaptions[[1]], chartData$enCaptions[[1]])
+myEvaluationCharts = function(chartData, examMaxPoints, validExams, showGradingChart) {
+	pointsChart = myPointsChart(chartData$ids[[1]], chartData$values[[1]], examMaxPoints, chartData$deCaptions[[1]], chartData$enCaptions[[1]])
 	
 	if(!showGradingChart)
 		return(HTML(pointsChart))
@@ -89,10 +89,16 @@ myEvaluationCharts = function(chartData, showGradingChart) {
 	return(HTML(paste0(pointsChart, gradingChart)))
 }
 
-myPointsChart = function(id, values, valueRange, deCaption, enCaption) {
+myPointsChart = function(id, values, examMaxPoints, deCaption, enCaption) {
+  values = values[order(values)]
+  
 	cssChart = paste0('',
 		'<figure id="', id, '" aria-hidden="true">',
 			paste0('<figcaption><span lang="de">', deCaption, ':</span><span lang="en">', enCaption, ':</span></figcaption>'),
+		  '<div class="graph rowGraph" style="grid: repeat(1, auto) max-content / max-content repeat(7, auto);">',
+    		# paste0(sapply(values, \(v) paste0('<div class="graphRowBar" style="grid-row: 1; width: ', (v / examMaxPoints) * 100, '%;"></div><span class="absoluteValue">', v, '</span>')), collapse=""),
+    		paste0(sapply(1:(length(values)+2), \(v) paste0('<div class="graphRowBar" style="grid-row: 1; width: ', (rev(c(0, cumsum(values), examMaxPoints))[v] / examMaxPoints) * 100, '%;"></div>')), collapse=""),
+		  '</div>',
 		'</figure>'
 	)
 	
@@ -103,13 +109,13 @@ myGradingChart = function(id, values, valueRange, deCaption, enCaption) {
 	cssChart = paste0('',
 		'<figure id="', id, '" aria-hidden="true">',
 			paste0('<figcaption><span lang="de">', deCaption, ':</span><span lang="en">', enCaption, ':</span></figcaption>'),
-			'<div class="graph" style="grid: repeat(', length(valueRange), ', auto) max-content / max-content repeat(', nrow(values), ', auto);">',
+			'<div class="graph columnGraph" style="grid: repeat(', length(valueRange), ', auto) max-content / max-content repeat(', nrow(values), ', auto);">',
 				paste0(sapply(valueRange, \(y) paste0('<span class="graphRowLabel">', y, '%</span>')), collapse=""),
 				paste0(sapply(1:nrow(values), \(v) {
 					paste0('',
-						'<div class="graphBar valueBar" style="grid-column: ', v+1, '; height: 100%;"></div>',
-						'<div class="graphBar backgroundBar" style="grid-column: ', v+1, '; height: ', (1-values[v,2])*100, '%;"></div>',
-						'<div class="graphBar overlayBar" style="grid-column: ', v+1, '; height: 100%;"><span class="absoluteValue">', values[v,1], '</span></div>'
+						'<div class="graphColumnBar valueBar" style="grid-column: ', v+1, '; height: 100%;"></div>',
+						'<div class="graphColumnBar backgroundBar" style="grid-column: ', v+1, '; height: ', (1 - values[v,2]) * 100, '%;"></div>',
+						'<div class="graphColumnBar overlayBar" style="grid-column: ', v+1, '; height: 100%;"><span class="absoluteValue">', values[v,1], '</span></div>'
 					)
 				}), collapse=""),
 				'<span></span>',
