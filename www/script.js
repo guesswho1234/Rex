@@ -940,6 +940,17 @@ function searchExercises() {
 			filterExercises(fieldsToFilter, filterBy);
 		}
 		
+		if (input.includes("section:")) {
+			const fieldsToFilter = rex.exercises.map(exercise => {
+				if( exercise.section === null) {
+					return "";
+				} 
+				
+				return exercise.section.join(',');
+			})
+			filterExercises(fieldsToFilter, filterBy);
+		}
+		
 		if (input.includes("precision:")) {
 			const fieldsToFilter = rex.exercises.map(exercise => {
 				if( exercise.precision === null) {
@@ -2873,7 +2884,7 @@ Shiny.addCustomMessageHandler('setExanIds', function(jsonData) {
 
 Shiny.addCustomMessageHandler('compareScanRegistrationData', function(jsonData) {
 	rex.examEvaluation.scans_reg_fullJoinData = JSON.parse(jsonData);
-		
+	
 	rex.examEvaluation.scans_reg_fullJoinData = rex.examEvaluation.scans_reg_fullJoinData.map(obj => {
 		return { ...obj, sheet: zeroPad(obj.sheet, 11), scrambling: zeroPad(obj.scrambling, 2), type: zeroPad(obj.type, 3), changeHistory: "0" }
 	});
@@ -2892,11 +2903,11 @@ Shiny.addCustomMessageHandler('evaluationStatistics', function(jsonData) {
 });
 
 $('body').on('click', '#proceedEval', function() {
+	const scans_reg_fullJoinData = rex.examEvaluation.scans_reg_fullJoinData;
 	const properties = ['scan', 'sheet', 'scrambling', 'type', 'replacement', 'registration'].concat(new Array(45).fill(1).map( (_, i) => i+1 ));
+	const datenTxt = Object.assign({}, scans_reg_fullJoinData.filter(x => scanValid(x)).map(x => Object.assign({}, properties.map(y => x[y] === undefined ? "00000" : x[y], {}))));
 	
-	const datenTxt = Object.assign({}, rex.examEvaluation.scans_reg_fullJoinData.filter(x => scanValid(x)).map(x => Object.assign({}, properties.map(y => x[y] === undefined ? "00000" : x[y], {}))));
-
-	Shiny.onInputChange("proceedEvaluation", datenTxt, {priority: 'event'});
+	Shiny.onInputChange("proceedEvaluation", {scans_reg_fullJoinData:scans_reg_fullJoinData, datenTxt:datenTxt}, {priority: 'event'});
 });
 
 /* --------------------------------------------------------------

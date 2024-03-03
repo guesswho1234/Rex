@@ -414,7 +414,8 @@ source("source/tryCatch.R")
           
           invalidGradingKeyItems = mark == "" | labels == ""
           
-          mark = mark[!invalidGradingKeyItems]
+          mark = mark[!invalidGradingKeyItems][-1]
+
           labels = labels[!invalidGradingKeyItems]
         }
         
@@ -653,13 +654,16 @@ source("source/tryCatch.R")
     out = tryCatch({
       warnings = collectWarnings({
         # process scanData
-        scanData = Reduce(c, lapply(proceedEvaluation, function(x) paste0(unlist(unname(x)), collapse=" ")))
+        scanData = Reduce(c, lapply(proceedEvaluation$datenTxt, function(x) paste0(unlist(unname(x)), collapse=" ")))
         scanData = paste0(scanData, collapse="\n")
+        
+        if(scanData == "")
+          stop("E1021")
 
         # write scanData
         scanDatafile = paste0(dir, "/", "Daten.txt")
         writeLines(text=scanData, con=scanDatafile)
-
+        
         # create *_nops_scan.zip file needed for exams::nops_eval
         zipFile = gsub("_+", "_", paste0(dir, "/", preparedEvaluation$meta$examName, "_nops_scan.zip"))
         zip(zipFile, c(preparedEvaluation$files$scans, scanDatafile), flags='-r9XjFS')
@@ -699,18 +703,35 @@ source("source/tryCatch.R")
             evaluationData$id = sprintf(paste0("%0", fields$regLength, "d"), as.numeric(evaluationData$id))
           
           evaluationData$registration = sprintf(paste0("%0", fields$regLength, "d"), as.numeric(evaluationData$registration))
-  
+          
           # add additional exercise columns
           exerciseTable = as.data.frame(Reduce(rbind, lapply(evaluationData$exam, \(exam) {
             exerciseNames = Reduce(cbind, lapply(solutionData[[as.character(exam)]], \(exercise) exercise$metainfo$file))
-            if(all(grepl(paste0(settings$edirName, "_"), exerciseNames))) 
+            if(all(grepl(paste0(settings$edirName, "_"), exerciseNames)))
               exerciseNames = sapply(strsplit(exerciseNames, paste0(settings$edirName, "_")), \(name) name[2])
+            
+            exerciseNames = matrix(exerciseNames, nrow=1)
+            
+            return(exerciseNames)
           })))
           
           names(exerciseTable) = paste0("exercise.", 1:ncol(exerciseTable))
   
           evaluationData = cbind(evaluationData, exerciseTable)
           
+          # add max points column
+          examMaxPoints = as.data.frame(Reduce(rbind, lapply(evaluationData$exam, \(exam) {
+            examPoints = sum(as.numeric(sapply(solutionData[[as.character(exam)]], \(exercise) exercise$metainfo$points)))
+            examPoints = matrix(examPoints, nrow=1)
+            
+            return(examPoints)
+          })))
+          
+          names(examMaxPoints) = paste0("examMaxPoints")
+          
+          evaluationData = cbind(evaluationData, examMaxPoints)
+          
+          # pad zeros for answers and solutions
           evaluationData[paste("answer", 1:length(solutionData[[1]]), sep=".")] = sprintf(paste0("%0", 5, "d"), unlist(evaluationData[paste("answer", 1:length(solutionData[[1]]), sep=".")]))
           evaluationData[paste("solution", 1:length(solutionData[[1]]), sep=".")] = sprintf(paste0("%0", 5, "d"), unlist(evaluationData[paste("solution", 1:length(solutionData[[1]]), sep=".")]))
           
@@ -739,53 +760,71 @@ source("source/tryCatch.R")
     return(out)
   }
   
-  evaluateExamFinalizeResponse = function(session, result) {
-    showModal(modalDialog(
-      title = tags$span(HTML('<span lang="de">Prüfung auswerten</span><span lang="en">Evaluate exam</span>')),
-      tags$span(id='responseMessage', myMessage(result$message, "modal")),
-      footer = tagList(
-        myActionButton("dismiss_evaluateExamFinalizeResponse", "Schließen", "Close", "fa-solid fa-xmark"),
-        myActionButton("backTo_evaluateExamScansResponse", "Zurück", "Back", "fa-solid fa-arrow-left"),
-        if (length(unlist(result$preparedEvaluation$files, recursive = TRUE)) > 0)
-          myDownloadButton('downloadEvaluationFiles')
-      )
-    ))
-    session$sendCustomMessage("f_langDeEn", 1)
-    
-    # display statistics in modal
-    if (!is.null(result$preparedEvaluation$files$nops_evaluationCsv) && length(unlist(result$preparedEvaluation$files, recursive = TRUE)) > 0) {
+  evaluateExamFinalizeResponse = function(session, input, result) {
+    # process exam statistics
+    showModalStatistics = !is.null(result$preparedEvaluation$files$nops_evaluationCsv) && length(unlist(result$preparedEvaluation$files, recursive = TRUE)) > 0
+    statisticFields = NULL
+
+    if (showModalStatistics) {
       evaluationResultsData = read.csv2(result$preparedEvaluation$files$nops_evaluationCsv)
       
+      examMaxPoints = matrix(max(as.numeric(evaluationResultsData$examMaxPoints)), dimnames=list("examMaxPoints", "value"))
+      validExams = matrix(nrow(evaluationResultsData), dimnames=list("validExams", "value"))
+
       exerciseNames = unique(unlist(evaluationResultsData[,grepl("exercise.*", names(evaluationResultsData))]))
       if(all(grepl(paste0(edirName, "_"), exerciseNames)) )
         exerciseNames = sapply(strsplit(exerciseNames, paste0(edirName, "_")), \(name) name[2])
-      
+
       exercisePoints = Reduce(rbind, lapply(exerciseNames, \(exercise){
         summary(apply(evaluationResultsData, 1, \(participant){
 
           if(!exercise %in% participant)
             return(NULL)
-          
+
           as.numeric(participant[gsub("exercise", "points", names(evaluationResultsData)[participant==exercise])])
         }))
       }))
+
       rownames(exercisePoints) = exerciseNames
       
       totalPoints = t(summary(as.numeric(evaluationResultsData$points)))
       rownames(totalPoints) = "totalPoints"
       
-      marks = table(factor(evaluationResultsData$mark, levels=result$preparedEvaluation$fields$labels))
-      marks = cbind(marks, marks/sum(marks), rev(cumsum(rev(marks)))/sum(marks))
-      colnames(marks) = c("absolute", "relative", "relative cumulative")
+      marks = matrix()
+      markThresholds = matrix()
+      if(input$mark) {
+        marks = table(factor(evaluationResultsData$mark, levels=result$preparedEvaluation$fields$labels))
+        marks = cbind(marks, marks/sum(marks), rev(cumsum(rev(marks)))/sum(marks))
+        colnames(marks) = c("absolute", "relative", "relative cumulative")
+        
+        markThresholdsInputIds = paste0("markThreshold", 1:length(which(grepl("markThreshold", names(input)))))
+        markLabelsInputIds = paste0("markLabel", 1:length(which(grepl("markLabel", names(input)))))
+        
+        markThresholds = as.numeric(input[markThresholdsInputIds])
+        labels = unlist(input[markLabelsInputIds])
+        
+        invalidGradingKeyItems = markThresholds == "" | labels == ""
+        
+        markThresholds = matrix(markThresholds[!invalidGradingKeyItems], nrow=1)
+        colnames(markThresholds) = labels
+      }
+      
+      chartData = list(ids = list("evaluationPointStatistics", "evaluationGradingStatistics"),
+                       values = list(cbind(mean(as.numeric(evaluationResultsData$points))/examMaxPoints, markThresholds), marks),
+                       deCaptions = c("Punkte", "Noten"),
+                       enCaptions = c("Points", "Marks"))
       
       evaluationStatistics = list(
+        examMaxPoints=examMaxPoints,
+        validExams=validExams,
         exercisePoints=exercisePoints,
         totalPoints=totalPoints,
+        markThresholds=markThresholds,
         marks=marks
       )
-      
+
       evaluationStatistics_json = rjs_vectorToJsonArray(Reduce(c, lapply(seq_along(evaluationStatistics), \(x) {
-        rjs_keyValuePairsToJsonObject(names(evaluationStatistics)[x], 
+        rjs_keyValuePairsToJsonObject(names(evaluationStatistics)[x],
                                       rjs_vectorToJsonArray(Reduce(c, lapply(1:nrow(evaluationStatistics[[x]]), \(y) {
                                         rjs_keyValuePairsToJsonObject(c("name", colnames(evaluationStatistics[[x]])),
                                                                       c(rownames(evaluationStatistics[[x]])[y], evaluationStatistics[[x]][y,]),
@@ -795,6 +834,21 @@ source("source/tryCatch.R")
 
       session$sendCustomMessage("evaluationStatistics", evaluationStatistics_json)
     }
+    
+    # show modal
+    showModal(modalDialog(
+      title = tags$span(HTML('<span lang="de">Prüfung auswerten</span><span lang="en">Evaluate exam</span>')),
+      tags$span(id='responseMessage', myMessage(result$message, "modal")),
+      if (showModalStatistics)
+        myEvaluationCharts(chartData, examMaxPoints, validExams, input$mark),
+      footer = tagList(
+        myActionButton("dismiss_evaluateExamFinalizeResponse", "Schließen", "Close", "fa-solid fa-xmark"),
+        myActionButton("backTo_evaluateExamScansResponse", "Zurück", "Back", "fa-solid fa-arrow-left"),
+        if (length(unlist(result$preparedEvaluation$files, recursive = TRUE)) > 0)
+          myDownloadButton('downloadEvaluationFiles')
+      )
+    ))
+    session$sendCustomMessage("f_langDeEn", 1)
   }
   
   # WAIT --------------------------------------------------------------------
@@ -1020,7 +1074,7 @@ server = function(input, output, session) {
     # ADDON STYLESHEET
     lapply(addons, \(addon) {
       tags$link(rel="stylesheet", type="text/css", href=paste0(addons_path, addon, "/", addon, "_style.css"))
-    })
+    }),
    )
   })
   
@@ -1203,8 +1257,14 @@ server = function(input, output, session) {
     dir = getDir(session)
     removeModal()
     
+    result = isolate(examScanEvaluationData())
+    result$scans_reg_fullJoinData = isolate(input$proceedEvaluation$scans_reg_fullJoinData)
+    result$scans_reg_fullJoinData = as.data.frame(Reduce(rbind, result$scans_reg_fullJoinData)) 
+    
+    examScanEvaluationData(result)
+    
     settings = list(edirName=edirName)
-
+    
     # background exercise
     x = callr::r_bg(
       func = evaluateExamFinalize,
@@ -1226,7 +1286,7 @@ server = function(input, output, session) {
       examFinalizeEvaluationData(result)
       
       # open modal
-      evaluateExamFinalizeResponse(session, result)
+      evaluateExamFinalizeResponse(session, isolate(reactiveValuesToList(input)), result)
     }
   })
 

@@ -24,6 +24,12 @@ main {
 	z-index: 997;
 }
 
+.modal-body {
+	overflow: auto;
+	max-height: 75vh;
+	min-height: 200px;
+}
+
 #logoApp {
 	cursor: pointer;
 }
@@ -1258,6 +1264,100 @@ main > * {
 
 .scanStat {
 	display: block;
+}
+
+figure {
+	margin: 1rem;
+}
+
+figcaption {
+	margin-top: 1rem;
+	font-weight: bold;
+}
+
+.graph {
+	display: grid;
+	padding: 1rem;
+}
+
+.graph.rowGraph {
+	height: 80px;
+}
+
+.graph.columnGraph {
+	height: 25vh;
+}
+
+.graphColumnBar {
+	grid-row: 1 / -2;
+	justify-self: center;
+	width: 45px;
+}
+
+.graphColumnBar.valueBar {
+	background: var(---yellow_warning_fade);
+	border: 2px solid var(---yellow_warning);
+}
+
+.graphColumnBar.backgroundBar {
+	background: var(---background3);
+	border-bottom: 2px solid var(---yellow_warning);
+}
+
+.graphColumnBar.overlayBar {
+	background: var(---transparent);
+}
+
+.graphRowBar {
+	grid-column: 1 / -1;
+}
+
+.graphRowBar.meanValue {
+	grid-column: 1 / -1;
+	border-right: 2px solid var(---red_error) !important;
+}
+
+.graphRowBar.valueBar {
+	background: var(---transparent);
+	border: 2px solid var(---yellow_warning);
+}
+
+.graphRowBar.valueBar.fullBar {
+	background: var(---yellow_warning_fade);
+	z-index: 1;
+}
+
+.graphRowBar.valueBar.nullBar {
+	border: unset;
+}
+
+.graphRowBar.overlayBar {
+	background: var(---transparent);
+	z-index: 2;
+}
+
+.graphRowLabel {
+	margin-top: -0.5em;
+	text-align: end;
+}
+
+.graphColumnLabel {
+	justify-self: center;
+	margin-top: 6px;
+	font-size: 14pt;
+}
+
+.graphRowLabel::after {
+	display: inline-block;
+	content: "\2000\2000\2014";
+}
+
+.absoluteValue  {
+	display: grid;
+	height: 100%;
+	width: 100%;
+	place-content: center;
+	font-weight: bold;
 }
 
 /* --------------------------------------------------------------

@@ -77,3 +77,58 @@ myFileImport = function(name, sectionClass) {
 	
 	return(HTML(fileImport))
 }
+
+myEvaluationCharts = function(chartData, examMaxPoints, validExams, showGradingChart) {
+	pointsChart = myPointsChart(chartData$ids[[1]], chartData$values[[1]], examMaxPoints, chartData$deCaptions[[1]], chartData$enCaptions[[1]])
+	
+	if(!showGradingChart)
+		return(HTML(pointsChart))
+	
+	gradingChart = myGradingChart(chartData$ids[[2]], chartData$values[[2]], validExams, chartData$deCaptions[[2]], chartData$enCaptions[[2]])
+	
+	return(HTML(paste0(pointsChart, gradingChart)))
+}
+
+myPointsChart = function(id, values, examMaxPoints, deCaption, enCaption) {
+	meanValue = values[1]
+	values = values[values>0]
+	values = rev(values[order(values)])
+	
+	cssChart = paste0('',
+		'<figure id="', id, '" aria-hidden="true">',
+			paste0('<figcaption><span lang="de">', deCaption, ' (', examMaxPoints, ' erreichbare Punkte):</span><span lang="en">', enCaption, ' (Total points: ', examMaxPoints, ' achievable points):</span></figcaption>'),
+		  '<div class="graph rowGraph" style="grid: repeat(1, auto) max-content / max-content repeat(7, auto);">',
+			'<div class="graphRowBar valueBar fullBar" style="grid-row: 1; width: 100%;"></div>',
+    		paste0(sapply(seq_along(values), \(v) paste0('<div class="graphRowBar valueBar ', ifelse(values[v]==meanValue, 'meanValue', ''), '" style="grid-row: 1; width: ', values[v] * 100, '%;"></div>')), collapse=""),
+			'<div class="graphRowBar valueBar nullBar" style="grid-row: 1; width: 0%;"></div>',
+			'<div class="graphRowBar overlayBar" style="grid-row: 1; width: 100%;"><span class="absoluteValue">', meanValue*examMaxPoints, '</span></div>',
+		  '</div>',
+		'</figure>'
+	)
+  	
+	return(cssChart)
+}
+
+myGradingChart = function(id, values, validExams, deCaption, enCaption) {
+	valueRange = seq(100, 0, -10)
+
+	cssChart = paste0('',
+		'<figure id="', id, '" aria-hidden="true">',
+			paste0('<figcaption><span lang="de">', deCaption, ' (', validExams, ' gültige Prüfungen):</span><span lang="en">', enCaption, ' (', validExams, ' valid exams).</span></figcaption>'),
+			'<div class="graph columnGraph" style="grid: repeat(', length(valueRange), ', auto) max-content / max-content repeat(', nrow(values), ', auto);">',
+				paste0(sapply(valueRange, \(y) paste0('<span class="graphRowLabel">', y, '%</span>')), collapse=""),
+				paste0(sapply(1:nrow(values), \(v) {
+					paste0('',
+						'<div class="graphColumnBar valueBar" style="grid-column: ', v+1, '; height: 100%;"></div>',
+						'<div class="graphColumnBar backgroundBar" style="grid-column: ', v+1, '; height: ', (1 - values[v,2]) * 100, '%;"></div>',
+						'<div class="graphColumnBar overlayBar" style="grid-column: ', v+1, '; height: 100%;"><span class="absoluteValue">', values[v,1], '</span></div>'
+					)
+				}), collapse=""),
+				'<span></span>',
+				paste0(sapply(rownames(values), \(x) paste0('<span class="graphColumnLabel">', x, '</span>')), collapse=""),
+			'</div>',
+		'</figure>'
+	)
+	
+	return(cssChart)
+}
