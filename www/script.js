@@ -2874,8 +2874,6 @@ Shiny.addCustomMessageHandler('setExanIds', function(jsonData) {
 Shiny.addCustomMessageHandler('compareScanRegistrationData', function(jsonData) {
 	rex.examEvaluation.scans_reg_fullJoinData = JSON.parse(jsonData);
 	
-	console.log(rex.examEvaluation.scans_reg_fullJoinData.map(x=>x.registration));
-		
 	rex.examEvaluation.scans_reg_fullJoinData = rex.examEvaluation.scans_reg_fullJoinData.map(obj => {
 		return { ...obj, sheet: zeroPad(obj.sheet, 11), scrambling: zeroPad(obj.scrambling, 2), type: zeroPad(obj.type, 3), changeHistory: "0" }
 	});

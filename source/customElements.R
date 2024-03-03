@@ -78,18 +78,45 @@ myFileImport = function(name, sectionClass) {
 	return(HTML(fileImport))
 }
 
-myCssChart = function(id, values, valueRange, deCaption, enCaption) {
+myEvaluationCharts = function(chartData, showGradingChart) {
+	pointsChart = myPointsChart(chartData$ids[[1]], chartData$values[[1]], chartData$valueRanges[[1]], chartData$deCaptions[[1]], chartData$enCaptions[[1]])
+	
+	if(!showGradingChart)
+		return(HTML(pointsChart))
+	
+	gradingChart = myGradingChart(chartData$ids[[2]], chartData$values[[2]], chartData$valueRanges[[2]], chartData$deCaptions[[2]], chartData$enCaptions[[2]])
+	
+	return(HTML(paste0(pointsChart, gradingChart)))
+}
+
+myPointsChart = function(id, values, valueRange, deCaption, enCaption) {
+	cssChart = paste0('',
+		'<figure id="', id, '" aria-hidden="true">',
+			paste0('<figcaption><span lang="de">', deCaption, ':</span><span lang="en">', enCaption, ':</span></figcaption>'),
+		'</figure>'
+	)
+	
+	return(cssChart)
+}
+
+myGradingChart = function(id, values, valueRange, deCaption, enCaption) {
 	cssChart = paste0('',
 		'<figure id="', id, '" aria-hidden="true">',
 			paste0('<figcaption><span lang="de">', deCaption, ':</span><span lang="en">', enCaption, ':</span></figcaption>'),
 			'<div class="graph" style="grid: repeat(', length(valueRange), ', auto) max-content / max-content repeat(', nrow(values), ', auto);">',
 				paste0(sapply(valueRange, \(y) paste0('<span class="graphRowLabel">', y, '%</span>')), collapse=""),
-				paste0(sapply(1:nrow(values), \(v) paste0('<div class="graphBar" style="grid-column: ', v+1, '; --h: ', values[v,2]*100, '%;"><span class="absoluteValue">', values[v,1], '</span></div>')), collapse=""),
+				paste0(sapply(1:nrow(values), \(v) {
+					paste0('',
+						'<div class="graphBar valueBar" style="grid-column: ', v+1, '; height: 100%;"></div>',
+						'<div class="graphBar backgroundBar" style="grid-column: ', v+1, '; height: ', (1-values[v,2])*100, '%;"></div>',
+						'<div class="graphBar overlayBar" style="grid-column: ', v+1, '; height: 100%;"><span class="absoluteValue">', values[v,1], '</span></div>'
+					)
+				}), collapse=""),
 				'<span></span>',
 				paste0(sapply(rownames(values), \(x) paste0('<span class="graphColumnLabel">', x, '</span>')), collapse=""),
 			'</div>',
 		'</figure>'
 	)
 	
-	return(HTML(cssChart))
+	return(cssChart)
 }

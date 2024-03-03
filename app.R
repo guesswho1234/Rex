@@ -655,14 +655,14 @@ source("source/tryCatch.R")
         # process scanData
         scanData = Reduce(c, lapply(proceedEvaluation$datenTxt, function(x) paste0(unlist(unname(x)), collapse=" ")))
         scanData = paste0(scanData, collapse="\n")
+        
+        if(scanData == "")
+          stop("E1021")
 
         # write scanData
         scanDatafile = paste0(dir, "/", "Daten.txt")
         writeLines(text=scanData, con=scanDatafile)
         
-        # update scans_reg_fullJoinData to capture and store edits from inspects
-        preparedEvaluation$scans_reg_fullJoinData = as.data.frame(Reduce(rbind, proceedEvaluation$scans_reg_fullJoinData))
-
         # create *_nops_scan.zip file needed for exams::nops_eval
         zipFile = gsub("_+", "_", paste0(dir, "/", preparedEvaluation$meta$examName, "_nops_scan.zip"))
         zip(zipFile, c(preparedEvaluation$files$scans, scanDatafile), flags='-r9XjFS')
@@ -709,6 +709,8 @@ source("source/tryCatch.R")
             if(all(grepl(paste0(settings$edirName, "_"), exerciseNames)))
               exerciseNames = sapply(strsplit(exerciseNames, paste0(settings$edirName, "_")), \(name) name[2])
             
+            exerciseNames = matrix(exerciseNames, nrow=1)
+            
             return(exerciseNames)
           })))
           
@@ -744,9 +746,10 @@ source("source/tryCatch.R")
     return(out)
   }
   
-  evaluateExamFinalizeResponse = function(session, result) {
-    # display statistics in modal
+  evaluateExamFinalizeResponse = function(session, settings, result) {
+    # process exam statistics
     showModalStatistics = !is.null(result$preparedEvaluation$files$nops_evaluationCsv) && length(unlist(result$preparedEvaluation$files, recursive = TRUE)) > 0
+    statisticFields = NULL
 
     if (showModalStatistics) {
       evaluationResultsData = read.csv2(result$preparedEvaluation$files$nops_evaluationCsv)
@@ -764,15 +767,25 @@ source("source/tryCatch.R")
           as.numeric(participant[gsub("exercise", "points", names(evaluationResultsData)[participant==exercise])])
         }))
       }))
-      rownames(exercisePoints) = exerciseNames
 
+      rownames(exercisePoints) = exerciseNames
+      
       totalPoints = t(summary(as.numeric(evaluationResultsData$points)))
       rownames(totalPoints) = "totalPoints"
-
-      marks = table(factor(evaluationResultsData$mark, levels=result$preparedEvaluation$fields$labels))
-      marks = cbind(marks, marks/sum(marks), rev(cumsum(rev(marks)))/sum(marks))
-      colnames(marks) = c("absolute", "relative", "relative cumulative")
-
+      
+      marks = matrix()
+      if(settings$mark) {
+        marks = table(factor(evaluationResultsData$mark, levels=result$preparedEvaluation$fields$labels))
+        marks = cbind(marks, marks/sum(marks), rev(cumsum(rev(marks)))/sum(marks))
+        colnames(marks) = c("absolute", "relative", "relative cumulative")
+      }
+      
+      chartData = list(ids = list("evaluationPointStatistics", "evaluationGradingStatistics"),
+                       values = list(totalPoints, marks),
+                       valueRanges = list(c(totalPoints[,1], totalPoints[,6]), seq(100, 0, -10)),
+                       deCaptions = c("Punkte", "Noten"),
+                       enCaptions = c("Points", "Marks"))
+      
       evaluationStatistics = list(
         exercisePoints=exercisePoints,
         totalPoints=totalPoints,
@@ -791,12 +804,12 @@ source("source/tryCatch.R")
       session$sendCustomMessage("evaluationStatistics", evaluationStatistics_json)
     }
     
-    # modal
+    # show modal
     showModal(modalDialog(
       title = tags$span(HTML('<span lang="de">Prüfung auswerten</span><span lang="en">Evaluate exam</span>')),
       tags$span(id='responseMessage', myMessage(result$message, "modal")),
       if (showModalStatistics)
-        myCssChart("evaluationGradingStatistics", marks, seq(100, 0, -10), "Noten", "Marks"),
+        myEvaluationCharts(chartData, settings$mark),
       footer = tagList(
         myActionButton("dismiss_evaluateExamFinalizeResponse", "Schließen", "Close", "fa-solid fa-xmark"),
         myActionButton("backTo_evaluateExamScansResponse", "Zurück", "Back", "fa-solid fa-arrow-left"),
@@ -1213,8 +1226,14 @@ server = function(input, output, session) {
     dir = getDir(session)
     removeModal()
     
+    result = isolate(examScanEvaluationData())
+    result$scans_reg_fullJoinData = isolate(input$proceedEvaluation$scans_reg_fullJoinData)
+    result$scans_reg_fullJoinData = as.data.frame(Reduce(rbind, result$scans_reg_fullJoinData)) 
+    
+    examScanEvaluationData(result)
+    
     settings = list(edirName=edirName)
-
+    
     # background exercise
     x = callr::r_bg(
       func = evaluateExamFinalize,
@@ -1234,9 +1253,11 @@ server = function(input, output, session) {
       
       # save result in reactive value
       examFinalizeEvaluationData(result)
+      
+      settings = list(mark=isolate(input$mark))
 
       # open modal
-      evaluateExamFinalizeResponse(session, result)
+      evaluateExamFinalizeResponse(session, settings, result)
     }
   })
 
@@ -1258,8 +1279,7 @@ server = function(input, output, session) {
     unlink(examFinalizeEvaluationData()$preparedEvaluation$files$nops_evaluationZip)
     
     result = isolate(examScanEvaluationData())
-    result$scans_reg_fullJoinData = isolate(examFinalizeEvaluationData()$preparedEvaluation$scans_reg_fullJoinData)
-
+    
     evaluateExamScansResponse(session, result)
   })
 
