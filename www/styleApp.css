@@ -1114,11 +1114,13 @@ main > * {
 	display: inline-block;
 }
 
-#gradingKey .modifyGradingkeyItems {
+#gradingKey .addGradingKeyItem,
+#gradingKey .removeGradingKeyItem {
 	display:none;
 }
 
-#gradingKey .removable:last-of-type .modifyGradingkeyItems {
+#gradingKey .gradingKeyItem:last-of-type .addGradingKeyItem,
+#gradingKey .removable:last-of-type .removeGradingKeyItem {
 	display:block;
 }
 
