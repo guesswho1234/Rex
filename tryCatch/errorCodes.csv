@@ -21,3 +21,4 @@ E1018;Invalid grading key;Ungültiger Notenschlüssel.
 E1019;Exercises have varying types;Aufgaben haben verschiedene Typen.
 E1020;Exercises types all have to either be 'schoice' or 'mchoice';Aufgabentypen müssen alle entweder 'schoice' oder 'mchoice' sein.
 E1021;No valid exams to available.;Keine gültigen Prüfungen vorhanden.
+E1022;Exercise needs at least two choices.;Aufgabe benötigt mindestens zwei Antwortmöglichkeiten.

@@ -85,6 +85,9 @@ source("source/tryCatch.R")
         choices_raw[length(choices_raw)] = paste0(rev(rev(strsplit(choices_raw[length(choices_raw)], "")[[1]])[-1]), collapse="") #trim
         choices_raw = Reduce(c, lapply(choices_raw, \(x) paste0(rev(rev(strsplit(x, "")[[1]])[-c(1)]), collapse=""))) # trim
         
+        if(grepl("rnwTemplate_choices", exercise$exerciseCode) & length(choices_raw) < 2)
+          stop("E1022")
+        
         # extract raw solution note texts
         solutionNotes_raw = strsplit(exercise$exerciseCode, "rnwTemplate_solutionNotes=")[[1]][2]
         solutionNotes_raw = strsplit(solutionNotes_raw, ";")[[1]][1]
