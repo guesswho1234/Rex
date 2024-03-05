@@ -1316,7 +1316,7 @@ figcaption {
 
 .graphRowBar.meanValue {
 	grid-column: 1 / -1;
-	border-right: 2px solid var(---red_error) !important;
+	border-right: 2px dashed var(---red_error) !important;
 }
 
 .graphRowBar.valueBar {
