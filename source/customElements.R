@@ -91,17 +91,25 @@ myEvaluationCharts = function(chartData, examMaxPoints, validExams, showGradingC
 
 myPointsChart = function(id, values, examMaxPoints, deCaption, enCaption) {
 	meanValue = values[1]
-	values = values[values>0]
-	values = rev(values[order(values)])
 	
+	values_	= values
+	
+	if(length(values)>1) {
+		colnames(values_) = c(colnames(values)[1], "", colnames(values)[-c(1,length(values))])
+		values_ = values_[,values_>0,drop=FALSE]
+		values_ = values_[,order(values_),drop=FALSE]
+	} else {
+		colnames(values) = ""
+	}
+
 	cssChart = paste0('',
 		'<figure id="', id, '" aria-hidden="true">',
 			paste0('<figcaption><span lang="de">', deCaption, ' (', examMaxPoints, ' erreichbare Punkte):</span><span lang="en">', enCaption, ' (Total points: ', examMaxPoints, ' achievable points):</span></figcaption>'),
 		  '<div class="graph rowGraph" style="grid: repeat(1, auto) max-content / max-content repeat(7, auto);">',
-			'<div class="graphRowBar valueBar fullBar" style="grid-row: 1; width: 100%;"></div>',
-    		paste0(sapply(seq_along(values), \(v) paste0('<div class="graphRowBar valueBar ', ifelse(values[v]==meanValue, 'meanValue', ''), '" style="grid-row: 1; width: ', values[v] * 100, '%;"></div>')), collapse=""),
+			'<div class="graphRowBar valueBar fullBar" style="grid-row: 1; width: 100%;"><span class="markValue">', tail(colnames(values),1), '</span></div>',
+    		paste0(sapply(length(values_):1, \(v) paste0('<div class="graphRowBar valueBar ', ifelse(colnames(values_)[v]=="mean", 'meanValue', ''), '" style="grid-row: 1; width: ', values_[v] * 100, '%;"><span class="markValue">', ifelse(colnames(values_)[v]=="mean", paste0('&#x2205; ', meanValue*examMaxPoints), colnames(values_)[v]), '</span></div>')), collapse=""),
 			'<div class="graphRowBar valueBar nullBar" style="grid-row: 1; width: 0%;"></div>',
-			'<div class="graphRowBar overlayBar" style="grid-row: 1; width: 100%;"><span class="absoluteValue">', meanValue*examMaxPoints, '</span></div>',
+			'<div class="graphRowBar overlayBar" style="grid-row: 1; width: 100%;"><span class="absoluteValue"></span></div>',
 		  '</div>',
 		'</figure>'
 	)

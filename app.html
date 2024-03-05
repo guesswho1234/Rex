@@ -366,14 +366,14 @@
 							{{ checkboxInput_partialPoints }}
 						</div>
 						<div>
-							<label for="negativePoints"><span lang="de">Minuspunkte</span><span lang="en">Negative points</span></label>
-							<span class="infoField"><span lang="de">Minuspunkte je nach gewählter Regeln vergeben.</span><span lang="en">Give negative points according to the chosen rule.</span></span>
-							{{ checkboxInput_negativePoints }}
+							<label for="rule"><span lang="de">Regel</span><span lang="en">Rule</span></label>
+							<span class="infoField"><span lang="de">Bewertungsregeln bei falschen Antworten.</span><span lang="en">Evaluation rules for incorrect answers.</span></span>
+							{{ selectInput_rule }}
 						</div>
 						<div>
-							<label for="rule"><span lang="de">Regel</span><span lang="en">Rule</span></label>
-							<span class="infoField"><span lang="de">Regeln für Minuspunkte bei falschen Antworten.</span><span lang="en">Negative point rules for incorrect answers.</span></span>
-							{{ selectInput_rule }}
+							<label for="negativePoints"><span lang="de">Minuspunkte</span><span lang="en">Negative points</span></label>
+							<span class="infoField"><span lang="de">Minuspunkte über die Gesamte Klausur erlauben.</span><span lang="en">Allow negative points across the whole exam.</span></span>
+							{{ checkboxInput_negativePoints }}
 						</div>
 						<div>
 							<label for="mark"><span lang="de">Prüfungen benoten</span><span lang="en">Grade exams</span></label>

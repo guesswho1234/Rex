@@ -793,6 +793,9 @@ source("source/tryCatch.R")
       totalPoints = t(summary(as.numeric(evaluationResultsData$points)))
       rownames(totalPoints) = "totalPoints"
       
+      points = matrix(mean(as.numeric(evaluationResultsData$points))/examMaxPoints)
+      colnames(points) = c("mean")
+
       marks = matrix()
       markThresholds = matrix()
       if(input$mark) {
@@ -810,10 +813,13 @@ source("source/tryCatch.R")
         
         markThresholds = matrix(markThresholds[!invalidGradingKeyItems], nrow=1)
         colnames(markThresholds) = labels[!invalidGradingKeyItems]
+        
+        points = cbind(points, markThresholds)
+        colnames(points) = c("mean", colnames(markThresholds))
       }
       
       chartData = list(ids = list("evaluationPointStatistics", "evaluationGradingStatistics"),
-                       values = list(cbind(mean(as.numeric(evaluationResultsData$points))/examMaxPoints, markThresholds), marks),
+                       values = list(points, marks),
                        deCaptions = c("Punkte", "Noten"),
                        enCaptions = c("Points", "Marks"))
       

@@ -1325,7 +1325,7 @@ figcaption {
 }
 
 .graphRowBar.valueBar.fullBar {
-	background: var(---yellow_warning_fade);
+	background: var(---transparent);
 	z-index: 1;
 }
 
@@ -1334,7 +1334,7 @@ figcaption {
 }
 
 .graphRowBar.overlayBar {
-	background: var(---transparent);
+	background: var(---yellow_warning_fade);
 	z-index: 2;
 }
 
@@ -1360,6 +1360,20 @@ figcaption {
 	width: 100%;
 	place-content: center;
 	font-weight: bold;
+}
+
+.markValue {
+  display: flex;
+  place-content: end;
+  height: 100%;
+  place-items: end;
+  margin-right: 3px;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.meanValue .markValue {
+  place-items: baseline;
 }
 
 /* --------------------------------------------------------------
