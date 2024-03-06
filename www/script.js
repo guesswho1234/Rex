@@ -140,7 +140,6 @@ function ping(){
 
 	//todo: remove later - for debugging
 	const heartbeat = new Date();
-	console.log(heartbeat);
 
 	setTimeout(pong, 300); 
 }

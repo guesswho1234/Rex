@@ -551,7 +551,7 @@ source("source/tryCatch.R")
           scanData = read.table(text=scanData, sep=" ", fill=TRUE)
           names(scanData)[c(1:6)] = c("scan", "sheet", "scrambling", "type", "replacement", "registration")
           names(scanData)[-c(1:6)] = (7:ncol(scanData)) - 6
-  
+          
           # reduce columns using additional data from exam to know how many questions and answer per question existed
           scanData = scanData[,-which(grepl("^[[:digit:]]+$", names(scanData)))[-c(1:meta$numExercises)]] # remove unnecessary placeholders for unused questions
           scanData$numExercises = meta$numExercises
