@@ -14,7 +14,7 @@ library(exams) #exams_2.4-1
 library(png) #png_0.1-8 
 library(tth) #tth_4.12-0-1 
 library(xtable) #xtable_1.8-4
-library(iuftools) #iuftools_1.0.0
+#library(iuftools) #iuftools_1.0.0
 library(callr) # callr_3.7.3
 library(pdftools) # pdftools_3.4.0
 library(qpdf) # qpdf_1.3.2
