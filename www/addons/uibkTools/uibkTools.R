@@ -2,6 +2,10 @@
 source("source/filesAndDirectories.R")
 source("source/customElements.R")
 
+# PACKAGES
+if(!any(installed.packages()[,1]=="iuftools"))
+  install.packages('./iuftools', repos=NULL, type='source')
+
 # FUNCTIONS ------------------------------------------------------------------
   # INTEGRATION -------------------------------------------------------------
   uibkTools_downloadObjUI <- function(id, deText, enText, icon) {
