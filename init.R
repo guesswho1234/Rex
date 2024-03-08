@@ -12,7 +12,8 @@ helpers.installPackages(
   "pdftools",
   "openssl",
   "tinytex",
-  "shinyauthr"
+  "shinyauthr",
+  "sodium"
 )
 
 # special install packages

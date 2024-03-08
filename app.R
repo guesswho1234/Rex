@@ -19,6 +19,11 @@ library(pdftools) # pdftools_3.4.0
 library(qpdf) # qpdf_1.3.2
 library(openssl) # openssl_2.1.1
 library(shinyauthr) # shinyauthr_1.0.0
+library(sodium) # sodium_1.3.1
+
+# CONNECTION --------------------------------------------------------------
+options(shiny.host = "0.0.0.0")
+options(shiny.port = 8180)
 
 # SOURCE ------------------------------------------------------------------
 source("./source/filesAndDirectories.R")
@@ -944,14 +949,14 @@ source("./source/tryCatch.R")
   rules = list("- 1/nwrong"="false", "- 1/max(nwrong, 2)"="false2", "- 1/ncorrect"="true", "- 1"="all", "- 0"="none")
 
   # ADDONS ------------------------------------------------------------------
-  addons_path = "addons/"
-  addons_path_www = "www/addons/"
+  addons_path = "./addons/"
+  addons_path_www = "./www/addons/"
   addons = list.files(addons_path_www, recursive = TRUE) 
   addons = unique(Reduce(c, lapply(addons[grepl("/", addons)], \(x) strsplit(x, split="/")[[1]][1])))
   
-  lapply(addons, \(addon) {
+  invisible(lapply(addons, \(addon) {
     source(paste0(addons_path_www, addons, "/", addons, ".R"))
-  })
+  }))
   
   # AUTH --------------------------------------------------------------------
   user_base = data.frame(
