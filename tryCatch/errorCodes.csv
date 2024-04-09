@@ -1,0 +1,24 @@
+code;en;de
+E1000;;
+E1001;;
+E1002;;
+E1003;;
+E1004;;
+E1005;Exercise type is not 'schoice' or 'mchoice'.; Aufgabentyp ist nicht 'schoice' oder 'mchoice'.
+E1006;Exercise needs at least two choices.;Aufgabe benötigt mindestens zwei Antwortmöglichkeiten.
+E1007;Exercise has indentical choices.;Aufgabe hat identische Antwortmöglichkeiten.
+E1008;Seed must at least be one.;Anzahl an Prüfungsaufgaben muss mindestens eins sein.
+E1009;Exam seed must not exceed 99999999.;Prüfungs-Seed darf nicht größer als 99999999 sein.
+E1010;Number of exam tasks must at least be one.;Anzahl an Prüfungsaufgaben muss mindestens eins sein.
+E1011;Number of exam tasks must not exceed 45.;Anzahl an Prüfungsaufgaben darf nicht größer als 45 sein.
+E1012;Number of scanned evaluation sheets must at least be one.;Anzahl an gescannten Antwortbögen muss mindestens eins sein.
+E1013;Number of registered participant files must be one.;Anzahl an Dateien für die angemeldete Teilnehmerinnen und Teilnehmer muss eins sein.
+E1014;Number of exam solution files must be one.;Anzahl an Dateien für die Prüfungslösungen muss eins sein.
+E1015;The registration file needs to have exactly three columns.;Die Teilnehmerliste muss exakt drei Spalten haben.
+E1016;The column names of the registration file have to be registration, name, and id.;Die Spaltennamen der Teilnehmerliste müssen registration, name und id sein.
+E1017;Invalid grading key;Ungültiger Notenschlüssel.
+E1018;Invalid grading key;Ungültiger Notenschlüssel.
+E1019;Exercises have varying types;Aufgaben haben verschiedene Typen.
+E1020;Exercises types all have to either be 'schoice' or 'mchoice';Aufgabentypen müssen alle entweder 'schoice' oder 'mchoice' sein.
+E1021;No valid exams to available.;Keine gültigen Prüfungen vorhanden.
+E1022;Exercise needs at least two choices.;Aufgabe benötigt mindestens zwei Antwortmöglichkeiten.

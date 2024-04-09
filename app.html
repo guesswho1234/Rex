@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<!-- app.html -->
+<div id="disableOverlay">
+	<div id="disableOverlayContent">
+		<span lang="de">BITTE WARTEN ...</span>
+		<span lang="en">PLEASE WAIT ...</span>
+	</div>
+</div>
+<div id="confirmdialogOverlay">
+	<div id="confirmdialogOverlayContent">
+		<div id="confirmdialogOverlayContentBox">
+			<div id="confirmdialogOverlayContentText">
+				<span lang="de"></span>
+				<span lang="en"></span>
+			</div>	
+			<div id="confirmdialogOverlayContentButtons">
+				<div id="confirmdialogYes" class="confirmDialogButton">
+					<span class="iconButton"></span>
+					<span class="textButton"><span lang="de"></span><span lang="en"></span></span>
+				</div>	
+				<div id="confirmdialogNo" class="confirmDialogButton">
+					<span class="iconButton"></span>
+					<span class="textButton"><span lang="de"></span><span lang="en"></span></span>
+				</div>	
+			</div>	
+		</div>	
+	</div>
+</div>
+<nav class="navbar navbar-default navbar-static-top" role="navigation">
+	<ul class="nav navbar-nav" data-tabsetid="9289">
+		<li>
+			<img id="logoApp" class="logo" src="logo.svg">
+			<span class="hotkeyInfo"><span lang="de">T</span><span lang="en">T</span></span>
+		</li>
+		<li class="active">
+			<a href="#tab-9289-1" data-toggle="tab" data-bs-toggle="tab" data-value="exercises">
+				<div id="exercisesNav">
+					<span lang="de">AUFGABEN</span>
+					<span lang="en">EXERCISES</span>
+				</div>
+			</a>
+		</li>
+		<li>
+			<a href="#tab-9289-2" data-toggle="tab" data-bs-toggle="tab" data-value="exam">
+				<div id="examNav">
+					<span lang="de">PRÜFUNG</span>
+					<span lang="en">EXAM</span>
+				</div>
+			</a>
+		</li>
+		<li class="noAddons">
+			<a href="#tab-9289-3" data-toggle="tab" data-bs-toggle="tab" data-value="addons" class="addonTab">
+				<div id="addonsNav">
+					<span lang="de">WERKZEUGE</span>
+					<span lang="en">TOOLS</span>
+				</div>
+			</a>
+		</li>
+	</ul>
+	<div id="navMisc">
+		<div id="texActiveContainer" class="texMode texInputsEscaped">
+			<span id="texButtons" class="buttonModeSelector"><span lang="de">TeX Modus</span><span lang="en">TeX mode</span><i class="fa-regular fa-circle-dot"></i></span>
+		</div>
+		<div id="hotkeysActiveContainer">
+			<span id="hotkeyButtons" class="buttonModeSelector"><span lang="de">Tastenkürzel</span><span lang="en">Hotkeys</span><i class="fa-regular fa-circle-dot"></i></span>
+		</div>
+		<div id="buttonModeSwitchContainer">
+			<span id="iconButtons" class="buttonModeSelector"><i class="fa-solid fa-icons"></i></span>
+			<span> | </span>
+			<span id="textButtons" class="buttonModeSelector active"><i class="fa-solid fa-font"></i></span>
+		</div>
+		<div id="languageSwitchContainer">
+			<span id="deLang" class="langSelector active">DE</span>
+			<span> | </span>
+			<span id="enLang" class="langSelector">EN</span>
+		</div>
+		<div id="heartbeatContainer">
+			<div id="heart">
+				<span>&#10084;</span>
+			</div>
+		</div>
+		<div id="logoutContainer">
+			{{ shinyauthr::logoutUI(id = "logout") }}
+			<div id="logoutOverlay"></div>
+		</div>
+	</div>
+</nav>
+<main>
+	<div id="exercises" class="mainSection active">
+		<h1>
+			<span lang="de">Aufgaben</span><span lang="en">Exercises</span>
+		</h1>
+		<div class="sectionHeader">
+			<div class="settings">
+				<h2>
+					<span lang="de">Einstellungen</span><span lang="en">Settings</span>
+				</h2>
+				<div>
+					<div>
+						<label for="seedValueExercises"><span lang="de">Seed</span><span lang="en">Seed</span></label>
+						{{ textInput_seedValueExercises }}
+					</div>
+				</div>
+			</div>
+			<div class="summary">
+				<h2>
+					<span lang="de">Übersicht Prüfungsaufgaben</span><span lang="en">Overview exam exercises</span>
+				</h2>
+				<table>
+					<tr>
+						<th><span lang="de">Seed</span><span lang="en">Seed</span></th>
+						<th><span lang="de">Aufgaben</span><span lang="en">Exercises</span></th>
+						<th><span lang="de">Punkte</span><span lang="en">Points</span></th>
+						<th><span lang="de">Themen</span><span lang="en">Topics</span></th>
+					</tr>
+					<tr>
+						<td id="s_initialSeed"></td>					
+						<td id="s_numberOfExercises"></td>			
+						<td id="s_totalPoints"></td>		
+						<td id="s_topicsTable"></td>									
+					</tr>
+				</table>
+			</div>
+		</div>
+		<h2>
+			<span lang="de">Einstellungen</span><span lang="en">Settings</span>
+		</h2>
+		<div class="contentWrapper">
+			<div class="sidebar">
+				<div id="exercise_list" class="itemList">
+					<div id="exerciseListButtons" class="listButtons">
+						<div id="newExercise" class="listButton">
+							<span class="hotkeyInfo"><span lang="de">A</span><span lang="en">A</span></span>
+							<div class="list_butttonIcon">
+								<span class="iconButton"><i class="fa-solid fa-plus"></i></span>
+								<span class="textButton"><span lang="de">Neu</span><span lang="en">New</span></span>
+							</div>
+						</div>	
+						<label id="exerciseUpload" class="listButton" for="file-upload_exercises">
+							<div class="list_butttonIcon">
+								<span class="iconButton"><i class="fa-solid fa-upload"></i></span>
+								<span class="textButton"><span lang="de">Importieren</span><span lang="en">Import</span></span>
+							</div>
+							<input type="file" id="file-upload_exercises" onchange='exercisesFileDialog(this.files);' multiple>
+						</label>
+						<label id="exerciseDownloadAll" class="listButton" for="downloadExercises">
+						<span class="hotkeyInfo"><span lang="de">SHIFT S</span><span lang="en">SHIFT S</span></span>
+							{{ button_downloadExercises }} 
+						</label>
+						<div id="exerciseParseAll" class="listButton">
+							<span class="hotkeyInfo"><span lang="de">SHIFT R</span><span lang="en">SHIFT R</span></span>
+							<div class="list_butttonIcon">
+								<span class="iconButton"><i class="fa-solid fa-rotate"></i></span>
+								<span class="textButton"><span lang="de">Berechnen</span><span lang="en">Parse</span></span>
+							</div>
+						</div>
+						<div id="examExerciseAll" class="listButton">
+							<span class="hotkeyInfo"><span lang="de">SHIFT E</span><span lang="en">SHIFT E</span></span>
+							<div class="list_butttonIcon">
+								<span class="iconButton"><i class="fa-solid fa-star"></i></span>
+								<span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span>
+							</div>
+						</div>								
+						<div id="exerciseRemoveAll" class="listButton">
+							<span class="hotkeyInfo"><span lang="de">SHIFT D</span><span lang="en">SHIFT D</span></span>
+							<div class="list_butttonIcon">
+								<span class="iconButton"><i class="fa-solid fa-trash"></i></span>
+								<span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span>
+							</div>
+						</div>
+						<div id="searchExercises" class="listButton">
+							<span class="hotkeyInfo"><span lang="de">SHIFT F</span><span lang="en">SHIFT F</span></span>
+							<div class="list_butttonIcon">
+								<input type="text"/>
+							</div>
+						</div>
+					</div>
+					<div id="exercise_list_items">
+					</div>
+				</div>
+			</div>
+			<div id="exercise_info" class="content">
+				<h2 id="exerciseName"></h2>
+				<label for="examHistory"><span lang="de">Prüfungshistorie</span><span lang="en">Exam history</span></label>
+				<div id="examHistory"></div>
+				
+				<label for="authoredBy"><span lang="de">Autor</span><span lang="en">Author</span></label>
+				<div id="authoredBy"></div>
+				
+				<label for="type"><span lang="de">Typ</span><span lang="en">Type</span></label>
+				<div id="type"></div>
+								
+				<label for="points"><span lang="de">Punkte</span><span lang="en">Points</span></label>
+				<div id="points"></div>
+				
+				<label for="topic"><span lang="de">Thema</span><span lang="en">Topic</span></label>
+				<div id="topic"></div>
+				
+				<label for="section"><span lang="de">Bereich</span><span lang="en">Section</span></label>
+				<div id="section"></div>
+				
+				<label for="tags"><span lang="de">Tags</span><span lang="en">Tags</span></label>
+				<div id="tags"></div>
+										
+				<label for="question"><span lang="de">Frage</span><span lang="en">Question</span></label>
+				<div id="question" class="texMode texInputsEscaped"></div>
+										
+				<label for="figure"><span lang="de">Grafik</span><span lang="en">Figure</span></label>
+				<span id="figure-info" class="infoField"><span lang="de">Prüfung: Bild wird in Originalgröße eingefügt</span><span lang="en">Exam: Image will be inserted in original size</span></span>
+				<div id="figure">
+					{{ exerciseFigureFileImport }}
+				</div>
+				
+				<label for="answers"><span lang="de">Antworten</span><span lang="en">Answers</span></label>
+				<div id="answers">
+				</div>
+				
+				<div id="exercise_info_buttons">
+					<label id="exerciseDownload" for="downloadExercise">
+						<span class="hotkeyInfo"><span lang="de">S</span><span lang="en">S</span></span>
+						{{ button_downloadExercise }}  
+					</label>
+				</div>
+			</div>	
+		</div>	
+		<div id="dnd_exercises" class="dnd">
+			<div class="dndInfo">
+				<div class="title"><span lang="de">DRAG & DROP</br></br>AUFGABEN (*.rnw und *.rmd)</span><span lang="en">DRAG & DROP</br></br>EXERCISES (*.rnw and *.rmd)</span></div>
+				<div class="dndIcon"><i class="fas fa-file-upload"></i></div>
+			</div>
+		</div>
+	</div>	
+	<div id="exam" class="mainSection">
+		<h1>
+			<span lang="de">Prüfung</span><span lang="en">Exam</span>
+		</h1>
+		<div class="contentWrapper">
+			<div class="sidebar">
+				<div id="examFunctions_list" class="itemList">
+					<div id="examFunctions_list_items">
+						<div id="createExamTab" class="examFunctionsItem sidebarListItem active"><span lang="de">Prüfung Erstellen</span><span lang="en">Create exam</span></div>
+						<div id="evaluateExamTab" class="examFunctionsItem sidebarListItem"><span lang="de">Prüfung Auswerten</span><span lang="en">Evaluate exam</span></div>
+					</div>
+				</div>
+			</div>
+			<div class="content">
+				<div id="exam_create" class="contentTab active">
+					<h2><span lang="de">Prüfung Erstellen</span><span lang="en">Create exam</span></h2>
+					<div>
+						<div>
+							<label for="examDate"><span lang="de">Prüfungsdatum</span><span lang="en">Exam date</span></label>
+							<span class="infoField"><span lang="de">Format: yyyy-mm-dd</span><span lang="en">Format: yyyy-mm-dd</span></span>
+							{{ dateInput_examDate }}
+						</div>
+						<div>
+							<label for="seedValueExam"><span lang="de">Seed</span><span lang="en">Seed</span></label>
+							<span id="autofillSeed" class="autofillField"><span lang="de">Prüfungsdatum verwenden.</span><span lang="en">Use exam date.</span></span>
+							{{ textInput_seedValueExam }}
+						</div>
+						<div>
+							<label for="numberOfExams"><span lang="de">Anzahl Varianten</span><span lang="en">Number of scramblings</span></label>
+							<span class="infoField"><span lang="de">Je Variante wird ein eigener Seed verwendet.</span><span lang="en">For each scrambling a different seed is used.</span></span>
+							{{ textInput_numberOfExams }}
+						</div>
+						<div>
+							<label for="numberOfExercises"><span lang="de">Anzahl Aufgaben</span><span lang="en">Number of exercises</span></label>
+							<span id="autofillNumberOfExercises" class="autofillField"><span lang="de">Alle markierten Aufgaben wählen.</span><span lang="en">Select all marked exercises.</span></span>
+							{{ textInput_numberOfExercises }}
+						</div>
+						<div>
+							<label for="fixedPointsExamCreate"><span lang="de">Fixe Punkte pro Aufgabe</span><span lang="en">Fixed points per exercise</span></label>
+							<span class="infoField"><span lang="de">Pro Aufgabe definierte Punkte überschreiben.</span><span lang="en">Override points defined for each exercise.</span></span>
+							{{ textInput_fixedPointsExamCreate }}
+						</div>
+						<div>
+							<label for="examReglength"><span lang="de">Anzahl Ziffern Matrikelnummer</span><span lang="en">Registration number digits</span></label>
+							{{ selectInput_examRegLength }}
+						</div>
+						<div>
+							<label for="showPoints"><span lang="de">Punkte anzeigen</span><span lang="en">Show points</span></label>
+							<span class="infoField"><span lang="de">Anzahl and Punkten je Aufgabe in der Klausur angeben.</span><span lang="en">Show number of points for each exercise in the exam.</span></span>
+							{{ checkboxInput_showPoints }}
+						</div>
+						<div>
+							<label for="duplex"><span lang="de">Doppelseitiger Druck</span><span lang="en">Duplex printing</span></label>
+							<span class="infoField"><span lang="de">Wichtig bei doppelseitigem Druck.</span><span lang="en">Important for duplex printing.</span></span>
+							{{ checkboxInput_duplex }}
+						</div>
+						<div>
+							<label for="replacement"><span lang="de">Ersatz-Antwortbogen</span><span lang="en">Replacement evaluation sheet</span></label>
+							<span class="infoField"><span lang="de">Fügt einen zusätzlichen Antwortbogen ein.</span><span lang="en">Add an additional evaluation sheet.</span></span>
+							{{ checkboxInput_replacement }}
+						</div>
+						
+						<div>
+							<label for="samepage"><span lang="de">Umbruch bei Antwortmöglichkeiten vermeiden</span><span lang="en">Avoid wrap in choice list</span></label>
+							{{ checkboxInput_samepage }}
+						</div>
+						<div>
+							<label for="newpage"><span lang="de">Neue Seite je Aufgabe</span><span lang="en">New page per exercise</span></label>
+							<span class="infoField"><span lang="de">Jede Aufgabe auf einer separaten Seiten platzieren.</span><span lang="en">Place each exercise on a separate page.</span></span>
+							{{ checkboxInput_newpage }}
+						</div>
+						<div>
+							<label for="examLanguage"><span lang="de">Sprache</span><span lang="en">Language</span></label>
+							<span class="infoField"><span lang="de">Betrifft nur allgemeine Texte im Dokument.</span><span lang="en">Only relevant for general document texts.</span></span>
+							{{ selectInput_examLanguage }}
+						</div>
+						<div>
+							<label for="examInstitution"><span lang="de">Institution</span><span lang="en">Institution</span></label>
+							{{ textInput_examInstitution }}
+						</div>
+						<div>
+							<label for="examTitle"><span lang="de">Titel</span><span lang="en">Title</span></label>
+							{{ textInput_examTitle }}
+						</div>
+						<div>
+							<label for="examCourse"><span lang="de">Kurs</span><span lang="en">Course</span></label>
+							{{ textInput_examCourse }}
+						</div>
+						<div class="texMode texInputsEscaped">
+							<label for="examIntro"><span lang="de">Einleitung</span><span lang="en">Intro</span></label>
+							{{ textInput_examIntro }}
+						</div>
+						<div>
+							<label for="numberOfBlanks"><span lang="de">Anzahl leeren Seiten</span><span lang="en">Number of blank pages</span></label>
+							<span class="infoField"><span lang="de">Werden am Ende der Prüfung angehängt.</span><span lang="en">Are appended to the end of the exam.</span></span>
+							{{ textInput_numberOfBlanks }}
+						</div>
+						<div>
+							<label><span lang="de">Zusatz Pdf-Seiten</span><span lang="en">Additional Pdf pages</span></label>
+							<span class="infoField"><span lang="de">Werden am Ende der Prüfung angehängt.</span><span lang="en">Are appended to the end of the exam.</span></span>
+							{{ additionalPdfFileImport }}
+							
+							<div id="dnd_additionalPdf" class="dnd">
+										<div class="dndInfo">
+											<div class="title"><span lang="de">DRAG & DROP</br></br>ZUSÄTZLICHE Pdf-DATEIEN (*.pdf)</span><span lang="en">DRAG & DROP</br></br>ADDITIONAL Pdf FILES (*.pdf)</span></div>
+											<div class="dndIcon"><i class="fas fa-file-upload"></i></div>
+										</div>
+									</div>
+						</div>
+						<button id="createExamEvent" type="button" class="btn btn-default action-button shiny-bound-input">
+							<span class="iconButton"><i class="fa-solid fa-file-lines"></i></span>
+							<span class="textButton"><span lang="de">Prüfung erstellen</span><span lang="en">Create exam</span></span>
+						</button>
+					</div>
+				</div>
+				<div id="exam_evaluate" class="contentTab">
+					<h2><span lang="de">Prüfung Auswerten</span><span lang="en">Evaluate exam</span></h2>
+					<div>
+						<div>
+							<label for="fixedPointsExamEvaluate"><span lang="de">Fixe Punkte pro Aufgabe</span><span lang="en">Fixed points per exercise</span></label>
+							<span class="infoField"><span lang="de">Pro Aufgabe definierte Punkte überschreiben.</span><span lang="en">Override points defined for each exercise.</span></span>
+							{{ textInput_fixedPointsExamEvaluate }}
+						</div>
+						<div>
+							<label for="evaluateReglength"><span lang="de">Anzahl Ziffern Matrikelnummer</span><span lang="en">Registration number digits</span></label>
+							{{ selectInput_evaluateReglength }}
+						</div>
+						<div>
+							<label for="partialPoints"><span lang="de">Teilpunkte</span><span lang="en">Partial points</span></label>
+							<span class="infoField"><span lang="de">Teilpunkte in Aufgaben erlauben.</span><span lang="en">Allow for partial points in exercises.</span></span>
+							{{ checkboxInput_partialPoints }}
+						</div>
+						<div>
+							<label for="rule"><span lang="de">Regel</span><span lang="en">Rule</span></label>
+							<span class="infoField"><span lang="de">Bewertungsregeln bei falschen Antworten.</span><span lang="en">Evaluation rules for incorrect answers.</span></span>
+							{{ selectInput_rule }}
+						</div>
+						<div>
+							<label for="negativePoints"><span lang="de">Minuspunkte</span><span lang="en">Negative points</span></label>
+							<span class="infoField"><span lang="de">Minuspunkte über die Gesamte Klausur erlauben.</span><span lang="en">Allow negative points across the whole exam.</span></span>
+							{{ checkboxInput_negativePoints }}
+						</div>
+						<div>
+							<label for="mark"><span lang="de">Prüfungen benoten</span><span lang="en">Grade exams</span></label>
+							<span class="infoField"><span lang="de">Prüfungen anhand des Notenschlüssels benoten.</span><span lang="en">Grade exams based on the grading key.</span></span>
+							{{ checkboxInput_mark }}
+						</div>
+						<div>
+							<label for="gradingKey"><span lang="de">Notenschlüssel</span><span lang="en">Grading key</span></label>
+							<span class="infoField"><span lang="de">Zahlen kleiner als 1 werden als Prozent gewertet. Werte werden nicht gerundet. Schwellenwerte zählen noch zur Note derselben Zeile.</span><span lang="en">Numbers smaller than 1 are evaluated as percent. Values are not rounded. Thresholds count towards the mark of the same row.</span></span>
+							<table id="gradingKey">
+								<tr>
+									<th><span lang="de">Punkte</span><span lang="en">Points</span></th>
+									<th><span lang="de">Note</span><span lang="en">Mark</span></th>
+									<th></th>
+								</tr>
+								
+								{{ gradingKey }}
+								
+							</table>
+						</div>
+						<div>
+							<label for="evaluationLanguage"><span lang="de">Sprache</span><span lang="en">Language</span></label>
+							<span class="infoField"><span lang="de">Betrifft nur allgemeine Texte im Dokument.</span><span lang="en">Only relevant for general document texts.</span></span>
+							{{ selectInput_evaluationLanguage }}
+						</div>
+						<div>
+							<label for="rotateScans"><span lang="de">Scans drehen</span><span lang="en">Rotate scans</span></label>
+							<span class="infoField"><span lang="de">Dreht alle PDF-Seiten um 180 Grad.</span><span lang="en">Rotates all PDF pages by 180 degrees.</span></span>
+							{{ checkboxInput_rotateScans }}
+						</div>
+						<div>
+							<label><span lang="de">Lösungen</span><span lang="en">Solutions</span></label>
+							<span class="infoField"><span lang="de">Bei der Prüfungserellung gespeicherte RDS-Datei.</span><span lang="en">RDS file saved when creating the exam.</span></span>
+							{{ examSolutionsFileImport }}
+							
+							<label><span lang="de">Registrierte Teilnehmer</span><span lang="en">Registered participants</span></label>
+							<span class="infoField"><span lang="de">Teilnehmerliste als CSV-Datei mit den Spalten "registration", "name" und "id".</span><span lang="en">Registered participants as CSV file with columns "registration", "name", and "id".</span></span>
+							{{ examRegisteredParticipantsFileImport }}
+							
+							<label><span lang="de">Bewertungs-Scans</span><span lang="en">Evaluation scans</span></label>
+							<span class="infoField"><span lang="de">Scans als PDF- oder PNG-Dateien.</span><span lang="en">Scans as PDF or PNG files.</span></span>
+							{{ examScansFileImport }}
+							
+							<div id="dnd_examEvaluation" class="dnd">
+								<div class="dndInfo">
+									<div class="title"><span lang="de">DRAG & DROP</br></br>BEWERTUNGS-DATEIEN (*.pdf, *.png, *.rds und *.csv)</span><span lang="en">DRAG & DROP</br></br>EVALUATION FILES (*.pdf, *.png, *.rds und *.csv)</span></div>
+									<div class="dndIcon"><i class="fas fa-file-upload"></i></div>
+								</div>
+							</div>
+						</div>
+						<button id="evaluateExamEvent" type="button" class="btn btn-default action-button shiny-bound-input">
+							<span class="iconButton"><i class="fa-solid fa-check-double"></i></span>
+							<span class="textButton"><span lang="de">Prüfung bewerten</span><span lang="en">Evaluate exam</span></span>
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id="addons" class="mainSection noAddons">
+		<h1>
+			<span lang="de">Werkzeuge</span><span lang="en">Tools</span>
+		</h1>
+		<div class="contentWrapper">
+			<div class="sidebar">
+				<div id="addonTools_list" class="itemList">
+					<div id="addonTools_list_items">
+						{{ addonSidebarListItems }}
+					</div>
+				</div>
+			</div>
+			<div class="content">
+				{{ addonContentTabs }}
+			</div>
+		</div>
+	</div>	
+</main>	

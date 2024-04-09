@@ -1,0 +1,1486 @@
+/* --------------------------------------------------------------
+ GENERAL 
+-------------------------------------------------------------- */
+nav {
+	z-index: 998 !important;
+	position: fixed !important;
+	width: 100%;
+}
+
+nav .nav.navbar-nav a.disabled {
+	cursor: unset;
+	height: 51px;
+}
+
+main {
+	margin-top: 51px;
+}
+
+#shiny-modal {
+	top: 51px;
+}
+
+.modal-backdrop {
+	z-index: 997;
+}
+
+.modal-body {
+	overflow: auto;
+	max-height: 75vh;
+	min-height: 200px;
+}
+
+#logoApp {
+	cursor: pointer;
+}
+
+#logoutContainer {
+	position: relative;
+}
+
+#logoutContainer.disabled logout-button {
+	background-color: var(---background2);
+}
+
+#logoutOverlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	height: 100%;
+	width: 100%;
+	background-color: var(---transparent);
+	z-index: -1;
+}
+
+#logoutContainer.disabled #logoutOverlay {
+	z-index: 0;
+	cursor: no-drop;
+}
+
+#logout-button {
+	background-color: var(---red_error);
+	border-color: var(---red_error);
+	border: 2px solid var(---background);
+	border-radius: 5px;
+}
+
+#logout-button:hover {
+	border: 2px solid var(---main);
+}
+
+#disableOverlay,
+#confirmdialogOverlay {
+	width: 100%;
+	height: 100%;
+	display: none;
+	position: fixed;
+	z-index: 998;
+	background: var(---background4);
+}
+
+#disableOverlay.active,
+#confirmdialogOverlay.active {
+	display: block !important;
+}
+
+#disableOverlay div,
+#confirmdialogOverlayContent {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	background: var(---transparent);
+	z-index: 999;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+#disableOverlay div span,
+#confirmdialogOverlayContentBox {
+	width: fit-content;
+	height: fit-content;
+	font-weight: bold;
+	padding: 10px;
+	border-radius: 3px;
+}
+
+#disableOverlay div span {
+	display: flex;
+	background: var(---background);
+}
+
+#confirmdialogOverlayContentBox {
+	display: block;
+	background: white;
+}
+
+#confirmdialogOverlayContentButtons {
+	display: flex;
+	justify-content: space-around;
+}
+
+#confirmdialogOverlayContentButtons .confirmDialogButton {
+	margin: 0.5rem;
+	padding: 0.5rem;
+	cursor: pointer;
+	background: var(---gray_passive);
+	border: 2px solid var(---gray_passive);
+	border-radius: 5px;	
+}
+
+#confirmdialogOverlayContentButtons .confirmDialogButton:hover {
+	border: 2px solid var(---main);
+}
+
+.container-fluid {
+	padding: 0px;
+}
+
+#navMisc {
+	position: absolute;
+	top: 0;
+	right: 0;
+	display: flex;
+	gap: 25px;
+	font-weight: bold;
+	height: 100%;
+	place-items: center;
+}
+
+#navMisc .buttonModeSelector, 
+#navMisc .langSelector {
+	cursor: pointer;
+}
+
+#responseMessage,
+.tryCatch .tryCatchText {
+	font-family: Consolas;
+	border-radius: 3px;
+	padding: 5px;
+	font-weight: bold;
+	text-align: left;
+	font-size: 0.9rem;
+	color: var(---main);
+}
+
+#responseMessage {
+	display: flex;
+}
+
+.modalTryCatch {
+	display: grid;
+	margin: auto;
+	font-size: 100px;
+	position: relative;
+	width: 100%;
+}
+
+.modalTryCatch .responseSign {
+	margin: auto;
+}
+
+.modalTryCatchText {
+	margin: auto;
+	margin-top: 10px !important;
+	position: absolute;
+	width: 100%;
+	top: 100px;
+}
+
+#exerciseUpload {
+	font-weight: unset;
+}
+
+.iconButton {
+	display: none;
+}
+
+.textButton {
+	display: none;
+}
+
+body.iconButtonMode .iconButton {
+	display: block !important;
+}
+
+body.textButtonMode .textButton {
+	display: block !important;
+}
+
+#texActiveContainer i {
+	margin-left: 0.25rem;
+}
+
+#texActiveContainer span i {
+	color: var(---red_error);
+}
+
+#texActiveContainer span.active i {
+	color: var(---green_success);
+}
+
+#hotkeysActiveContainer i {
+	margin-left: 0.25rem;
+}
+
+#hotkeysActiveContainer span i {
+	color: var(---red_error);
+}
+
+#hotkeysActiveContainer span.active i {
+	color: var(---green_success);
+}
+
+#heartbeatContainer { 
+	position: relative;
+}
+
+#heart { 
+	opacity: 0.3;
+	transform: scale(1);
+	cursor: pointer;
+} 
+
+#heart .dead::before { 
+	top: 38%;
+	background: var(---main);
+	content: "";
+	width: 150%;
+	position: absolute;
+	height: .2em;
+	border-radius: .1em;
+	left: -19%;
+	white-space: nowrap;
+	display: block;
+	transform: rotate(-45deg);
+} 
+
+#heart span { 
+	-webkit-text-fill-color: var(---transparent);
+} 
+
+#heart span.dead { 
+	background: var(---main) !important;
+	-webkit-background-clip: text !important;
+    -webkit-text-fill-color: var(---transparent) !important;
+} 
+
+#heart.ping {
+    animation: ping 0.15s;
+}
+
+#heart.pong {
+    animation: pong 0.15s;
+}
+
+@keyframes ping{
+    from{
+        transform: scale(1);
+		opacity: 0.3;
+    }
+    to{
+        transform: scale(1.2);
+		opacity: 1;
+    }
+}
+
+#shiny-disconnected-overlay {
+	display: none;
+}
+
+#logoutContainer {
+	margin-right: 20px;
+}
+
+.datepicker {
+	z-index: 999 !important;
+}
+
+/* -------------------------------------------------------------- */
+/* SECTIONS  */
+/* -------------------------------------------------------------- */
+main > * {
+	margin: 1rem;
+}
+
+.mainSection {
+	display: none;
+	margin-top: 66px;
+}
+
+.mainSection.active {
+	display: block;
+}
+
+.contentWrapper {
+	display: flex;
+}
+
+.contentWrapper > div {
+	margin: 1rem;
+	height: fit-content;
+}
+
+.contentWrapper > div:first-of-type {
+	margin-left: 0;
+}
+
+.contentWrapper > div:last-of-type {
+	margin-right: 0;
+}
+
+.sidebar {
+	background: var(---background);
+}
+
+.content {
+	background: var(---background);
+	padding: 1rem;
+}
+
+.sectionHeader {
+	display: flex;
+}
+
+/* --------------------------------------------------------------
+ SETTINGS
+-------------------------------------------------------------- */
+.settings {
+	margin-left: 0;
+	margin-right: 2rem;
+	max-width: 30vw;
+}
+
+.settings > div {
+	display: flex;
+}
+
+.settings div > * {
+	width: fit-content;
+}
+
+.settings > div div {
+	margin-right: 1rem;
+}
+
+/* --------------------------------------------------------------
+ SUMMARY
+-------------------------------------------------------------- */
+.summary {
+	margin-left: auto;
+	margin-right: 1rem;
+	max-width: 70vw;
+}
+
+.summary tr > * {
+	padding: 5px;
+	text-align: center;
+}
+
+.summary th {
+	border-bottom: 1px solid;
+}
+
+.summary th:not(:last-of-type),
+.summary td:not(:last-of-type) {
+	border-right: 1px solid;
+}
+
+.myLabelSingle {
+	margin: auto;
+	padding: 3px;
+	border-radius: 3px;
+}
+
+.myLabelContainer {
+	display: flex;
+	flex-wrap: wrap;
+	flex-direction: row;
+	place-content: center;
+}
+
+.myLabel {
+	margin: 5px;
+}
+
+.myLabel span {
+	padding: 3px;	
+}
+
+.myLabel .label_key {
+	padding-right: 3px;
+	border-bottom-left-radius: 3px;
+	border-top-left-radius: 3px;
+}
+
+.myLabel .label_value {
+	padding-left: 3px;
+	border-bottom-right-radius: 3px;
+	border-top-right-radius: 3px;
+	font-weight: bold;
+}
+
+.grayLabelKey {
+	background: var(---gray_passive_fade);
+}
+
+.greenLabelKey {
+	background: var(---green_success_fade);
+}
+
+.yellowLabelKey {
+	background: var(---yellow_warning_fade);
+}
+
+.redLabelKey {
+	background: var(---red_error_fade);
+}
+
+.grayLabelValue {
+	background: var(---gray_passive);
+}
+
+.greenLabelValue {
+	background: var(---green_success);
+}
+
+.yellowLabelValue {
+	background: var(---yellow_warning);
+}
+
+.redLabelValue {
+	background: var(---red_error);
+}
+
+#createExamEvent,
+#evaluateExamEvent {
+	margin-top: 25px;
+}
+	
+/* --------------------------------------------------------------
+ DRAG AND DROP 
+-------------------------------------------------------------- */
+.dnd {
+	position: fixed;
+	top: 0;
+	left: 0;
+	background: var(---transparent);
+	height: 100vh;
+	width: 100vw;
+	z-index: -1;
+}
+
+.dnd.drag {
+	z-index: 998;
+}
+
+.dndInfo {
+	display: none;
+}
+
+.dnd.drag .dndInfo {
+	display: grid;
+	margin: auto;
+	text-align: center;
+    justify-content: center;
+    align-items: center;
+	height: 100%;
+	background: var(---background2);
+}
+
+.dndInfo, 
+.dndInfo * {
+	pointer-events: none;
+}
+
+.dndInfo .title {
+	height: 50%;
+    font-size: 62px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: end;
+    text-align: center;
+}
+
+.dndInfo .dndIcon {
+	height: 50%;
+    font-size: 62px;
+    font-weight: bold;
+    justify-content: center;
+    align-items: start;
+    text-align: center;
+	padding-top: 10px;
+}
+
+/* --------------------------------------------------------------
+ SIDEBAR
+-------------------------------------------------------------- */
+.itemList {
+	height: auto;
+}
+
+.listButton {
+	margin: 0.5rem;
+	padding: 0.5rem;
+	cursor: pointer;
+	background: var(---background);
+	border: 2px solid var(---background);
+	border-radius: 5px;
+}
+
+#downloadExercises {
+	height: 26px;
+	display: flex;
+	place-items: center;
+	border: none;
+	margin: 0;
+	padding: 0;
+	background: var(---transparent);
+}
+
+#searchExercises input {
+	width: 100%;
+}
+
+.listButton:hover {
+	border: 2px solid var(---main);
+}
+
+.listButtons {
+	display: flex;	
+	background: var(---background3);
+}
+
+.list_butttonIcon {
+	height: 26px;
+	display: table-cell;
+	vertical-align: middle;
+}
+
+.sidebarListItem {
+	margin: 0.25rem;
+	padding: 0.25rem;
+	display: flex;
+}
+
+.sidebarListItem > span {
+	padding: 0.25rem;
+}
+
+.sidebarListItem:hover {
+	background: var(---background3);
+	cursor: pointer;
+}
+
+.sidebarListItem.active {
+	background: var(---background3);
+}
+
+.sidebarListItem.editable {
+	border-left: 3px solid var(---highlight_values);
+}
+
+.sidebarListItem.filtered {
+	display: none;
+}
+
+.sidebarListSubItem {
+	margin-left: 1.5rem;
+}
+
+#searchExercises {
+	min-width: 150px;
+}
+
+/* --------------------------------------------------------------
+ EXERCISES LIST
+-------------------------------------------------------------- */
+#file-upload_exercises {
+    display: none;
+}
+
+#exercise_list_items {
+	display: block;
+}
+
+.exerciseTryCatch {
+	position: relative;
+	display: flex;
+	align-items: first baseline;
+}
+
+.tryCatch .responseSign {
+	height: 100%;
+	display: flex;
+	place-items: center;
+}
+
+.tryCatch.Success {
+	color: var(---green_success);
+}
+
+.tryCatch.Warning {
+	color: var(---yellow_warning);
+}
+
+.tryCatch.Error {
+	color: var(---red_error);
+}
+
+.sidebarListItem.exam .examExercise {
+	color: var(---green_success);
+	font-weight: bold;
+}
+
+.exerciseName {
+	max-width: 350px;
+	overflow-wrap: anywhere;
+	height: 100%;
+	line-height: 100%;
+	display: flex;
+	margin: auto;
+	margin-left: 0px;
+}
+
+.exerciseBlock  {
+	margin-right: 0px;
+	margin-left: auto;
+	width: auto;
+}
+
+.exerciseBlock input {
+	width: 50px;
+	margin-right: 0px;
+	margin-left: auto;
+	text-align: center;
+	font-weight: bold;
+}
+
+.exerciseBlock span:first-of-type {
+	margin-right: 0.25rem;
+	font-weight: bold;
+}
+
+.exerciseButtons {
+	display: flex;
+	margin-right: 0px;
+	gap: 5px;
+}
+
+.exerciseItem:not(.exam) .exerciseBlock,
+.exerciseItem:not(.exam) .exerciseBlock.disabled,
+.exerciseButton.disabled { 
+	pointer-events: none; 
+	filter: opacity(0.2);
+}
+
+.exerciseParse,
+.examExercise,
+.exerciseRemove {
+	padding: 0.25rem;
+}
+
+.exerciseButton {
+	border-radius: 5px;
+}
+
+.exerciseItem.active .exerciseButton,
+.exerciseItem:hover .exerciseButton {
+	background: var(---background);
+	border-radius: 5px;
+	border: 2px solid var(---background);
+}
+
+.exerciseItem:not(.active):not(:hover) .exerciseButton {
+	background: var(---background3);
+	border-radius: 5px;
+	border: 2px solid var(---background3);
+}
+
+.exerciseButton:hover {
+	border: 2px solid var(---main) !important;
+}
+
+.tryCatch .tryCatchText {
+	visibility: hidden;
+}
+
+.exerciseTryCatch .exerciseTryCatchText {
+	width: max-content;
+	position: absolute;
+	z-index: 1;
+	margin-left: 20px
+}
+
+.tryCatch.Success .tryCatchText {
+	display: none;
+}
+
+.tryCatch.Warning .tryCatchText {
+	background-color: var(---yellow_warning);
+}
+	
+.tryCatch.Error .tryCatchText {
+	background-color: var(---red_error);
+}
+
+.tryCatch:hover .tryCatchText {
+	visibility: visible;
+}
+
+/* --------------------------------------------------------------
+ EXERCISES INFO
+-------------------------------------------------------------- */
+#exercise_info {
+	display: grid;
+	width: 100%;
+}
+
+#exercise_info h2 {
+	height: 35px;
+}
+
+#exercise_info.hidden {
+	display: none !important;
+}
+
+#exercise_info label:not(#exerciseDownload) {
+	font-weight: bold;
+	height: 25px;
+}
+
+#exercise_info > * {
+	padding: 0px;
+	margin: 1px;
+}
+
+#examHistory span,
+#authoredBy span,
+#checkedBy span {
+	margin: 5px;
+	padding: 3px;
+	background: var(---gray_passive);
+	border-radius: 3px;
+}
+
+#type > span, 
+#difficulty span,
+#points span,
+#topic span,
+#section span,
+#tags span {
+	margin: 5px;
+	padding: 3px;
+	background: var(---yellow_warning_fade);
+	border-radius: 3px;
+}
+
+#exercise_info .val {
+	color: var(---highlight_values);
+	font-weight: bold;
+}
+
+#question img,
+#question table {
+	margin: 1rem;
+	border: 1px solid black;
+}
+
+#answers {
+	display: block;
+}
+
+#addNewAnswer {
+	margin: 10px;
+	margin-left: 0px;
+}
+
+#answerContent .solution {
+	font-weight: bold;
+	width: max-content;
+	border-radius: 3px;
+	border: 2px solid var(---transparent);
+	border-radius: 3px;
+	padding: 2px;
+	width: 60px;
+	text-align: center;
+}
+
+#answerContent .answerText {
+	height: 100%;
+	display:flex;
+}
+
+#answerContent .solution.trueSolution {
+	background: var(---green_success_fade);
+}
+
+#answerContent .solution.falseSolution {
+	background: var(---red_error_fade);
+}
+
+#answerContent .answerText input {
+	margin: 0px;
+}
+
+#answerContent > * {
+	font-weight: bold;
+}
+
+#answerContent > p {
+	display: flex;
+	align-items: center;
+}
+
+#answerContent > span {
+	margin-left: 1rem;
+}
+
+#answerContent input[type=text] {
+	max-width: 150px;
+}
+
+#answerContent p > span {
+	margin-left: 0.75rem;
+}
+
+.solutionNoteText {
+  color: var(---background2);
+}
+
+.editType, 
+.editTrueFalse {
+	cursor: pointer;
+}
+
+*[contenteditable="true"]:not(.exerciseName),
+.editType, 
+.editTrueFalse {
+	padding: 2px;
+}
+
+*[contenteditable="true"],
+.editType, 
+.editTrueFalse {
+	padding: 2px;
+	border: 2px solid var(---highlight_values) !important;
+	border-radius: 3px;
+	margin-left: 2px;
+}
+
+*[contenteditable="true"]:focus {
+	padding: 2px;
+	border-color: var(---transparent);
+	background-color: var(---highlight_values) !important;
+}
+
+#exercise_info_buttons {
+	display: flex;
+	gap: 10px;
+}
+
+/* --------------------------------------------------------------
+ CREATE EXAMS 
+-------------------------------------------------------------- */
+#compareScanRegistrationDataTable {
+	margin: 1rem;
+	overflow-y: auto;
+}
+
+#focusedCompareListItem {
+	margin-bottom: 0.5rem;
+}
+
+#compareScanRegistrationDataTable .compareListItem,
+#focusedCompareListItem .compareListItem {
+	display: flex;
+}
+
+#compareScanRegistrationDataTable .compareListItem {
+	margin: 0.25rem;
+}
+
+#compareScanRegistrationDataTable .compareListItem {
+	border: 2px solid var(---transparent);
+}
+
+#compareScanRegistrationDataTable .compareListItem.focus {
+	border: 2px solid var(---main);
+	background: var(---highlight_values);
+}
+
+#compareScanRegistrationDataTable .compareListItem.blur {
+	filter: opacity(0.6);
+}
+
+#focusedCompareListItem .compareListItem {
+	border-bottom: 2px solid var(---main);
+}
+
+#compareScanRegistrationDataTable .compareListItem.valid,
+#focusedCompareListItem .compareListItem.valid {
+	background: var(---green_success);
+}
+
+#compareScanRegistrationDataTable .compareListItem.notAssigned,
+#focusedCompareListItem .compareListItem.notAssigned {
+	background: var(---yellow_warning);
+	display: none;
+}
+
+#compareScanRegistrationDataTable .compareListItem.lastEdited,
+#focusedCompareListItem .compareListItem.lastEdited {
+	background: var(---highlight_values);
+}
+
+#compareScanRegistrationDataTable .compareListItem.invalid,
+#focusedCompareListItem .compareListItem.invalid {
+	background: var(---red_error);
+}
+
+#compareScanRegistrationDataTable .compareListItem:not(.notAssigned):not(.focus):hover {
+	filter: unset;
+	background: var(---background3);
+	border: 2px solid var(---main);
+	cursor: pointer;
+}
+
+#compareScanRegistrationDataTable .compareListItem > span,
+#focusedCompareListItem .compareListItem > span {
+	padding: 0.25rem;
+}
+
+#compareScanRegistrationDataTable .compareListItem .evalIndex,
+#focusedCompareListItem .compareListItem .evalIndex {
+	display: none;
+}
+
+#compareScanRegistrationDataTable .compareListItem .evalName,
+#compareScanRegistrationDataTable .compareListItem .evalId,
+#focusedCompareListItem .compareListItem .evalId,
+#focusedCompareListItem .compareListItem .evalName {
+	margin-left: 0.5rem;
+	margin-right: 0.5rem;
+	width: 35%;
+}
+
+#compareScanRegistrationDataTable .compareListItem.notAssigned .evalInspect,
+#focusedCompareListItem .compareListItem .evalInspect {
+	display:none;
+}
+
+#compareScanRegistrationDataTable .compareListItem .evalInspect,
+#focusedCompareListItem .compareListItem .evalInspect {
+	margin-right: 0;
+	margin-left: auto;
+}
+
+#inspectScan {
+	display: none;
+	margin: 1.25rem;
+	border: 2px solid var(---main);
+}
+
+#inspectScanContent {
+	display: flex;
+	width: 100%;
+	margin-bottom: 1rem;
+}
+
+#inspectScanImage,
+#inspectScanTemplate {
+	width: 50%;
+}
+
+.magnify {
+  border-radius: 50%;
+  border: 2px solid black;
+  position: absolute;
+  z-index: 1051;
+  background-repeat: no-repeat;
+  background-color: white;
+  box-shadow: inset 0 0 20px rgba(0,0,0,.5);
+  display: none;
+  cursor: none;
+}
+
+#inspectScanTemplate span {
+	display: block;
+}
+
+#inspectScanTemplate > span {
+	margin-bottom: 0.5rem;
+}
+
+#inspectScan img {
+	width: 100%;
+	padding: 0.25rem;
+}
+
+#scannedRegistration {
+	display: flex;
+	gap: 10px;
+}
+
+#scannedAnswers  {
+	display: grid;
+	grid-template-columns: 1fr 1fr 1fr;
+	grid-template-rows: 1fr 1fr 1fr;
+	grid-auto-flow: column;
+	overflow-x: auto;
+	padding: 0 1rem 1rem 0;
+}
+
+#scannedAnswersHeader th {
+	text-align: center;
+}
+
+#scannedAnswersHeader th:first-of-type {
+	width: 25px;
+}
+
+#scannedAnswers td {
+	padding-left: 0.25rem;
+}
+
+.scannedAnswerBlock {
+	display: block;
+}
+
+.scannedAnswerBlock:not(.answerColumn3) {
+	padding-right: 1rem;
+}
+
+.scannedAnswerBlock:not(.answerColumn1) {
+	padding-left: 1rem;
+	border-left: 1px solid;
+}
+
+#inspectScanButtons {
+	display: flex;
+	margin: 0.25rem;
+	gap: 5px;
+	place-content: end;
+}
+
+.inspectScanButton {
+	border-radius: 5px;
+	padding: 0.25rem;
+	background: var(---background3);
+	border: 2px solid var(---transparent);
+}
+
+.inspectScanButton:hover {
+	border: 2px solid var(---main);
+	background: var(---background2);
+	cursor: pointer;
+}
+
+.loadingCompareScanRegistrationDataTable {
+	width: fit-content;
+	height: fit-content;
+	font-weight: bold;
+	padding: 10px;
+	border-radius: 3px;
+	border: 2px solid var(---main);
+	margin: auto;
+}
+
+#gradingKey tr td {
+	width: 200px;
+}
+
+#gradingKey tr th:first-of-type,
+#gradingKey tr td:first-of-type {
+	width: 100px;
+}
+
+#gradingKey tr th:last-of-type,
+#gradingKey tr td:last-of-type {
+	width: 200px;
+}
+
+#gradingKey td > * {
+	width: unset !important;
+}
+
+#gradingKey tr > th:not(:last-of-type),
+#gradingKey tr > td:not(:last-of-type) {
+	margin-right: 10px;
+	display: inline-block;
+}
+
+#gradingKey .addGradingKeyItem,
+#gradingKey .removeGradingKeyItem {
+	display:none;
+}
+
+#gradingKey .gradingKeyItem:last-of-type .addGradingKeyItem,
+#gradingKey .removable:last-of-type .removeGradingKeyItem {
+	display:block;
+}
+
+.modifyGradingkeyItemButtons {
+	display: flex;
+	gap: 0.25rem;
+}
+
+#exerciseFigureContainer,
+#additionalPdfContainer,
+#examScansContainer,
+#examSolutionsContainer,
+#examRegisteredParticipantsContainer {
+	display: flex;
+	width: 300px;
+}
+
+#file-upload_exerciseFigure,
+#file-upload_additionalPdf,
+#file-upload_examScans,
+#file-upload_examSolutions,
+#file-upload_examRegisteredParticipants {
+    display: none;
+}
+
+.exerciseFigureFileUpload,
+.examFileUpload {
+	margin-right: 0.25rem;
+	cursor: pointer;
+	display: table;
+}
+
+.content {
+	width: 100%;
+}
+
+.contentTab {
+	display:none;
+}
+
+.contentTab.active {
+	display:block;
+}
+
+.autofillField,
+.infoField {
+	font-size: 12px;
+	color: #aaa;
+	display: block;
+}
+
+.autofillField {
+	text-decoration: underline;
+	cursor: pointer;
+	color: var(---green_success);
+}
+
+#exerciseFigureFiles img {
+	object-fit: contain;
+	width: 100%;
+	height: 100%;
+}
+
+#exerciseFigureFiles,
+#additionalPdfFiles,
+#examScansFiles,
+#examSolutionsFiles,
+#examRegisteredParticipantsFiles {
+	min-height: 34px;
+	background: var(---background3);
+}
+
+#exerciseFigureFiles_list_items,
+#additionalPdfFiles_list_items,
+#examScansFiles_list_items,
+#examSolutionsFiles_list_items,
+#examRegisteredParticipantsFiles_list_items {
+	min-width: 200px;
+	display: block;
+	padding: 0.25rem;
+}
+
+.exerciseFigureItem,
+.additionalPdfItem,
+.examScanItem,
+.examSolutionsItem,
+.examRegisteredParticipantsItem {
+	display: flex;
+	margin: 0.25rem;
+	padding: 0.25rem;
+	justify-content: space-between;
+	gap: 10px;
+}
+
+.exerciseFigureName,
+.additionalPdfName,
+.examScanName,
+.examSolutionsName,
+.examRegisteredParticipantsName {
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+.exerciseFigureItem .removeText,
+.additionalPdfItem .removeText,
+.examScanItem .removeText,
+.examSolutionsItem .removeText,
+.examRegisteredParticipantsItem .removeText {
+	display: block;
+}
+
+.exerciseFigureItem:hover,
+.additionalPdfItem:hover,
+.examScanItem:hover,
+.examSolutionsItem:hover,
+.examRegisteredParticipantsItem:hover {
+	background: var(---red_error);
+	cursor: pointer;
+}
+
+.exerciseFigureFileButton,
+.examFileButton {
+	margin-top: 5px;
+	padding: 0.5rem;
+	background: var(---highlight_values);
+	border-radius: 5px;
+	border: 2px solid var(---background);
+}
+
+.exerciseFigureFileButton:hover,
+.examFileButton:hover {
+	border: 2px solid var(---main);
+}
+
+#scanStats {
+	display: flex;
+	place-content: center;
+}
+
+.checkBoxText {
+	display: block;
+}
+
+.scanStat {
+	display: block;
+}
+
+figure {
+	margin: 1rem;
+}
+
+figcaption {
+	margin-top: 1rem;
+	font-weight: bold;
+}
+
+.graph {
+	display: grid;
+	padding: 1rem;
+}
+
+.graph.rowGraph {
+	height: 80px;
+}
+
+.graph.columnGraph {
+	height: 175px;
+	grid-template-rows: 100px auto;
+	place-content: space-between;
+}
+
+.graphColumnBar {
+	grid-row: 5 / 1;
+	justify-self: center;
+	width: 45px;
+}
+
+.graphColumnBar.valueBar {
+	background: var(---yellow_warning_fade);
+	border: 2px solid var(---yellow_warning);
+}
+
+.graphColumnBar.backgroundBar {
+	background: var(---background3);
+	border-bottom: 2px solid var(---yellow_warning);
+}
+
+.graphColumnBar.overlayBar {
+	background: var(---transparent);
+}
+
+.graphRowBar {
+	grid-column: 1 / -1;
+}
+
+.graphRowBar.meanValue {
+	grid-column: 1 / -1;
+	border-right: 2px dashed var(---red_error) !important;
+}
+
+.graphRowBar.valueBar {
+	background: var(---transparent);
+	border: 2px solid var(---yellow_warning);
+}
+
+.graphRowBar.valueBar.fullBar {
+	background: var(---transparent);
+	z-index: 1;
+}
+
+.graphRowBar.valueBar.nullBar {
+	border: unset;
+}
+
+.graphRowBar.overlayBar {
+	background: var(---yellow_warning_fade);
+	z-index: 2;
+}
+
+.graphRowLabel {
+	margin-top: -0.5em;
+	text-align: end;
+}
+
+.graphColumnLabel {
+	font-size: 12px;
+	text-align: center;
+	display: grid;
+	font-weight: bold;
+}
+
+.graphRowLabel::after {
+	display: inline-block;
+	content: "\2000\2000\2014";
+}
+
+.absoluteValue  {
+	display: grid;
+	height: 100%;
+	width: 100%;
+	place-content: center;
+	font-weight: bold;
+}
+
+.markValue {
+	display: flex;
+	place-content: end;
+	height: 100%;
+	place-items: end;
+	margin-right: 3px;
+	font-size: 10px;
+	font-weight: bold;
+}
+
+.meanValue .markValue {
+	place-items: baseline;
+}
+
+#evaluationExerciseStatistics .graph {
+	position: relative;	
+}
+
+#evaluationExerciseStatistics .graphColumnLabel .graphColumnLabelHoverText {
+	visibility: hidden;
+    max-width: 100%;
+    position: absolute;
+    z-index: 1;
+    background-color: var(---yellow_warning);
+    font-family: Consolas;
+    border-radius: 3px;
+    padding: 5px;
+    font-weight: bold;
+    text-align: left;
+    font-size: 0.9rem;
+    bottom: -1rem;
+    left: 0;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+#evaluationExerciseStatistics .graphColumnLabel:hover .graphColumnLabelText {
+	color: var(---yellow_warning);
+}
+
+#evaluationExerciseStatistics .graphColumnLabel:hover .graphColumnLabelHoverText {
+	visibility: visible;
+}
+
+/* --------------------------------------------------------------
+ HOTKEY MODE
+-------------------------------------------------------------- */
+#exerciseDownload, 
+.listButton,
+.exerciseButton,
+.inspectScanButton {
+	position: relative;
+}
+
+#texActiveContainer,
+#hotkeysActiveContainer {
+	margin-left: -2px;
+	margin-right: -2px;
+}
+
+#hotkeyButtons span {
+	border: 2px solid var(---transparent) !important;
+	border-radius: 3px;
+	padding: 2px;
+}
+
+.hotkeyInfo {
+	display: none;
+	margin: 0;
+	color: var(---highlight_values2);
+	position: absolute;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	left: 0;
+	background: ;
+	z-index: 2;
+	font-weight: bold;
+	place-items: center;
+	background: white;
+	place-content: center;
+	font-family: Consolas;
+	text-align: center;
+}
+
+.hotkeyInfo.reveal {
+	display: flex;
+}
+
+/* --------------------------------------------------------------
+ TEX MODE
+-------------------------------------------------------------- */
+ #texButtons span {
+	border: 2px solid var(---transparent);
+	border-radius: 3px;
+	padding: 2px;
+}
+
+.texInputsEnabled #texButtons span {
+	border: 2px solid var(---highlight_values2) !important;
+	border-radius: 3px;
+	padding: 2px;
+}
+
+.texInputsEnabled #examIntro,
+.texInputsEnabled .questionText[contenteditable="true"] {
+	border: 2px solid var(---highlight_values2) !important;
+}
+
+.texInputsEnabled .questionText[contenteditable="true"]:focus {
+	background-color: var(---highlight_values2) !important;
+}
+
+/* --------------------------------------------------------------
+ ADDON TOOLS 
+-------------------------------------------------------------- */
+.noAddons {
+	display: none !important;
+}

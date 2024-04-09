@@ -1,0 +1,29 @@
+<div id="uibkTools" class="contentTab active">
+	<div class="packgeIncludesContainer">
+		<span class="packageIncludesHovericon"><i class="fa-solid fa-circle-info"></i></span>
+		<div class="packageIncludes">
+			<span>iuftools</span>
+		</div>
+	</div>
+	<h2><span lang="de">LFU Innsbruck</span><span lang="en">LFU Innsbruck</span></h2>
+	<div>
+		<div>
+			<label><span lang="de">VIS Teilnehmerlisten</span><span lang="en">VIS registered participants lists</span></label>
+			<span class="infoField"><span lang="de">VIS Teilnehmerlisten als *.csv Dateien ("OLAT Export").</span><span lang="en">VIS registered participants as *.csv files ("OLAT Export").</span></span>
+			{{ init$visParticipantsFileImport }}
+			
+			<label><span lang="de">Rex Auswertungslisten</span><span lang="en">Rex evaluation lists</span></label>
+			<span class="infoField"><span lang="de">Rex Auswertungsdateien (*_nops_eval.csv).</span><span lang="en">Rex evaluation files (*_nops_eval.csv).</span></span>
+			{{ init$rexEvaluationFileImport }}
+						
+			<label><span lang="de">VIS Notenlisten</span><span lang="en">VIS grading lists</span></label>
+			<span class="infoField"><span lang="de">VIS Notenlisten als *.csv Dateien ("Notenlste Voralge").</span><span lang="en">VIS grading lists as *.csv files ("Notenlste Voralge").</span></span>
+			{{ init$visGradingFileImport }}
+						
+			{{ init$button_createRexParticipantsList }}
+			{{ init$button_createOlatEvalList }}
+			{{ init$button_createGradingLists }}
+		</div>
+	</div>
+</div>	
+
