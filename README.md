@@ -3,7 +3,7 @@
 This repository provides an interactive [shiny](https://shiny.posit.co/) dashboard
 for creating and evaluating written single and multiple-choice exams. The underlying workhorse
 is [R/exams](https://www.R-exams.org/), in particular the so-called
-[NOPS exams](https://www.R-exams.org/tutorials/exams2nops/) which support both
+[NOPS exams](https://www.R-exams.org/tutorials/exams2nops/) interface which support both
 single-choice and multiple-choice exercises along with automatic evaluation.
 
 The dashboard provides:
