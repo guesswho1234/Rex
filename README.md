@@ -50,7 +50,7 @@ If you are using the `Eco` dyno type, the application also shuts down when there
 
 ### Docker
 
-First, build your image with the supplied docker file `Dockerfile`: `docker build --platform linux/x86_64 -t shiny-docker-rex .`.
+First, build your image with the supplied docker file: `docker build --platform linux/x86_64 -t shiny-docker-rex .`.
 
 Second, run your image: `docker run -p 8180:8180 shiny-docker-rex`. 
 
