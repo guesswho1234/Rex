@@ -29,7 +29,7 @@ Second, make sure to have `libsodium-dev` and `libpopppler-cpp-dev` available on
 Third, start up in the base directory via `shiny::runApp()` or, alternatively, via RStudio by 
 opening and running `app.R`.
 
-### Heroku (heroku-22 stack, Dpkg and R (shiny) framework)
+### Heroku [heroku-22 stack, Dpkg and R (shiny) framework]
 
 First, install the following buildpacks in this order on your heroku app:
 - https://github.com/rricard/heroku-buildpack-dpkg.git
