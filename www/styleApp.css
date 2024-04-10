@@ -444,6 +444,8 @@ main > * {
 
 .greenLabelValue {
 	background: var(---green_success);
+	color: white;
+	font-weight: bold;
 }
 
 .yellowLabelValue {
@@ -766,12 +768,13 @@ main > * {
 	border-radius: 3px;
 }
 
+#exerciseName > span,
 #type > span, 
 #difficulty span,
-#points span,
 #topic span,
 #section span,
-#tags span {
+#tags span,
+.solutionNote > span {
 	margin: 5px;
 	padding: 3px;
 	background: var(---yellow_warning_fade);
@@ -848,7 +851,7 @@ main > * {
 }
 
 .solutionNoteText {
-  color: var(---background2);
+	font-weight: normal;
 }
 
 .editType, 

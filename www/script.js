@@ -35,7 +35,7 @@ function initApp(){
 	rex.examEvaluation.statistics = [];
 	
 	$('#s_initialSeed').html(itemSingle($('#seedValueExercises').val(), 'greenLabelValue'));
-	$('#s_numberOfExams').html(itemSingle($('#numberOfExams').val(), 'grayLabelValue'));
+	$('#s_numberOfExams').html(itemSingle($('#numberOfExams').val(), 'greenLabelValue'));
 	$('#logout-button').removeClass('shinyjs-hide');
 	
 	dndExercises.init();
@@ -708,8 +708,8 @@ function examExercisesSummary() {
 		}
 	})
 	
-	$('#s_numberOfExercises').html(itemSingle(numberOfExamExercisesCounter, 'grayLabelValue'));
-	$('#s_totalPoints').html(itemSingle(totalPoints, 'yellowLabelValue'));
+	$('#s_numberOfExercises').html(itemSingle(numberOfExamExercisesCounter, 'greenLabelValue'));
+	$('#s_totalPoints').html(itemSingle(totalPoints, 'greenLabelValue'));
 	$('#s_topicsTable').html(itemTable(topics));
 }
 
@@ -727,7 +727,7 @@ function itemTable(arr) {
 	
 	out = Object.entries(counts).map(entry => {
 		const [key, value] = entry;
-		return '<span class="myLabel"><span class="label_key yellowLabelKey">' + key + '</span><span class="label_value yellowLabelValue">' + value + '</span></span>';
+		return '<span class="myLabel"><span class="label_key greenLabelKey">' + key + '</span><span class="label_value greenLabelValue">' + value + '</span></span>';
 	}).join('');
 	
 	return '<span class="myLabelContainer">' + out + '</span>';
@@ -2139,7 +2139,7 @@ $("#numberOfExams").change(function(){
 	const numberOfExams = getIntegerInput(1, null, 1, $(this).val());
 	
 	setShinyInputValue("numberOfExams", numberOfExams);
-	$('#s_numberOfExams').html(itemSingle(numberOfExams, 'grayLabelValue'));
+	$('#s_numberOfExams').html(itemSingle(numberOfExams, 'greenLabelValue'));
 }); 
 
 $("#autofillSeed").click(function(){
@@ -2665,7 +2665,7 @@ function populateCompareTable() {
 	$('#scanStats').empty();
 	$('#scanStats').append('<span id="scansInvalidCount" class="scanStat myLabel"><span class="scanStatText label_key redLabelKey"><span lang="de">Ungültige Scans</span><span lang="en">Invalid scans</span></span><span class="scanStatValue label_value redLabelValue">' + invalidCount + '</span></span>')
 	$('#scanStats').append('<span id="scansValidCount" class="scanStat myLabel"><span class="scanStatText label_key greenLabelKey"><span lang="de">Gültige Scans</span><span lang="en">Valid scans</span></span><span class="scanStatValue label_value greenLabelValue">' + validCount + '</span></span>')
-	$('#scanStats').append('<span id="scansnotAssignedCount" class="scanStat myLabel"><span class="scanStatText label_key yellowLabelKey"><span lang="de">Nicht zugeordnete Matrikelnummern</span><span lang="en">Registration numbers not assigned</span></span><span class="scanStatValue label_value yellowLabelValue">' + notAssignedCount + '</span></span>')
+	$('#scanStats').append('<span id="scansnotAssignedCount" class="scanStat myLabel"><span class="scanStatText label_key greenLabelKey"><span lang="de">Nicht zugeordnete Matrikelnummern</span><span lang="en">Registration numbers not assigned</span></span><span class="scanStatValue label_value greenLabelValue">' + notAssignedCount + '</span></span>')
 	
 	$('.loadingCompareScanRegistrationDataTable').hide();
 	f_langDeEn();
