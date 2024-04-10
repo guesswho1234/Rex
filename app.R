@@ -20,7 +20,7 @@ library(qpdf) # qpdf_1.3.2
 library(openssl) # openssl_2.1.1
 library(shinyauthr) # shinyauthr_1.0.0
 library(sodium) # sodium_1.3.1
-library(magick) # magick_2.7.4
+# library(magick) # magick_2.7.4
 
 # CONNECTION --------------------------------------------------------------
 options(shiny.host = "0.0.0.0")
