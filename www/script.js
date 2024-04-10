@@ -1533,24 +1533,27 @@ function contenteditable_getSpecial(content) {
 }
 
 function contentTextSanitize(content){
-	return content.replace(/[^a-z0-9\_\-]/gi, '');
+	return content.replace(/[^a-z0-9\_\- \u00c4\u00e4\u00d6\u00f6\u00dc\u00fc\u00df]/gi, '');
 }
 
 function contentFileNameSanitize(content){
-	return content.replace(/[^a-z0-9\_\- \u00c4\u00e4\u00d6\u00f6\u00dc\u00fc\u00df]/gi, '');
+	return content.replace(/[^a-z0-9\_\- ]/gi, '');
 }
 
 function contentSectionSanitize(content){
 	return content.replace(/[^a-z0-9\_\-\/]/gi, '');
 }
 
-//latex test string: $ % & \ ^ _ { } ~ #
+//latex test string: $ % & \ ^ _ { } ~ # \
+
 function contentTexSanitize(content_raw){
 	content_raw = content_raw.replaceAll('\\~{}', '~');
 	content_raw = content_raw.replaceAll(/[\\](?=[$%&\^_{}~#])/g, '');
 	content_raw = content_raw.replace(/[{}]/g, '\\$&');
 	content_raw = content_raw.replaceAll(/[~]/g, '\\~{}');
 	content_raw = content_raw.replace(/[$%&#\^_]/g, '\\$&');
+	content_raw = content_raw.replace(/(\\)(?:[^$%&\^_{}~#])/g, '');
+	content_raw = content_raw.replace(/(\\)($)/g, '');
 
 	return content_raw
 }
@@ -2184,7 +2187,7 @@ $("#examCourse").change(function(){
 
 $("#examIntro").change(function(){
 	if(!$('#texActiveContainer span').hasClass('active')) {
-		const examIntro = contentTextSanitize($(this).val());
+		const examIntro = contentTexSanitize($(this).val());
 		setShinyInputValue("examIntro", examIntro);
 	}
 }); 
