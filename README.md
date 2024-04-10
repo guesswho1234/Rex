@@ -18,7 +18,7 @@ and is still work-in-progress.
 
 ## Run
 
-There are multiple ways to get this applications running, which will be described below.
+There are multiple ways to get this applications running:
 
 ### Localhost
 
