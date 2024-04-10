@@ -24,7 +24,7 @@ There are multiple ways to get this applications running:
 
 First, install all the necessary R packages (see `init.R`).
 
-Second, make sure to have libsodium-dev and libpopppler-cpp-dev available on your system.
+Second, make sure to have `libsodium-dev` and `libpopppler-cpp-dev` available on your system.
 
 Third, start up in the base directory via `shiny::runApp()` or, alternatively, via RStudio by 
 opening and running `app.R`.
@@ -40,13 +40,13 @@ Second, set the following environment variables (called "*Config Vars*" on Herok
 - `LD_LIBRARY_PATH`: `/app/.dpkg/usr/lib/x86_64-linux-gnu/:/app/R/lib/R/lib:/app/tcltk/lib`
 - `LIB_DIR`: `/app/.dpkg/usr/lib/x86_64-linux-gnu/`
 
-Third, deploy this repository to your heroku app.
+Third, deploy this repository to your Heroku app.
 
 Fourth, make sure the web dyno is turned on.
 
 > [!NOTE]
-Heroku shuts down your application once it tries to use twice the memory allocated to your dyno type.
-If you are using the `Eco` dyno type, the application also shuts down once there is no traffic for 30 minutes.
+Heroku shuts down your application once it uses twice the memory allocated to your dyno type.
+If you are using the `Eco` dyno type, the application also shuts down when there is no traffic for 30 minutes.
 
 ### Docker
 
