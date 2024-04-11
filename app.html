@@ -97,7 +97,7 @@
 				</h2>
 				<div>
 					<div>
-						<label for="seedValueExercises"><span lang="de">Seed</span><span lang="en">Seed</span></label>
+						<label for="seedValueExercises"><span lang="de">Seed</span><span lang="en">Seed</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Start-Seed für Zufallswerte. Dieser Wert wird für jede Aufgabe seperat gesetzt.</span><span lang="en">Seed start value for random values. This values is set separately for each exercise.</span></span></span></label>
 						{{ textInput_seedValueExercises }}
 					</div>
 				</div>
@@ -180,7 +180,6 @@
 				</div>
 			</div>
 			<div id="exercise_info" class="content">
-				<label for="exerciseName"><span lang="de">Name</span><span lang="en">Name</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">TextDe</span><span lang="en">TextEn</span></span></span></label>
 				<h2 id="exerciseName"></h2>
 				<label for="examHistory"><span lang="de">Prüfungshistorie</span><span lang="en">Exam history</span></label>
 				<div id="examHistory"></div>
@@ -188,31 +187,30 @@
 				<label for="authoredBy"><span lang="de">Autor</span><span lang="en">Author</span></label>
 				<div id="authoredBy"></div>
 				
-				<label for="type"><span lang="de">Typ</span><span lang="en">Type</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">TextDe</span><span lang="en">TextEn</span></span></span></label>
+				<label for="type"><span lang="de">Typ</span><span lang="en">Type</span></label>
 				<div id="type"></div>
 								
-				<label for="points"><span lang="de">Punkte</span><span lang="en">Points</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">TextDe</span><span lang="en">TextEn</span></span></span></label>
+				<label for="points"><span lang="de">Punkte</span><span lang="en">Points</span></label>
 				<div id="points"></div>
 				
-				<label for="topic"><span lang="de">Thema</span><span lang="en">Topic</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">TextDe</span><span lang="en">TextEn</span></span></span></label>
+				<label for="topic"><span lang="de">Thema</span><span lang="en">Topic</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Themengebiet der Aufgabe.</span><span lang="en">Topic of the exercise.</span></span></span></label>
 				<div id="topic"></div>
 				
-				<label for="section"><span lang="de">Bereich</span><span lang="en">Section</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">TextDe</span><span lang="en">TextEn</span></span></span></label>
+				<label for="section"><span lang="de">Bereich</span><span lang="en">Section</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Hierarchischer Aufgabenbereich mit <b>/</b> als Trennzeichen.</span><span lang="en">Hierarchical exercise section with <b>/</b> as separator.</span></span></span></label>
 				<div id="section"></div>
 				
 				<label for="tags"><span lang="de">Tags</span><span lang="en">Tags</span></label>
 				<div id="tags"></div>
 										
-				<label for="question"><span lang="de">Frage</span><span lang="en">Question</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">TextDe</span><span lang="en">TextEn</span></span></span></label>
+				<label for="question"><span lang="de">Frage</span><span lang="en">Question</span></label>
 				<div id="question" class="texMode texInputsEscaped"></div>
 										
-				<label for="figure"><span lang="de">Grafik</span><span lang="en">Figure</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">TextDe</span><span lang="en">TextEn</span></span></span></label>
-				<span id="figure-info" class="infoField"><span lang="de">Prüfung: Bild wird in Originalgröße eingefügt</span><span lang="en">Exam: Image will be inserted in original size</span></span>
+				<label for="figure"><span lang="de">Grafik</span><span lang="en">Figure</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Bild wird in Originalgröße eingefügt.</span><span lang="en">Image will be inserted in original size.</span></span></span></label>
 				<div id="figure">
 					{{ exerciseFigureFileImport }}
 				</div>
 				
-				<label for="answers"><span lang="de">Antworten</span><span lang="en">Answers</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">TextDe</span><span lang="en">TextEn</span></span></span></label>
+				<label for="answers"><span lang="de">Antworten</span><span lang="en">Answers</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Jede Antwort besteht aus der Lösung ("Wahr" oder "Falsch"; in Prüfungen nicht sichtbar), dem Antworttext (in Prüfungen sichtbar) und der Lösungsbeschreibung (in Prüfungen nicht sichtbar).</span><span lang="en">Each answer consists of the solution ("True" or "False"; no visible in exams), the answer text (visible in exams), and the solution description (not visible in exams).</span></span></span></label>
 				<div id="answers">
 				</div>
 				
@@ -249,8 +247,7 @@
 					<h2><span lang="de">Prüfung Erstellen</span><span lang="en">Create exam</span></h2>
 					<div>
 						<div>
-							<label for="examDate"><span lang="de">Prüfungsdatum</span><span lang="en">Exam date</span></label>
-							<span class="infoField"><span lang="de">Format: yyyy-mm-dd</span><span lang="en">Format: yyyy-mm-dd</span></span>
+							<label for="examDate"><span lang="de">Prüfungsdatum</span><span lang="en">Exam date</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Format: <b>yyyy-mm-dd</b>.</span><span lang="en">Format: <b>yyyy-mm-dd</b>.</span></span></span></label>
 							{{ dateInput_examDate }}
 						</div>
 						<div>
@@ -259,8 +256,7 @@
 							{{ textInput_seedValueExam }}
 						</div>
 						<div>
-							<label for="numberOfExams"><span lang="de">Anzahl Varianten</span><span lang="en">Number of scramblings</span></label>
-							<span class="infoField"><span lang="de">Je Variante wird ein eigener Seed verwendet.</span><span lang="en">For each scrambling a different seed is used.</span></span>
+							<label for="numberOfExams"><span lang="de">Anzahl Varianten</span><span lang="en">Number of scramblings</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Je Variante wird ein eigener Seed verwendet.</span><span lang="en">For each scrambling a different seed is used.</span></span></span></label>
 							{{ textInput_numberOfExams }}
 						</div>
 						<div>
@@ -269,8 +265,7 @@
 							{{ textInput_numberOfExercises }}
 						</div>
 						<div>
-							<label for="fixedPointsExamCreate"><span lang="de">Fixe Punkte pro Aufgabe</span><span lang="en">Fixed points per exercise</span></label>
-							<span class="infoField"><span lang="de">Pro Aufgabe definierte Punkte überschreiben.</span><span lang="en">Override points defined for each exercise.</span></span>
+							<label for="fixedPointsExamCreate"><span lang="de">Fixe Punkte pro Aufgabe</span><span lang="en">Fixed points per exercise</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Pro Aufgabe definierte Punkte überschreiben.</span><span lang="en">Override points defined for each exercise.</span></span></span></label>
 							{{ textInput_fixedPointsExamCreate }}
 						</div>
 						<div>
@@ -278,18 +273,15 @@
 							{{ selectInput_examRegLength }}
 						</div>
 						<div>
-							<label for="showPoints"><span lang="de">Punkte anzeigen</span><span lang="en">Show points</span></label>
-							<span class="infoField"><span lang="de">Anzahl and Punkten je Aufgabe in der Klausur angeben.</span><span lang="en">Show number of points for each exercise in the exam.</span></span>
+							<label for="showPoints"><span lang="de">Punkte anzeigen</span><span lang="en">Show points</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Anzahl and Punkten je Aufgabe in der Klausur angeben.</span><span lang="en">Show number of points for each exercise in the exam.</span></span></span></label>
 							{{ checkboxInput_showPoints }}
 						</div>
 						<div>
-							<label for="duplex"><span lang="de">Doppelseitiger Druck</span><span lang="en">Duplex printing</span></label>
-							<span class="infoField"><span lang="de">Wichtig bei doppelseitigem Druck.</span><span lang="en">Important for duplex printing.</span></span>
+							<label for="duplex"><span lang="de">Doppelseitiger Druck</span><span lang="en">Duplex printing</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Wichtig bei doppelseitigem Druck.</span><span lang="en">Important for duplex printing.</span></span></span></label>
 							{{ checkboxInput_duplex }}
 						</div>
 						<div>
-							<label for="replacement"><span lang="de">Ersatz-Antwortbogen</span><span lang="en">Replacement evaluation sheet</span></label>
-							<span class="infoField"><span lang="de">Fügt einen zusätzlichen Antwortbogen ein.</span><span lang="en">Add an additional evaluation sheet.</span></span>
+							<label for="replacement"><span lang="de">Ersatz-Antwortbogen</span><span lang="en">Replacement evaluation sheet</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Fügt einen zusätzlichen Antwortbogen ein.</span><span lang="en">Add an additional evaluation sheet.</span></span></span></label>
 							{{ checkboxInput_replacement }}
 						</div>
 						
@@ -298,13 +290,11 @@
 							{{ checkboxInput_samepage }}
 						</div>
 						<div>
-							<label for="newpage"><span lang="de">Neue Seite je Aufgabe</span><span lang="en">New page per exercise</span></label>
-							<span class="infoField"><span lang="de">Jede Aufgabe auf einer separaten Seiten platzieren.</span><span lang="en">Place each exercise on a separate page.</span></span>
+							<label for="newpage"><span lang="de">Neue Seite je Aufgabe</span><span lang="en">New page per exercise</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Jede Aufgabe auf einer separaten Seiten platzieren.</span><span lang="en">Place each exercise on a separate page.</span></span></span></label>
 							{{ checkboxInput_newpage }}
 						</div>
 						<div>
-							<label for="examLanguage"><span lang="de">Sprache</span><span lang="en">Language</span></label>
-							<span class="infoField"><span lang="de">Betrifft nur allgemeine Texte im Dokument.</span><span lang="en">Only relevant for general document texts.</span></span>
+							<label for="examLanguage"><span lang="de">Sprache</span><span lang="en">Language</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Betrifft nur allgemeine Texte im Dokument.</span><span lang="en">Only relevant for general document texts.</span></span></span></label>
 							{{ selectInput_examLanguage }}
 						</div>
 						<div>
@@ -324,13 +314,11 @@
 							{{ textInput_examIntro }}
 						</div>
 						<div>
-							<label for="numberOfBlanks"><span lang="de">Anzahl leeren Seiten</span><span lang="en">Number of blank pages</span></label>
-							<span class="infoField"><span lang="de">Werden am Ende der Prüfung angehängt.</span><span lang="en">Are appended to the end of the exam.</span></span>
+							<label for="numberOfBlanks"><span lang="de">Anzahl leeren Seiten</span><span lang="en">Number of blank pages</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Werden am Ende der Prüfung angehängt.</span><span lang="en">Are appended to the end of the exam.</span></span></span></label>
 							{{ textInput_numberOfBlanks }}
 						</div>
 						<div>
-							<label><span lang="de">Zusatz Pdf-Seiten</span><span lang="en">Additional Pdf pages</span></label>
-							<span class="infoField"><span lang="de">Werden am Ende der Prüfung angehängt.</span><span lang="en">Are appended to the end of the exam.</span></span>
+							<label><span lang="de">Zusatz Pdf-Seiten</span><span lang="en">Additional Pdf pages</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Werden am Ende der Prüfung angehängt.</span><span lang="en">Are appended to the end of the exam.</span></span></span></label>
 							{{ additionalPdfFileImport }}
 							
 							<div id="dnd_additionalPdf" class="dnd">

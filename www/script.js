@@ -34,8 +34,8 @@ function initApp(){
 	rex.examEvaluation.scans_reg_fullJoinData = [];
 	rex.examEvaluation.statistics = [];
 	
-	$('#s_initialSeed').html(itemSingle($('#seedValueExercises').val(), 'greenLabelValue'));
-	$('#s_numberOfExams').html(itemSingle($('#numberOfExams').val(), 'greenLabelValue'));
+	$('#s_initialSeed').html(itemSingle($('#seedValueExercises').val(), 'yellowLabelValue'));
+	$('#s_numberOfExams').html(itemSingle($('#numberOfExams').val(), 'yellowLabelValue'));
 	$('#logout-button').removeClass('shinyjs-hide');
 	
 	dndExercises.init();
@@ -677,7 +677,7 @@ function getFilesDataTransferItems(dataTransferItems) {
 $("#seedValueExercises").change(function(){
 	const seed = getIntegerInput(1, 999999999999, null, $(this).val());
 	setShinyInputValue("seedValueExercises", seed);
-	$('#s_initialSeed').html(itemSingle(seed, 'greenLabelValue'));
+	$('#s_initialSeed').html(itemSingle(seed, 'yellowLabelValue'));
 		
 	if(rex.exercises.length > 0) viewExercise(getID());
 }); 
@@ -686,7 +686,7 @@ $("#seedValueExercises").change(function(){
  EXERCISES SUMMARY 
 -------------------------------------------------------------- */
 function examExercisesSummary() {	
-	$('#s_initialSeed').html(itemSingle($('#seedValueExercises').val(), 'greenLabelValue'));
+	$('#s_initialSeed').html(itemSingle($('#seedValueExercises').val(), 'yellowLabelValue'));
 	
 	if($('.exerciseItem.exam').length == 0) { 
 		$('#s_numberOfExercises').html("");
@@ -708,8 +708,8 @@ function examExercisesSummary() {
 		}
 	})
 	
-	$('#s_numberOfExercises').html(itemSingle(numberOfExamExercisesCounter, 'greenLabelValue'));
-	$('#s_totalPoints').html(itemSingle(totalPoints, 'greenLabelValue'));
+	$('#s_numberOfExercises').html(itemSingle(numberOfExamExercisesCounter, 'yellowLabelValue'));
+	$('#s_totalPoints').html(itemSingle(totalPoints, 'yellowLabelValue'));
 	$('#s_topicsTable').html(itemTable(topics));
 }
 
@@ -727,7 +727,7 @@ function itemTable(arr) {
 	
 	out = Object.entries(counts).map(entry => {
 		const [key, value] = entry;
-		return '<span class="myLabel"><span class="label_key greenLabelKey">' + key + '</span><span class="label_value greenLabelValue">' + value + '</span></span>';
+		return '<span class="myLabel"><span class="label_key yellowLabelKey">' + key + '</span><span class="label_value yellowLabelValue">' + value + '</span></span>';
 	}).join('');
 	
 	return '<span class="myLabelContainer">' + out + '</span>';
@@ -1151,7 +1151,7 @@ const d_choiceText = 'Text';
 const d_topicText = 'Text';
 const d_sectionText = 'Text';
 const d_solution = false;
-const d_solutionNoteText = "";
+const d_solutionNoteText = 'Text';
 
 function newSimpleExercise(file = '', block = 1) {
 	const exerciseID = exercises + 1
@@ -1639,7 +1639,7 @@ function loadExerciseFromObject(exerciseID) {
 		const field = 'answers';
 		const zip = rex.exercises[exerciseID].solution.map((x, i) => [x, rex.exercises[exerciseID].choices[i], rex.exercises[exerciseID].solutionNotes[i]]);
 		let content = '<div id="answerContent">' + zip.map(i => '<p>' + (editable ? '<button type="button" class="removeAnswer btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></button>' : '') + '<span class=\"solution ' + (i[0] + 'Solution ') + (editable ? 'editTrueFalse' : '') + '\">' + getTrueFalseText(i[0]) + '</span><span class="answerText choice"><span class="choiceText" contenteditable="' + editable + '" spellcheck="false">' + i[1] + '</span></span><span class="answerText solutionNote"><span class="solutionNoteText" contenteditable="' + editable + '" spellcheck="false">' + i[2] + '</span></span></p>').join('') + '</div>';
-		
+
 		if( rex.exercises[exerciseID].editable ) {
 			content = '<button id="addNewAnswer" type="button" class="btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-plus"></i></span><span class="textButton"><span lang="de">Neue Antwortmöglichkeit</span><span lang="en">New Answer</span></span></button>' + content;
 		}
@@ -2142,7 +2142,7 @@ $("#numberOfExams").change(function(){
 	const numberOfExams = getIntegerInput(1, null, 1, $(this).val());
 	
 	setShinyInputValue("numberOfExams", numberOfExams);
-	$('#s_numberOfExams').html(itemSingle(numberOfExams, 'greenLabelValue'));
+	$('#s_numberOfExams').html(itemSingle(numberOfExams, 'yellowLabelValue'));
 }); 
 
 $("#autofillSeed").click(function(){
@@ -2668,7 +2668,7 @@ function populateCompareTable() {
 	$('#scanStats').empty();
 	$('#scanStats').append('<span id="scansInvalidCount" class="scanStat myLabel"><span class="scanStatText label_key redLabelKey"><span lang="de">Ungültige Scans</span><span lang="en">Invalid scans</span></span><span class="scanStatValue label_value redLabelValue">' + invalidCount + '</span></span>')
 	$('#scanStats').append('<span id="scansValidCount" class="scanStat myLabel"><span class="scanStatText label_key greenLabelKey"><span lang="de">Gültige Scans</span><span lang="en">Valid scans</span></span><span class="scanStatValue label_value greenLabelValue">' + validCount + '</span></span>')
-	$('#scanStats').append('<span id="scansnotAssignedCount" class="scanStat myLabel"><span class="scanStatText label_key greenLabelKey"><span lang="de">Nicht zugeordnete Matrikelnummern</span><span lang="en">Registration numbers not assigned</span></span><span class="scanStatValue label_value greenLabelValue">' + notAssignedCount + '</span></span>')
+	$('#scanStats').append('<span id="scansnotAssignedCount" class="scanStat myLabel"><span class="scanStatText label_key yellowLabelKey"><span lang="de">Nicht zugeordnete Matrikelnummern</span><span lang="en">Registration numbers not assigned</span></span><span class="scanStatValue label_value yellowLabelValue">' + notAssignedCount + '</span></span>')
 	
 	$('.loadingCompareScanRegistrationDataTable').hide();
 	f_langDeEn();
