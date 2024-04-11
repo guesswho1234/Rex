@@ -80,7 +80,7 @@
 
 .packgeIncludesContainer {
 	display: flex;
-	width: 100%;
+	float: right;
 	place-content: end;
 }
 
