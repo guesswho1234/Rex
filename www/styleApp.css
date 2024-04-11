@@ -706,8 +706,30 @@ main > * {
 	border: 2px solid var(---main) !important;
 }
 
+.myTooltip {
+	margin-top: -0.25rem;
+	margin-left: 0.25rem;
+	color: var(---background2);
+}
+
+.tooltipText, 
 .tryCatch .tryCatchText {
 	visibility: hidden;
+}
+
+.tooltipText {
+	background-color: var(---background3);
+	color: var(---main);
+	border: 1px solid var(---background2);
+	font-weight: normal;
+}
+
+.tooltipText {
+	position: absolute;
+	z-index: 1;
+	margin-left: 0.5rem;
+	padding: 0.5rem;
+	border-radius: 3px;
 }
 
 .exerciseTryCatch .exerciseTryCatchText {
@@ -729,6 +751,7 @@ main > * {
 	background-color: var(---red_error);
 }
 
+.myTooltip:hover .tooltipText, 
 .tryCatch:hover .tryCatchText {
 	visibility: visible;
 }
