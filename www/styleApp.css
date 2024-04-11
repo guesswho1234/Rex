@@ -1194,7 +1194,6 @@ main > * {
 }
 
 .autofillField,
-.infoField {
 	font-size: 12px;
 	color: #aaa;
 	display: block;
