@@ -444,8 +444,6 @@ main > * {
 
 .greenLabelValue {
 	background: var(---green_success);
-	color: white;
-	font-weight: bold;
 }
 
 .yellowLabelValue {
@@ -633,7 +631,8 @@ main > * {
 }
 
 .sidebarListItem.exam .examExercise {
-	color: var(---green_success);
+	background-color: var(---yellow_warning_fade) !important;
+	border: 2px solid var(---main);
 	font-weight: bold;
 }
 
@@ -651,6 +650,8 @@ main > * {
 	margin-right: 0px;
 	margin-left: auto;
 	width: auto;
+	display: flex;
+    place-items: center;
 }
 
 .exerciseBlock input {
@@ -706,8 +707,30 @@ main > * {
 	border: 2px solid var(---main) !important;
 }
 
+.myTooltip {
+	margin-top: -0.25rem;
+	margin-left: 0.25rem;
+	color: var(---background2);
+}
+
+.tooltipText, 
 .tryCatch .tryCatchText {
 	visibility: hidden;
+}
+
+.tooltipText {
+	background-color: var(---background3);
+	color: var(---main);
+	border: 1px solid var(---background2);
+	font-weight: normal;
+}
+
+.tooltipText {
+	position: absolute;
+	z-index: 2;
+	margin-left: 0.5rem;
+	padding: 0.5rem;
+	border-radius: 3px;
 }
 
 .exerciseTryCatch .exerciseTryCatchText {
@@ -729,6 +752,7 @@ main > * {
 	background-color: var(---red_error);
 }
 
+.myTooltip:hover .tooltipText, 
 .tryCatch:hover .tryCatchText {
 	visibility: visible;
 }
@@ -759,17 +783,21 @@ main > * {
 	margin: 1px;
 }
 
-#examHistory span,
-#authoredBy span,
-#checkedBy span {
+#type > span,
+#question span,
+#points span,
+#answerContent .choiceText {
 	margin: 5px;
 	padding: 3px;
-	background: var(---gray_passive);
+	background: var(---yellow_warning_fade);
 	border-radius: 3px;
+	font-weight: bold;
 }
 
+#examHistory span,
+#authoredBy span,
+#checkedBy span,
 #exerciseName > span,
-#type > span, 
 #difficulty span,
 #topic span,
 #section span,
@@ -777,8 +805,10 @@ main > * {
 .solutionNote > span {
 	margin: 5px;
 	padding: 3px;
-	background: var(---yellow_warning_fade);
+	background: var(---transparent);
+	color: var(---main);
 	border-radius: 3px;
+	font-style: italic;
 }
 
 #exercise_info .val {
@@ -802,7 +832,6 @@ main > * {
 }
 
 #answerContent .solution {
-	font-weight: bold;
 	width: max-content;
 	border-radius: 3px;
 	border: 2px solid var(---transparent);
@@ -827,10 +856,6 @@ main > * {
 
 #answerContent .answerText input {
 	margin: 0px;
-}
-
-#answerContent > * {
-	font-weight: bold;
 }
 
 #answerContent > p {
@@ -878,6 +903,7 @@ main > * {
 	padding: 2px;
 	border-color: var(---transparent);
 	background-color: var(---highlight_values) !important;
+	color: var(---main);
 }
 
 #exercise_info_buttons {
@@ -1168,7 +1194,6 @@ main > * {
 }
 
 .autofillField,
-.infoField {
 	font-size: 12px;
 	color: #aaa;
 	display: block;
@@ -1192,6 +1217,16 @@ main > * {
 #examSolutionsFiles,
 #examRegisteredParticipantsFiles {
 	min-height: 34px;
+}
+
+#exerciseFigureFiles {
+	background: var(---yellow_warning_fade);
+}
+
+#additionalPdfFiles,
+#examScansFiles,
+#examSolutionsFiles,
+#examRegisteredParticipantsFiles {
 	background: var(---background3);
 }
 

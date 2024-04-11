@@ -65,7 +65,7 @@
 .uibkToolsFileButton {
 	margin-top: 5px;
 	padding: 0.5rem;
-	background: var(---yellow_warning);
+	background: var(---highlight_values);
 	border-radius: 5px;
 	border: 2px solid var(---transparent);
 }
@@ -80,7 +80,7 @@
 
 .packgeIncludesContainer {
 	display: flex;
-	width: 100%;
+	float: right;
 	place-content: end;
 }
 
