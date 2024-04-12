@@ -783,15 +783,24 @@ main > * {
 	margin: 1px;
 }
 
-#type > .editType,
-#question .questionText[contenteditable="true"],
-#points .points[contenteditable="true"],
-#answerContent .choiceText[contenteditable="true"] {
+#exercise_info:not(.editableExercise) .myTooltip {
+	display: none;
+}
+
+/* #type > .editType, */
+/* #question .questionText[contenteditable="true"], */
+/* #points .points[contenteditable="true"], */
+/* #answerContent .choiceText[contenteditable="true"] { */
+#exercise_info.editableExercise .highlightField {
 	margin: 5px;
 	padding: 3px;
 	background: var(---yellow_warning_fade);
 	border-radius: 3px;
 	font-weight: bold;
+}
+
+#exerciseFigureFiles {
+	background: var(---yellow_warning_fade);
 }
 
 #examHistory span,
@@ -882,6 +891,7 @@ main > * {
 .editType, 
 .editTrueFalse {
 	cursor: pointer;
+	font-weight: bold;
 }
 
 *[contenteditable="true"]:not(.exerciseName),
@@ -1217,10 +1227,6 @@ main > * {
 #examSolutionsFiles,
 #examRegisteredParticipantsFiles {
 	min-height: 34px;
-}
-
-#exerciseFigureFiles {
-	background: var(---yellow_warning_fade);
 }
 
 #additionalPdfFiles,

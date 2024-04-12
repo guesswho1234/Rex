@@ -366,10 +366,12 @@ document.onkeydown = function(evt) {
 							}
 							break;
 						case 38: // ARROW UP
+							evtobj.preventDefault();
 							sidebarMoveUp($('.mainSection.active'));
 							updateView = true;
 							break;
 						case 40: // ARROW DOWN
+							evtobj.preventDefault();
 							sidebarMoveDown($('.mainSection.active'));
 							updateView = true;
 							break;
@@ -1292,8 +1294,6 @@ function getMaxExercisesPerBlock(){
 }
 
 function viewExercise(exerciseID) {
-	resetOutputFields();
-	
 	$('.exerciseItem').removeClass('active');
 	$('.exerciseItem').eq(exerciseID).addClass('active');
 	
@@ -1315,6 +1315,7 @@ function exerciseShouldbeParsed(exerciseID){
 
 function resetOutputFields() {
 	$('#exercise_info').addClass('hidden');	
+	$('#exercise_info').removeClass("editableExercise");
 	
 	let fields = ['exerciseName',
 				  'question',
@@ -1585,6 +1586,8 @@ document.addEventListener('dblclick', (event) => {
 })
 
 function loadExerciseFromObject(exerciseID) {
+	resetOutputFields();
+	
 	const editable = rex.exercises[exerciseID].editable; 
 	
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').removeClass("editable");
@@ -1602,9 +1605,9 @@ function loadExerciseFromObject(exerciseID) {
 		let content = '';
 		
 		if(Array.isArray(rex.exercises[exerciseID][field])) {
-			content = '<span class="questionText" contenteditable="' + editable + '" spellcheck="false">' + rex.exercises[exerciseID][field].join('') + '</span>';
+			content = '<span class="questionText highlightField" contenteditable="' + editable + '" spellcheck="false">' + rex.exercises[exerciseID][field].join('') + '</span>';
 		} else {
-			content = '<span class="questionText" contenteditable="' + editable + '" spellcheck="false">' + rex.exercises[exerciseID][field] + '</span>';
+			content = '<span class="questionText highlightField" contenteditable="' + editable + '" spellcheck="false">' + rex.exercises[exerciseID][field] + '</span>';
 		}
 		
 		setExerciseFieldFromObject(field, content);
@@ -1623,14 +1626,14 @@ function loadExerciseFromObject(exerciseID) {
 	if(rex.exercises[exerciseID].points !== null) {	
 		const field = 'points';
 				
-		const content = '<span class="points" contenteditable="' + editable + '" spellcheck="false">' + rex.exercises[exerciseID][field] + '</span>';
+		const content = '<span class="points highlightField" contenteditable="' + editable + '" spellcheck="false">' + rex.exercises[exerciseID][field] + '</span>';
 		
 		setExerciseFieldFromObject(field, content);
 	}
 	
 	if(rex.exercises[exerciseID].type !== null) {
 		const field = 'type';
-		const content = '<span class=\"type ' + rex.exercises[exerciseID].type + (editable ? ' editType' : '') + '\">' + getTypeText(rex.exercises[exerciseID].type) + '</span>'
+		const content = '<span class=\"type highlightField ' + rex.exercises[exerciseID].type + (editable ? ' editType' : '') + '\">' + getTypeText(rex.exercises[exerciseID].type) + '</span>'
 		
 		setExerciseFieldFromObject(field, content);
 	}
@@ -1638,7 +1641,7 @@ function loadExerciseFromObject(exerciseID) {
 	if(rex.exercises[exerciseID].type === "schoice" || rex.exercises[exerciseID].type === "mchoice" || rex.exercises[exerciseID].editable) {
 		const field = 'answers';
 		const zip = rex.exercises[exerciseID].solution.map((x, i) => [x, rex.exercises[exerciseID].choices[i], rex.exercises[exerciseID].solutionNotes[i]]);
-		let content = '<div id="answerContent">' + zip.map(i => '<p>' + (editable ? '<button type="button" class="removeAnswer btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></button>' : '') + '<span class=\"solution ' + (i[0] + 'Solution ') + (editable ? 'editTrueFalse' : '') + '\">' + getTrueFalseText(i[0]) + '</span><span class="answerText choice"><span class="choiceText" contenteditable="' + editable + '" spellcheck="false">' + i[1] + '</span></span><span class="answerText solutionNote"><span class="solutionNoteText" contenteditable="' + editable + '" spellcheck="false">' + i[2] + '</span></span></p>').join('') + '</div>';
+		let content = '<div id="answerContent">' + zip.map(i => '<p>' + (editable ? '<button type="button" class="removeAnswer btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></button>' : '') + '<span class=\"solution ' + (i[0] + 'Solution ') + (editable ? 'editTrueFalse' : '') + '\">' + getTrueFalseText(i[0]) + '</span><span class="answerText choice"><span class="choiceText highlightField" contenteditable="' + editable + '" spellcheck="false">' + i[1] + '</span></span><span class="answerText solutionNote"><span class="solutionNoteText" contenteditable="' + editable + '" spellcheck="false">' + i[2] + '</span></span></p>').join('') + '</div>';
 
 		if( rex.exercises[exerciseID].editable ) {
 			content = '<button id="addNewAnswer" type="button" class="btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-plus"></i></span><span class="textButton"><span lang="de">Neue Antwortmöglichkeit</span><span lang="en">New Answer</span></span></button>' + content;
@@ -1682,8 +1685,10 @@ function loadExerciseFromObject(exerciseID) {
 		setExerciseFieldFromObject(field, content);
 	}
 	
-	if(editable)
+	if(editable) {
 		$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').addClass("editable");
+		$('#exercise_info').addClass("editableExercise");
+	}
 		
 	$('.exerciseItem.active').removeClass('active');
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').addClass('active');
