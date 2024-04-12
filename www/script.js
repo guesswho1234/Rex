@@ -1630,7 +1630,7 @@ function loadExerciseFromObject(exerciseID) {
 	
 	if(rex.exercises[exerciseID].type !== null) {
 		const field = 'type';
-		const content = '<span class=\"type ' + rex.exercises[exerciseID].type + ' ' + (editable ? 'editType' : '') + '\">' + getTypeText(rex.exercises[exerciseID].type) + '</span>'
+		const content = '<span class=\"type ' + rex.exercises[exerciseID].type + (editable ? ' editType' : '') + '\">' + getTypeText(rex.exercises[exerciseID].type) + '</span>'
 		
 		setExerciseFieldFromObject(field, content);
 	}

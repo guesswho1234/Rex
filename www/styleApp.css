@@ -783,10 +783,10 @@ main > * {
 	margin: 1px;
 }
 
-#type > span,
-#question span,
-#points span,
-#answerContent .choiceText {
+#type > .editType,
+#question .questionText[contenteditable="true"],
+#points .points[contenteditable="true"],
+#answerContent .choiceText[contenteditable="true"] {
 	margin: 5px;
 	padding: 3px;
 	background: var(---yellow_warning_fade);
