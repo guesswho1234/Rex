@@ -787,10 +787,6 @@ main > * {
 	display: none;
 }
 
-/* #type > .editType, */
-/* #question .questionText[contenteditable="true"], */
-/* #points .points[contenteditable="true"], */
-/* #answerContent .choiceText[contenteditable="true"] { */
 #exercise_info.editableExercise .highlightField {
 	margin: 5px;
 	padding: 3px;
