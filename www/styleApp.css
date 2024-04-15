@@ -731,6 +731,7 @@ main > * {
 	margin-left: 0.5rem;
 	padding: 0.5rem;
 	border-radius: 3px;
+	width: 250px;
 }
 
 .exerciseTryCatch .exerciseTryCatchText {
