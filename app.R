@@ -76,7 +76,7 @@ source("./source/tryCatch.R")
           figure = list(name=figure_name, fileExt=figure_fileExt, blob=figure_blob)
         }
         
-        # extract raw question text
+        # extract raw question text (; not allowed in any input field)
         question_raw = strsplit(exercise$exerciseCode, "rnwTemplate_question=")[[1]][2]
         question_raw = strsplit(question_raw, ";")[[1]][1]
         question_raw = paste0(rev(rev(strsplit(question_raw, "")[[1]][-1])[-1]), collapse="") # trim
