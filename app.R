@@ -100,7 +100,7 @@ source("./source/tryCatch.R")
         solutionNotes_raw[1] = paste0(strsplit(solutionNotes_raw[1], "")[[1]][-c(1:3)], collapse="")
         solutionNotes_raw[length(solutionNotes_raw)] = paste0(rev(rev(strsplit(solutionNotes_raw[length(solutionNotes_raw)], "")[[1]])[-1]), collapse="") #trim
         solutionNotes_raw = Reduce(c, lapply(solutionNotes_raw, \(x) paste0(rev(rev(strsplit(x, "")[[1]])[-c(1)]), collapse=""))) # trim
-
+        
         seed = if(seed == "") NULL else seed
         
         file = tempfile(fileext = paste0(".", exercise$exerciseExt))

@@ -766,10 +766,6 @@ main > * {
 	width: 100%;
 }
 
-#exercise_info h2 {
-	height: 35px;
-}
-
 #exercise_info.hidden {
 	display: none !important;
 }
@@ -812,8 +808,8 @@ main > * {
 	border-radius: 3px;
 	display: block;
 	width: fit-content;
-	min-width: 20px;
-	min-height: 20px
+	min-width: 12px;
+	min-height: 28px
 }
 
 #examHistory span,

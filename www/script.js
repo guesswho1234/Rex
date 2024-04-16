@@ -1150,10 +1150,10 @@ function loadExercise(file, block = 1) {
 const d_exerciseName = 'Name';
 const d_questionText = 'Text';
 const d_choiceText = 'Text';
-const d_topicText = 'Text';
-const d_sectionText = 'Text';
+const d_topicText = '';
+const d_sectionText = '';
 const d_solution = false;
-const d_solutionNoteText = 'Text';
+const d_solutionNoteText = '';
 
 function newSimpleExercise(file = '', block = 1) {
 	const exerciseID = exercises + 1
@@ -1468,7 +1468,7 @@ $('body').on('focus', '[contenteditable]', function() {
 		if ($this.hasClass('solutionNoteText')) {
 			content = contenteditable_getPlain(content);
 			content = contentTexSanitize(content);
-
+			
 			rex.exercises[exerciseID].solutionNotes[$this.index('.solutionNoteText')] = content;
 			rex.exercises[exerciseID].solutionNotes_raw[$this.index('.solutionNoteText')] = content;
 		}
@@ -1703,8 +1703,8 @@ function setSimpleExerciseFileContents(exerciseID){
 	fileText = fileText.replace("?rnwTemplate_type", rex.exercises[exerciseID].type);
 	fileText = fileText.replace("?rnwTemplate_question", '"' + rex.exercises[exerciseID].question_raw.replaceAll('\\', '\\\\') + '"');
 	fileText = fileText.replace("?rnwTemplate_choices", 'c(' + rex.exercises[exerciseID].choices_raw.map(c=>'"' + c.replaceAll('\\', '\\\\') + '"').join(',') + ')');
-	fileText = fileText.replace("?rnwTemplate_solutions", 'c(' + rex.exercises[exerciseID].solution.map(s=>s?"T":"F").join(',') + ')');
-	fileText = fileText.replace("?rnwTemplate_solutionNotes", 'c(' + rex.exercises[exerciseID].solutionNotes_raw.map(c=>'"' + c.replaceAll('\\', '\\\\') + '"').join(',') + ')');
+	fileText = fileText.replace("?rnwTemplate_solutions", 'c(' + rex.exercises[exerciseID].solution.map(s=>s?"T":"F").join(',') + ')');	
+	fileText = fileText.replace("?rnwTemplate_solutionNotes", 'c(' + rex.exercises[exerciseID].solutionNotes_raw.map((x, i) => '"' + (rex.exercises[exerciseID].solution[i]?1:0) + ": " + x.replace(/[01]: */g, '') + '"').join(',') + ')');
 	fileText = fileText.replace("?rnwTemplate_points", rex.exercises[exerciseID].points);
 	fileText = fileText.replace("?rnwTemplate_topic", rex.exercises[exerciseID].topic);
 	fileText = fileText.replace("?rnwTemplate_section", rex.exercises[exerciseID].section === null ? "" : rex.exercises[exerciseID].section);
@@ -1993,12 +1993,12 @@ Shiny.addCustomMessageHandler('setExerciseSolutions', function(jsonData) {
 
 Shiny.addCustomMessageHandler('setExerciseSolutionNotes', function(jsonData) {
 	const exerciseSolutionNotes = JSON.parse(jsonData);
-	rex.exercises[getID()].solutionNotes = exerciseSolutionNotes;
+	rex.exercises[getID()].solutionNotes = exerciseSolutionNotes.replace(/[01]: */g, '');
 });
 
 Shiny.addCustomMessageHandler('setExerciseSolutionNotesRaw', function(jsonData) {
 	const exerciseSolutionNotesRaw = JSON.parse(jsonData);
-	rex.exercises[getID()].solutionNotes_raw = exerciseSolutionNotesRaw;
+	rex.exercises[getID()].solutionNotes_raw = exerciseSolutionNotesRaw.replace(/[01]: */g, '');
 });
 
 Shiny.addCustomMessageHandler('setExerciseEditable', function(editable) {
