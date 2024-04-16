@@ -1545,18 +1545,18 @@ function contentSectionSanitize(content){
 	return content.replace(/[^a-z0-9\_\-\/]/gi, '');
 }
 
-//latex test string: $ % & \ ^ _ { } ~ # \
+//latex test string: $ % & \ ^ _ { } ~ # \ 
+function contentTexSanitize(content){
+	content = content.replace(/[^\<,\.\-#\+`ß\|~\\\}\]\[\{@\!"§\$%&/\(\)\=\?´\*'\:;\>\^a-z0-9_ \u00c4\u00e4\u00d6\u00f6\u00dc\u00fc\u00df]/gi, '');
+	content = content.replaceAll('\\~{}', '~');
+	content = content.replaceAll(/[\\](?=[$%&\^_{}~#])/g, '');
+	content = content.replace(/[{}]/g, '\\$&');
+	content = content.replaceAll(/[~]/g, '\\~{}');
+	content = content.replace(/[$%&#\^_]/g, '\\$&');
+	content = content.replace(/(\\)(?:[^$%&\^_{}~#])/g, '');
+	content = content.replace(/(\\)($)/g, '');
 
-function contentTexSanitize(content_raw){
-	content_raw = content_raw.replaceAll('\\~{}', '~');
-	content_raw = content_raw.replaceAll(/[\\](?=[$%&\^_{}~#])/g, '');
-	content_raw = content_raw.replace(/[{}]/g, '\\$&');
-	content_raw = content_raw.replaceAll(/[~]/g, '\\~{}');
-	content_raw = content_raw.replace(/[$%&#\^_]/g, '\\$&');
-	content_raw = content_raw.replace(/(\\)(?:[^$%&\^_{}~#])/g, '');
-	content_raw = content_raw.replace(/(\\)($)/g, '');
-
-	return content_raw
+	return content;
 }
 
 function filterNodes(element, allow) {

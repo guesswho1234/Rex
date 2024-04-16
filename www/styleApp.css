@@ -789,10 +789,7 @@ main > * {
 }
 
 #exercise_info.editableExercise .highlightField {
-	margin: 5px;
-	padding: 3px;
 	background: var(---yellow_warning_fade);
-	border-radius: 3px;
 	font-weight: bold;
 }
 
@@ -800,6 +797,7 @@ main > * {
 	background: var(---yellow_warning_fade);
 }
 
+#exercise_info.editableExercise .highlightField,
 #examHistory span,
 #authoredBy span,
 #checkedBy span,
@@ -811,9 +809,24 @@ main > * {
 .solutionNote > span {
 	margin: 5px;
 	padding: 3px;
+	border-radius: 3px;
+	display: block;
+	width: fit-content;
+	min-width: 20px;
+	min-height: 20px
+}
+
+#examHistory span,
+#authoredBy span,
+#checkedBy span,
+#exerciseName > span,
+#difficulty span,
+#topic span,
+#section span,
+#tags span,
+.solutionNote > span {
 	background: var(---transparent);
 	color: var(---main);
-	border-radius: 3px;
 	font-style: italic;
 }
 
