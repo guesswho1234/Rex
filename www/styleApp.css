@@ -1200,16 +1200,10 @@ main > * {
 	display:block;
 }
 
-.autofillField,
-	font-size: 12px;
-	color: #aaa;
-	display: block;
-}
-
 .autofillField {
 	text-decoration: underline;
 	cursor: pointer;
-	color: var(---green_success);
+	display: block; 
 }
 
 #exerciseFigureFiles img {

@@ -1152,12 +1152,12 @@ server = function(input, output, session) {
   # (sync, send values to frontend and load into dom)
   exerciseParsing = eventReactive(input$parseExercise, {
     startWait(session)
-
+    
     x = callr::r_bg(
       func = parseExercise,
       args = list(isolate(input$parseExercise), isolate(input$seedValueExercises), collectWarnings, getDir(session)),
       supervise = TRUE
-      # env = c(callr::rcmd_safe_env(), MAKEBSP = FALSE) # was required for old tasks
+      # env = c(callr::rcmd_safe_env(), MAKEBSP = FALSE)
     )
 
     # x$wait() makes it a sync exercise again - not what we want, but for now lets do this
