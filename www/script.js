@@ -352,7 +352,7 @@ document.onkeydown = function(evt) {
 							$("#downloadExercises")[0].click();
 							break;
 						case 82: // shift+r 
-							exerciseParseAll();
+							exerciseParseAll(true);
 							break;
 					}
 				} 
@@ -380,7 +380,7 @@ document.onkeydown = function(evt) {
 							removeExercise(exerciseID);
 							break;
 						case 82: // r 
-							viewExercise($('.exerciseItem.active:not(.filtered)').first().index('.exerciseItem'));
+							viewExercise($('.exerciseItem.active:not(.filtered)').first().index('.exerciseItem'), true);
 							break;
 						case 83: // s 
 							$("#downloadExercise")[0].click();
@@ -781,13 +781,13 @@ function exerciseRemoveAll(){
 	});
 }
 
-function exerciseParseAll(){
+function exerciseParseAll(forcePrase = false){
 	rex.exercises.forEach((t, index) => {
 		if( $('.exerciseItem:nth-child(' + (index + 1) + ')').hasClass('filtered')) {
 			return;
 		}
 		
-		viewExercise(index)
+		viewExercise(index, forcePrase)
 	});	
 }
 
@@ -839,7 +839,7 @@ $('#exerciseRemoveAll').click(function () {
 });
 
 $('#exerciseParseAll').click(function () {
-	exerciseParseAll();
+	exerciseParseAll(true);
 });
 
 $('#searchExercises input').change(function () {
@@ -1293,11 +1293,11 @@ function getMaxExercisesPerBlock(){
 	return Math.min(...Object.values(exercisesPerBlock));
 }
 
-function viewExercise(exerciseID) {
+function viewExercise(exerciseID, forcePrase = false) {
 	$('.exerciseItem').removeClass('active');
 	$('.exerciseItem').eq(exerciseID).addClass('active');
 	
-	if(exerciseShouldbeParsed(exerciseID)) {
+	if(exerciseShouldbeParsed(exerciseID) || forcePrase) {
 		parseExercise(exerciseID);	
 	} else {
 		loadExerciseFromObject(exerciseID);
@@ -1814,7 +1814,7 @@ $('#exercise_list_items').on('click', '.exerciseParse', function(e) {
 	e.preventDefault();
 	e.stopPropagation();
 	
-	viewExercise($(this).closest('.exerciseItem').index('.exerciseItem'));
+	viewExercise($(this).closest('.exerciseItem').index('.exerciseItem'), true);
 });
 
 $('#exercise_list_items').on('click', '.examExercise', function(e) {
