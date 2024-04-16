@@ -1546,7 +1546,7 @@ function contentSectionSanitize(content){
 }
 
 function contentTexSanitize(content){
-	content = content.replace(/[^\<,\.\-#\+`ß\|~\\\}\]\[\{@\!"§\$%&/\(\)\=\?´\*'\:\>\^a-z0-9_ \u00c4\u00e4\u00d6\u00f6\u00dc\u00fc\u00df]/gi, '');
+	content = content.replace(/[^\<,\.\-#\+`ß\|~\\\}\]\[\{@\!"§\$%&/\(\)\=\?´\*'\:;\>\^a-z0-9_ \u00c4\u00e4\u00d6\u00f6\u00dc\u00fc\u00df]/gi, '');
 	content = content.replaceAll('\\~{}', '~');
 	content = content.replaceAll(/[\\](?=[$%&\^_{}~#])/g, '');
 	content = content.replace(/[{}]/g, '\\$&');

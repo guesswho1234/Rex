@@ -50,8 +50,10 @@ source("./source/tryCatch.R")
   
   # PARSE EXERCISES ---------------------------------------------------------
   parseExercise = function(exercise, seed, collectWarnings, dir){
-    out = tryCatch({
+     out = tryCatch({
       warnings = collectWarnings({
+        splitBy = ";\n" # originally it is ";\r\n" but "\r\n" is replaced by "\n"
+        
         # unify line breaks
         exercise$exerciseCode = gsub("\r\n", "\n", exercise$exerciseCode)
         
@@ -63,7 +65,7 @@ source("./source/tryCatch.R")
   
         # extract figure to display it in the respective field when viewing a exercise (only relevant for editable exercises)
         figure = strsplit(exercise$exerciseCode, "rnwTemplate_figure=")[[1]][2]
-        figure = strsplit(figure, ";")[[1]][1]
+        figure = strsplit(figure, splitBy)[[1]][1]
         
         figure_split = strsplit(figure,",")[[1]]
         figure = ""
@@ -78,13 +80,13 @@ source("./source/tryCatch.R")
         
         # extract raw question text (; not allowed in any input field)
         question_raw = strsplit(exercise$exerciseCode, "rnwTemplate_question=")[[1]][2]
-        question_raw = strsplit(question_raw, ";")[[1]][1]
+        question_raw = strsplit(question_raw, splitBy)[[1]][1]
         question_raw = paste0(rev(rev(strsplit(question_raw, "")[[1]][-1])[-1]), collapse="") # trim
         question_raw = gsub("\\\\", "\\", question_raw, fixed=TRUE)
         
         # extract raw choice texts
         choices_raw = strsplit(exercise$exerciseCode, "rnwTemplate_choices=")[[1]][2]
-        choices_raw = strsplit(choices_raw, ";")[[1]][1]
+        choices_raw = strsplit(choices_raw, splitBy)[[1]][1]
         choices_raw = strsplit(choices_raw, ",\"")[[1]]
         choices_raw[1] = paste0(strsplit(choices_raw[1], "")[[1]][-c(1:3)], collapse="")
         choices_raw[length(choices_raw)] = paste0(rev(rev(strsplit(choices_raw[length(choices_raw)], "")[[1]])[-1]), collapse="") #trim
@@ -95,7 +97,7 @@ source("./source/tryCatch.R")
         
         # extract raw solution note texts
         solutionNotes_raw = strsplit(exercise$exerciseCode, "rnwTemplate_solutionNotes=")[[1]][2]
-        solutionNotes_raw = strsplit(solutionNotes_raw, ";")[[1]][1]
+        solutionNotes_raw = strsplit(solutionNotes_raw, splitBy)[[1]][1]
         solutionNotes_raw = strsplit(solutionNotes_raw, ",\"")[[1]]
         solutionNotes_raw[1] = paste0(strsplit(solutionNotes_raw[1], "")[[1]][-c(1:3)], collapse="")
         solutionNotes_raw[length(solutionNotes_raw)] = paste0(rev(rev(strsplit(solutionNotes_raw[length(solutionNotes_raw)], "")[[1]])[-1]), collapse="") #trim
