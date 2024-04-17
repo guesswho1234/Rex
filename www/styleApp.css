@@ -1322,7 +1322,20 @@ figcaption {
 
 .graph {
 	display: grid;
-	padding: 1rem;
+	margin: 1rem;
+}
+
+.graphBars {
+	display: grid;
+	grid-template-rows: 100px auto;
+	place-content: space-between;
+}
+
+.graphLabels {
+	display: grid;
+	grid-template-rows: auto auto;
+	place-content: space-between;
+	height: 50px;
 }
 
 .graph.rowGraph {
@@ -1330,9 +1343,10 @@ figcaption {
 }
 
 .graph.columnGraph {
-	height: 175px;
-	grid-template-rows: 100px auto;
-	place-content: space-between;
+	display: block;
+	height: fit-content;
+	min-height: 175px;
+	overflow-y: hidden;
 }
 
 .graphColumnBar {
@@ -1393,6 +1407,9 @@ figcaption {
 	text-align: center;
 	display: grid;
 	font-weight: bold;
+	margin-top: 5px;
+	height: fit-content;
+	width: 45px;
 }
 
 .graphRowLabel::after {
@@ -1415,11 +1432,14 @@ figcaption {
 	place-items: end;
 	margin-right: 3px;
 	font-size: 10px;
-	font-weight: bold;
+    position: relative;
 }
 
 .meanValue .markValue {
 	place-items: baseline;
+	font-weight: bold;
+    color: var(---red_error);
+	font-size: 11px;
 }
 
 #evaluationExerciseStatistics .graph {
@@ -1428,8 +1448,8 @@ figcaption {
 
 #evaluationExerciseStatistics .graphColumnLabel .graphColumnLabelHoverText {
 	visibility: hidden;
-    max-width: 100%;
-    position: absolute;
+    max-width: 50%;
+    position: fixed;
     z-index: 1;
     background-color: var(---yellow_warning);
     font-family: Consolas;
@@ -1438,8 +1458,8 @@ figcaption {
     font-weight: bold;
     text-align: left;
     font-size: 0.9rem;
-    bottom: -1rem;
-    left: 0;
+    top: 15px;
+    right: 15px;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;

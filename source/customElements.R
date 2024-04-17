@@ -124,14 +124,18 @@ myExerciseChart = function(id, values, deCaption, enCaption) {
 		'<figure id="', id, '" aria-hidden="true">',
 			paste0('<figcaption><span lang="de">', deCaption, ' (', nrow(values), ' Aufgaben):</span><span lang="en">', enCaption, ' (', nrow(values), ' Exercises):</span></figcaption>'),
 			'<div class="graph columnGraph">',
-				paste0(sapply(1:nrow(values), \(v) {
-					paste0('',
-						'<div class="graphColumnBar valueBar" style="grid-column: ', v, '; height: 100%;"></div>',
-						'<div class="graphColumnBar backgroundBar" style="grid-column: ', v, '; height: ', (1 - values[v,4]) * 100, '%;"></div>',
-						'<div class="graphColumnBar overlayBar" style="grid-column: ', v, '; height: 100%;"><span class="absoluteValue">', round(values[v,4]*100, 0), '%</span></div>'
-					)
-				}), collapse=""),
-				paste0(sapply(1:nrow(values), \(x) paste0('<span class="graphColumnLabel"><span class="graphColumnLabelText">', x, '</span><span class="graphColumnLabelHoverText"><span lang="de">Aufgabe: ', rownames(values)[x], '</span><span lang="en">Exercise: ', rownames(values)[x], '</span></span></span>')), collapse=""),
+				'<div class="graphBars">',
+					paste0(sapply(1:nrow(values), \(v) {
+						paste0('',
+							'<div class="graphColumnBar valueBar" style="grid-column: ', v, '; height: 100%;"></div>',
+							'<div class="graphColumnBar backgroundBar" style="grid-column: ', v, '; height: ', (1 - values[v,4]) * 100, '%;"></div>',
+							'<div class="graphColumnBar overlayBar" style="grid-column: ', v, '; height: 100%;"><span class="absoluteValue">', round(values[v,4]*100, 0), '%</span></div>'
+						)
+					}), collapse=""),
+				'</div>',
+				'<div class="graphLabels">',
+					paste0(sapply(1:nrow(values), \(v) paste0('<span class="graphColumnLabel" style="grid-column: ', v, '; height: 100%;"><span class="graphColumnLabelText">', v, '</span><span class="graphColumnLabelHoverText"><span lang="de">Aufgabe: ', rownames(values)[v], '</span><span lang="en">Exercise: ', rownames(values)[v], '</span></span></span>')), collapse=""),
+				'</div>',
 			'</div>',
 		'</figure>'
 	)
@@ -144,14 +148,18 @@ myGradingChart = function(id, values, validExams, deCaption, enCaption) {
 		'<figure id="', id, '" aria-hidden="true">',
 			paste0('<figcaption><span lang="de">', deCaption, ' (', validExams, ' gültige Prüfungen):</span><span lang="en">', enCaption, ' (', validExams, ' valid exams):</span></figcaption>'),
 			'<div class="graph columnGraph">',
-				paste0(sapply(1:nrow(values), \(v) {
-					paste0('',
-						'<div class="graphColumnBar valueBar" style="grid-column: ', v, '; height: 100%;"></div>',
-						'<div class="graphColumnBar backgroundBar" style="grid-column: ', v, '; height: ', (1 - values[v,2]) * 100, '%;"></div>',
-						'<div class="graphColumnBar overlayBar" style="grid-column: ', v, '; height: 100%;"><span class="absoluteValue">', round(values[v,2]*100, 0), '%</span></div>'
-					)
-				}), collapse=""),
-				paste0(sapply(rownames(values), \(x) paste0('<span class="graphColumnLabel">', x, '</span>')), collapse=""),
+				'<div class="graphBars">',
+					paste0(sapply(1:nrow(values), \(v) {
+						paste0('',
+							'<div class="graphColumnBar valueBar" style="grid-column: ', v, '; height: 100%;"></div>',
+							'<div class="graphColumnBar backgroundBar" style="grid-column: ', v, '; height: ', (1 - values[v,2]) * 100, '%;"></div>',
+							'<div class="graphColumnBar overlayBar" style="grid-column: ', v, '; height: 100%;"><span class="absoluteValue">', round(values[v,2]*100, 0), '%</span></div>'
+						)
+					}), collapse=""),
+				'</div>',
+				'<div class="graphLabels">',
+					paste0(sapply(1:nrow(values), \(v) paste0('<span class="graphColumnLabel" style="grid-column: ', v, '; height: 100%;">', rownames(values)[v], '</span>')), collapse=""),
+				'</div>',
 			'</div>',
 		'</figure>'
 	)
