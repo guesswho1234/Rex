@@ -54,6 +54,9 @@ First, build your image with the supplied docker file: `docker build --platform 
 
 Second, run your image: `docker run -p 8180:8180 shiny-docker-rex`. 
 
+> [!WARNING]
+Currently, running the app with docker causes the app to not find the resources from the `www` folder. Yet to fix.
+
 ## Usage
 
 Once you got the application running, authenticate using `rex` as both login and password.
