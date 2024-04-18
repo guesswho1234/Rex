@@ -1554,9 +1554,13 @@ function contentTexSanitize(content){
 	// content = content.replaceAll(/[$%&#\^_]/g, '\\$&');
 	// content = content.replaceAll(/(\\)(?:[^$%&\^_{}~#])/g, '');
 	// content = content.replaceAll(/(\\)($)/g, '');
+	// ^ old
+	
+	
 	content = content.replaceAll(/[^\<,\.\-#\+`ß\|~\\\}\]\[\{@\!"§\$%&/\(\)\=\?´\*'\:;\>\^a-z0-9_ \u00c4\u00e4\u00d6\u00f6\u00dc\u00fc\u00df]/gi, '');
-	content = content.replaceAll(/[\\](?=[$%&\^_{}~#])/g, '');
-	content = content.replaceAll(/(\\)(?:[^$%&\^_{}~#])/g, '');
+	// content = content.replaceAll(/[\\](?=[$%&\^_{}~#])/g, '');
+	content = content.replaceAll(/[\\]/g, '');// does this solve the issue? - removes all backslash - looking good - check if can break it in any way
+	// content = content.replaceAll(/(\\)(?:[^$%&\^_{}~#])/g, '');
 	content = content.replaceAll(/(\\)($)/g, '');
 	content = content.replaceAll('"', "'");
 	content = content.replaceAll('\\~{}', '~');
