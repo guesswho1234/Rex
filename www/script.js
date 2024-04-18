@@ -781,13 +781,13 @@ function exerciseRemoveAll(){
 	});
 }
 
-function exerciseParseAll(forcePrase = false){
+function exerciseParseAll(forceParse = false){
 	rex.exercises.forEach((t, index) => {
 		if( $('.exerciseItem:nth-child(' + (index + 1) + ')').hasClass('filtered')) {
 			return;
 		}
 		
-		viewExercise(index, forcePrase)
+		viewExercise(index, forceParse)
 	});	
 }
 
@@ -1247,7 +1247,7 @@ function createExercise(exerciseID, name='exercise',
 		setSimpleExerciseFileContents(exerciseID);
 	}
 		
-	$('#exercise_list_items').append('<div class="exerciseItem sidebarListItem"><span class="exerciseName">' + name + '</span></span><span class="exerciseBlock"><span lang="de">Block:</span><span lang="en">Block:</span><input value="' + block + '"/></span><span class="exerciseButtons"><span class="exerciseParse exerciseButton disabled"> <span class="hotkeyInfo"><span lang="de">R</span><span lang="en">R</span></span> <span class="iconButton"><i class="fa-solid fa-rotate"></i></span><span class="textButton"><span lang="de">Berechnen</span><span lang="en">Prase</span></span></span><span class="examExercise exerciseButton disabled"><span class="hotkeyInfo"><span lang="de">E</span><span lang="en">E</span></span><span class="iconButton"><i class="fa-solid fa-star"></i></span><span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span></span><span class="exerciseRemove exerciseButton"><span class="hotkeyInfo"><span lang="de">D</span><span lang="en">D</span></span><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></span></span></div>');
+	$('#exercise_list_items').append('<div class="exerciseItem sidebarListItem"><span class="exerciseName">' + name + '</span></span><span class="exerciseBlock"><span lang="de">Block:</span><span lang="en">Block:</span><input value="' + block + '"/></span><span class="exerciseButtons"><span class="exerciseParse exerciseButton disabled"> <span class="hotkeyInfo"><span lang="de">R</span><span lang="en">R</span></span> <span class="iconButton"><i class="fa-solid fa-rotate"></i></span><span class="textButton"><span lang="de">Berechnen</span><span lang="en">Parse</span></span></span><span class="examExercise exerciseButton disabled"><span class="hotkeyInfo"><span lang="de">E</span><span lang="en">E</span></span><span class="iconButton"><i class="fa-solid fa-star"></i></span><span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span></span><span class="exerciseRemove exerciseButton"><span class="hotkeyInfo"><span lang="de">D</span><span lang="en">D</span></span><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></span></span></div>');
 }
 
 function parseExercise(exerciseID) {	
@@ -1293,11 +1293,11 @@ function getMaxExercisesPerBlock(){
 	return Math.min(...Object.values(exercisesPerBlock));
 }
 
-function viewExercise(exerciseID, forcePrase = false) {
+function viewExercise(exerciseID, forceParse = false) {
 	$('.exerciseItem').removeClass('active');
 	$('.exerciseItem').eq(exerciseID).addClass('active');
 	
-	if(exerciseShouldbeParsed(exerciseID) || forcePrase) {
+	if(exerciseShouldbeParsed(exerciseID) || forceParse) {
 		parseExercise(exerciseID);	
 	} else {
 		loadExerciseFromObject(exerciseID);
@@ -1534,26 +1534,35 @@ function contenteditable_getSpecial(content) {
 }
 
 function contentTextSanitize(content){
-	return content.replace(/[^a-z0-9\_\- \u00c4\u00e4\u00d6\u00f6\u00dc\u00fc\u00df]/gi, '');
+	return content.replaceAll(/[^a-z0-9\_\- \u00c4\u00e4\u00d6\u00f6\u00dc\u00fc\u00df]/gi, '');
 }
 
 function contentFileNameSanitize(content){
-	return content.replace(/[^a-z0-9\_\- ]/gi, '');
+	return content.replaceAll(/[^a-z0-9\_\- ]/gi, '');
 }
 
 function contentSectionSanitize(content){
-	return content.replace(/[^a-z0-9\_\-\/]/gi, '');
+	return content.replaceAll(/[^a-z0-9\_\-\/]/gi, '');
 }
 
 function contentTexSanitize(content){
-	content = content.replace(/[^\<,\.\-#\+`ß\|~\\\}\]\[\{@\!"§\$%&/\(\)\=\?´\*'\:;\>\^a-z0-9_ \u00c4\u00e4\u00d6\u00f6\u00dc\u00fc\u00df]/gi, '');
-	content = content.replaceAll('\\~{}', '~');
+	// content = content.replace(/[^\<,\.\-#\+`ß\|~\\\}\]\[\{@\!"§\$%&/\(\)\=\?´\*'\:;\>\^a-z0-9_ \u00c4\u00e4\u00d6\u00f6\u00dc\u00fc\u00df]/gi, '');
+	// content = content.replaceAll('\\~{}', '~');
+	// content = content.replaceAll(/[\\](?=[$%&\^_{}~#])/g, '');
+	// content = content.replace(/[{}]/g, '\\$&');
+	// content = content.replaceAll(/[~]/g, '\\~{}');
+	// content = content.replace(/[$%&#\^_]/g, '\\$&');
+	// content = content.replace(/(\\)(?:[^$%&\^_{}~#])/g, '');
+	// content = content.replace(/(\\)($)/g, '');
+	content = content.replaceAll(/[^\<,\.\-#\+`ß\|~\\\}\]\[\{@\!"§\$%&/\(\)\=\?´\*'\:;\>\^a-z0-9_ \u00c4\u00e4\u00d6\u00f6\u00dc\u00fc\u00df]/gi, '');
 	content = content.replaceAll(/[\\](?=[$%&\^_{}~#])/g, '');
-	content = content.replace(/[{}]/g, '\\$&');
+	content = content.replaceAll(/(\\)(?:[^$%&\^_{}~#])/g, '');
+	content = content.replaceAll(/(\\)($)/g, '');
+	content = content.replaceAll('"', "'");
+	content = content.replaceAll('\\~{}', '~');
+	content = content.replaceAll(/[{}]/g, '\\$&');
 	content = content.replaceAll(/[~]/g, '\\~{}');
-	content = content.replace(/[$%&#\^_]/g, '\\$&');
-	content = content.replace(/(\\)(?:[^$%&\^_{}~#])/g, '');
-	content = content.replace(/(\\)($)/g, '');
+	content = content.replaceAll(/[$%&#\^_]/g, '\\$&');
 
 	return content;
 }
@@ -2633,9 +2642,7 @@ function magnifier() {
 }
 
 function populateCompareTable() {
-	$('#dismiss_evaluateExamScansResponse').prop("disabled",true);
-	$('#proceedEval').prop("disabled",true);
-	$('.loadingCompareScanRegistrationDataTable').show();
+	// $('.loadingCompareScanRegistrationDataTable').show();
 	$('#compareScanRegistrationDataTable').find('*').not('.loadingCompareScanRegistrationDataTable').remove();
 	
 	let invalidCount = 0; 
@@ -2677,8 +2684,10 @@ function populateCompareTable() {
 	$('#scanStats').append('<span id="scansnotAssignedCount" class="scanStat myLabel"><span class="scanStatText label_key yellowLabelKey"><span lang="de">Nicht zugeordnete Matrikelnummern</span><span lang="en">Registration numbers not assigned</span></span><span class="scanStatValue label_value yellowLabelValue">' + notAssignedCount + '</span></span>')
 	
 	$('.loadingCompareScanRegistrationDataTable').hide();
-	$('#dismiss_evaluateExamScansResponse').prop("disabled",false);
-	$('#proceedEval').prop("disabled",false);
+	$('#dismiss_evaluateExamScansResponse').removeClass("shinyjs-disabled disabled");
+	$('#dismiss_evaluateExamScansResponse').prop("disabled", false);
+	$('#proceedEval').removeClass("shinyjs-disabled disabled");
+	$('#proceedEval').prop("disabled", false);
 	f_langDeEn();
 }
 

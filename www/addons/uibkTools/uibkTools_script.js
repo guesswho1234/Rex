@@ -154,14 +154,14 @@ $('#visGradingFiles_list_items').on('click', '.visGradingFileItem', function() {
 /* --------------------------------------------------------------
 DOWNLOAD CONVERTED FILES
 -------------------------------------------------------------- */
-$('body').on('click', '#createRexParticipantFiles-uibkToolsDl', function() {
-	Shiny.onInputChange("callAddonFunction", {func: "createRexParticipantFiles", args: uibkTools['visParticipants']}, {priority: 'event'});
+$('body').on('click', '#createRexParticipantsList-uibkToolsDl', function() {
+	Shiny.onInputChange("callAddonFunction", {func: "createRexParticipantsList", args: uibkTools['visParticipants']}, {priority: 'event'});
 });
 
-$('body').on('click', '#createOlatEvaluationFiles-uibkToolsDl', function() {
-	Shiny.onInputChange("callAddonFunction", {func: "createOlatEvaluationFiles", args: uibkTools['rexEvaluation']}, {priority: 'event'});
+$('body').on('click', '#createOlatEvaluationList-uibkToolsDl', function() {
+	Shiny.onInputChange("callAddonFunction", {func: "createOlatEvaluationList", args: uibkTools['rexEvaluation']}, {priority: 'event'});
 });
 
-$('body').on('click', '#createGradingFiles-uibkToolsDl', function() {
-	Shiny.onInputChange("callAddonFunction", {func: "createGradingFiles", args: {rexEvaluationLists: uibkTools['rexEvaluation'], visGradingLists: uibkTools['visGrading']}}, {priority: 'event'});
+$('body').on('click', '#createGradingLists-uibkToolsDl', function() {
+	Shiny.onInputChange("callAddonFunction", {func: "createGradingLists", args: {rexEvaluationLists: uibkTools['rexEvaluation'], visGradingLists: uibkTools['visGrading']}}, {priority: 'event'});
 });

@@ -49,13 +49,15 @@ if(!any(installed.packages()[,1]=="iuftools"))
   
   uibkTools_observers = function(input){
     observeEvent(input$callAddonFunction, {
-      result = get(input$callAddonFunction$func)(input$callAddonFunction$args)
-      uibkToolsData(result)
+		result = get(input$callAddonFunction$func)(input$callAddonFunction$args)
+		uibkToolsData(result)
     })
   }
   
   # DATA PROCESSING ---------------------------------------------------------
-  createRexParticipantFiles = function(args) {
+  createRexParticipantsList = function(args) {
+	#debug
+	print(args)
     name = "registredParticipants.csv"
     contentType = "text/csv"
     
@@ -65,7 +67,7 @@ if(!any(installed.packages()[,1]=="iuftools"))
     data = Reduce(rbind, lapply(args, \(x){
       content = read.table(text=x[[3]], sep=";", header = FALSE)
     }))
-    
+
     if(is.null(data))
       return(list(name=name, data=NULL,  contentType=contentType))
     
@@ -83,7 +85,7 @@ if(!any(installed.packages()[,1]=="iuftools"))
     return(list(name=name, data=data, contentType=contentType))
   }
   
-  createOlatEvaluationFiles = function(args) {
+  createOlatEvaluationList = function(args) {
     name = "olatEvalList.csv"
     contentType = "text/csv"
     
@@ -103,7 +105,7 @@ if(!any(installed.packages()[,1]=="iuftools"))
     return(list(name=name, data=data, contentType=contentType))
   }
   
-  createGradingFiles = function(args) {
+  createGradingLists = function(args) {
     name = "gradingLists.zip"
     contentType = "application/zip"
     
@@ -151,5 +153,5 @@ uibkTools_fields = list(visParticipantsFileImport = myFileImport("visParticipant
                         rexEvaluationFileImport = myFileImport("rexEvaluation", "uibkTools"),
                         visGradingFileImport = myFileImport("visGrading", "uibkTools"),
                         button_createRexParticipantsList = uibkTools_downloadObjUI(id = "createRexParticipantsList", "Rex Teilnehmerliste erstellen", "Create Rex registered participant list", "fa-solid fa-users"),
-                        button_createOlatEvalList = uibkTools_downloadObjUI(id = "createOlatEvalList", "OLAT Massenbewertungliste erstellen", "Create OLAT mass evaluation list", "fa-solid fa-file-circle-check"),
+                        button_createOlatEvaluationList = uibkTools_downloadObjUI(id = "createOlatEvaluationList", "OLAT Massenbewertungsliste erstellen", "Create OLAT mass evaluation list", "fa-solid fa-file-circle-check"),
                         button_createGradingLists = uibkTools_downloadObjUI(id = "createGradingLists", "Notenlisten erstellen", "Create grading lists", "fa-solid fa-graduation-cap"))
