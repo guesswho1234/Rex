@@ -974,7 +974,6 @@ main > * {
 #compareScanRegistrationDataTable .compareListItem.notAssigned,
 #focusedCompareListItem .compareListItem.notAssigned {
 	background: var(---yellow_warning);
-	display: none;
 }
 
 #compareScanRegistrationDataTable .compareListItem.lastEdited,

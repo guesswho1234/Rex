@@ -634,7 +634,7 @@ source("./source/tryCatch.R")
         ),
       
       footer = tagList(
-        myActionButton(id="dismiss_evaluateExamScansResponse", deText="Abbrechen", enText="Cancle", icon="fa-solid fa-xmark", disabled=TRUE),
+        myActionButton(id="dismiss_evaluateExamScansResponse", deText="Abbrechen", enText="Cancle", icon="fa-solid fa-xmark", disabled=!is.null(result$scans_reg_fullJoinData)),
         if (!is.null(result$scans_reg_fullJoinData)) 
           myActionButton(id="proceedEval", deText="Weiter", enText="Proceed", icon="fa-solid fa-circle-right", disabled=TRUE)
       ),
