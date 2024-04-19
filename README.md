@@ -26,7 +26,7 @@ First, install all the necessary R packages (see `init.R`).
 
 Second, make sure to have `libsodium-dev` and `libpopppler-cpp-dev` available on your system.
 
-Third, start up in the base directory via `shiny::runApp()` or, alternatively, via RStudio by 
+Third, start up via `shiny::runApp(appDir = 'base directory containing app.R', host = '127.0.0.1', port = 8180);` or, alternatively, via RStudio by 
 opening and running `app.R`.
 
 ### Heroku [heroku-22 stack, Dpkg and R (shiny) framework]
