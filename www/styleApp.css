@@ -731,7 +731,8 @@ main > * {
 	margin-left: 0.5rem;
 	padding: 0.5rem;
 	border-radius: 3px;
-	width: 250px;
+	width: fit-content;
+	max-width: 500px;
 }
 
 .exerciseTryCatch .exerciseTryCatchText {
