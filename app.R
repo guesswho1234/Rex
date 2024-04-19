@@ -690,6 +690,10 @@ source("./source/tryCatch.R")
         preparedEvaluation$files$nops_evaluationCsv = paste0(dir, "/", nops_evaluation_fileNamePrefix, ".csv")
         preparedEvaluation$files$nops_evaluationZip = paste0(dir, "/", nops_evaluation_fileNamePrefix, ".zip")
         
+        #todo:
+        # statistics
+        # preparedEvaluation$files$nops_statisticsCsv = paste0(dir, "/statistics.csv")
+        
         with(preparedEvaluation, {
           # finalize evaluation
           exams::nops_eval(
@@ -747,6 +751,63 @@ source("./source/tryCatch.R")
           evaluationData[paste("answer", 1:length(solutionData[[1]]), sep=".")] = sprintf(paste0("%0", 5, "d"), unlist(evaluationData[paste("answer", 1:length(solutionData[[1]]), sep=".")]))
           evaluationData[paste("solution", 1:length(solutionData[[1]]), sep=".")] = sprintf(paste0("%0", 5, "d"), unlist(evaluationData[paste("solution", 1:length(solutionData[[1]]), sep=".")]))
           
+          #todo: make statistics data writeable, different files for each statistic?
+          # statistics
+          # examMaxPoints = matrix(max(as.numeric(evaluationData$examMaxPoints)), dimnames=list("examMaxPoints", "value"))
+          # validExams = matrix(nrow(evaluationData), dimnames=list("validExams", "value"))
+          # 
+          # exerciseNames = unique(unlist(evaluationData[,grepl("exercise.*", names(evaluationData))]))
+          # if(all(grepl(paste0(settings$edirName, "_"), exerciseNames)) )
+          #   exerciseNames = sapply(strsplit(exerciseNames, paste0(settings$edirName, "_")), \(name) name[2])
+          # 
+          # exercisePoints = Reduce(rbind, lapply(exerciseNames, \(exercise){
+          #   summary(apply(evaluationData, 1, \(participant){
+          # 
+          #     if(!exercise %in% participant)
+          #       return(NULL)
+          # 
+          #     as.numeric(participant[gsub("exercise", "check", names(evaluationData)[participant==exercise])])
+          #   }))
+          # }))
+          # 
+          # rownames(exercisePoints) = exerciseNames
+          # 
+          # totalPoints = t(summary(as.numeric(evaluationData$points)))
+          # rownames(totalPoints) = "totalPoints"
+          # 
+          # points = matrix(mean(as.numeric(evaluationData$points))/examMaxPoints)
+          # colnames(points) = c("mean")
+          # 
+          # marks = matrix()
+          # 
+          # if(fields$mark[1] != FALSE) {
+          #   marks = table(factor(evaluationData$mark, fields$labels))
+          #   marks = cbind(marks, marks/sum(marks), rev(cumsum(rev(marks)))/sum(marks))
+          #   colnames(marks) = c("absolute", "relative", "relative cumulative")
+          # 
+          #   points = cbind(points, t(c(0, fields$mark)))
+          #   colnames(points) = c("mean", fields$labels)
+          # }
+          # 
+          # chartData = list(ids = list("evaluationPointStatistics", "evaluationExerciseStatistics", "evaluationGradingStatistics"),
+          #                  values = list(points, exercisePoints, marks),
+          #                  deCaptions = c("Punkte", "Aufgaben", "Noten"),
+          #                  enCaptions = c("Points", "Exercises", "Marks"))
+          # 
+          # evaluationStatistics = list(
+          #   examMaxPoints=examMaxPoints,
+          #   validExams=validExams,
+          #   exercisePoints=exercisePoints,
+          #   totalPoints=totalPoints,
+          #   markThresholds=fields$mark,
+          #   marks=marks
+          # )
+          # 
+          # preparedEvaluation$evaluationStatistics = evaluationStatistics
+          
+          #todo:
+          # write
+          # write.csv2(evaluationStatistics, files$nops_statisticsCsv, row.names = FALSE)
           write.csv2(evaluationData, files$nops_evaluationCsv, row.names = FALSE)
         })
   
@@ -775,7 +836,6 @@ source("./source/tryCatch.R")
   evaluateExamFinalizeResponse = function(session, input, result) {
     # process exam statistics
     showModalStatistics = !is.null(result$preparedEvaluation$files$nops_evaluationCsv) && length(unlist(result$preparedEvaluation$files, recursive = TRUE)) > 0
-    statisticFields = NULL
 
     if (showModalStatistics) {
       evaluationResultsData = read.csv2(result$preparedEvaluation$files$nops_evaluationCsv)
@@ -1315,16 +1375,16 @@ server = function(input, output, session) {
       evaluateExamFinalizeResponse(session, isolate(reactiveValuesToList(input)), result)
     }
   })
-
-  # finalizing evaluation - download
-  output$downloadEvaluationFiles = downloadHandler(
-    filename = "evaluation.zip",
+  
+  # get evaluation statistics
+  output$downloadEvaluationStatistics = downloadHandler(
+    filename = "statistics.csv",
     content = function(fname) {
       zip(zipfile=fname, files=unlist(isolate(examFinalizeEvaluationData()$preparedEvaluation$files), recursive = TRUE), flags='-r9XjFS')
     },
     contentType = "application/zip"
   )
-  
+
   # back to evaluateExamScansResponse
   observeEvent(input$backTo_evaluateExamScansResponse, {
     removeModal()
