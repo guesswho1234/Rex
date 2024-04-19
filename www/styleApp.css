@@ -1343,6 +1343,7 @@ figcaption {
 	display: grid;
 	grid-template-rows: 100px auto;
 	place-content: space-between;
+	height: 140px;
 }
 
 .graphLabels {
@@ -1358,8 +1359,6 @@ figcaption {
 
 .graph.columnGraph {
 	display: block;
-	height: fit-content;
-	min-height: 175px;
 	overflow-y: hidden;
 }
 
