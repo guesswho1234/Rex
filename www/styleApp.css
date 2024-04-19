@@ -1012,15 +1012,28 @@ main > * {
 	width: 35%;
 }
 
-#compareScanRegistrationDataTable .compareListItem.notAssigned .evalInspect,
-#focusedCompareListItem .compareListItem .evalInspect {
-	display:none;
-}
-
-#compareScanRegistrationDataTable .compareListItem .evalInspect,
-#focusedCompareListItem .compareListItem .evalInspect {
+#compareScanRegistrationDataTable .compareListItem .evalIcons,
+#focusedCompareListItem .compareListItem .evalIcons {
 	margin-right: 0;
 	margin-left: auto;
+	gap: 5px;
+	display: flex;
+	place-items: center;
+}
+
+#compareScanRegistrationDataTable .compareListItem.notAssigned .evalIcons .evalInspectIcon,
+#focusedCompareListItem .compareListItem .evalIcons .evalInspectIcon {
+	display: none;
+}
+
+#compareScanRegistrationDataTable .compareListItem .evalIcons .evalEditedIcon,
+#focusedCompareListItem .compareListItem .evalIcons .evalEditedIcon {
+	display: none;
+}
+
+#compareScanRegistrationDataTable .compareListItem.edited .evalIcons .evalEditedIcon,
+#focusedCompareListItem .compareListItem.edited .evalIcons .evalEditedIcon {
+	display: block;
 }
 
 #inspectScan {

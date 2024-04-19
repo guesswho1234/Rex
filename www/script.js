@@ -310,7 +310,7 @@ document.onkeydown = function(evt) {
 					applyInspectNext();
 				break;
 			case 27: // ESC
-				cancleInspect();
+				cancelInspect();
 				break;
 		}
 	} 
@@ -2483,7 +2483,7 @@ $('body').on('click', '.compareListItem:not(.notAssigned)', function() {
 	
 	const scanFocused = rex.examEvaluation.scans_reg_fullJoinData[parseInt($(this).find('.evalIndex').html())];
 			
-	$('#inspectScan').append('<div id="inspectScanContent"><div id="inspectScanImage"><img src="data:image/png;base64, ' + scanFocused.blob + '"/></div><div id="inspectScanTemplate"><span id="scannedRegistration"><span id="scannedRegistrationText"><span lang="de">Matrikelnummer:</span><span lang="en">Registration Number:</span></span><select id="selectRegistration" autocomplete="on"></select></span><span id="replacementSheet"><span id="replacementSheetText"><span lang="de">Ersatzbeleg:</span><span lang="en">Replacement sheet:</span></span></span><span id="scannedSheetID"><span id="scannedSheetIDText"><span lang="de">Klausur-ID:</span><span lang="en">Exam ID:</span></span><select id="inputSheetID" autocomplete="on"></select></span><span id="scannedScramblingID"><span id="scannedScramblingIDText"><span lang="de">Variante:</span><span lang="en">Scrambling:</span></span><input id="inputScramblingID"/></span><span id="scannedTypeID"><span id="scannedTypeIDText"><span lang="de">Belegart:</span><span lang="en">Type:</span></span><input id="inputTypeID"/></span><div id="scannedAnswers"></div></div></div><div id="inspectScanButtons"><button id="cancleInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">ESC</span><span lang="en">ESC</span></span><span class="iconButton"><i class="fa-solid fa-xmark"></i></span><span class="textButton"><span lang="de">Abbrechen</span><span lang="en">Cancle</span></span></button><button id="applyInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">ENTER</span><span lang="en">ENTER</span></span><span class="iconButton"><i class="fa-solid fa-check"></i></span><span class="textButton"><span lang="de">Übernehmen</span><span lang="en">Accept</span></span></button><button id="applyInspectNext" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">LEERTASTE</span><span lang="en">SPACE</span></span><span class="iconButton"><i class="fa-solid fa-list-check"></i></span><span class="textButton"><span lang="de">Übernehmen & Nächter Scan</span><span lang="en">Accept & Next Scan</span></span></button></div>');
+	$('#inspectScan').append('<div id="inspectScanContent"><div id="inspectScanImage"><img src="data:image/png;base64, ' + scanFocused.blob + '"/></div><div id="inspectScanTemplate"><span id="scannedRegistration"><span id="scannedRegistrationText"><span lang="de">Matrikelnummer:</span><span lang="en">Registration Number:</span></span><select id="selectRegistration" autocomplete="on"></select></span><span id="replacementSheet"><span id="replacementSheetText"><span lang="de">Ersatzbeleg:</span><span lang="en">Replacement sheet:</span></span></span><span id="scannedSheetID"><span id="scannedSheetIDText"><span lang="de">Klausur-ID:</span><span lang="en">Exam ID:</span></span><select id="inputSheetID" autocomplete="on"></select></span><span id="scannedScramblingID"><span id="scannedScramblingIDText"><span lang="de">Variante:</span><span lang="en">Scrambling:</span></span><input id="inputScramblingID"/></span><span id="scannedTypeID"><span id="scannedTypeIDText"><span lang="de">Belegart:</span><span lang="en">Type:</span></span><input id="inputTypeID"/></span><div id="scannedAnswers"></div></div></div><div id="inspectScanButtons"><button id="cancelInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">ESC</span><span lang="en">ESC</span></span><span class="iconButton"><i class="fa-solid fa-xmark"></i></span><span class="textButton"><span lang="de">Abbrechen</span><span lang="en">Cancel</span></span></button><button id="applyInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">ENTER</span><span lang="en">ENTER</span></span><span class="iconButton"><i class="fa-solid fa-check"></i></span><span class="textButton"><span lang="de">Übernehmen</span><span lang="en">Accept</span></span></button><button id="applyInspectNext" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">LEERTASTE</span><span lang="en">SPACE</span></span><span class="iconButton"><i class="fa-solid fa-list-check"></i></span><span class="textButton"><span lang="de">Übernehmen & Nächter Scan</span><span lang="en">Accept & Next Scan</span></span></button></div>');
 	
 	// populate input fields
 	let registrations = rex.examEvaluation.scans_reg_fullJoinData.filter(x => x.scan === 'NA').map(x => x.registration);
@@ -2646,7 +2646,6 @@ function magnifier() {
 }
 
 function populateCompareTable() {
-	// $('.loadingCompareScanRegistrationDataTable').show();
 	$('#compareScanRegistrationDataTable').find('*').not('.loadingCompareScanRegistrationDataTable').remove();
 	
 	let invalidCount = 0; 
@@ -2672,13 +2671,17 @@ function populateCompareTable() {
 		if(scanValid(element)) {
 			stateClass = 'valid'
 			validCount++;
-		}	
+		}
+
+		// edited
+		if(scanEdited(element))
+			stateClass = [stateClass, 'edited'].join(' ');		
 
 		// lastEdited
 		if(scanLastEdited(element))
 			stateClass = [stateClass, 'lastEdited'].join(' ');			
 		
-		$('#compareScanRegistrationDataTable').append('<div class="compareListItem ' + stateClass + '"><span class="evalIndex">' + index + '</span></span><span class="evalRegistration">' + element.registration + '</span><span class="evalName">' + element.name + '</span><span class="evalId">' + element.id + '</span><span class="evalInspect"><i class="fa-solid fa-magnifying-glass"></i></span></div>')
+		$('#compareScanRegistrationDataTable').append('<div class="compareListItem ' + stateClass + '"><span class="evalIndex">' + index + '</span></span><span class="evalRegistration">' + element.registration + '</span><span class="evalName">' + element.name + '</span><span class="evalId">' + element.id + '</span><span class="evalIcons"><span class="evalEditedIcon"><i class="fa-solid fa-pencil"></i></span><span class="evalInspectIcon"><i class="fa-solid fa-magnifying-glass"></i></span></span></div>')
 	});
 	
 	// scan stats
@@ -2707,8 +2710,12 @@ function scanValid(scan) {
 	return !scanNotAssiged(scan) && !scanInvalid(scan);
 }
 
+function scanEdited(scan) {
+	return Math.abs(scan.changeHistory) === 1;
+}
+
 function scanLastEdited(scan) {
-	return scan.changeHistory === "1";
+	return scan.changeHistory === -1;
 }
 
 function sortCompareListItems(){
@@ -2780,9 +2787,9 @@ const zeroPad = (num, places) => isNaN(num) ? "NA" : String(num).padStart(places
 function applyInspect(){	
 	const scanFocusedIndex = parseInt($('#compareScanRegistrationDataTable .compareListItem.focus .evalIndex').html());
 	rex.examEvaluation.scans_reg_fullJoinData = rex.examEvaluation.scans_reg_fullJoinData.map(obj => {
-		return { ...obj, changeHistory: "0" }
+		return { ...obj, changeHistory: Math.abs(obj.changeHistory) }
 	});
-	rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].changeHistory = "1";
+	rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].changeHistory = -1;
 	
 	const registrationUnchanged = $('#selectRegistration').find(":selected").text() === rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].registration;
 	const replacementUnchanged = ($('#replacementSheet').find("input").prop('checked') ? "1" : "0") === rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].replacement;
@@ -2867,11 +2874,11 @@ function applyInspect(){
 	sortCompareListItems();
 }
 
-$('body').on('click', '#cancleInspect', function() {
-	cancleInspect();
+$('body').on('click', '#cancelInspect', function() {
+	cancelInspect();
 });
 
-function cancleInspect(){
+function cancelInspect(){
 	resetInspect();
 	sortCompareListItems();
 }
@@ -2888,7 +2895,7 @@ Shiny.addCustomMessageHandler('compareScanRegistrationData', function(jsonData) 
 	rex.examEvaluation.scans_reg_fullJoinData = JSON.parse(jsonData);
 	
 	rex.examEvaluation.scans_reg_fullJoinData = rex.examEvaluation.scans_reg_fullJoinData.map(obj => {
-		return { ...obj, sheet: zeroPad(obj.sheet, 11), scrambling: zeroPad(obj.scrambling, 2), type: zeroPad(obj.type, 3), changeHistory: "0" }
+		return { ...obj, sheet: zeroPad(obj.sheet, 11), scrambling: zeroPad(obj.scrambling, 2), type: zeroPad(obj.type, 3), changeHistory: 0 }
 	});
 
 	populateCompareTable();
