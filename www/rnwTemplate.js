@@ -18,6 +18,7 @@ if(!is.null(rnwTemplate_maxChoices)){
 	sel=sample(1:length(rnwTemplate_choices), limit)
 	rnwTemplate_choices=rnwTemplate_choices[sel]
 	rnwTemplate_solutions=rnwTemplate_solutions[sel]
+	rnwTemplate_solutionNotes=rnwTemplate_solutionNotes[sel]
 }
 @
 \\begin{question}
@@ -39,7 +40,7 @@ exams::answerlist(rnwTemplate_choices)
 
 \\begin{solution}
 <<echo=FALSE, results=tex>>=
-exams::answerlist(rnwTemplate_solutionNotes)
+exams::answerlist(ifelse(rnwTemplate_solutions, "1", "0"), rnwTemplate_solutionNotes)
 @
 \\end{solution}
 %% META-INFORMATION

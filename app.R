@@ -1376,9 +1376,9 @@ server = function(input, output, session) {
     }
   })
   
-  # get evaluation statistics
-  output$downloadEvaluationStatistics = downloadHandler(
-    filename = "statistics.csv",
+  # finalizing evaluation - download
+  output$downloadEvaluationFiles = downloadHandler(
+    filename = "evaluation.zip",
     content = function(fname) {
       zip(zipfile=fname, files=unlist(isolate(examFinalizeEvaluationData()$preparedEvaluation$files), recursive = TRUE), flags='-r9XjFS')
     },
