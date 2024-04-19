@@ -690,9 +690,8 @@ source("./source/tryCatch.R")
         preparedEvaluation$files$nops_evaluationCsv = paste0(dir, "/", nops_evaluation_fileNamePrefix, ".csv")
         preparedEvaluation$files$nops_evaluationZip = paste0(dir, "/", nops_evaluation_fileNamePrefix, ".zip")
         
-        #todo:
         # statistics
-        # preparedEvaluation$files$nops_statisticsCsv = paste0(dir, "/statistics.csv")
+        preparedEvaluation$files$nops_statisticsTxt = paste0(dir, "/statistics.txt")
         
         with(preparedEvaluation, {
           # finalize evaluation
@@ -753,61 +752,74 @@ source("./source/tryCatch.R")
           
           #todo: make statistics data writeable, different files for each statistic?
           # statistics
-          # examMaxPoints = matrix(max(as.numeric(evaluationData$examMaxPoints)), dimnames=list("examMaxPoints", "value"))
-          # validExams = matrix(nrow(evaluationData), dimnames=list("validExams", "value"))
-          # 
-          # exerciseNames = unique(unlist(evaluationData[,grepl("exercise.*", names(evaluationData))]))
-          # if(all(grepl(paste0(settings$edirName, "_"), exerciseNames)) )
-          #   exerciseNames = sapply(strsplit(exerciseNames, paste0(settings$edirName, "_")), \(name) name[2])
-          # 
-          # exercisePoints = Reduce(rbind, lapply(exerciseNames, \(exercise){
-          #   summary(apply(evaluationData, 1, \(participant){
-          # 
-          #     if(!exercise %in% participant)
-          #       return(NULL)
-          # 
-          #     as.numeric(participant[gsub("exercise", "check", names(evaluationData)[participant==exercise])])
-          #   }))
-          # }))
-          # 
-          # rownames(exercisePoints) = exerciseNames
-          # 
-          # totalPoints = t(summary(as.numeric(evaluationData$points)))
-          # rownames(totalPoints) = "totalPoints"
-          # 
-          # points = matrix(mean(as.numeric(evaluationData$points))/examMaxPoints)
-          # colnames(points) = c("mean")
-          # 
-          # marks = matrix()
-          # 
-          # if(fields$mark[1] != FALSE) {
-          #   marks = table(factor(evaluationData$mark, fields$labels))
-          #   marks = cbind(marks, marks/sum(marks), rev(cumsum(rev(marks)))/sum(marks))
-          #   colnames(marks) = c("absolute", "relative", "relative cumulative")
-          # 
-          #   points = cbind(points, t(c(0, fields$mark)))
-          #   colnames(points) = c("mean", fields$labels)
-          # }
-          # 
-          # chartData = list(ids = list("evaluationPointStatistics", "evaluationExerciseStatistics", "evaluationGradingStatistics"),
-          #                  values = list(points, exercisePoints, marks),
-          #                  deCaptions = c("Punkte", "Aufgaben", "Noten"),
-          #                  enCaptions = c("Points", "Exercises", "Marks"))
-          # 
-          # evaluationStatistics = list(
-          #   examMaxPoints=examMaxPoints,
-          #   validExams=validExams,
-          #   exercisePoints=exercisePoints,
-          #   totalPoints=totalPoints,
-          #   markThresholds=fields$mark,
-          #   marks=marks
-          # )
-          # 
-          # preparedEvaluation$evaluationStatistics = evaluationStatistics
+          examMaxPoints = matrix(max(as.numeric(evaluationData$examMaxPoints)), dimnames=list("examMaxPoints", "value"))
+          validExams = matrix(nrow(evaluationData), dimnames=list("validExams", "value"))
+
+          exerciseNames = unique(unlist(evaluationData[,grepl("exercise.*", names(evaluationData))]))
+          if(all(grepl(paste0(settings$edirName, "_"), exerciseNames)) )
+            exerciseNames = sapply(strsplit(exerciseNames, paste0(settings$edirName, "_")), \(name) name[2])
+
+          exercisePoints = Reduce(rbind, lapply(exerciseNames, \(exercise){
+            summary(apply(evaluationData, 1, \(participant){
+
+              if(!exercise %in% participant)
+                return(NULL)
+
+              as.numeric(participant[gsub("exercise", "check", names(evaluationData)[participant==exercise])])
+            }))
+          }))
+
+          rownames(exercisePoints) = exerciseNames
+
+          totalPoints = t(summary(as.numeric(evaluationData$points)))
+          rownames(totalPoints) = "totalPoints"
+
+          points = matrix(mean(as.numeric(evaluationData$points))/examMaxPoints)
+          colnames(points) = c("mean")
+
+          marks = matrix()
+          markThresholds = matrix()
+
+          if(fields$mark[1] != FALSE) {
+            marks = table(factor(evaluationData$mark, fields$labels))
+            marks = cbind(marks, marks/sum(marks), rev(cumsum(rev(marks)))/sum(marks))
+            colnames(marks) = c("absolute", "relative", "relative cumulative")
+
+            points = cbind(points, t(c(0, fields$mark)))
+            colnames(points) = c("mean", fields$labels)
+            
+            markThresholds = as.matrix(c(0, fields$mark), nrow=1)
+            colnames(markThresholds) = "markThreshold"
+            rownames(markThresholds) = fields$labels
+          }
+
+          chartData = list(ids = list("evaluationPointStatistics", "evaluationExerciseStatistics", "evaluationGradingStatistics"),
+                           values = list(points, exercisePoints, marks),
+                           deCaptions = c("Punkte", "Aufgaben", "Noten"),
+                           enCaptions = c("Points", "Exercises", "Marks"))
+
+          evaluationStatistics = list(
+            examMaxPoints=examMaxPoints,
+            validExams=validExams,
+            exercisePoints=exercisePoints,
+            totalPoints=totalPoints,
+            markThresholds=markThresholds,
+            marks=marks
+          )
+
+          preparedEvaluation$evaluationStatistics = evaluationStatistics
           
           #todo:
+          # there are two empty lines at the end - only need one
+          # remove linebreaks between rows of same matrix
+          # add rownames to respective row 
+          # add "name" as the first colname
+          evaluationStatisticsTxt = Reduce(c, lapply(names(evaluationStatistics), \(x){
+            paste0(c(x, paste0(rownames(evaluationStatistics[[x]]), collapse=";"), paste0(colnames(evaluationStatistics[[x]]), collapse=";"), apply(evaluationStatistics[[x]], 1, \(y) paste0(paste0(y, collapse=";"), "\n"))), collapse="\n")
+          }))
+          
           # write
-          # write.csv2(evaluationStatistics, files$nops_statisticsCsv, row.names = FALSE)
+          writeLines(evaluationStatisticsTxt, files$nops_statisticsTxt)
           write.csv2(evaluationData, files$nops_evaluationCsv, row.names = FALSE)
         })
   
