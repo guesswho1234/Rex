@@ -839,71 +839,7 @@ source("./source/tryCatch.R")
     showModalStatistics = !is.null(result$preparedEvaluation$files$nops_evaluationCsv) && length(unlist(result$preparedEvaluation$files, recursive = TRUE)) > 0
     chartData = NULL
     
-    #todo:
     if (showModalStatistics) {
-      # evaluationResultsData = read.csv2(result$preparedEvaluation$files$nops_evaluationCsv)
-      # 
-      # examMaxPoints = matrix(max(as.numeric(evaluationResultsData$examMaxPoints)), dimnames=list("examMaxPoints", "value"))
-      # validExams = matrix(nrow(evaluationResultsData), dimnames=list("validExams", "value"))
-      # 
-      # exerciseNames = unique(unlist(evaluationResultsData[,grepl("exercise.*", names(evaluationResultsData))]))
-      # if(all(grepl(paste0(edirName, "_"), exerciseNames)) )
-      #   exerciseNames = sapply(strsplit(exerciseNames, paste0(edirName, "_")), \(name) name[2])
-      # 
-      # exercisePoints = Reduce(rbind, lapply(exerciseNames, \(exercise){
-      #   summary(apply(evaluationResultsData, 1, \(participant){
-      # 
-      #     if(!exercise %in% participant)
-      #       return(NULL)
-      # 
-      #     as.numeric(participant[gsub("exercise", "check", names(evaluationResultsData)[participant==exercise])])
-      #   }))
-      # }))
-      # 
-      # rownames(exercisePoints) = exerciseNames
-      # 
-      # totalPoints = t(summary(as.numeric(evaluationResultsData$points)))
-      # rownames(totalPoints) = "totalPoints"
-      # 
-      # points = matrix(mean(as.numeric(evaluationResultsData$points))/examMaxPoints)
-      # colnames(points) = c("mean")
-      # 
-      # marks = matrix()
-      # markThresholds = matrix()
-      # if(input$mark) {
-      #   marks = table(factor(evaluationResultsData$mark, levels=result$preparedEvaluation$fields$labels))
-      #   marks = cbind(marks, marks/sum(marks), rev(cumsum(rev(marks)))/sum(marks))
-      #   colnames(marks) = c("absolute", "relative", "relative cumulative")
-      #   
-      #   markThresholdsInputIds = paste0("markThreshold", 1:length(which(grepl("markThreshold", names(input)))))
-      #   markLabelsInputIds = paste0("markLabel", 1:length(which(grepl("markLabel", names(input)))))
-      #   
-      #   markThresholds = as.numeric(input[markThresholdsInputIds])
-      #   labels = unlist(input[markLabelsInputIds])
-      #   
-      #   invalidGradingKeyItems = markThresholds == "" | labels == ""
-      #   
-      #   markThresholds = matrix(markThresholds[!invalidGradingKeyItems], nrow=1)
-      #   colnames(markThresholds) = labels[!invalidGradingKeyItems]
-      #   
-      #   points = cbind(points, markThresholds)
-      #   colnames(points) = c("mean", colnames(markThresholds))
-      # }
-      # 
-      # chartData = list(ids = list("evaluationPointStatistics", "evaluationExerciseStatistics", "evaluationGradingStatistics"),
-      #                  values = list(points, exercisePoints, marks),
-      #                  deCaptions = c("Punkte", "Aufgaben", "Noten"),
-      #                  enCaptions = c("Points", "Exercises", "Marks"))
-      # 
-      # evaluationStatistics = list(
-      #   examMaxPoints=examMaxPoints,
-      #   validExams=validExams,
-      #   exercisePoints=exercisePoints,
-      #   totalPoints=totalPoints,
-      #   markThresholds=markThresholds,
-      #   marks=marks
-      # )
-      
       with(result$preparedEvaluation, {
         chartData <<- list(ids = list("evaluationPointStatistics", "evaluationExerciseStatistics", "evaluationGradingStatistics"),
                          values = list(evaluationStatistics$points, evaluationStatistics$exercisePoints, evaluationStatistics$marks),
@@ -928,9 +864,7 @@ source("./source/tryCatch.R")
       title = tags$span(HTML('<span lang="de">Prüfung auswerten</span><span lang="en">Evaluate exam</span>')),
       tags$span(id='responseMessage', myMessage(result$message, "modal")),
       if (showModalStatistics)
-        # myEvaluationCharts(chartData, examMaxPoints, validExams, input$mark),
         with(result$preparedEvaluation, {
-          print(chartdata)
           myEvaluationCharts(chartData, evaluationStatistics$examMaxPoints, evaluationStatistics$validExams, input$mark)
         }),
       footer = tagList(
