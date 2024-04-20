@@ -692,6 +692,7 @@ source("./source/tryCatch.R")
         
         # statistics
         preparedEvaluation$files$nops_statisticsTxt = paste0(dir, "/statistics.txt")
+        preparedEvaluation$evaluationStatistics = NULL
         
         with(preparedEvaluation, {
           # finalize evaluation
@@ -777,36 +778,27 @@ source("./source/tryCatch.R")
           colnames(points) = c("mean")
 
           marks = matrix()
-          markThresholds = matrix()
 
           if(fields$mark[1] != FALSE) {
             marks = table(factor(evaluationData$mark, fields$labels))
             marks = cbind(marks, marks/sum(marks), rev(cumsum(rev(marks)))/sum(marks))
             colnames(marks) = c("absolute", "relative", "relative cumulative")
 
-            points = cbind(points, t(c(0, fields$mark)))
+            points = as.matrix(cbind(points, t(c(0, fields$mark))), nrow=1)
             colnames(points) = c("mean", fields$labels)
-            
-            markThresholds = as.matrix(c(0, fields$mark), nrow=1)
-            colnames(markThresholds) = "markThreshold"
-            rownames(markThresholds) = fields$labels
+            rownames(points) = "points"
           }
 
-          chartData = list(ids = list("evaluationPointStatistics", "evaluationExerciseStatistics", "evaluationGradingStatistics"),
-                           values = list(points, exercisePoints, marks),
-                           deCaptions = c("Punkte", "Aufgaben", "Noten"),
-                           enCaptions = c("Points", "Exercises", "Marks"))
-
           evaluationStatistics = list(
+            points=points,
             examMaxPoints=examMaxPoints,
             validExams=validExams,
             exercisePoints=exercisePoints,
             totalPoints=totalPoints,
-            markThresholds=markThresholds,
             marks=marks
           )
 
-          preparedEvaluation$evaluationStatistics = evaluationStatistics
+          preparedEvaluation$evaluationStatistics <<- evaluationStatistics
           
           evaluationStatisticsTxt = Reduce(c, lapply(names(evaluationStatistics), \(x){
             paste0(c(x, 
@@ -843,83 +835,92 @@ source("./source/tryCatch.R")
   }
   
   evaluateExamFinalizeResponse = function(session, input, result) {
-    # process exam statistics
+    # evaluation statistics
     showModalStatistics = !is.null(result$preparedEvaluation$files$nops_evaluationCsv) && length(unlist(result$preparedEvaluation$files, recursive = TRUE)) > 0
-
+    chartData = NULL
+    
+    #todo:
     if (showModalStatistics) {
-      evaluationResultsData = read.csv2(result$preparedEvaluation$files$nops_evaluationCsv)
+      # evaluationResultsData = read.csv2(result$preparedEvaluation$files$nops_evaluationCsv)
+      # 
+      # examMaxPoints = matrix(max(as.numeric(evaluationResultsData$examMaxPoints)), dimnames=list("examMaxPoints", "value"))
+      # validExams = matrix(nrow(evaluationResultsData), dimnames=list("validExams", "value"))
+      # 
+      # exerciseNames = unique(unlist(evaluationResultsData[,grepl("exercise.*", names(evaluationResultsData))]))
+      # if(all(grepl(paste0(edirName, "_"), exerciseNames)) )
+      #   exerciseNames = sapply(strsplit(exerciseNames, paste0(edirName, "_")), \(name) name[2])
+      # 
+      # exercisePoints = Reduce(rbind, lapply(exerciseNames, \(exercise){
+      #   summary(apply(evaluationResultsData, 1, \(participant){
+      # 
+      #     if(!exercise %in% participant)
+      #       return(NULL)
+      # 
+      #     as.numeric(participant[gsub("exercise", "check", names(evaluationResultsData)[participant==exercise])])
+      #   }))
+      # }))
+      # 
+      # rownames(exercisePoints) = exerciseNames
+      # 
+      # totalPoints = t(summary(as.numeric(evaluationResultsData$points)))
+      # rownames(totalPoints) = "totalPoints"
+      # 
+      # points = matrix(mean(as.numeric(evaluationResultsData$points))/examMaxPoints)
+      # colnames(points) = c("mean")
+      # 
+      # marks = matrix()
+      # markThresholds = matrix()
+      # if(input$mark) {
+      #   marks = table(factor(evaluationResultsData$mark, levels=result$preparedEvaluation$fields$labels))
+      #   marks = cbind(marks, marks/sum(marks), rev(cumsum(rev(marks)))/sum(marks))
+      #   colnames(marks) = c("absolute", "relative", "relative cumulative")
+      #   
+      #   markThresholdsInputIds = paste0("markThreshold", 1:length(which(grepl("markThreshold", names(input)))))
+      #   markLabelsInputIds = paste0("markLabel", 1:length(which(grepl("markLabel", names(input)))))
+      #   
+      #   markThresholds = as.numeric(input[markThresholdsInputIds])
+      #   labels = unlist(input[markLabelsInputIds])
+      #   
+      #   invalidGradingKeyItems = markThresholds == "" | labels == ""
+      #   
+      #   markThresholds = matrix(markThresholds[!invalidGradingKeyItems], nrow=1)
+      #   colnames(markThresholds) = labels[!invalidGradingKeyItems]
+      #   
+      #   points = cbind(points, markThresholds)
+      #   colnames(points) = c("mean", colnames(markThresholds))
+      # }
+      # 
+      # chartData = list(ids = list("evaluationPointStatistics", "evaluationExerciseStatistics", "evaluationGradingStatistics"),
+      #                  values = list(points, exercisePoints, marks),
+      #                  deCaptions = c("Punkte", "Aufgaben", "Noten"),
+      #                  enCaptions = c("Points", "Exercises", "Marks"))
+      # 
+      # evaluationStatistics = list(
+      #   examMaxPoints=examMaxPoints,
+      #   validExams=validExams,
+      #   exercisePoints=exercisePoints,
+      #   totalPoints=totalPoints,
+      #   markThresholds=markThresholds,
+      #   marks=marks
+      # )
       
-      examMaxPoints = matrix(max(as.numeric(evaluationResultsData$examMaxPoints)), dimnames=list("examMaxPoints", "value"))
-      validExams = matrix(nrow(evaluationResultsData), dimnames=list("validExams", "value"))
-      
-      exerciseNames = unique(unlist(evaluationResultsData[,grepl("exercise.*", names(evaluationResultsData))]))
-      if(all(grepl(paste0(edirName, "_"), exerciseNames)) )
-        exerciseNames = sapply(strsplit(exerciseNames, paste0(edirName, "_")), \(name) name[2])
-
-      exercisePoints = Reduce(rbind, lapply(exerciseNames, \(exercise){
-        summary(apply(evaluationResultsData, 1, \(participant){
-
-          if(!exercise %in% participant)
-            return(NULL)
-
-          as.numeric(participant[gsub("exercise", "check", names(evaluationResultsData)[participant==exercise])])
-        }))
-      }))
-
-      rownames(exercisePoints) = exerciseNames
-      
-      totalPoints = t(summary(as.numeric(evaluationResultsData$points)))
-      rownames(totalPoints) = "totalPoints"
-      
-      points = matrix(mean(as.numeric(evaluationResultsData$points))/examMaxPoints)
-      colnames(points) = c("mean")
-
-      marks = matrix()
-      markThresholds = matrix()
-      if(input$mark) {
-        marks = table(factor(evaluationResultsData$mark, levels=result$preparedEvaluation$fields$labels))
-        marks = cbind(marks, marks/sum(marks), rev(cumsum(rev(marks)))/sum(marks))
-        colnames(marks) = c("absolute", "relative", "relative cumulative")
+      with(result$preparedEvaluation, {
+        chartData <<- list(ids = list("evaluationPointStatistics", "evaluationExerciseStatistics", "evaluationGradingStatistics"),
+                         values = list(evaluationStatistics$points, evaluationStatistics$exercisePoints, evaluationStatistics$marks),
+                         deCaptions = c("Punkte", "Aufgaben", "Noten"),
+                         enCaptions = c("Points", "Exercises", "Marks"))
         
-        markThresholdsInputIds = paste0("markThreshold", 1:length(which(grepl("markThreshold", names(input)))))
-        markLabelsInputIds = paste0("markLabel", 1:length(which(grepl("markLabel", names(input)))))
+        evaluationStatistics_json = rjs_vectorToJsonArray(Reduce(c, lapply(seq_along(evaluationStatistics), \(x) {
+          rjs_keyValuePairsToJsonObject(names(evaluationStatistics)[x],
+                                        rjs_vectorToJsonArray(Reduce(c, lapply(1:nrow(evaluationStatistics[[x]]), \(y) {
+                                          rjs_keyValuePairsToJsonObject(c("name", colnames(evaluationStatistics[[x]])),
+                                                                        c(rownames(evaluationStatistics[[x]])[y], evaluationStatistics[[x]][y,]),
+                                                                        c(TRUE, rep(FALSE, length(evaluationStatistics[[x]][y,]))))
+                                        }))), FALSE)
+        })))
         
-        markThresholds = as.numeric(input[markThresholdsInputIds])
-        labels = unlist(input[markLabelsInputIds])
-        
-        invalidGradingKeyItems = markThresholds == "" | labels == ""
-        
-        markThresholds = matrix(markThresholds[!invalidGradingKeyItems], nrow=1)
-        colnames(markThresholds) = labels[!invalidGradingKeyItems]
-        
-        points = cbind(points, markThresholds)
-        colnames(points) = c("mean", colnames(markThresholds))
-      }
-      
-      chartData = list(ids = list("evaluationPointStatistics", "evaluationExerciseStatistics", "evaluationGradingStatistics"),
-                       values = list(points, exercisePoints, marks),
-                       deCaptions = c("Punkte", "Aufgaben", "Noten"),
-                       enCaptions = c("Points", "Exercises", "Marks"))
-      
-      evaluationStatistics = list(
-        examMaxPoints=examMaxPoints,
-        validExams=validExams,
-        exercisePoints=exercisePoints,
-        totalPoints=totalPoints,
-        markThresholds=markThresholds,
-        marks=marks
-      )
-
-      evaluationStatistics_json = rjs_vectorToJsonArray(Reduce(c, lapply(seq_along(evaluationStatistics), \(x) {
-        rjs_keyValuePairsToJsonObject(names(evaluationStatistics)[x],
-                                      rjs_vectorToJsonArray(Reduce(c, lapply(1:nrow(evaluationStatistics[[x]]), \(y) {
-                                        rjs_keyValuePairsToJsonObject(c("name", colnames(evaluationStatistics[[x]])),
-                                                                      c(rownames(evaluationStatistics[[x]])[y], evaluationStatistics[[x]][y,]),
-                                                                      c(TRUE, rep(FALSE, length(evaluationStatistics[[x]][y,]))))
-                                      }))), FALSE)
-      })))
-
-      session$sendCustomMessage("evaluationStatistics", evaluationStatistics_json)
+        session$sendCustomMessage("evaluationStatistics", evaluationStatistics_json)
+      })
     }
     
     # show modal
@@ -927,7 +928,11 @@ source("./source/tryCatch.R")
       title = tags$span(HTML('<span lang="de">Prüfung auswerten</span><span lang="en">Evaluate exam</span>')),
       tags$span(id='responseMessage', myMessage(result$message, "modal")),
       if (showModalStatistics)
-        myEvaluationCharts(chartData, examMaxPoints, validExams, input$mark),
+        # myEvaluationCharts(chartData, examMaxPoints, validExams, input$mark),
+        with(result$preparedEvaluation, {
+          print(chartdata)
+          myEvaluationCharts(chartData, evaluationStatistics$examMaxPoints, evaluationStatistics$validExams, input$mark)
+        }),
       footer = tagList(
         myActionButton("dismiss_evaluateExamFinalizeResponse", "Schließen", "Close", "fa-solid fa-xmark"),
         myActionButton("backTo_evaluateExamScansResponse", "Zurück", "Back", "fa-solid fa-arrow-left"),
@@ -1217,10 +1222,6 @@ server = function(input, output, session) {
   )
 
   # PARSE EXERCISES -------------------------------------------------------------
-  #todo: (sync, prepare function) send list of exercises with javascript exerciseID and exerciseCode;
-  # (sync, prepare function) store all files in temp;
-  # (a sync, parse function) parse all exercises ans store results as one list and add to exerciseID;
-  # (sync, send values to frontend and load into dom)
   exerciseParsing = eventReactive(input$parseExercise, {
     startWait(session)
     
@@ -1228,13 +1229,8 @@ server = function(input, output, session) {
       func = parseExercise,
       args = list(isolate(input$parseExercise), isolate(input$seedValueExercises), collectWarnings, getDir(session)),
       supervise = TRUE
-      # env = c(callr::rcmd_safe_env(), MAKEBSP = FALSE)
     )
 
-    # x$wait() makes it a sync exercise again - not what we want, but for now lets do this
-    # in the future maybe send exercises to parse as batch from javascript
-    # then async parse all exercises with one "long" wait screen
-    # fill fields sync by looping through reponses (list of reponses, one for each exercise parsed)
     x$wait()
 
     return(x)
