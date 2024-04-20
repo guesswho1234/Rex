@@ -2691,10 +2691,8 @@ function populateCompareTable() {
 	$('#scanStats').append('<span id="scansnotAssignedCount" class="scanStat myLabel"><span class="scanStatText label_key yellowLabelKey"><span lang="de">Nicht zugeordnete Matrikelnummern</span><span lang="en">Registration numbers not assigned</span></span><span class="scanStatValue label_value yellowLabelValue">' + notAssignedCount + '</span></span>')
 	
 	$('.loadingCompareScanRegistrationDataTable').hide();
-	$('#dismiss_evaluateExamScansResponse').removeClass("shinyjs-disabled disabled");
-	$('#dismiss_evaluateExamScansResponse').prop("disabled", false);
-	$('#proceedEval').removeClass("shinyjs-disabled disabled");
-	$('#proceedEval').prop("disabled", false);
+	$('#dismiss_evaluateExamScansResponse').removeClass("disabled");
+	$('#proceedEval').removeClass("disabled");
 	f_langDeEn();
 }
 

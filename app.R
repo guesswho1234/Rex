@@ -750,7 +750,6 @@ source("./source/tryCatch.R")
           evaluationData[paste("answer", 1:length(solutionData[[1]]), sep=".")] = sprintf(paste0("%0", 5, "d"), unlist(evaluationData[paste("answer", 1:length(solutionData[[1]]), sep=".")]))
           evaluationData[paste("solution", 1:length(solutionData[[1]]), sep=".")] = sprintf(paste0("%0", 5, "d"), unlist(evaluationData[paste("solution", 1:length(solutionData[[1]]), sep=".")]))
           
-          #todo: make statistics data writeable, different files for each statistic?
           # statistics
           examMaxPoints = matrix(max(as.numeric(evaluationData$examMaxPoints)), dimnames=list("examMaxPoints", "value"))
           validExams = matrix(nrow(evaluationData), dimnames=list("validExams", "value"))
@@ -809,15 +808,13 @@ source("./source/tryCatch.R")
 
           preparedEvaluation$evaluationStatistics = evaluationStatistics
           
-          #todo:
-          # there are two empty lines at the end - only need one
-          # remove linebreaks between rows of same matrix
-          # add rownames to respective row 
-          # add "name" as the first colname
           evaluationStatisticsTxt = Reduce(c, lapply(names(evaluationStatistics), \(x){
-            paste0(c(x, paste0(rownames(evaluationStatistics[[x]]), collapse=";"), paste0(colnames(evaluationStatistics[[x]]), collapse=";"), apply(evaluationStatistics[[x]], 1, \(y) paste0(paste0(y, collapse=";"), "\n"))), collapse="\n")
+            paste0(c(x, 
+                     paste0(c("name", colnames(evaluationStatistics[[x]])), collapse=";"),
+                     paste0(rownames(evaluationStatistics[[x]]), ";", apply(evaluationStatistics[[x]], 1, \(y) paste0(paste0(y, collapse=";"), "\n")), collapse="")
+                     ), collapse="\n")
           }))
-          
+
           # write
           writeLines(evaluationStatisticsTxt, files$nops_statisticsTxt)
           write.csv2(evaluationData, files$nops_evaluationCsv, row.names = FALSE)
