@@ -2621,6 +2621,7 @@ function magnifier() {
 					if (e.pageX < +(imagePos.left - magnifyOffset / 6) || e.pageX > +(rightSide + magnifyOffset / 6) || e.pageY < +(imagePos.top - magnifyOffset / 6) || e.pageY > +(bottomSide + magnifyOffset / 6)) {
 					$('.magnify').hide();
 					$(document).unbind('mousemove');
+					$(window).unbind('wheel');
 				}
 				let backgroundPos = "" - ((e.pageX - imagePos.left) * magnification - magnifyOffset) + "px " + -((e.pageY - imagePos.top) * magnification - magnifyOffset) + "px";
 				$('.magnify').css({
