@@ -2470,7 +2470,7 @@ async function evaluateExamEvent() {
 	const examScanPng = rex.examEvaluation['scans'].filter(x => x[1] == 'png')
 	const examScanPngNames = examScanPng.map(x => x[0]);
 	const examScanPngFiles = examScanPng.map(x => x[2]);
-	
+		
 	Shiny.onInputChange("evaluateExam", {examSolutionsName: examSolutionsName, examSolutionsFile: examSolutionsFile, 
 										 examRegisteredParticipantsnName: examRegisteredParticipantsnName, examRegisteredParticipantsnFile: examRegisteredParticipantsnFile, 
 										 examScanPdfNames: examScanPdfNames, examScanPdfFiles: examScanPdfFiles, 
