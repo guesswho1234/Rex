@@ -2575,7 +2575,7 @@ $('body').on('click', '.compareListItem:not(.notAssigned)', function() {
 
 function magnifierInit() {
 	let magnifierSize = $('#inspectScanImage').width() / 2;
-	let magnification = 2;
+	let magnification = 3;
 	let magnify = new magnifier();
 	magnify.magnifyImg('#inspectScanImage  img', magnification, magnifierSize);
 }
@@ -2605,18 +2605,14 @@ function magnifier() {
 			let src = $(this).attr('src');
 			let imagePos = $(this).offset();
 			let image = $(this);
-		
-			if (magnifierSize == undefined) {
-				magnifierSize = '150px';
-			}
-		
+				
 			$('.magnify').css({
 				'background-size': width * magnification + 'px ' + height * magnification + "px",
 				'background-image': 'url("' + src + '")',
 				'width': magnifierSize,
 				'height': magnifierSize
 			});
-		
+			
 			let magnifyOffset = +($('.magnify').width() / 2);
 			let rightSide = +(imagePos.left + $(this).width());
 			let bottomSide = +(imagePos.top + $(this).height());
@@ -2630,8 +2626,25 @@ function magnifier() {
 				$('.magnify').css({
 					'left': e.pageX - magnifyOffset,
 					'top': e.pageY - magnifyOffset,
-					'background-position': backgroundPos
+					'background-position': backgroundPos,
+					'background-size': width * magnification + 'px ' + height * magnification + "px",
+					'width': $('#inspectScanImage').width() / 2 + "px",
+					'height': $('#inspectScanImage').width() / 2 + "px"
 				});
+			});
+			
+			$(window).on('wheel', function(e) {
+				event.preventDefault();
+				event.stopPropagation();
+				
+				console.log("wheel");
+				
+				const delta = e.originalEvent.deltaY;
+
+				if (delta > 0) 
+					magnification = Math.max(1, magnification - 1);
+				else 
+					magnification = Math.min(10, magnification + 1);
 			});
 		}, function() {
 	
