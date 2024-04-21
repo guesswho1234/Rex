@@ -1054,7 +1054,6 @@ main > * {
 }
 
 .magnify {
-  border-radius: 50%;
   border: 2px solid black;
   position: absolute;
   z-index: 1051;
