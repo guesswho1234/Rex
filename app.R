@@ -774,6 +774,7 @@ source("./source/tryCatch.R")
 
           points = matrix(mean(as.numeric(evaluationData$points))/examMaxPoints)
           colnames(points) = c("mean")
+          rownames(points) = "points"
 
           marks = matrix()
 
