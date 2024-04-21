@@ -1,5 +1,5 @@
-myActionButton = function(id, deText, enText, icon, disabled = FALSE){
-  tags$button(id = id, class = paste0("btn btn-default action-button shiny-bound-input", ifelse(disabled, " disabled", "")), type="button", myButtonStyle(deText, enText, icon))
+myActionButton = function(id, deText, enText, icon){
+  tags$button(id = id, class = "btn btn-default action-button shiny-bound-input", type="button", myButtonStyle(deText, enText, icon))
 }
 
 myDownloadButton = function(id, deText="Speichern", enText="Save", icon="fa-solid fa-download"){
