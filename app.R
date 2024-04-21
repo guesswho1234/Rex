@@ -20,7 +20,6 @@ library(qpdf) # qpdf_1.3.2
 library(openssl) # openssl_2.1.1
 library(shinyauthr) # shinyauthr_1.0.0
 library(sodium) # sodium_1.3.1
-library(magick) # magick_2.7.4
 
 # CONNECTION --------------------------------------------------------------
 options(shiny.host = "0.0.0.0")
@@ -459,67 +458,9 @@ source("./source/tryCatch.R")
         }))
         
         # process scans to end up with only png files at the end
-        # pngFiles = NULL
-        # pdfFiles = NULL
-        # convertedPngFiles = NULL
-        # 
-        # if(length(input$evaluateExam$examScanPdfNames) > 0){
-        #   input$evaluateExam$examScanPdfNames = as.list(make.unique(unlist(input$evaluateExam$examScanPdfNames), sep="_"))
-        # 
-        #   pdfFiles = lapply(setNames(seq_along(input$evaluateExam$examScanPdfNames), input$evaluateExam$examScanPdfNames), function(i){
-        #     file = paste0(dir, "/", input$evaluateExam$examScanPdfNames[[i]], ".pdf")
-        #     raw = openssl::base64_decode(input$evaluateExam$examScanPdfFiles[[i]])
-        # 
-        #     if(input$rotateScans){
-        #       file = gsub(".pdf", "_.pdf", file)
-        #       writeBin(raw, con = file)
-        #       output = paste0(dir, "/", input$evaluateExam$examScanPdfNames[[i]], ".pdf")
-        #       numberOfPages = qpdf::pdf_length(file)
-        #       qpdf::pdf_rotate_pages(input=file, output=output, pages=1:numberOfPages, angle=ifelse(input$rotateScans, 180, 0))
-        # 
-        #       file = output
-        #     } else {
-        #       writeBin(raw, con = file)
-        #     }
-        # 
-        # 
-        #     return(file)
-        #   })
-        # 
-        #   convertedPngFiles = unlist(lapply(seq_along(pdfFiles), function(i){
-        #     numberOfPages = qpdf::pdf_length(pdfFiles[[i]])
-        # 
-        #     filenames = sapply(1:numberOfPages, function(page){
-        #       paste0(dir, "/", names(pdfFiles)[i], "_scan", page, ".png")
-        #     })
-        # 
-        #     convertedFiles = pdftools::pdf_convert(pdf=pdfFiles[[i]], filenames=filenames, pages=NULL, format='png', dpi=300, antialias=TRUE, verbose=FALSE)
-        #   }))
-        # }
-        # 
-        # if(length(input$evaluateExam$examScanPngNames) > 0){
-        #   namesToConsider = c(sub("(.*\\/)([^.]+)(\\.[[:alnum:]]+$)", "\\2", convertedPngFiles), unlist(input$evaluateExam$examScanPngNames))
-        #   namesToConsider_idx = (length(namesToConsider)-length(input$evaluateExam$examScanPngNames) + 1):length(namesToConsider)
-        # 
-        #   input$evaluateExam$examScanPngNames = as.list(make.unique(namesToConsider, sep="_"))[namesToConsider_idx]
-        #   pngFiles = unlist(lapply(seq_along(input$evaluateExam$examScanPngNames), function(i){
-        #     file = paste0(dir, "/", input$evaluateExam$examScanPngNames[[i]], ".png")
-        #     raw = openssl::base64_decode(input$evaluateExam$examScanPngFiles[[i]])
-        #     writeBin(raw, con = file)
-        # 
-        #     return(file)
-        #   }))
-        # }
-        # 
-        # #todo: change to use pdf and png files without conversion (exams can do it now with r magick package and qpdf)
-        # scanFiles = c(convertedPngFiles, pngFiles)
-        # 
-        # #todo: check if this helps reduce ram load
-        # rm(pdfFiles, convertedPngFiles, pngFiles)
-        # gc()
-        
         pngFiles = NULL
         pdfFiles = NULL
+        convertedPngFiles = NULL
 
         if(length(input$evaluateExam$examScanPdfNames) > 0){
           input$evaluateExam$examScanPdfNames = as.list(make.unique(unlist(input$evaluateExam$examScanPdfNames), sep="_"))
@@ -527,15 +468,39 @@ source("./source/tryCatch.R")
           pdfFiles = lapply(setNames(seq_along(input$evaluateExam$examScanPdfNames), input$evaluateExam$examScanPdfNames), function(i){
             file = paste0(dir, "/", input$evaluateExam$examScanPdfNames[[i]], ".pdf")
             raw = openssl::base64_decode(input$evaluateExam$examScanPdfFiles[[i]])
-            writeBin(raw, con = file)
+
+            if(input$rotateScans){
+              file = gsub(".pdf", "_.pdf", file)
+              writeBin(raw, con = file)
+              output = paste0(dir, "/", input$evaluateExam$examScanPdfNames[[i]], ".pdf")
+              numberOfPages = qpdf::pdf_length(file)
+              qpdf::pdf_rotate_pages(input=file, output=output, pages=1:numberOfPages, angle=ifelse(input$rotateScans, 180, 0))
+
+              file = output
+            } else {
+              writeBin(raw, con = file)
+            }
+
 
             return(file)
           })
+
+          convertedPngFiles = unlist(lapply(seq_along(pdfFiles), function(i){
+            numberOfPages = qpdf::pdf_length(pdfFiles[[i]])
+
+            filenames = sapply(1:numberOfPages, function(page){
+              paste0(dir, "/", names(pdfFiles)[i], "_scan", page, ".png")
+            })
+
+            convertedFiles = pdftools::pdf_convert(pdf=pdfFiles[[i]], filenames=filenames, pages=NULL, format='png', dpi=300, antialias=TRUE, verbose=FALSE)
+          }))
         }
 
         if(length(input$evaluateExam$examScanPngNames) > 0){
-          input$evaluateExam$examScanPngNames = as.list(make.unique(unlist(input$evaluateExam$examScanPngNames), sep="_"))
+          namesToConsider = c(sub("(.*\\/)([^.]+)(\\.[[:alnum:]]+$)", "\\2", convertedPngFiles), unlist(input$evaluateExam$examScanPngNames))
+          namesToConsider_idx = (length(namesToConsider)-length(input$evaluateExam$examScanPngNames) + 1):length(namesToConsider)
 
+          input$evaluateExam$examScanPngNames = as.list(make.unique(namesToConsider, sep="_"))[namesToConsider_idx]
           pngFiles = unlist(lapply(seq_along(input$evaluateExam$examScanPngNames), function(i){
             file = paste0(dir, "/", input$evaluateExam$examScanPngNames[[i]], ".png")
             raw = openssl::base64_decode(input$evaluateExam$examScanPngFiles[[i]])
@@ -545,12 +510,7 @@ source("./source/tryCatch.R")
           }))
         }
 
-        #todo: change to use pdf and png files without conversion (exams can do it now with r magick package and qpdf)
-        scanFiles = c(pdfFiles, pngFiles)
-
-        #todo: check if this helps reduce ram load
-        rm(pdfFiles, pngFiles)
-        gc()
+        scanFiles = c(convertedPngFiles, pngFiles)
 
         # meta data
         examName = input$evaluateExam$examSolutionsName[[1]]
@@ -587,14 +547,11 @@ source("./source/tryCatch.R")
           if(!all(names(registeredParticipantData)[1:3] == c("registration", "name", "id")))
             stop("E1016")
     
-          #todo: E1003: Error in file.exists(images): ungültiges 'file' Argument
-          # occurs only for pdf
           scanData = exams::nops_scan(images=files$scans,
                            file=FALSE,
                            dir=dir,
-                           rotate=input$rotateScans,
                            cores=settings$cores)
-          
+
           dummyFirstRow = paste0(rep(NA,51), collapse=" ")
           scanData = read.table(text=c(dummyFirstRow, scanData), sep=" ", fill=TRUE)
           scanData = scanData[-1,]

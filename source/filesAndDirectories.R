@@ -10,4 +10,5 @@ removeRuntimeFiles = function(session) {
   
   if(length(filesToRemove) > 0) 
     unlink(paste0(dir, "/", filesToRemove), recursive = TRUE)
+	gc()
 }
