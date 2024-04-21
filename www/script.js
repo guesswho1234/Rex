@@ -1714,14 +1714,14 @@ function setSimpleExerciseFileContents(exerciseID){
 			
 	fileText = fileText.replace("?rnwTemplate_type", rex.exercises[exerciseID].type);
 	fileText = fileText.replace("?rnwTemplate_question", '"' + rex.exercises[exerciseID].question_raw.replaceAll('\\', '\\\\') + '"');
-	fileText = fileText.replace("?rnwTemplate_choices", 'c(' + rex.exercises[exerciseID].choices_raw.map(c=>'"' + c.replaceAll('\\', '\\\\') + '"').join(',') + ')');
-	fileText = fileText.replace("?rnwTemplate_solutions", 'c(' + rex.exercises[exerciseID].solution.map(s=>s?"T":"F").join(',') + ')');	
-	fileText = fileText.replace("?rnwTemplate_solutionNotes", 'c(' + rex.exercises[exerciseID].solutionNotes_raw.map((x, i) => '"' + (rex.exercises[exerciseID].solution[i]?1:0) + ": " + x.replace(/[01]: */g, '') + '"').join(',') + ')');
+	fileText = fileText.replace("?rnwTemplate_choices", 'c(' + rex.exercises[exerciseID].choices_raw.map(x=>'"' + x.replaceAll('\\', '\\\\') + '"').join(',') + ')');
+	fileText = fileText.replace("?rnwTemplate_solutions", 'c(' + rex.exercises[exerciseID].solution.map(x=>x?"T":"F").join(',') + ')');	
+	fileText = fileText.replace("?rnwTemplate_solutionNotes", 'c(' + rex.exercises[exerciseID].solutionNotes_raw.map((x, i) => '"' + x.replace(/[01]. */g, '') + '"').join(',') + ')');
 	fileText = fileText.replace("?rnwTemplate_points", rex.exercises[exerciseID].points);
 	fileText = fileText.replace("?rnwTemplate_topic", rex.exercises[exerciseID].topic);
 	fileText = fileText.replace("?rnwTemplate_section", rex.exercises[exerciseID].section === null ? "" : rex.exercises[exerciseID].section);
 	fileText = fileText.replace("?rnwTemplate_tags", rex.exercises[exerciseID].tags === null ? "" : rex.exercises[exerciseID].tags);
-	fileText = fileText.replace("?rnwTemplate_figure", rex.exercises[exerciseID].figure !== null ? 'c(' + rex.exercises[exerciseID].figure.map(c=>'"' + c + '"').join(',') + ')' : '""');
+	fileText = fileText.replace("?rnwTemplate_figure", rex.exercises[exerciseID].figure !== null ? 'c(' + rex.exercises[exerciseID].figure.map(x=>'"' + x + '"').join(',') + ')' : '""');
 	
 	fileText = fileText.replaceAll("\n", "\r\n");
 
@@ -2005,12 +2005,12 @@ Shiny.addCustomMessageHandler('setExerciseSolutions', function(jsonData) {
 
 Shiny.addCustomMessageHandler('setExerciseSolutionNotes', function(jsonData) {
 	const exerciseSolutionNotes = JSON.parse(jsonData);
-	rex.exercises[getID()].solutionNotes = exerciseSolutionNotes.map(x=>x.replace(/[01]: */g, ''));
+	rex.exercises[getID()].solutionNotes = exerciseSolutionNotes.map(x=>x.replace(/[01]. */g, ''));
 });
 
 Shiny.addCustomMessageHandler('setExerciseSolutionNotesRaw', function(jsonData) {
 	const exerciseSolutionNotesRaw = JSON.parse(jsonData);
-	rex.exercises[getID()].solutionNotes_raw = exerciseSolutionNotesRaw.map(x=>x.replace(/[01]: */g, ''));
+	rex.exercises[getID()].solutionNotes_raw = exerciseSolutionNotesRaw.map(x=>x.replace(/[01]. */g, ''));
 });
 
 Shiny.addCustomMessageHandler('setExerciseEditable', function(editable) {
@@ -2691,10 +2691,8 @@ function populateCompareTable() {
 	$('#scanStats').append('<span id="scansnotAssignedCount" class="scanStat myLabel"><span class="scanStatText label_key yellowLabelKey"><span lang="de">Nicht zugeordnete Matrikelnummern</span><span lang="en">Registration numbers not assigned</span></span><span class="scanStatValue label_value yellowLabelValue">' + notAssignedCount + '</span></span>')
 	
 	$('.loadingCompareScanRegistrationDataTable').hide();
-	$('#dismiss_evaluateExamScansResponse').removeClass("shinyjs-disabled disabled");
-	$('#dismiss_evaluateExamScansResponse').prop("disabled", false);
-	$('#proceedEval').removeClass("shinyjs-disabled disabled");
-	$('#proceedEval').prop("disabled", false);
+	$('#dismiss_evaluateExamScansResponse').removeClass("disabled");
+	$('#proceedEval').removeClass("disabled");
 	f_langDeEn();
 }
 

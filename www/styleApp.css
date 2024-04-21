@@ -974,7 +974,6 @@ main > * {
 #compareScanRegistrationDataTable .compareListItem.notAssigned,
 #focusedCompareListItem .compareListItem.notAssigned {
 	background: var(---yellow_warning);
-	display: none;
 }
 
 #compareScanRegistrationDataTable .compareListItem.lastEdited,
@@ -1343,13 +1342,13 @@ figcaption {
 	display: grid;
 	grid-template-rows: 100px auto;
 	place-content: space-between;
+	height: 140px;
 }
 
 .graphLabels {
 	display: grid;
 	grid-template-rows: auto auto;
 	place-content: space-between;
-	height: 50px;
 }
 
 .graph.rowGraph {
@@ -1358,8 +1357,6 @@ figcaption {
 
 .graph.columnGraph {
 	display: block;
-	height: fit-content;
-	min-height: 175px;
 	overflow-y: hidden;
 }
 
