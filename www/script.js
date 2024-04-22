@@ -1814,6 +1814,30 @@ function setExamExercise(exerciseID, b) {
 	examExercisesSummary();
 }
 
+$('#exercise_list_items').on('click', '.sequenceUp', function(e) {
+	e.preventDefault();
+	e.stopPropagation();
+	
+	index = $(this).closest('.exerciseItem').index('.exerciseItem');
+	exercise = $(this).closest('.exerciseItem');
+	
+	if(index > 0) {
+		$('#exercise_list_items').before(exercise, $('#exercise_list_items').find('.exerciseItem').eq(index - 1));
+	}
+});
+
+$('#exercise_list_items').on('click', '.sequenceDown', function(e) {
+	e.preventDefault();
+	e.stopPropagation();
+	
+	index = $(this).closest('.exerciseItem').index('.exerciseItem');
+	exercise = $(this).closest('.exerciseItem');
+	
+	if(index < $('.exerciseItem').length -1) {
+		$('#exercise_list_items').after(exercise, $('#exercise_list_items').find('.exerciseItem').eq(index + 1));
+	}
+});
+
 $('#exercise_list_items').on('change', '.exerciseBlock input', function(e) {
 	e.preventDefault();
 	e.stopPropagation();
