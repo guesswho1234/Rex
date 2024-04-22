@@ -636,6 +636,47 @@ main > * {
 	font-weight: bold;
 }
 
+.exerciseSequence {
+	display: grid;
+    gap: 5px;
+	cursor: pointer;
+	padding: 0 !important;
+}
+
+.sequenceButton {
+	height: 20px;
+    width: 20px;
+	display: flex;
+	place-content: center;
+	background: var(---background);
+	border-radius: 5px;
+	border: 2px solid var(---background);
+}
+
+.sequenceButton:hover {
+	border: 2px solid var(---main) !important;
+}
+
+.sequenceUp {
+    place-items: end;
+}
+
+.sequenceUp i {
+    height: 8px;
+	display: flex;
+	place-items: center;
+}
+
+.sequenceDown {
+    place-items: start;
+}
+
+.sequenceDown i {
+    height: 12px;
+	display: flex;
+	place-items: center;
+}
+
 .exerciseName {
 	max-width: 350px;
 	overflow-wrap: anywhere;
@@ -671,6 +712,7 @@ main > * {
 	display: flex;
 	margin-right: 0px;
 	gap: 5px;
+	place-items: center;
 }
 
 .exerciseItem:not(.exam) .exerciseBlock,
