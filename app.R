@@ -551,7 +551,7 @@ source("./source/tryCatch.R")
                            file=FALSE,
                            dir=dir,
                            cores=settings$cores)
-
+          
           dummyFirstRow = paste0(rep(NA,51), collapse=" ")
           scanData = read.table(text=c(dummyFirstRow, scanData), sep=" ", fill=TRUE)
           scanData = scanData[-1,]
@@ -563,7 +563,7 @@ source("./source/tryCatch.R")
           scanData = scanData[,-which(grepl("^[[:digit:]]+$", names(scanData)))[-c(1:meta$numExercises)]] # remove unnecessary placeholders for unused questions
           scanData$numExercises = meta$numExercises
           scanData$numChoices = meta$numChoices
-  
+          
           # add scans as base64 to be displayed in browser
           scanData$blob = lapply(scanData$scan, function(x) {
             file = paste0(dir, "/", x)
@@ -585,12 +585,12 @@ source("./source/tryCatch.R")
   
           # set "XXXXXXX" as registration number for scans which show "ERROR" in any field
           scans_reg_fullJoinData$registration[apply(scans_reg_fullJoinData, 1, function(x) any(x=="ERROR"))] = "XXXXXXX"
-  
+          
           # pad zeroes to registration numbers and answers
           scans_reg_fullJoinData$registration[scans_reg_fullJoinData$registration != "XXXXXXX"] = sprintf(paste0("%0", fields$regLength, "d"), as.numeric(scans_reg_fullJoinData$registration[scans_reg_fullJoinData$registration != "XXXXXXX"]))
           scans_reg_fullJoinData[,as.character(1:meta$numExercises)] = apply(scans_reg_fullJoinData[,as.character(1:meta$numExercises)], 2, function(x){
             x[is.na(x)] = 0
-            x = sprintf(paste0("%0", meta$numChoices, "d"), as.numeric(x))
+            x = sprintf(paste0("%0", settings$maxChoices, "d"), as.numeric(x))
           })
   
           scans_reg_fullJoinData <<- scans_reg_fullJoinData
@@ -935,6 +935,7 @@ source("./source/tryCatch.R")
     cores = parallel::detectCores()
 
   edirName = "exercises"
+  maxChoices = 5
   exerciseMin = 1
   exerciseMax = 45
   seedMin = 1
@@ -1249,7 +1250,8 @@ server = function(input, output, session) {
   examScanEvaluation = eventReactive(input$evaluateExam, {
     startWait(session)
     
-    settings = list(cores=cores)
+    settings = list(cores=cores,
+                    maxChoices=maxChoices)
 
     # background exercise
     x = callr::r_bg(
@@ -1257,7 +1259,7 @@ server = function(input, output, session) {
       args = list(isolate(reactiveValuesToList(input)), settings, collectWarnings, getDir(session)),
       supervise = TRUE
     )
-
+    
     return(x)
   })
 
