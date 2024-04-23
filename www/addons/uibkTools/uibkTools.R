@@ -43,7 +43,7 @@ if(!any(installed.packages()[,1]=="iuftools"))
   
   uibkTools_callModules = function(){
     callModule(uibkTools_downloadObj, id = "createRexParticipantsList")
-    callModule(uibkTools_downloadObj, id = "createOlatEvalList")
+    callModule(uibkTools_downloadObj, id = "createOlatEvaluationList")
     callModule(uibkTools_downloadObj, id = "createGradingLists")
   }
   
