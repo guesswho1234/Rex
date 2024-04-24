@@ -56,8 +56,6 @@ if(!any(installed.packages()[,1]=="iuftools"))
   
   # DATA PROCESSING ---------------------------------------------------------
   createRexParticipantsList = function(args) {
-	print(args) #debug
-	
     name = "registredParticipants.csv"
     contentType = "text/csv"
     
@@ -76,9 +74,8 @@ if(!any(installed.packages()[,1]=="iuftools"))
     colnames(data) = c("registration", "name", "id")
     
     maxRegLength = max(sapply(strsplit(as.character(data$registration), ""), length))
-	
-	# this fails
-    if(data$id == data$registration)
+
+    if(all(data$id == data$registration))
       data$id = sprintf(paste0("%0", maxRegLength, "d"), as.numeric(data$id))
     
     data$registration = sprintf(paste0("%0", maxRegLength, "d"), as.numeric(data$registration))
@@ -87,8 +84,6 @@ if(!any(installed.packages()[,1]=="iuftools"))
   }
   
   createOlatEvaluationList = function(args) {
-	print(args) #debug
-	
     name = "olatEvalList.csv"
     contentType = "text/csv"
     
