@@ -1814,6 +1814,12 @@ function setExamExercise(exerciseID, b) {
 	examExercisesSummary();
 }
 
+function arrayMove(arr, fromIndex, toIndex) {
+    var element = arr[fromIndex];
+    arr.splice(fromIndex, 1);
+    arr.splice(toIndex, 0, element);
+}
+
 $('#exercise_list_items').on('click', '.sequenceUp', function(e) {
 	e.preventDefault();
 	e.stopPropagation();
@@ -1822,7 +1828,8 @@ $('#exercise_list_items').on('click', '.sequenceUp', function(e) {
 	exercise = $(this).closest('.exerciseItem');
 	
 	if(index > 0) {
-		$('#exercise_list_items').before(exercise, $('#exercise_list_items').find('.exerciseItem').eq(index - 1));
+		arrayMove(rex.exercises, index, index - 1);
+		$(exercise).insertBefore($('#exercise_list_items').find('.exerciseItem').eq(index - 1));
 	}
 });
 
@@ -1833,8 +1840,9 @@ $('#exercise_list_items').on('click', '.sequenceDown', function(e) {
 	index = $(this).closest('.exerciseItem').index('.exerciseItem');
 	exercise = $(this).closest('.exerciseItem');
 	
-	if(index < $('.exerciseItem').length -1) {
-		$('#exercise_list_items').after(exercise, $('#exercise_list_items').find('.exerciseItem').eq(index + 1));
+	if(index < $('.exerciseItem').length - 1) {
+		arrayMove(rex.exercises, index, index +1);
+		$(exercise).insertAfter($('#exercise_list_items').find('.exerciseItem').eq(index + 1));
 	}
 });
 
