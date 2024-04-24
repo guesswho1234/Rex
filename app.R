@@ -311,7 +311,26 @@ source("./source/tryCatch.R")
         examPdfFiles = paste0(dir, "/", name, fileIds, ".pdf")
         examRdsFile = paste0(dir, "/", name, ".rds")
         
-        preparedExam = list(examFields=examFields, examFiles=list(examHtmlFiles=examHtmlFiles, pdfFiles=examPdfFiles, rdsFile=examRdsFile), sourceFiles=list(exerciseFiles=exerciseFiles, additionalPdfFiles=additionalPdfFiles))
+        # exam input field data
+        examInputFile = paste0(dir, "/input.txt")
+        
+        examInputTxt = Reduce(c, lapply(names(examFields), \(x){
+          if(is.matrix(examFields[[x]])){
+            paste0(c(x, 
+                     paste0(apply(examFields[[x]], 1, \(y) paste0(paste0(y, collapse=";"), "\n")), collapse="")
+            ), collapse="\n")
+          } else {
+            paste0(c(x, 
+                     paste0(paste0(unlist(examFields[[x]]), "\n"), collapse="")
+            ), collapse="\n")
+          }
+        }))
+
+        # write
+        writeLines(examInputTxt, examInputFile)
+
+        # prepared exam data
+        preparedExam = list(examFields=examFields, examFiles=list(examHtmlFiles=examHtmlFiles, pdfFiles=examPdfFiles, rdsFile=examRdsFile, examInputFile=examInputFile), sourceFiles=list(exerciseFiles=exerciseFiles, additionalPdfFiles=additionalPdfFiles))
         
         with(preparedExam$examFields, {
           # create exam html preview with solutions
