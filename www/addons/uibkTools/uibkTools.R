@@ -43,7 +43,7 @@ if(!any(installed.packages()[,1]=="iuftools"))
   
   uibkTools_callModules = function(){
     callModule(uibkTools_downloadObj, id = "createRexParticipantsList")
-    callModule(uibkTools_downloadObj, id = "createOlatEvalList")
+    callModule(uibkTools_downloadObj, id = "createOlatEvaluationList")
     callModule(uibkTools_downloadObj, id = "createGradingLists")
   }
   
@@ -56,8 +56,6 @@ if(!any(installed.packages()[,1]=="iuftools"))
   
   # DATA PROCESSING ---------------------------------------------------------
   createRexParticipantsList = function(args) {
-	#debug
-	print(args)
     name = "registredParticipants.csv"
     contentType = "text/csv"
     
@@ -65,9 +63,9 @@ if(!any(installed.packages()[,1]=="iuftools"))
       return(list(name=name, data=NULL,  contentType=contentType))
     
     data = Reduce(rbind, lapply(args, \(x){
-      content = read.table(text=x[[3]], sep=";", header = FALSE)
+      content = read.table(text=x[[3]], sep=";", header = FALSE, fill=TRUE)
     }))
-
+	
     if(is.null(data))
       return(list(name=name, data=NULL,  contentType=contentType))
     
@@ -76,8 +74,8 @@ if(!any(installed.packages()[,1]=="iuftools"))
     colnames(data) = c("registration", "name", "id")
     
     maxRegLength = max(sapply(strsplit(as.character(data$registration), ""), length))
-    
-    if(data$id == data$registration)
+
+    if(all(data$id == data$registration))
       data$id = sprintf(paste0("%0", maxRegLength, "d"), as.numeric(data$id))
     
     data$registration = sprintf(paste0("%0", maxRegLength, "d"), as.numeric(data$registration))
@@ -93,7 +91,7 @@ if(!any(installed.packages()[,1]=="iuftools"))
       return(list(name=name, data=NULL,  contentType=contentType))
     
     data = Reduce(rbind, lapply(args, \(x){
-      content = read.table(text=x[[3]], sep=";", header = TRUE, colClasses = "character")
+      content = read.table(text=x[[3]], sep=";", header = TRUE, colClasses = "character", fill=TRUE)
     }))
     
     if(is.null(data))
@@ -113,7 +111,7 @@ if(!any(installed.packages()[,1]=="iuftools"))
       return(list(name=name, data=NULL,  contentType=contentType))
     
     evalData = Reduce(rbind, lapply(args$rexEvaluationLists, \(x){
-      content = read.table(text=x[[3]], sep=";", header = TRUE)
+      content = read.table(text=x[[3]], sep=";", header = TRUE, colClasses = "character", fill=TRUE)
     }))
     
     if(is.null(evalData))
@@ -124,7 +122,7 @@ if(!any(installed.packages()[,1]=="iuftools"))
     files=sapply(args$visGradingLists, \(x) paste0(x[1:2], collapse="."))
     
     gradingData = lapply(setNames(args$visGradingLists, files), \(x){
-      content = read.table(text=x[[3]], sep=";", header = FALSE)
+      content = read.table(text=x[[3]], sep=";", header = FALSE, fill=TRUE)
       
       if(is.null(content))
         return(list(name=name, data=NULL,  contentType=contentType))

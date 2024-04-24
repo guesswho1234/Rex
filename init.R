@@ -3,7 +3,6 @@ helpers.installPackages(
   "shinyjs",
   "shinyWidgets",
   "shinycssloaders",
-  # "exams",
   "xtable",
   "tth",
   "png",
