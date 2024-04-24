@@ -8,18 +8,18 @@
 		<title>Rex</title>	
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-		<link rel="manifest" href="/site.webmanifest">
-		<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+		<link rel="apple-touch-icon" sizes="180x180" href="/www/apple-touch-icon.png">
+		<link rel="icon" type="image/png" sizes="32x32" href="/www/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/www/favicon-16x16.png">
+		<link rel="manifest" href="/www/site.webmanifest">
+		<link rel="mask-icon" href="/www/safari-pinned-tab.svg" color="#5bbad5">
 		<meta name="msapplication-TileColor" content="#da532c">
 		<meta name="theme-color" content="#ffffff">	
-		<link rel="stylesheet" href="styleIndex.css" type="text/css">
+		<link rel="stylesheet" href="/www/styleIndex.css" type="text/css">
 	</head>
 	<body class="color-theme textButtonMode">
 		{{ textOutput("debug") }}
-		{{ shinyauthr::loginUI(id = "login", tags$img(id = "logoLogin", class="logo", src="logo.svg")) }}
+		{{ shinyauthr::loginUI(id = "login", tags$img(id = "logoLogin", class="logo", src="www/logo.svg")) }}
 		<div class="fullHLine"></div>
 		{{ htmlOutput("rexApp", inline=TRUE) }}
 		<footer>
