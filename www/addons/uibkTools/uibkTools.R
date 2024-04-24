@@ -104,8 +104,6 @@ if(!any(installed.packages()[,1]=="iuftools"))
   }
   
   createGradingLists = function(args) {
-	print(args) #debug
-	
     name = "gradingLists.zip"
     contentType = "application/zip"
     
