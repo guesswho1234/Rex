@@ -19,7 +19,7 @@
 	</head>
 	<body class="color-theme textButtonMode">
 		{{ textOutput("debug") }}
-		{{ shinyauthr::loginUI(id = "login", tags$img(id = "logoLogin", class="logo", src="www/logo.svg")) }}
+		{{ shinyauthr::loginUI(id = "login", tags$img(id = "logoLogin", class="logo", src="/www/logo.svg")) }}
 		<div class="fullHLine"></div>
 		{{ htmlOutput("rexApp", inline=TRUE) }}
 		<footer>
