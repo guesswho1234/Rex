@@ -272,12 +272,19 @@ source("./source/tryCatch.R")
         reglength = if(!is.na(as.numeric(input$examRegLength))) as.numeric(input$examRegLength) else 7
         date = input$examDate
         name = paste0(c("exam", input$seedValueExam, ""), collapse="_")
+
+        nsamp = NULL
+        if(!input$fixSequence) 
+          nsamp = exercisesPerBlock
         
+        if(input$fixSequence) 
+          exercises = unlist(exercises)
+
         examFields = list(
           file = exercises,
           edir = edir,
           n = numberOfExams,
-          nsamp = exercisesPerBlock,
+          nsamp = nsamp,
           name = name,
           language = input$examLanguage,
           title = title,
@@ -297,6 +304,7 @@ source("./source/tryCatch.R")
           samepage = input$samepage,
           newpage = input$newpage,
           logo = NULL
+          # nchoice = "5" # why character? if set, need to change padded zeros?
         )
         
         # needed for pdf files (not for html files) - somehow exams needs it that way
@@ -314,14 +322,19 @@ source("./source/tryCatch.R")
         # exam input field data
         examInputFile = paste0(dir, "/input.txt")
         
-        examInputTxt = Reduce(c, lapply(names(examFields), \(x){
-          if(is.matrix(examFields[[x]])){
+        examInputTxt = Reduce(c, lapply(names(examFields)[!names(examFields) %in% c("edir", "header", "logo")], \(x){
+          values = examFields[[x]] 
+          
+          if(x=="file") 
+            values = lapply(values, \(y) gsub(paste0(examFields$edir, "/"), "", y, fixed = TRUE))
+            
+          if(is.matrix(values)){
             paste0(c(x, 
-                     paste0(apply(examFields[[x]], 1, \(y) paste0(paste0(y, collapse=";"), "\n")), collapse="")
+                     paste0(apply(values, 1, \(y) paste0(paste0(y, collapse=";"), "\n")), collapse="")
             ), collapse="\n")
           } else {
             paste0(c(x, 
-                     paste0(paste0(unlist(examFields[[x]]), "\n"), collapse="")
+                     paste0(paste0(unlist(values), "\n"), collapse="")
             ), collapse="\n")
           }
         }))
@@ -1055,6 +1068,7 @@ server = function(input, output, session) {
       textInput_seedValueExam = textInput("seedValueExam", label = NULL, value = initSeed),
       textInput_numberOfExams = textInput("numberOfExams", label = NULL, value = 1),
       textInput_numberOfExercises = textInput("numberOfExercises", label = NULL, value = 0),
+      checkboxInput_fixSequence = checkboxInput("fixSequence", label = NULL, value = FALSE),
       textInput_fixedPointsExamCreate = textInput("fixedPointsExamCreate", label = NULL, value = NULL),
       selectInput_examRegLength = selectInput("examRegLength", label = NULL, choices = 1:10, selected = 8, multiple = FALSE),
       checkboxInput_showPoints = checkboxInput("showPoints", label = NULL, value = TRUE),
