@@ -2518,18 +2518,19 @@ $('body').on('click', '.compareListItem:not(.notAssigned)', function() {
 	$('#inspectScan').append('<div id="inspectScanContent"><div id="inspectScanImage"><img src="data:image/png;base64, ' + scanFocused.blob + '"/></div><div id="inspectScanTemplate"><span id="scannedRegistration"><span id="scannedRegistrationText"><span lang="de">Matrikelnummer:</span><span lang="en">Registration Number:</span></span><select id="selectRegistration" autocomplete="on"></select></span><span id="replacementSheet"><span id="replacementSheetText"><span lang="de">Ersatzbeleg:</span><span lang="en">Replacement sheet:</span></span></span><span id="scannedSheetID"><span id="scannedSheetIDText"><span lang="de">Klausur-ID:</span><span lang="en">Exam ID:</span></span><select id="inputSheetID" autocomplete="on"></select></span><span id="scannedScramblingID"><span id="scannedScramblingIDText"><span lang="de">Variante:</span><span lang="en">Scrambling:</span></span><input id="inputScramblingID"/></span><span id="scannedTypeID"><span id="scannedTypeIDText"><span lang="de">Belegart:</span><span lang="en">Type:</span></span><input id="inputTypeID"/></span><div id="scannedAnswers"></div></div></div><div id="inspectScanButtons"><button id="cancelInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">ESC</span><span lang="en">ESC</span></span><span class="iconButton"><i class="fa-solid fa-xmark"></i></span><span class="textButton"><span lang="de">Abbrechen</span><span lang="en">Cancel</span></span></button><button id="applyInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">ENTER</span><span lang="en">ENTER</span></span><span class="iconButton"><i class="fa-solid fa-check"></i></span><span class="textButton"><span lang="de">Übernehmen</span><span lang="en">Accept</span></span></button><button id="applyInspectNext" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">LEERTASTE</span><span lang="en">SPACE</span></span><span class="iconButton"><i class="fa-solid fa-list-check"></i></span><span class="textButton"><span lang="de">Übernehmen & Nächter Scan</span><span lang="en">Accept & Next Scan</span></span></button></div>');
 	
 	// populate input fields
-	let registrations = rex.examEvaluation.scans_reg_fullJoinData.filter(x => x.scan === 'NA').map(x => x.registration);
+	// let registrations = rex.examEvaluation.scans_reg_fullJoinData.filter(x => x.scan === 'NA').map(x => x.registration);
+	let registrations = rex.examEvaluation.scans_reg_fullJoinData.filter(x => x.scan === 'NA').map(x => ({registration:x.registration, name:x.name}));
 	
 	$('#replacementSheet').append('<input type="checkbox"' + (scanFocused.replacement === "1" ? ' checked="checked"' : '') + '>');
 	
 	if(scanFocused.registration !== d_registration)
-		registrations.push(d_registration);
+		registrations.push({registration:d_registration, name:""});
 	
 	registrations.sort();
-	registrations.unshift(scanFocused.registration);
+	registrations.unshift({registration:scanFocused.registration, name:scanFocused.name} );
 	
 	$.each(registrations, function (i, p) {
-		$('#selectRegistration').append($('<option></option>').val(p).html(p));
+		$('#selectRegistration').append($('<option></option>').val(p.registration).html(p.registration + " " + p.name));
 	});
 			
 	let examIds = rex.examEvaluation['examIds'];
@@ -2843,7 +2844,7 @@ function applyInspect(){
 	});
 	rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].changeHistory = -1;
 	
-	const registrationUnchanged = $('#selectRegistration').find(":selected").text() === rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].registration;
+	const registrationUnchanged = $('#selectRegistration').find(":selected").val() === rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].registration;
 	const replacementUnchanged = ($('#replacementSheet').find("input").prop('checked') ? "1" : "0") === rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].replacement;
 	const inputSheetIDUnchanged = zeroPad($('#inputSheetID').val(), 11) === rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].sheet;
 	const scramblingIDUnchanged = zeroPad($('#inputScramblingID').val(), 2) === rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].scrambling;
@@ -2886,14 +2887,14 @@ function applyInspect(){
 			rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].name = "NA"
 			rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].id = "NA"
 		} else {
-			itemsToRemove = rex.examEvaluation.scans_reg_fullJoinData.map(function(x) { return x.registration; }).indexOf($('#selectRegistration').find(":selected").text()); 
+			itemsToRemove = rex.examEvaluation.scans_reg_fullJoinData.map(function(x) { return x.registration; }).indexOf($('#selectRegistration').find(":selected").val()); 
 			
 			rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].name = rex.examEvaluation.scans_reg_fullJoinData[itemsToRemove].name
 			rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].id = rex.examEvaluation.scans_reg_fullJoinData[itemsToRemove].id 
 		}
 	}
 	
-	rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].registration = $('#selectRegistration').find(":selected").text();	
+	rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].registration = $('#selectRegistration').find(":selected").val();	
 	rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].replacement = ($('#replacementSheet').find("input").prop('checked') ? "1" : "0");	
 	rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].sheet = zeroPad($('#inputSheetID').val(), 11);	
 	rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].scrambling = zeroPad($('#inputScramblingID').val(), 2);	
