@@ -1015,6 +1015,7 @@ source("./source/tryCatch.R")
     name = c("Rex")
   )
 
+shiny::addResourcePath("www", "./www")
 # UI -----------------------------------------------------------------
 ui = htmlTemplate(
   filename = "index.html"
@@ -1128,17 +1129,17 @@ server = function(input, output, session) {
     ),
     
     # SCRIPTS
-    tags$script(src="script.js"),
-    tags$script(src="rnwTemplate.js"),
+    tags$script(src="www/script.js"),
+    tags$script(src="www/rnwTemplate.js"),
     
     # ADDON SCRIPTS
     lapply(addons, \(addon) {
-      tags$script(src=paste0(addons_path, addon, "/", addon, "_script.js"))
+      tags$script(src=paste0(addons_path_www, addon, "/", addon, "_script.js"))
     }),
     
     # ADDON STYLESHEET
     lapply(addons, \(addon) {
-      tags$link(rel="stylesheet", type="text/css", href=paste0(addons_path, addon, "/", addon, "_style.css"))
+      tags$link(rel="stylesheet", type="text/css", href=paste0(addons_path_www, addon, "/", addon, "_style.css"))
     }),
    )
   })

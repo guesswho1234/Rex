@@ -1,4 +1,4 @@
-FROM rocker/shiny
+FROM rocker/shiny:4.2.2
 
 RUN mkdir /rex
 WORKDIR /rex
