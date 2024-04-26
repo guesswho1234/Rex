@@ -27,7 +27,8 @@ First, install all the necessary R packages (see `init.R`) including their depen
 Second, start up via `shiny::runApp(appDir = 'base directory containing app.R', host = '127.0.0.1', port = 8180);` or, alternatively, via RStudio by 
 opening and running `app.R`.
 
-### Heroku [heroku-22 stack, Dpkg and R (shiny) framework]
+### Heroku
+This setup was tested on the `heroku-22` stack.
 
 First, install the following buildpacks in this order on your heroku app:
 - https://github.com/rricard/heroku-buildpack-dpkg.git
