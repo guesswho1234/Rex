@@ -25,6 +25,9 @@ library(sodium) # sodium_1.3.1
 options(shiny.host = "0.0.0.0")
 options(shiny.port = 8180)
 
+# RESOURCES
+shiny::addResourcePath("www", "./www")
+
 # SOURCE ------------------------------------------------------------------
 source("./source/filesAndDirectories.R")
 source("./source/customElements.R")
@@ -1015,7 +1018,6 @@ source("./source/tryCatch.R")
     name = c("Rex")
   )
 
-shiny::addResourcePath("www", "./www")
 # UI -----------------------------------------------------------------
 ui = htmlTemplate(
   filename = "index.html"
