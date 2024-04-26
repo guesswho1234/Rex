@@ -11,7 +11,7 @@ The dashboard provides:
 - Import/export of R/exams exercises with type "schoice" or "mchoice"
 - Creation of an exam by combining (blocks of) exercises and exporting (randomized) PDF files
 - Evaluation of scanned exercises
-- [optional / addon] Management of participants and grades, connecting with other tools at [Universität Innsbruck](https://www.uibk.ac.at/)
+- [optional addon] Management of participants and grades, connecting with other tools at [Universität Innsbruck](https://www.uibk.ac.at/)
 
 Rex is developed by [Sebastian Bachler](https://www.uibk.ac.at/ibf/team/bachler.html.en)
 and is still work-in-progress.
