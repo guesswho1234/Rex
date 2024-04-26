@@ -30,7 +30,7 @@ opening and running `app.R`.
 ### Heroku
 This setup was tested on the `heroku-22` stack.
 
-First, install the following buildpacks in this order on your heroku app:
+First, install the following buildpacks in the following order on your heroku app:
 - https://github.com/rricard/heroku-buildpack-dpkg.git
 - https://github.com/virtualstaticvoid/heroku-buildpack-r
 
