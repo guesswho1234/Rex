@@ -1061,8 +1061,8 @@ server = function(input, output, session) {
     
       # EXERCISES
       textInput_seedValueExercises = textInput("seedValueExercises", label = NULL, value = initSeed),
-      button_downloadExercises = myDownloadButton('downloadExercises'),
-      button_downloadExercise = myDownloadButton('downloadExercise'),
+      button_downloadExercises = myDownloadButton(id='downloadExercises', deText="Alle speichern", enText="Save all"),
+      button_downloadExercise = myDownloadButton(id='downloadExercise'),
       
       exerciseFigureFileImport = myFileImport("exerciseFigure", "exerciseFigure"),
     

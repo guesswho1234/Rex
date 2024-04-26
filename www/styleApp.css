@@ -207,6 +207,7 @@ body.iconButtonMode .iconButton {
 
 body.textButtonMode .textButton {
 	display: block !important;
+	text-wrap: nowrap;
 }
 
 #texActiveContainer i {
@@ -1530,6 +1531,7 @@ figcaption {
 -------------------------------------------------------------- */
 #exerciseDownload, 
 .listButton,
+.sequenceButton,
 .exerciseButton,
 .inspectScanButton {
 	position: relative;
@@ -1568,6 +1570,10 @@ figcaption {
 
 .hotkeyInfo.reveal {
 	display: flex;
+}
+
+.exerciseItem:not(.active) .hotkeyInfo.reveal {
+	display: none;
 }
 
 /* --------------------------------------------------------------

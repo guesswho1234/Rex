@@ -318,7 +318,18 @@ document.onkeydown = function(evt) {
 	if($('#disableOverlay').hasClass("active")) return;
 		
 	// EXERCISES
-	if( $('#exercises').hasClass('active') ) {	
+	if( $('#confirmdialogOverlay').hasClass('active') ) {
+		switch (evtobj.keyCode) {
+			case 13: // enter
+				$('#confirmdialogYes').click();
+				break;
+			case 27: // ESC
+				$('#confirmdialogNo').click();
+				break;
+		}
+	} 
+	
+	if( $('#exercises').hasClass('active') && !$('#confirmdialogOverlay').hasClass('active') ) {	
 		if ($(evtobj.target).is('input') && evtobj.keyCode == 13) { // enter
 			$(evtobj.target).change();
 			$(evtobj.target).blur();
@@ -385,6 +396,12 @@ document.onkeydown = function(evt) {
 						case 83: // s 
 							$("#downloadExercise")[0].click();
 							break;
+						case 89: // y 
+							sequenceUp();
+							break;	
+						case 88: // x 
+							sequenceDown();
+							break;	
 					}
 				}
 				
@@ -393,8 +410,14 @@ document.onkeydown = function(evt) {
 				}
 			} 
 			
-			if (evtobj.keyCode == 65) // a
-				newSimpleExercise();
+			switch (evtobj.keyCode) {
+				case 65: // a 
+					newSimpleExercise();
+					break;	
+				case 81: // q 
+					$('#file-upload_exercises').click();
+					break;	
+			}
 		}
 	}
 };
@@ -470,6 +493,7 @@ function confirmDialog(deMessage, enMessage, deButtonYes, enButtonYes, iconButto
 		
         callback(true, ...args);
     });
+	
     $('#confirmdialogNo').one('click', function() {
         $('#confirmdialogOverlay').removeClass("active");
 		$('nav .nav.navbar-nav li').removeClass("disabled");
@@ -893,29 +917,7 @@ function searchExercises() {
 			})
 			filterExercises(fieldsToFilter, filterBy);
 		}
-		
-		if (input.includes("examHistory:")) {
-			const fieldsToFilter = rex.exercises.map(exercise => {
-				if( exercise.examHistory === null) {
-					return "";
-				} 
 				
-				return exercise.examHistory.join(',');
-			})
-			filterExercises(fieldsToFilter, filterBy);
-		}
-		
-		if (input.includes("authoredBy:")) {
-			const fieldsToFilter = rex.exercises.map(exercise => {
-				if( exercise.authoredBy === null) {
-					return "";
-				} 
-				
-				return exercise.authoredBy.join(',');
-			})
-			filterExercises(fieldsToFilter, filterBy);
-		}
-		
 		if (input.includes("topic:")) {
 			const fieldsToFilter = rex.exercises.map(exercise => {
 				if( exercise.topic === null) {
@@ -926,18 +928,7 @@ function searchExercises() {
 			})
 			filterExercises(fieldsToFilter, filterBy);
 		}
-		
-		if (input.includes("tags:")) {
-			const fieldsToFilter = rex.exercises.map(exercise => {
-				if( exercise.tags === null) {
-					return "";
-				} 
 				
-				return exercise.tags.join(',');
-			})
-			filterExercises(fieldsToFilter, filterBy);
-		}
-		
 		if (input.includes("section:")) {
 			const fieldsToFilter = rex.exercises.map(exercise => {
 				if( exercise.section === null) {
@@ -982,64 +973,7 @@ function searchExercises() {
 			})
 			filterExercises(fieldsToFilter, filterBy);
 		}
-		
-		if (input.includes("statusMessage:")) {
-			const fieldsToFilter = rex.exercises.map(exercise => {
-				if( exercise.statusMessage === null) {
-					return "";
-				} 
 				
-				return exercise.statusMessage;
-			})
-			filterExercises(fieldsToFilter, filterBy);
-		}
-		
-		if (input.includes("statusCode:")) {
-			const fieldsToFilter = rex.exercises.map(exercise => {
-				if( exercise.statusCode === null) {
-					return "";
-				} 
-				
-				return exercise.statusCode;
-			})
-			filterExercises(fieldsToFilter, filterBy);
-		}
-		
-		if (input.includes("exam:")) {
-			const fieldsToFilter = rex.exercises.map(exercise => {
-				if( !exercise.exam ) {
-					return "0";
-				} 
-				
-				return "1";
-			})
-			
-			filterExercises(fieldsToFilter, filterBy);
-		}
-		
-		if (input.includes("editable:")) {
-			const fieldsToFilter = rex.exercises.map(exercise => {
-				if( !exercise.editable ) {
-					return "0";
-				} 
-				
-				return "1";
-			})
-			
-			filterExercises(fieldsToFilter, filterBy);
-		}
-		
-		if (input.includes("section:")) {
-			const fieldsToFilter = rex.exercises.map(exercise => {
-				if( exercise.section === null) {
-					return "";
-				} 
-				
-				return exercise.section;
-			})
-			filterExercises(fieldsToFilter, filterBy);
-		}
-		
 		if (!input.includes(":")) {
 			const fieldsToFilter = rex.exercises.map(exercise => {
 				if( exercise.name === null) {
@@ -1247,7 +1181,7 @@ function createExercise(exerciseID, name='exercise',
 		setSimpleExerciseFileContents(exerciseID);
 	}
 		
-	$('#exercise_list_items').append('<div class="exerciseItem sidebarListItem"><span class="exerciseSequence"><span class="sequenceButton sequenceUp"><i class="fa-solid fa-sort-up"></i></span><span class="sequenceButton sequenceDown"><i class="fa-solid fa-sort-down"></i></span></span><span class="exerciseName">' + name + '</span></span><span class="exerciseBlock"><span lang="de">Block:</span><span lang="en">Block:</span><input value="' + block + '"/></span><span class="exerciseButtons"><span class="exerciseParse exerciseButton disabled"> <span class="hotkeyInfo"><span lang="de">R</span><span lang="en">R</span></span> <span class="iconButton"><i class="fa-solid fa-rotate"></i></span><span class="textButton"><span lang="de">Berechnen</span><span lang="en">Parse</span></span></span><span class="examExercise exerciseButton disabled"><span class="hotkeyInfo"><span lang="de">E</span><span lang="en">E</span></span><span class="iconButton"><i class="fa-solid fa-star"></i></span><span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span></span><span class="exerciseRemove exerciseButton"><span class="hotkeyInfo"><span lang="de">D</span><span lang="en">D</span></span><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></span></span></div>');
+	$('#exercise_list_items').append('<div class="exerciseItem sidebarListItem"><span class="exerciseSequence"><span class="sequenceButton sequenceUp"><span class="hotkeyInfo"><span lang="de">Y</span><span lang="en">Y</span></span><i class="fa-solid fa-sort-up"></i></span><span class="sequenceButton sequenceDown"><span class="hotkeyInfo"><span lang="de">X</span><span lang="en">X</span></span><i class="fa-solid fa-sort-down"></i></span></span><span class="exerciseName">' + name + '</span></span><span class="exerciseBlock"><span lang="de">Block:</span><span lang="en">Block:</span><input value="' + block + '"/></span><span class="exerciseButtons"><span class="exerciseParse exerciseButton disabled"> <span class="hotkeyInfo"><span lang="de">R</span><span lang="en">R</span></span> <span class="iconButton"><i class="fa-solid fa-rotate"></i></span><span class="textButton"><span lang="de">Berechnen</span><span lang="en">Parse</span></span></span><span class="examExercise exerciseButton disabled"><span class="hotkeyInfo"><span lang="de">E</span><span lang="en">E</span></span><span class="iconButton"><i class="fa-solid fa-star"></i></span><span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span></span><span class="exerciseRemove exerciseButton"><span class="hotkeyInfo"><span lang="de">D</span><span lang="en">D</span></span><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></span></span></div>');
 }
 
 function parseExercise(exerciseID) {	
@@ -1827,11 +1761,9 @@ $('#exercise_list_items').on('click', '.sequenceUp', function(e) {
 	index = $(this).closest('.exerciseItem').index('.exerciseItem');
 	exercise = $(this).closest('.exerciseItem');
 	
-	if(index > 0) {
-		arrayMove(rex.exercises, index, index - 1);
-		$(exercise).insertBefore($('#exercise_list_items').find('.exerciseItem').eq(index - 1));
-	}
+	sequenceUp(index, exercise);
 });
+
 
 $('#exercise_list_items').on('click', '.sequenceDown', function(e) {
 	e.preventDefault();
@@ -1840,11 +1772,33 @@ $('#exercise_list_items').on('click', '.sequenceDown', function(e) {
 	index = $(this).closest('.exerciseItem').index('.exerciseItem');
 	exercise = $(this).closest('.exerciseItem');
 	
+	sequenceDown(index, exercise);
+});
+
+function sequenceUp(index = null, exercise = null) {
+	if(index === null || exercise === null) {
+		exercise = $('.exerciseItem.active').first();
+		index = exercise.index('.exerciseItem');
+	}
+	
+	if(index > 0) {
+		arrayMove(rex.exercises, index, index - 1);
+		$(exercise).insertBefore($('#exercise_list_items').find('.exerciseItem').eq(index - 1));
+	}
+}
+
+function sequenceDown(index = null, exercise = null) {
+	if(index === null || exercise === null) {
+		exercise = $('.exerciseItem.active').first();
+		index = exercise.index('.exerciseItem');
+	}
+	
 	if(index < $('.exerciseItem').length - 1) {
 		arrayMove(rex.exercises, index, index +1);
 		$(exercise).insertAfter($('#exercise_list_items').find('.exerciseItem').eq(index + 1));
 	}
-});
+}
+
 
 $('#exercise_list_items').on('change', '.exerciseBlock input', function(e) {
 	e.preventDefault();
