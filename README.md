@@ -22,26 +22,26 @@ There are multiple ways to get this applications running:
 
 ### Localhost
 
-First, install all the necessary R packages (see `init.R`) including their dependencies.
+Install all the necessary R packages (see `init.R`) including their dependencies.
 
-Second, start up via `shiny::runApp(appDir = 'base directory containing app.R', host = '127.0.0.1', port = 8180);` or, alternatively, via RStudio by 
+Start up via `shiny::runApp(appDir = 'base directory containing app.R', host = '127.0.0.1', port = 8180);` or, alternatively, via RStudio by 
 opening and running `app.R`.
 
 ### Heroku
 This setup was tested on the `heroku-22` stack.
 
-First, install the following buildpacks in the following order on your heroku app:
+Install the following buildpacks in the following order on your heroku app:
 - https://github.com/rricard/heroku-buildpack-dpkg.git
 - https://github.com/virtualstaticvoid/heroku-buildpack-r
 
-Second, set the following environment variables (called "*Config Vars*" on Heroku):
+Set the following environment variables (called "*Config Vars*" on Heroku):
 - `INCLUDE_DIR`: `/app/.dpkg/usr/include/poppler/cpp/`
 - `LD_LIBRARY_PATH`: `/app/.dpkg/usr/lib/x86_64-linux-gnu/:/app/R/lib/R/lib:/app/tcltk/lib`
 - `LIB_DIR`: `/app/.dpkg/usr/lib/x86_64-linux-gnu/`
 
-Third, deploy this repository to your Heroku app.
+Deploy this repository to your Heroku app.
 
-Fourth, make sure the web dyno is turned on.
+Make sure the web dyno is turned on.
 
 > [!NOTE]
 Heroku shuts down your application if you exceed the memory allocated to your dyno type.
@@ -53,9 +53,9 @@ Therefore, make sure to switch to high performance dyno types if you wish to eva
 
 ### Docker
 
-First, build your image with the supplied docker file: `docker build --platform linux/x86_64 -t shiny-docker-rex .`.
+Build your image with the supplied docker file: `docker build --platform linux/x86_64 -t shiny-docker-rex .`.
 
-Second, run your image: `docker run -p 8180:8180 shiny-docker-rex`. 
+Run your image: `docker run -p 8180:8180 shiny-docker-rex`. 
 
 ## Usage
 
