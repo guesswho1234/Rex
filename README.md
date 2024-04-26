@@ -22,11 +22,9 @@ There are multiple ways to get this applications running:
 
 ### Localhost
 
-First, install all the necessary R packages (see `init.R`).
+First, install all the necessary R packages (see `init.R`) including their dependencies.
 
-Second, make sure to have `libsodium-dev` and `libpopppler-cpp-dev` available on your system.
-
-Third, start up via `shiny::runApp(appDir = 'base directory containing app.R', host = '127.0.0.1', port = 8180);` or, alternatively, via RStudio by 
+Second, start up via `shiny::runApp(appDir = 'base directory containing app.R', host = '127.0.0.1', port = 8180);` or, alternatively, via RStudio by 
 opening and running `app.R`.
 
 ### Heroku [heroku-22 stack, Dpkg and R (shiny) framework]
@@ -45,17 +43,18 @@ Third, deploy this repository to your Heroku app.
 Fourth, make sure the web dyno is turned on.
 
 > [!NOTE]
-Heroku shuts down your application once it uses twice the memory allocated to your dyno type.
+Heroku shuts down your application if you exceed the memory allocated to your dyno type.
 If you are using the `Eco` dyno type, the application also shuts down when there is no traffic for 30 minutes.
+
+> [!WARNING]
+While most features of Rex can be used with the low tier dyno types Heroku offers, evaluating exams cannot.
+Therefore, make sure to switch to high performance dyno types if you wish to evaluate exams with Rex hosted on Heroku.  
 
 ### Docker
 
 First, build your image with the supplied docker file: `docker build --platform linux/x86_64 -t shiny-docker-rex .`.
 
 Second, run your image: `docker run -p 8180:8180 shiny-docker-rex`. 
-
-> [!WARNING]
-Currently, running the app with docker causes the app to not find the resources from the `www` folder. Yet to fix.
 
 ## Usage
 
