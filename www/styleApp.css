@@ -814,7 +814,7 @@ main > * {
 	display: none !important;
 }
 
-#exercise_info label:not(#exerciseDownload) {
+#exercise_info label:not(#exerciseConvert):not(#exerciseDownload) {
 	font-weight: bold;
 	height: 25px;
 }
@@ -896,7 +896,6 @@ main > * {
 	border: 2px solid var(---transparent);
 	border-radius: 3px;
 	padding: 2px;
-	width: 60px;
 	text-align: center;
 }
 
@@ -969,6 +968,10 @@ main > * {
 #exercise_info_buttons {
 	display: flex;
 	gap: 10px;
+}
+
+#exerciseConvert {
+	display: none;
 }
 
 /* --------------------------------------------------------------
@@ -1530,6 +1533,7 @@ figcaption {
  HOTKEY MODE
 -------------------------------------------------------------- */
 #exerciseDownload, 
+#exerciseConvert,
 .listButton,
 .sequenceButton,
 .exerciseButton,

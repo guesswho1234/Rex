@@ -816,12 +816,17 @@ function exerciseParseAll(forceParse = false){
 }
 
 $("#exerciseDownload").click(function(){
-	exerciseDownload();
+	const exerciseID = getID();
+	exerciseDownload(exerciseID);
 }); 
 
-function exerciseDownload() {	
+//todo
+$("#exerciseConvert").click(function(){
 	const exerciseID = getID();
-	
+	exerciseConvert(exerciseID);
+});
+
+function exerciseDownload(exerciseID) {	
 	if(rex.exercises[exerciseID].editable)
 		setSimpleExerciseFileContents(exerciseID);
 	
@@ -830,6 +835,17 @@ function exerciseDownload() {
 	const exerciseExt = rex.exercises[exerciseID].ext;
 			
 	Shiny.onInputChange("exerciseToDownload", {exerciseName:exerciseName, exerciseCode: exerciseCode, exerciseExt: exerciseExt}, {priority: 'event'});	
+}
+
+function exerciseConvert(exerciseID){
+	confirmDialog('Beim Konvertieren in eine bearbeitbare Aufgabe wird nur der aktuell sichtbare Text übernommen. Alle weiteren Details der Aufgabe gehen verloren. <b>Möchten Sie die Aufgabe wirklich konverteiren?</b>', 'When converting to an editable exercise, only the currently visible text is transferred. All other details of the exercise are lost. Do you really want to convert the exercise?', 'Ja', 'Yes', '<i class="fa-solid fa-check"></i>', 'Nein', 'No', '<i class="fa-solid fa-xmark"></i>',
+		function(remove) {
+			if(!remove)
+				return;
+			
+			setSimpleExerciseFileContents(exerciseID, true);
+			viewExercise(exerciseID, true);
+	});	
 }
 
 $('#exerciseDownloadAll').click(function () {
@@ -1250,6 +1266,7 @@ function exerciseShouldbeParsed(exerciseID){
 function resetOutputFields() {
 	$('#exercise_info').addClass('hidden');	
 	$('#exercise_info').removeClass("editableExercise");
+	$('#exerciseConvert').hide();
 	
 	let fields = ['exerciseName',
 				  'question',
@@ -1489,8 +1506,7 @@ function contentTexSanitize(content){
 	// content = content.replaceAll(/(\\)(?:[^$%&\^_{}~#])/g, '');
 	// content = content.replaceAll(/(\\)($)/g, '');
 	// ^ old
-	
-	
+		
 	content = content.replaceAll(/[^\<,\.\-#\+`ß\|~\\\}\]\[\{@\!"§\$%&/\(\)\=\?´\*'\:;\>\^a-z0-9_ \u00c4\u00e4\u00d6\u00f6\u00dc\u00fc\u00df]/gi, '');
 	// content = content.replaceAll(/[\\](?=[$%&\^_{}~#])/g, '');
 	content = content.replaceAll(/[\\]/g, '');// does this solve the issue? - removes all backslash - looking good - check if can break it in any way
@@ -1634,6 +1650,8 @@ function loadExerciseFromObject(exerciseID) {
 	if(editable) {
 		$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').addClass("editable");
 		$('#exercise_info').addClass("editableExercise");
+	} else {
+		$('#exerciseConvert').show();
 	}
 		
 	$('.exerciseItem.active').removeClass('active');
@@ -1643,19 +1661,45 @@ function loadExerciseFromObject(exerciseID) {
 	f_langDeEn();
 }
 
-function setSimpleExerciseFileContents(exerciseID){
+function setSimpleExerciseFileContents(exerciseID, convertFromComplex=false){
 	let fileText = rnwTemplate;
 			
 	fileText = fileText.replace("?rnwTemplate_type", rex.exercises[exerciseID].type);
-	fileText = fileText.replace("?rnwTemplate_question", '"' + rex.exercises[exerciseID].question_raw.replaceAll('\\', '\\\\') + '"');
-	fileText = fileText.replace("?rnwTemplate_choices", 'c(' + rex.exercises[exerciseID].choices_raw.map(x=>'"' + x.replaceAll('\\', '\\\\') + '"').join(',') + ')');
 	fileText = fileText.replace("?rnwTemplate_solutions", 'c(' + rex.exercises[exerciseID].solution.map(x=>x?"T":"F").join(',') + ')');	
-	fileText = fileText.replace("?rnwTemplate_solutionNotes", 'c(' + rex.exercises[exerciseID].solutionNotes_raw.map((x, i) => '"' + x.replace(/[01]. */g, '') + '"').join(',') + ')');
 	fileText = fileText.replace("?rnwTemplate_points", rex.exercises[exerciseID].points);
 	fileText = fileText.replace("?rnwTemplate_topic", rex.exercises[exerciseID].topic);
 	fileText = fileText.replace("?rnwTemplate_section", rex.exercises[exerciseID].section === null ? "" : rex.exercises[exerciseID].section);
 	fileText = fileText.replace("?rnwTemplate_tags", rex.exercises[exerciseID].tags === null ? "" : rex.exercises[exerciseID].tags);
 	fileText = fileText.replace("?rnwTemplate_figure", rex.exercises[exerciseID].figure !== null ? 'c(' + rex.exercises[exerciseID].figure.map(x=>'"' + x + '"').join(',') + ')' : '""');
+	
+	if(convertFromComplex) {
+		let question_ =  rex.exercises[exerciseID].question
+
+		if( Array.isArray(question_) )
+			question_ = question_.join('')
+		
+		question_ = '<span>' + question_ + '</span>';
+		question_ = $(question_);
+		
+		question_.contents().each(function() {
+			if(this.nodeType === Node.COMMENT_NODE) {
+				$(this).remove();
+			}
+		});
+		
+		question_ = question_.get(0);
+		question_ = contenteditable_getPlain(question_);
+		question_ = contentTexSanitize(question_);
+		question_ = question_.replaceAll('\\', '\\\\')
+		
+		fileText = fileText.replace("?rnwTemplate_question", '"' + question_ + '"');
+		fileText = fileText.replace("?rnwTemplate_choices", 'c(' + rex.exercises[exerciseID].choices.map(x=>'"' + x.replaceAll('\\', '\\\\') + '"').join(',') + ')');
+		fileText = fileText.replace("?rnwTemplate_solutionNotes", 'c(' + rex.exercises[exerciseID].solutionNotes.map((x, i) => '"' + x.replace(/[01]. */g, '') + '"').join(',') + ')');
+	} else {
+		fileText = fileText.replace("?rnwTemplate_question", '"' + rex.exercises[exerciseID].question_raw.replaceAll('\\', '\\\\') + '"');
+		fileText = fileText.replace("?rnwTemplate_choices", 'c(' + rex.exercises[exerciseID].choices_raw.map(x=>'"' + x.replaceAll('\\', '\\\\') + '"').join(',') + ')');
+		fileText = fileText.replace("?rnwTemplate_solutionNotes", 'c(' + rex.exercises[exerciseID].solutionNotes_raw.map((x, i) => '"' + x.replace(/[01]. */g, '') + '"').join(',') + ')');
+	}
 	
 	fileText = fileText.replaceAll("\n", "\r\n");
 
