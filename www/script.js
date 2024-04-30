@@ -1660,8 +1660,10 @@ function setSimpleExerciseFileContents(exerciseID, convertFromComplex=false){
 	fileText = fileText.replace("?rnwTemplate_points", isNaN(parseInt(rex.exercises[exerciseID].points)) ? 1 : rex.exercises[exerciseID].points);
 	fileText = fileText.replace("?rnwTemplate_topic", rex.exercises[exerciseID].topic === null ? "" : rex.exercises[exerciseID].topic);
 	fileText = fileText.replace("?rnwTemplate_section", rex.exercises[exerciseID].section === null ? "" : rex.exercises[exerciseID].section);
-	fileText = fileText.replace("?rnwTemplate_tags", rex.exercises[exerciseID].tags === null ? "" : rex.exercises[exerciseID].tags);
-	fileText = fileText.replace("?rnwTemplate_figure", rex.exercises[exerciseID].figure !== null ? 'c(' + rex.exercises[exerciseID].figure.map(x=>'"' + x + '"').join(',') + ')' : '""');
+	fileText = fileText.replace("?rnwTemplate_examHistory", rex.exercises[exerciseID].examHistory === null ? "" : rex.exercises[exerciseID].examHistory.join('|'));
+	fileText = fileText.replace("?rnwTemplate_authoredBy", rex.exercises[exerciseID].authoredBy === null ? "" : rex.exercises[exerciseID].authoredBy.join('|'));
+	fileText = fileText.replace("?rnwTemplate_tags", rex.exercises[exerciseID].tags === null ? "" : rex.exercises[exerciseID].tags.join('|'));
+	fileText = fileText.replace("?rnwTemplate_figure", rex.exercises[exerciseID].figure == null ? '""' : 'c(' + rex.exercises[exerciseID].figure.map(x=>'"' + x + '"').join(',') + ')');
 	
 	if(convertFromComplex) {
 		function sanitizeComplexFieldValue(content){
@@ -2017,6 +2019,11 @@ Shiny.addCustomMessageHandler('setExerciseSeed', function(seed) {
 Shiny.addCustomMessageHandler('setExerciseExamHistory', function(jsonData) {
 	const examHistory = JSON.parse(jsonData);
 	rex.exercises[getID()].examHistory = examHistory;
+});
+
+Shiny.addCustomMessageHandler('setExerciseAuthoredBy', function(jsonData) {
+	const authoredBy = JSON.parse(jsonData);
+	rex.exercises[getID()].authoredBy = authoredBy;
 });
 
 Shiny.addCustomMessageHandler('setExercisePoints', function(exercisePoints) {

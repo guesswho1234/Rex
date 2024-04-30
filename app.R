@@ -158,12 +158,12 @@ source("./source/tryCatch.R")
       tags = c()
       
       if(length(html$exam1$exercise1$metainfo$examHistory) > 0) {
-        examHistory = trimws(strsplit(html$exam1$exercise1$metainfo$examHistory, ",")[[1]], "both")
+        examHistory = trimws(html$exam1$exercise1$metainfo$examHistory, "both")
         examHistory = rjs_vectorToJsonStringArray(examHistory)
       }
       
       if(length(html$exam1$exercise1$metainfo$authoredBy) > 0) {
-        authoredBy = trimws(strsplit(html$exam1$exercise1$metainfo$authoredBy, ",")[[1]], "both") 
+        authoredBy = trimws(html$exam1$exercise1$metainfo$authoredBy, "both")
         authoredBy = rjs_vectorToJsonStringArray(authoredBy) 
       }
       

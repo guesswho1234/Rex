@@ -522,6 +522,9 @@ main > * {
 -------------------------------------------------------------- */
 .itemList {
 	height: auto;
+}
+
+#exercise_list {
 	min-width: 500px;
 }
 
@@ -855,8 +858,9 @@ main > * {
 #examHistory span,
 #authoredBy span,
 #checkedBy span,
+#type > span,
+#points span,
 #exerciseName > span,
-#difficulty span,
 #topic span,
 #section span,
 #tags span,
@@ -874,7 +878,6 @@ main > * {
 #authoredBy span,
 #checkedBy span,
 #exerciseName > span,
-#difficulty span,
 #topic span,
 #section span,
 #tags span,
@@ -882,6 +885,12 @@ main > * {
 	background: var(---transparent);
 	color: var(---main);
 	font-style: italic;
+}
+
+#examHistory,
+#authoredBy,
+#tags {
+	display: flex;
 }
 
 #exercise_info .val {
