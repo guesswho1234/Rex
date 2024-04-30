@@ -146,7 +146,12 @@
 						</label>
 						<label id="exerciseDownloadAll" class="listButton" for="downloadExercises">
 							<span class="hotkeyInfo"><span lang="de">SHIFT S</span><span lang="en">SHIFT S</span></span>
-							{{ button_downloadExercises }} 
+							<div class="list_butttonIcon">
+								<span class="iconButton"><i class="fa-solid fa-download"></i></span>
+								<span class="textButton"><span lang="de">Alle speichern</span><span lang="en">Save all</span></span>
+							</div>
+							{{ button_downloadExercise }}  
+							{{ button_downloadExercises }}
 						</label>
 						<div id="exerciseConvertAll" class="listButton">
 							<span class="hotkeyInfo"><span lang="de">SHIFT C</span><span lang="en">SHIFT C</span></span>
@@ -220,17 +225,6 @@
 				
 				<label for="answers"><span lang="de">Antworten</span><span lang="en">Answers</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Jede Antwort besteht aus der Lösung ("Wahr" oder "Falsch"; in Prüfungen nicht sichtbar), dem Antworttext (in Prüfungen sichtbar) und der Lösungsbeschreibung (in Prüfungen nicht sichtbar).</span><span lang="en">Each answer consists of the solution ("True" or "False"; no visible in exams), the answer text (visible in exams), and the solution description (not visible in exams).</span></span></span></label>
 				<div id="answers">
-				</div>
-				
-				<div id="exercise_info_buttons">
-					<label id="exerciseConvert" for="convertExercise">
-						<span class="hotkeyInfo"><span lang="de">C</span><span lang="en">C</span></span>
-						{{ button_convertExercise }}  
-					</label>
-					<label id="exerciseDownload" for="downloadExercise">
-						<span class="hotkeyInfo"><span lang="de">S</span><span lang="en">S</span></span>
-						{{ button_downloadExercise }}  
-					</label>
 				</div>
 			</div>	
 		</div>	

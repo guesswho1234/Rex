@@ -1063,9 +1063,6 @@ server = function(input, output, session) {
       textInput_seedValueExercises = textInput("seedValueExercises", label = NULL, value = initSeed),
       button_downloadExercises = myDownloadButton(id='downloadExercises', deText="Alle speichern", enText="Save all"),
       button_downloadExercise = myDownloadButton(id='downloadExercise'),
-      #todo: popup asking if really want to convert and should save before, if no, stop, if yes, convert exercise and parse again
-      button_convertExercise = myActionButton(id='convertExercise', deText="Bearbeiten", enText="Edit", icon="fa-solid fa-pencil"),
-      
       exerciseFigureFileImport = myFileImport("exerciseFigure", "exerciseFigure"),
     
       # EXAM CREATE

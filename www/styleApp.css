@@ -190,6 +190,7 @@ main {
 	top: 100px;
 }
 
+#exerciseDownloadAll, 
 #exerciseUpload {
 	font-weight: unset;
 }
@@ -533,14 +534,9 @@ main > * {
 	border-radius: 5px;
 }
 
-#downloadExercises {
-	height: 26px;
-	display: flex;
-	place-items: center;
-	border: none;
-	margin: 0;
-	padding: 0;
-	background: var(---transparent);
+#downloadExercises, 
+#downloadExercise {
+	display: none;
 }
 
 #searchExercises input {
@@ -817,7 +813,7 @@ main > * {
 	display: none !important;
 }
 
-#exercise_info label:not(#exerciseConvert):not(#exerciseDownload) {
+#exercise_info label {
 	font-weight: bold;
 	height: 25px;
 }
@@ -966,15 +962,6 @@ main > * {
 	border-color: var(---transparent);
 	background-color: var(---highlight_values) !important;
 	color: var(---main);
-}
-
-#exercise_info_buttons {
-	display: flex;
-	gap: 10px;
-}
-
-#exerciseConvert {
-	display: none;
 }
 
 /* --------------------------------------------------------------
@@ -1535,8 +1522,8 @@ figcaption {
 /* --------------------------------------------------------------
  HOTKEY MODE
 -------------------------------------------------------------- */
-#exerciseDownload, 
-#exerciseConvert,
+.exerciseDownload, 
+.exerciseConvert,
 .listButton,
 .sequenceButton,
 .exerciseButton,
