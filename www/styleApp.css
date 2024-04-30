@@ -209,7 +209,6 @@ body.iconButtonMode .iconButton {
 
 body.textButtonMode .textButton {
 	display: block !important;
-	text-wrap: nowrap;
 }
 
 #texActiveContainer i {
@@ -523,15 +522,21 @@ main > * {
 -------------------------------------------------------------- */
 .itemList {
 	height: auto;
+	min-width: 500px;
 }
 
 .listButton {
 	margin: 0.5rem;
-	padding: 0.5rem;
 	cursor: pointer;
+}
+
+#searchExercises,
+.listButton {
 	background: var(---background);
 	border: 2px solid var(---background);
 	border-radius: 5px;
+	white-space: nowrap;
+	padding: 0.5rem;
 }
 
 #downloadExercises, 
@@ -543,13 +548,23 @@ main > * {
 	width: 100%;
 }
 
-.listButton:hover {
+.listButton:hover,
+#searchExercises:hover {
 	border: 2px solid var(---main);
+}
+
+#exerciseListNav {
+	background: var(---background3);
+}
+
+#exerciseListSearch {
+	padding: 0.5rem;
+	padding-top: 0;
 }
 
 .listButtons {
 	display: flex;	
-	background: var(---background3);
+	place-content: space-between;
 }
 
 .list_butttonIcon {
@@ -636,9 +651,9 @@ main > * {
 
 .exerciseSequence {
 	display: grid;
-    gap: 5px;
 	cursor: pointer;
 	padding: 0 !important;
+	grid-template-rows: 1fr;
 }
 
 .sequenceButton {
@@ -1527,7 +1542,8 @@ figcaption {
 .listButton,
 .sequenceButton,
 .exerciseButton,
-.inspectScanButton {
+.inspectScanButton,
+#searchExercises {
 	position: relative;
 }
 
