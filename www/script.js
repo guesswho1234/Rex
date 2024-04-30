@@ -838,7 +838,7 @@ function exerciseDownload(exerciseID) {
 }
 
 function exerciseConvert(exerciseID){
-	confirmDialog('Beim Konvertieren in eine bearbeitbare Aufgabe wird nur der aktuell sichtbare Text übernommen. Alle weiteren Details der Aufgabe gehen verloren. <b>Möchten Sie die Aufgabe wirklich konverteiren?</b>', 'When converting to an editable exercise, only the currently visible text is transferred. All other details of the exercise are lost. Do you really want to convert the exercise?', 'Ja', 'Yes', '<i class="fa-solid fa-check"></i>', 'Nein', 'No', '<i class="fa-solid fa-xmark"></i>',
+	confirmDialog('Beim Konvertieren in eine bearbeitbare Aufgabe wird nur der aktuell sichtbare Text übernommen.<br/>Alle weiteren Details der Aufgabe gehen verloren.<br/><br/>Möchten Sie die Aufgabe wirklich konverteiren?', 'When converting to an editable exercise, only the currently visible text is transferred.<br/>All other details of the exercise are lost.<br/><br/>Do you really want to convert the exercise?', 'Ja', 'Yes', '<i class="fa-solid fa-check"></i>', 'Nein', 'No', '<i class="fa-solid fa-xmark"></i>',
 		function(remove) {
 			if(!remove)
 				return;
@@ -1197,7 +1197,9 @@ function createExercise(exerciseID, name='exercise',
 		setSimpleExerciseFileContents(exerciseID);
 	}
 		
-	$('#exercise_list_items').append('<div class="exerciseItem sidebarListItem"><span class="exerciseSequence"><span class="sequenceButton sequenceUp"><span class="hotkeyInfo"><span lang="de">Y</span><span lang="en">Y</span></span><i class="fa-solid fa-sort-up"></i></span><span class="sequenceButton sequenceDown"><span class="hotkeyInfo"><span lang="de">X</span><span lang="en">X</span></span><i class="fa-solid fa-sort-down"></i></span></span><span class="exerciseName">' + name + '</span></span><span class="exerciseBlock"><span lang="de">Block:</span><span lang="en">Block:</span><input value="' + block + '"/></span><span class="exerciseButtons"><span class="exerciseParse exerciseButton disabled"> <span class="hotkeyInfo"><span lang="de">R</span><span lang="en">R</span></span> <span class="iconButton"><i class="fa-solid fa-rotate"></i></span><span class="textButton"><span lang="de">Berechnen</span><span lang="en">Parse</span></span></span><span class="examExercise exerciseButton disabled"><span class="hotkeyInfo"><span lang="de">E</span><span lang="en">E</span></span><span class="iconButton"><i class="fa-solid fa-star"></i></span><span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span></span><span class="exerciseRemove exerciseButton"><span class="hotkeyInfo"><span lang="de">D</span><span lang="en">D</span></span><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></span></span></div>');
+	// $('#exercise_list_items').append('<div class="exerciseItem sidebarListItem"><span class="exerciseSequence"><span class="sequenceButton sequenceUp"><span class="hotkeyInfo"><span lang="de">Y</span><span lang="en">Y</span></span><i class="fa-solid fa-sort-up"></i></span><span class="sequenceButton sequenceDown"><span class="hotkeyInfo"><span lang="de">X</span><span lang="en">X</span></span><i class="fa-solid fa-sort-down"></i></span></span><span class="exerciseName">' + name + '</span></span><span class="exerciseBlock"><span lang="de">Block:</span><span lang="en">Block:</span><input value="' + block + '"/></span><span class="exerciseButtons"><span class="exerciseParse exerciseButton disabled"> <span class="hotkeyInfo"><span lang="de">R</span><span lang="en">R</span></span> <span class="iconButton"><i class="fa-solid fa-rotate"></i></span><span class="textButton"><span lang="de">Berechnen</span><span lang="en">Parse</span></span></span><span class="examExercise exerciseButton disabled"><span class="hotkeyInfo"><span lang="de">E</span><span lang="en">E</span></span><span class="iconButton"><i class="fa-solid fa-star"></i></span><span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span></span><span class="exerciseRemove exerciseButton"><span class="hotkeyInfo"><span lang="de">D</span><span lang="en">D</span></span><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></span></span></div>');
+	
+	$('#exercise_list_items').append('<div class="exerciseItem sidebarListItem"><span class="exerciseSequence"><span class="sequenceButton sequenceUp"><span class="hotkeyInfo"><span lang="de">Y</span><span lang="en">Y</span></span><i class="fa-solid fa-sort-up"></i></span><span class="sequenceButton sequenceDown"><span class="hotkeyInfo"><span lang="de">X</span><span lang="en">X</span></span><i class="fa-solid fa-sort-down"></i></span></span><span class="exerciseName">' + name + '</span></span><span class="exerciseBlock"><span lang="de">Block:</span><span lang="en">Block:</span><input value="' + block + '"/></span><span class="exerciseButtons"><span class="exerciseDownload exerciseButton disabled"><span class="hotkeyInfo"><span lang="de">S</span><span lang="en">S</span></span><span class="iconButton"><i class="fa-solid fa-download"></i></span><span class="textButton"><span lang="de">Speichern</span><span lang="en">Save</span></span></span><span class="exerciseConvert exerciseButton disabled"><span class="hotkeyInfo"><span lang="de">C</span><span lang="en">C</span></span><span class="iconButton"><i class="fa-solid fa-screwdriver-wrench"></i></span><span class="textButton"><span lang="de">Konvertieren</span><span lang="en">Convert</span></span></span><span class="exerciseParse exerciseButton disabled"><span class="hotkeyInfo"><span lang="de">R</span><span lang="en">R</span></span><span class="iconButton"><i class="fa-solid fa-rotate"></i></span><span class="textButton"><span lang="de">Berechnen</span><span lang="en">Parse</span></span></span><span class="examExercise exerciseButton disabled"><span class="hotkeyInfo"><span lang="de">E</span><span lang="en">E</span></span><span class="iconButton"><i class="fa-solid fa-star"></i></span><span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span></span><span class="exerciseRemove exerciseButton"><span class="hotkeyInfo"><span lang="de">D</span><span lang="en">D</span></span><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></span></span></div>');
 }
 
 function parseExercise(exerciseID) {	
@@ -1666,35 +1668,41 @@ function setSimpleExerciseFileContents(exerciseID, convertFromComplex=false){
 			
 	fileText = fileText.replace("?rnwTemplate_type", rex.exercises[exerciseID].type);
 	fileText = fileText.replace("?rnwTemplate_solutions", 'c(' + rex.exercises[exerciseID].solution.map(x=>x?"T":"F").join(',') + ')');	
-	fileText = fileText.replace("?rnwTemplate_points", rex.exercises[exerciseID].points);
-	fileText = fileText.replace("?rnwTemplate_topic", rex.exercises[exerciseID].topic);
+	fileText = fileText.replace("?rnwTemplate_points", isNaN(parseInt(rex.exercises[exerciseID].points)) ? 1 : rex.exercises[exerciseID].points);
+	fileText = fileText.replace("?rnwTemplate_topic", rex.exercises[exerciseID].topic === null ? "" : rex.exercises[exerciseID].topic);
 	fileText = fileText.replace("?rnwTemplate_section", rex.exercises[exerciseID].section === null ? "" : rex.exercises[exerciseID].section);
 	fileText = fileText.replace("?rnwTemplate_tags", rex.exercises[exerciseID].tags === null ? "" : rex.exercises[exerciseID].tags);
 	fileText = fileText.replace("?rnwTemplate_figure", rex.exercises[exerciseID].figure !== null ? 'c(' + rex.exercises[exerciseID].figure.map(x=>'"' + x + '"').join(',') + ')' : '""');
 	
 	if(convertFromComplex) {
-		let question_ =  rex.exercises[exerciseID].question
-
-		if( Array.isArray(question_) )
-			question_ = question_.join('')
+		function sanitizeComplexFieldValue(content){
+			if( Array.isArray(content) )
+				content = content.join('')
+			
+			content = '<span>' + content + '</span>';
+			content = $(content);
+			
+			content.contents().each(function() {
+				if(this.nodeType === Node.COMMENT_NODE) {
+					$(this).remove();
+				}
+			});
+			
+			content = content.get(0);
+			content = contenteditable_getPlain(content);
+			content = contentTexSanitize(content);
+			content = content.replaceAll('\\', '\\\\');
+			
+			return content;
+		}
 		
-		question_ = '<span>' + question_ + '</span>';
-		question_ = $(question_);
+		question = sanitizeComplexFieldValue(rex.exercises[exerciseID].question);
+		choices = rex.exercises[exerciseID].choices.map(x=> sanitizeComplexFieldValue(x));
+		solutionNotes = rex.exercises[exerciseID].solutionNotes.map(x=> sanitizeComplexFieldValue(x));
 		
-		question_.contents().each(function() {
-			if(this.nodeType === Node.COMMENT_NODE) {
-				$(this).remove();
-			}
-		});
-		
-		question_ = question_.get(0);
-		question_ = contenteditable_getPlain(question_);
-		question_ = contentTexSanitize(question_);
-		question_ = question_.replaceAll('\\', '\\\\')
-		
-		fileText = fileText.replace("?rnwTemplate_question", '"' + question_ + '"');
-		fileText = fileText.replace("?rnwTemplate_choices", 'c(' + rex.exercises[exerciseID].choices.map(x=>'"' + x.replaceAll('\\', '\\\\') + '"').join(',') + ')');
-		fileText = fileText.replace("?rnwTemplate_solutionNotes", 'c(' + rex.exercises[exerciseID].solutionNotes.map((x, i) => '"' + x.replace(/[01]. */g, '') + '"').join(',') + ')');
+		fileText = fileText.replace("?rnwTemplate_question", '"' + question + '"');
+		fileText = fileText.replace("?rnwTemplate_choices", 'c(' + choices.map(x=>'"' + x + '"').join(',') + ')');
+		fileText = fileText.replace("?rnwTemplate_solutionNotes", 'c(' + solutionNotes.map(x => '"' + x.replace(/[01]. */g, '') + '"').join(',') + ')');
 	} else {
 		fileText = fileText.replace("?rnwTemplate_question", '"' + rex.exercises[exerciseID].question_raw.replaceAll('\\', '\\\\') + '"');
 		fileText = fileText.replace("?rnwTemplate_choices", 'c(' + rex.exercises[exerciseID].choices_raw.map(x=>'"' + x.replaceAll('\\', '\\\\') + '"').join(',') + ')');
@@ -1704,6 +1712,7 @@ function setSimpleExerciseFileContents(exerciseID, convertFromComplex=false){
 	fileText = fileText.replaceAll("\n", "\r\n");
 
 	rex.exercises[exerciseID].file = fileText;
+	rex.exercises[exerciseID].ext = "rnw";
 }
 
 function setExerciseFieldFromObject(field, content) {

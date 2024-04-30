@@ -114,6 +114,7 @@ main {
 #confirmdialogOverlayContentBox {
 	display: block;
 	background: white;
+	text-align: center;
 }
 
 #confirmdialogOverlayContentButtons {
@@ -723,6 +724,8 @@ main > * {
 	filter: opacity(0.2);
 }
 
+.exerciseDownload,
+.exerciseConvert,
 .exerciseParse,
 .examExercise,
 .exerciseRemove {
