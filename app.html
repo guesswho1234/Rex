@@ -128,51 +128,67 @@
 		<div class="contentWrapper">
 			<div class="sidebar">
 				<div id="exercise_list" class="itemList">
-					<div id="exerciseListButtons" class="listButtons">
-						<div id="newExercise" class="listButton">
-							<span class="hotkeyInfo"><span lang="de">A</span><span lang="en">A</span></span>
-							<div class="list_butttonIcon">
-								<span class="iconButton"><i class="fa-solid fa-plus"></i></span>
-								<span class="textButton"><span lang="de">Neu</span><span lang="en">New</span></span>
+					<div id="exerciseListNav">
+						<div id="exerciseListButtons" class="listButtons">
+							<div id="newExercise" class="listButton">
+								<span class="hotkeyInfo"><span lang="de">A</span><span lang="en">A</span></span>
+								<div class="list_butttonIcon">
+									<span class="iconButton"><i class="fa-solid fa-plus"></i></span>
+									<span class="textButton"><span lang="de">Neu</span><span lang="en">New</span></span>
+								</div>
+							</div>	
+							<label id="exerciseUpload" class="listButton" for="file-upload_exercises">
+								<span class="hotkeyInfo"><span lang="de">Q</span><span lang="en">Q</span></span>
+								<div class="list_butttonIcon">
+									<span class="iconButton"><i class="fa-solid fa-upload"></i></span>
+									<span class="textButton"><span lang="de">Importieren</span><span lang="en">Import</span></span>
+								</div>
+								<input type="file" id="file-upload_exercises" onchange='exercisesFileDialog(this.files);' multiple>
+							</label>
+							<label id="exerciseDownloadAll" class="listButton" for="downloadExercises">
+								<span class="hotkeyInfo"><span lang="de">SHIFT S</span><span lang="en">SHIFT S</span></span>
+								<div class="list_butttonIcon">
+									<span class="iconButton"><i class="fa-solid fa-download"></i></span>
+									<span class="textButton"><span lang="de">Alle speichern</span><span lang="en">Save all</span></span>
+								</div>
+								{{ button_downloadExercise }}  
+								{{ button_downloadExercises }}
+							</label>
+							<div id="exerciseConvertAll" class="listButton">
+								<span class="hotkeyInfo"><span lang="de">SHIFT C</span><span lang="en">SHIFT C</span></span>
+								<div class="list_butttonIcon">
+									<span class="iconButton"><i class="fa-solid fa-screwdriver-wrench"></i></span>
+									<span class="textButton"><span lang="de">Alle konvertieren</span><span lang="en">Convert all</span></span>
+								</div>
 							</div>
-						</div>	
-						<label id="exerciseUpload" class="listButton" for="file-upload_exercises">
-							<span class="hotkeyInfo"><span lang="de">Q</span><span lang="en">Q</span></span>
-							<div class="list_butttonIcon">
-								<span class="iconButton"><i class="fa-solid fa-upload"></i></span>
-								<span class="textButton"><span lang="de">Importieren</span><span lang="en">Import</span></span>
+							<div id="exerciseParseAll" class="listButton">
+								<span class="hotkeyInfo"><span lang="de">SHIFT R</span><span lang="en">SHIFT R</span></span>
+								<div class="list_butttonIcon">
+									<span class="iconButton"><i class="fa-solid fa-rotate"></i></span>
+									<span class="textButton"><span lang="de">Alle berechnen</span><span lang="en">Parse all</span></span>
+								</div>
 							</div>
-							<input type="file" id="file-upload_exercises" onchange='exercisesFileDialog(this.files);' multiple>
-						</label>
-						<label id="exerciseDownloadAll" class="listButton" for="downloadExercises">
-							<span class="hotkeyInfo"><span lang="de">SHIFT S</span><span lang="en">SHIFT S</span></span>
-							{{ button_downloadExercises }} 
-						</label>
-						<div id="exerciseParseAll" class="listButton">
-							<span class="hotkeyInfo"><span lang="de">SHIFT R</span><span lang="en">SHIFT R</span></span>
-							<div class="list_butttonIcon">
-								<span class="iconButton"><i class="fa-solid fa-rotate"></i></span>
-								<span class="textButton"><span lang="de">Alle berechnen</span><span lang="en">Parse all</span></span>
+							<div id="examExerciseAll" class="listButton">
+								<span class="hotkeyInfo"><span lang="de">SHIFT E</span><span lang="en">SHIFT E</span></span>
+								<div class="list_butttonIcon">
+									<span class="iconButton"><i class="fa-solid fa-star"></i></span>
+									<span class="textButton"><span lang="de">Alle prüfungsrelevant</span><span lang="en">All examinable</span></span>
+								</div>
+							</div>								
+							<div id="exerciseRemoveAll" class="listButton">
+								<span class="hotkeyInfo"><span lang="de">SHIFT D</span><span lang="en">SHIFT D</span></span>
+								<div class="list_butttonIcon">
+									<span class="iconButton"><i class="fa-solid fa-trash"></i></span>
+									<span class="textButton"><span lang="de">Alle entfernen</span><span lang="en">Remove all</span></span>
+								</div>
 							</div>
 						</div>
-						<div id="examExerciseAll" class="listButton">
-							<span class="hotkeyInfo"><span lang="de">SHIFT E</span><span lang="en">SHIFT E</span></span>
-							<div class="list_butttonIcon">
-								<span class="iconButton"><i class="fa-solid fa-star"></i></span>
-								<span class="textButton"><span lang="de">Alle prüfungsrelevant</span><span lang="en">All examinable</span></span>
-							</div>
-						</div>								
-						<div id="exerciseRemoveAll" class="listButton">
-							<span class="hotkeyInfo"><span lang="de">SHIFT D</span><span lang="en">SHIFT D</span></span>
-							<div class="list_butttonIcon">
-								<span class="iconButton"><i class="fa-solid fa-trash"></i></span>
-								<span class="textButton"><span lang="de">Alle entfernen</span><span lang="en">Remove all</span></span>
-							</div>
-						</div>
-						<div id="searchExercises" class="listButton">
-							<span class="hotkeyInfo"><span lang="de">SHIFT F</span><span lang="en">SHIFT F</span></span>
-							<div class="list_butttonIcon">
-								<input type="text"/>
+						<div id="exerciseListSearch">
+							<div id="searchExercises">
+								<span class="hotkeyInfo"><span lang="de">SHIFT F</span><span lang="en">SHIFT F</span></span>
+								<div>
+									<input type="text"/>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -213,13 +229,6 @@
 				
 				<label for="answers"><span lang="de">Antworten</span><span lang="en">Answers</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Jede Antwort besteht aus der Lösung ("Wahr" oder "Falsch"; in Prüfungen nicht sichtbar), dem Antworttext (in Prüfungen sichtbar) und der Lösungsbeschreibung (in Prüfungen nicht sichtbar).</span><span lang="en">Each answer consists of the solution ("True" or "False"; no visible in exams), the answer text (visible in exams), and the solution description (not visible in exams).</span></span></span></label>
 				<div id="answers">
-				</div>
-				
-				<div id="exercise_info_buttons">
-					<label id="exerciseDownload" for="downloadExercise">
-						<span class="hotkeyInfo"><span lang="de">S</span><span lang="en">S</span></span>
-						{{ button_downloadExercise }}  
-					</label>
 				</div>
 			</div>	
 		</div>	

@@ -349,6 +349,7 @@ document.onkeydown = function(evt) {
 			
 		if (!targetInput && !targetEditable) {
 			if(itemsExist){
+				const exerciseID = $('.exerciseItem.active:not(.filtered)').closest('.exerciseItem:not(.filtered)').index('.exerciseItem');
 				let updateView = false;
 				
 				if (evtobj.shiftKey) {
@@ -360,10 +361,14 @@ document.onkeydown = function(evt) {
 							exerciseRemoveAll();
 							break;
 						case 83: // shift+s
+							exerciseDownloadAll();
 							$("#downloadExercises")[0].click();
 							break;
 						case 82: // shift+r 
 							exerciseParseAll(true);
+							break;
+						case 67: // shift+c 
+							exerciseConvertAll();
 							break;
 					}
 				} 
@@ -387,20 +392,26 @@ document.onkeydown = function(evt) {
 							updateView = true;
 							break;
 						case 68: // d
-							const exerciseID = $('.exerciseItem.active:not(.filtered)').closest('.exerciseItem:not(.filtered)').index('.exerciseItem');
 							removeExercise(exerciseID);
 							break;
 						case 82: // r 
-							viewExercise($('.exerciseItem.active:not(.filtered)').first().index('.exerciseItem'), true);
+							viewExercise(exerciseID, true);
 							break;
 						case 83: // s 
-							$("#downloadExercise")[0].click();
+							if( !$('.exerciseItem.active:not(.filtered) .exerciseDownload').hasClass('disabled') ) {
+								exerciseDownload(exerciseID);
+								$("#downloadExercise")[0].click();
+							}
 							break;
 						case 89: // y 
 							sequenceUp();
 							break;	
 						case 88: // x 
 							sequenceDown();
+							break;	
+						case 67: // c 
+							if( !$('.exerciseItem.active:not(.filtered) .exerciseConvert').hasClass('disabled') )
+								exerciseConvert(exerciseID);
 							break;	
 					}
 				}
@@ -785,23 +796,23 @@ function examExerciseAll(){
 
 function exerciseRemoveAll(){
 	confirmDialog('Alle Aufgaben löschen?', 'Delete all exercises?', 'Ja', 'Yes', '<i class="fa-solid fa-check"></i>', 'Nein', 'No', '<i class="fa-solid fa-xmark"></i>',
-		function(remove) {
-			if(!remove)
-				return;
-			
-			const removeIndices = $('.exerciseItem:not(.filtered)').map(function() {
-			return $(this).index();
-			}).get();
-			
-			for (let i = removeIndices.length -1; i >= 0; i--) {
-				rex.exercises.splice(removeIndices[i],1);
-				exercises = exercises - 1;
-			}
-			
-			$('.exerciseItem:not(.filtered)').remove();
+	function(remove) {
+		if(!remove)
+			return;
+		
+		const removeIndices = $('.exerciseItem:not(.filtered)').map(function() {
+		return $(this).index();
+		}).get();
+		
+		for (let i = removeIndices.length -1; i >= 0; i--) {
+			rex.exercises.splice(removeIndices[i],1);
+			exercises = exercises - 1;
+		}
+		
+		$('.exerciseItem:not(.filtered)').remove();
 
-			resetOutputFields();
-			examExercisesSummary();
+		resetOutputFields();
+		examExercisesSummary();
 	});
 }
 
@@ -815,32 +826,28 @@ function exerciseParseAll(forceParse = false){
 	});	
 }
 
-$("#exerciseDownload").click(function(){
-	exerciseDownload();
-}); 
-
-function exerciseDownload() {	
-	const exerciseID = getID();
-	
-	if(rex.exercises[exerciseID].editable)
-		setSimpleExerciseFileContents(exerciseID);
-	
-	const exerciseName = rex.exercises[exerciseID].name;
-	const exerciseCode = rex.exercises[exerciseID].file;
-	const exerciseExt = rex.exercises[exerciseID].ext;
-			
-	Shiny.onInputChange("exerciseToDownload", {exerciseName:exerciseName, exerciseCode: exerciseCode, exerciseExt: exerciseExt}, {priority: 'event'});	
+function exerciseConvertAll(){
+	confirmDialog('Beim Konvertieren in bearbeitbare Aufgaben wird jeweils nur der aktuell geladene Text übernommen.<br/>Alle weiteren Details gehen verloren.<br/><br/>Möchten Sie wirklich alle Aufgabe konvertieren?', 'When converting to editable exercises, only the currently loaded texts are transferred.<br/>All other details are lost.<br/><br/>Do you really want to convert all the exercises?', 'Ja', 'Yes', '<i class="fa-solid fa-check"></i>', 'Nein', 'No', '<i class="fa-solid fa-xmark"></i>',
+	function(remove) {
+		if(!remove)
+			return;
+		
+		rex.exercises.forEach((t, index) => {
+			if( $('.exerciseItem:nth-child(' + (index + 1) + ')').hasClass('filtered') || t.editable || $('.exerciseItem:nth-child(' + (index + 1) + ') .exerciseConvert').hasClass('disabled') ) {
+				return;
+			}
+		
+			setSimpleExerciseFileContents(index, true);
+			viewExercise(index, true);
+		});	
+	});
 }
-
-$('#exerciseDownloadAll').click(function () {
-	exerciseDownloadAll();
-});
 
 function exerciseDownloadAll() {	
 	const filteredTasks = rex.exercises.filter((x, index) => {
 		if(rex.exercises[index].editable)
 			setSimpleExerciseFileContents(index);
-		return !$('.exerciseItem:nth-child(' + (index + 1) + ')').hasClass('filtered')
+		return !$('.exerciseItem:nth-child(' + (index + 1) + ')').hasClass('filtered') && !$('.exerciseItem:nth-child(' + (index + 1) + ') .exerciseDownload').hasClass('disabled')
 	});
 	
 	const exerciseNames = filteredTasks.map(exercise => exercise.name);
@@ -849,6 +856,15 @@ function exerciseDownloadAll() {
 	
 	Shiny.onInputChange("exercisesToDownload", {exerciseNames:exerciseNames, exerciseCodes: exerciseCodes, exerciseExts: exerciseExts}, {priority: 'event'});	
 }
+
+$('#exerciseDownloadAll').click(function () {
+	exerciseDownloadAll();
+	$("#downloadExercises")[0].click();
+});
+
+$('#exerciseConvertAll').click(function () {
+	exerciseConvertAll();
+});
 
 $('#newExercise').click(function () {
 	newSimpleExercise();
@@ -1180,8 +1196,8 @@ function createExercise(exerciseID, name='exercise',
 	if( file === null) {
 		setSimpleExerciseFileContents(exerciseID);
 	}
-		
-	$('#exercise_list_items').append('<div class="exerciseItem sidebarListItem"><span class="exerciseSequence"><span class="sequenceButton sequenceUp"><span class="hotkeyInfo"><span lang="de">Y</span><span lang="en">Y</span></span><i class="fa-solid fa-sort-up"></i></span><span class="sequenceButton sequenceDown"><span class="hotkeyInfo"><span lang="de">X</span><span lang="en">X</span></span><i class="fa-solid fa-sort-down"></i></span></span><span class="exerciseName">' + name + '</span></span><span class="exerciseBlock"><span lang="de">Block:</span><span lang="en">Block:</span><input value="' + block + '"/></span><span class="exerciseButtons"><span class="exerciseParse exerciseButton disabled"> <span class="hotkeyInfo"><span lang="de">R</span><span lang="en">R</span></span> <span class="iconButton"><i class="fa-solid fa-rotate"></i></span><span class="textButton"><span lang="de">Berechnen</span><span lang="en">Parse</span></span></span><span class="examExercise exerciseButton disabled"><span class="hotkeyInfo"><span lang="de">E</span><span lang="en">E</span></span><span class="iconButton"><i class="fa-solid fa-star"></i></span><span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span></span><span class="exerciseRemove exerciseButton"><span class="hotkeyInfo"><span lang="de">D</span><span lang="en">D</span></span><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></span></span></div>');
+
+	$('#exercise_list_items').append('<div class="exerciseItem sidebarListItem"><span class="exerciseSequence"><span class="sequenceButton sequenceUp"><span class="hotkeyInfo"><span lang="de">Y</span><span lang="en">Y</span></span><i class="fa-solid fa-sort-up"></i></span><span class="sequenceButton sequenceDown"><span class="hotkeyInfo"><span lang="de">X</span><span lang="en">X</span></span><i class="fa-solid fa-sort-down"></i></span></span><span class="exerciseName">' + name + '</span></span><span class="exerciseBlock"><span lang="de">Block:</span><span lang="en">Block:</span><input value="' + block + '"/></span><span class="exerciseButtons"><span class="exerciseDownload exerciseButton disabled"><span class="hotkeyInfo"><span lang="de">S</span><span lang="en">S</span></span><span class="iconButton"><i class="fa-solid fa-download"></i></span><span class="textButton"><span lang="de">Speichern</span><span lang="en">Save</span></span></span><span class="exerciseConvert exerciseButton disabled"><span class="hotkeyInfo"><span lang="de">C</span><span lang="en">C</span></span><span class="iconButton"><i class="fa-solid fa-screwdriver-wrench"></i></span><span class="textButton"><span lang="de">Konvertieren</span><span lang="en">Convert</span></span></span><span class="exerciseParse exerciseButton disabled"><span class="hotkeyInfo"><span lang="de">R</span><span lang="en">R</span></span><span class="iconButton"><i class="fa-solid fa-rotate"></i></span><span class="textButton"><span lang="de">Berechnen</span><span lang="en">Parse</span></span></span><span class="examExercise exerciseButton disabled"><span class="hotkeyInfo"><span lang="de">E</span><span lang="en">E</span></span><span class="iconButton"><i class="fa-solid fa-star"></i></span><span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span></span><span class="exerciseRemove exerciseButton"><span class="hotkeyInfo"><span lang="de">D</span><span lang="en">D</span></span><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></span></span></div>');
 }
 
 function parseExercise(exerciseID) {	
@@ -1339,6 +1355,8 @@ function invalidateAfterEdit(exerciseID) {
 	rex.exercises[exerciseID].statusCode = "E000";
 	rex.exercises[exerciseID].statusMessage = '<span class="exerciseTryCatch tryCatch Error"><span class="responseSign ErrorSign"><i class="fa-solid fa-circle-exclamation"></i></span><span class="exerciseTryCatchText tryCatchText"><span lang="de">Aufgabe muss neu berechnet werden.</span><span lang="en">Exercise needs to be parsed again.</span></span></span>';
 	
+	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseConvert').addClass("disabled");
+	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseDownload').addClass('disabled');
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .examExercise').addClass('disabled');
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseTryCatch').remove();
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').prepend(rex.exercises[exerciseID].statusMessage);
@@ -1479,22 +1497,9 @@ function contentSectionSanitize(content){
 	return content.replaceAll(/[^a-z0-9\_\-\/]/gi, '');
 }
 
-function contentTexSanitize(content){
-	// content = content.replaceAll(/[^\<,\.\-#\+`ß\|~\\\}\]\[\{@\!"§\$%&/\(\)\=\?´\*'\:;\>\^a-z0-9_ \u00c4\u00e4\u00d6\u00f6\u00dc\u00fc\u00df]/gi, '');
-	// content = content.replaceAll('\\~{}', '~');
-	// content = content.replaceAll(/[\\](?=[$%&\^_{}~#])/g, '');
-	// content = content.replaceAll(/[{}]/g, '\\$&');
-	// content = content.replaceAll(/[~]/g, '\\~{}');
-	// content = content.replaceAll(/[$%&#\^_]/g, '\\$&');
-	// content = content.replaceAll(/(\\)(?:[^$%&\^_{}~#])/g, '');
-	// content = content.replaceAll(/(\\)($)/g, '');
-	// ^ old
-	
-	
+function contentTexSanitize(content){		
 	content = content.replaceAll(/[^\<,\.\-#\+`ß\|~\\\}\]\[\{@\!"§\$%&/\(\)\=\?´\*'\:;\>\^a-z0-9_ \u00c4\u00e4\u00d6\u00f6\u00dc\u00fc\u00df]/gi, '');
-	// content = content.replaceAll(/[\\](?=[$%&\^_{}~#])/g, '');
-	content = content.replaceAll(/[\\]/g, '');// does this solve the issue? - removes all backslash - looking good - check if can break it in any way
-	// content = content.replaceAll(/(\\)(?:[^$%&\^_{}~#])/g, '');
+	content = content.replaceAll(/[\\]/g, '');
 	content = content.replaceAll(/(\\)($)/g, '');
 	content = content.replaceAll('"', "'");
 	content = content.replaceAll('\\~{}', '~');
@@ -1535,105 +1540,108 @@ function loadExerciseFromObject(exerciseID) {
 	resetOutputFields();
 	
 	const editable = rex.exercises[exerciseID].editable; 
+	let field = '';
+	let content ='';
 	
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').removeClass("editable");
+	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseDownload').removeClass("disabled");
+	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseConvert').addClass("disabled");
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseParse').removeClass("disabled");
 	
-	if(rex.exercises[exerciseID].name !== null) {	
-		const field = 'exerciseName';
-		const content = '<span class="exerciseNameText" contenteditable="' + editable + '" spellcheck="false">' + rex.exercises[exerciseID].name + '</span>';
-		
-		setExerciseFieldFromObject(field, content);
+	// name
+	field = 'exerciseName';
+	content = rex.exercises[exerciseID].name === null ? '' : rex.exercises[exerciseID].name;
+	content = '<span class="exerciseNameText" contenteditable="' + editable + '" spellcheck="false">' + content + '</span>';
+	
+	setExerciseFieldFromObject(field, content);
+	
+	// question
+	field = 'question';
+	content = rex.exercises[exerciseID][field] === null ? '' : rex.exercises[exerciseID][field];
+	
+	if(Array.isArray(content)) {
+		content = '<span class="questionText highlightField" contenteditable="' + editable + '" spellcheck="false">' + content.join('') + '</span>';
+	} else {
+		content = '<span class="questionText highlightField" contenteditable="' + editable + '" spellcheck="false">' + content + '</span>';
 	}
 	
-	if(rex.exercises[exerciseID].question !== null) {
-		const field = 'question';
-		let content = '';
+	setExerciseFieldFromObject(field, content);
 		
-		if(Array.isArray(rex.exercises[exerciseID][field])) {
-			content = '<span class="questionText highlightField" contenteditable="' + editable + '" spellcheck="false">' + rex.exercises[exerciseID][field].join('') + '</span>';
-		} else {
-			content = '<span class="questionText highlightField" contenteditable="' + editable + '" spellcheck="false">' + rex.exercises[exerciseID][field] + '</span>';
-		}
-		
-		setExerciseFieldFromObject(field, content);
-	}
+	// points
+	field = 'points';
+	content = rex.exercises[exerciseID][field] === null ? '' : rex.exercises[exerciseID][field];
+	content = '<span class="points highlightField" contenteditable="' + editable + '" spellcheck="false">' + content + '</span>';
 	
-	if(editable) {
-		const field = 'figure';
-		
-		const imgContet = rex.exercises[exerciseID].figure !== null ? '<div class="exerciseFigureItem"><span class="exerciseFigureName"><img src="data:image/png;base64, ' + rex.exercises[exerciseID][field][2] + '"/></span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>' : '';
-		
-		const content = '<div id="exerciseFigureFiles_list_items">' + imgContet + '</div>';
-		
-		setExerciseFieldFromObject(field, content);
-	}
+	setExerciseFieldFromObject(field, content);
 	
-	if(rex.exercises[exerciseID].points !== null) {	
-		const field = 'points';
-				
-		const content = '<span class="points highlightField" contenteditable="' + editable + '" spellcheck="false">' + rex.exercises[exerciseID][field] + '</span>';
-		
-		setExerciseFieldFromObject(field, content);
-	}
+	// type
+	field = 'type';
+	content = rex.exercises[exerciseID][field] === null ? 'mchoice' : rex.exercises[exerciseID][field];
+	content = '<span class=\"type highlightField ' + content + (editable ? ' editType' : '') + '\">' + getTypeText(content) + '</span>'
 	
-	if(rex.exercises[exerciseID].type !== null) {
-		const field = 'type';
-		const content = '<span class=\"type highlightField ' + rex.exercises[exerciseID].type + (editable ? ' editType' : '') + '\">' + getTypeText(rex.exercises[exerciseID].type) + '</span>'
-		
-		setExerciseFieldFromObject(field, content);
-	}
-			
-	if(rex.exercises[exerciseID].type === "schoice" || rex.exercises[exerciseID].type === "mchoice" || rex.exercises[exerciseID].editable) {
-		const field = 'answers';
-		const zip = rex.exercises[exerciseID].solution.map((x, i) => [x, rex.exercises[exerciseID].choices[i], rex.exercises[exerciseID].solutionNotes[i]]);
-		let content = '<div id="answerContent">' + zip.map(i => '<p>' + (editable ? '<button type="button" class="removeAnswer btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></button>' : '') + '<span class=\"solution ' + (i[0] + 'Solution ') + (editable ? 'editTrueFalse' : '') + '\">' + getTrueFalseText(i[0]) + '</span><span class="answerText choice"><span class="choiceText highlightField" contenteditable="' + editable + '" spellcheck="false">' + i[1] + '</span></span><span class="answerText solutionNote"><span class="solutionNoteText" contenteditable="' + editable + '" spellcheck="false">' + i[2] + '</span></span></p>').join('') + '</div>';
+	setExerciseFieldFromObject(field, content);
+	
+	// answers
+	field = 'answers';
+	const zip = rex.exercises[exerciseID].solution.map((x, i) => [x, rex.exercises[exerciseID].choices[i], rex.exercises[exerciseID].solutionNotes[i]]);
+	content = '<div id="answerContent">' + zip.map(i => '<p>' + (editable ? '<button type="button" class="removeAnswer btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></button>' : '') + '<span class=\"solution ' + (i[0] + 'Solution ') + (editable ? 'editTrueFalse' : '') + '\">' + getTrueFalseText(i[0]) + '</span><span class="answerText choice"><span class="choiceText highlightField" contenteditable="' + editable + '" spellcheck="false">' + i[1] + '</span></span><span class="answerText solutionNote"><span class="solutionNoteText" contenteditable="' + editable + '" spellcheck="false">' + i[2] + '</span></span></p>').join('') + '</div>';
 
-		if( rex.exercises[exerciseID].editable ) {
-			content = '<button id="addNewAnswer" type="button" class="btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-plus"></i></span><span class="textButton"><span lang="de">Neue Antwortmöglichkeit</span><span lang="en">New Answer</span></span></button>' + content;
-		}
-		
-		setExerciseFieldFromObject(field, content);
+	if( rex.exercises[exerciseID].editable ) {
+		content = '<button id="addNewAnswer" type="button" class="btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-plus"></i></span><span class="textButton"><span lang="de">Neue Antwortmöglichkeit</span><span lang="en">New Answer</span></span></button>' + content;
 	}
 	
-	if(rex.exercises[exerciseID].examHistory !== null) {
-		const field = 'examHistory';
-		const content = rex.exercises[exerciseID][field].map(i => '<span>' + i + '</span>').join('');
-		
-		setExerciseFieldFromObject(field, content);
-	}
+	setExerciseFieldFromObject(field, content);
 	
-	if(rex.exercises[exerciseID].authoredBy !== null) {
-		const field = 'authoredBy';
-		const content = rex.exercises[exerciseID][field].map(i => '<span>' + i + '</span>').join('');
-		
-		setExerciseFieldFromObject(field, content);
-	}
+	// exam history
+	field = 'examHistory';
+	content = rex.exercises[exerciseID][field] === null ? [''] : rex.exercises[exerciseID][field];
+	content = content.map(i => '<span>' + i + '</span>').join('');
 	
-	if(rex.exercises[exerciseID].topic !== null) {
-		const field = 'topic'
-		const content = '<span class="topicText" contenteditable="' + editable + '" spellcheck="false">' + rex.exercises[exerciseID][field] + '</span>';
-		
-		setExerciseFieldFromObject(field, content);
-	}
+	setExerciseFieldFromObject(field, content, visible = !editable);
+
+	// authored by
+	field = 'authoredBy';
+	content = rex.exercises[exerciseID][field] === null ? [''] : rex.exercises[exerciseID][field];
+	content = content.map(i => '<span>' + i + '</span>').join('');
 	
-	if(rex.exercises[exerciseID].section !== null) {
-		const field = 'section';
-		const content = '<span class="sectionText" contenteditable="' + editable + '" spellcheck="false">' + rex.exercises[exerciseID][field] + '</span>';
-		
-		setExerciseFieldFromObject(field, content);
-	}
+	setExerciseFieldFromObject(field, content, visible = !editable);
+
+	// topic
+	field = 'topic'
+	content = rex.exercises[exerciseID][field] === null ? '' : rex.exercises[exerciseID][field];
+	content = '<span class="topicText" contenteditable="' + editable + '" spellcheck="false">' + content + '</span>';
 	
-	if(rex.exercises[exerciseID].tags !== null) {
-		const field = 'tags';
-		const content = rex.exercises[exerciseID][field].map(i => '<span>' + i + '</span>').join('');
-		
-		setExerciseFieldFromObject(field, content);
-	}
+	setExerciseFieldFromObject(field, content);
+	
+	// section
+	field = 'section';
+	content = rex.exercises[exerciseID][field] === null ? '' : rex.exercises[exerciseID][field];
+	content = '<span class="sectionText" contenteditable="' + editable + '" spellcheck="false">' + content + '</span>';
+
+	setExerciseFieldFromObject(field, content);
+	
+	// tags
+	field = 'tags';
+	content = rex.exercises[exerciseID][field] === null ? [''] : rex.exercises[exerciseID][field];
+	content = content.map(i => '<span>' + i + '</span>').join('');
+	
+	setExerciseFieldFromObject(field, content, visible = !editable);
 	
 	if(editable) {
+		// figure
+		field = 'figure';
+		
+		const imgContet = rex.exercises[exerciseID].figure === null ? '' : '<div class="exerciseFigureItem"><span class="exerciseFigureName"><img src="data:image/png;base64, ' + rex.exercises[exerciseID][field][2] + '"/></span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>';
+		
+		content = '<div id="exerciseFigureFiles_list_items">' + imgContet + '</div>';
+		
+		setExerciseFieldFromObject(field, content);
+		
+		// highlight as editable
 		$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').addClass("editable");
 		$('#exercise_info').addClass("editableExercise");
+	} else {
+		$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseConvert').removeClass("disabled");
 	}
 		
 	$('.exerciseItem.active').removeClass('active');
@@ -1643,26 +1651,61 @@ function loadExerciseFromObject(exerciseID) {
 	f_langDeEn();
 }
 
-function setSimpleExerciseFileContents(exerciseID){
+function setSimpleExerciseFileContents(exerciseID, convertFromComplex=false){
 	let fileText = rnwTemplate;
 			
 	fileText = fileText.replace("?rnwTemplate_type", rex.exercises[exerciseID].type);
-	fileText = fileText.replace("?rnwTemplate_question", '"' + rex.exercises[exerciseID].question_raw.replaceAll('\\', '\\\\') + '"');
-	fileText = fileText.replace("?rnwTemplate_choices", 'c(' + rex.exercises[exerciseID].choices_raw.map(x=>'"' + x.replaceAll('\\', '\\\\') + '"').join(',') + ')');
 	fileText = fileText.replace("?rnwTemplate_solutions", 'c(' + rex.exercises[exerciseID].solution.map(x=>x?"T":"F").join(',') + ')');	
-	fileText = fileText.replace("?rnwTemplate_solutionNotes", 'c(' + rex.exercises[exerciseID].solutionNotes_raw.map((x, i) => '"' + x.replace(/[01]. */g, '') + '"').join(',') + ')');
-	fileText = fileText.replace("?rnwTemplate_points", rex.exercises[exerciseID].points);
-	fileText = fileText.replace("?rnwTemplate_topic", rex.exercises[exerciseID].topic);
+	fileText = fileText.replace("?rnwTemplate_points", isNaN(parseInt(rex.exercises[exerciseID].points)) ? 1 : rex.exercises[exerciseID].points);
+	fileText = fileText.replace("?rnwTemplate_topic", rex.exercises[exerciseID].topic === null ? "" : rex.exercises[exerciseID].topic);
 	fileText = fileText.replace("?rnwTemplate_section", rex.exercises[exerciseID].section === null ? "" : rex.exercises[exerciseID].section);
-	fileText = fileText.replace("?rnwTemplate_tags", rex.exercises[exerciseID].tags === null ? "" : rex.exercises[exerciseID].tags);
-	fileText = fileText.replace("?rnwTemplate_figure", rex.exercises[exerciseID].figure !== null ? 'c(' + rex.exercises[exerciseID].figure.map(x=>'"' + x + '"').join(',') + ')' : '""');
+	fileText = fileText.replace("?rnwTemplate_examHistory", rex.exercises[exerciseID].examHistory === null ? "" : rex.exercises[exerciseID].examHistory.join('|'));
+	fileText = fileText.replace("?rnwTemplate_authoredBy", rex.exercises[exerciseID].authoredBy === null ? "" : rex.exercises[exerciseID].authoredBy.join('|'));
+	fileText = fileText.replace("?rnwTemplate_tags", rex.exercises[exerciseID].tags === null ? "" : rex.exercises[exerciseID].tags.join('|'));
+	fileText = fileText.replace("?rnwTemplate_figure", rex.exercises[exerciseID].figure == null ? '""' : 'c(' + rex.exercises[exerciseID].figure.map(x=>'"' + x + '"').join(',') + ')');
+	
+	if(convertFromComplex) {
+		function sanitizeComplexFieldValue(content){
+			if( Array.isArray(content) )
+				content = content.join('')
+			
+			content = '<span>' + content + '</span>';
+			content = $(content);
+			
+			content.contents().each(function() {
+				if(this.nodeType === Node.COMMENT_NODE) {
+					$(this).remove();
+				}
+			});
+			
+			content = content.get(0);
+			content = contenteditable_getPlain(content);
+			content = contentTexSanitize(content);
+			content = content.replaceAll('\\', '\\\\');
+			
+			return content;
+		}
+		
+		question = sanitizeComplexFieldValue(rex.exercises[exerciseID].question);
+		choices = rex.exercises[exerciseID].choices.map(x=> sanitizeComplexFieldValue(x));
+		solutionNotes = rex.exercises[exerciseID].solutionNotes.map(x=> sanitizeComplexFieldValue(x));
+		
+		fileText = fileText.replace("?rnwTemplate_question", '"' + question + '"');
+		fileText = fileText.replace("?rnwTemplate_choices", 'c(' + choices.map(x=>'"' + x + '"').join(',') + ')');
+		fileText = fileText.replace("?rnwTemplate_solutionNotes", 'c(' + solutionNotes.map(x => '"' + x.replace(/[01]. */g, '') + '"').join(',') + ')');
+	} else {
+		fileText = fileText.replace("?rnwTemplate_question", '"' + rex.exercises[exerciseID].question_raw.replaceAll('\\', '\\\\') + '"');
+		fileText = fileText.replace("?rnwTemplate_choices", 'c(' + rex.exercises[exerciseID].choices_raw.map(x=>'"' + x.replaceAll('\\', '\\\\') + '"').join(',') + ')');
+		fileText = fileText.replace("?rnwTemplate_solutionNotes", 'c(' + rex.exercises[exerciseID].solutionNotes_raw.map((x, i) => '"' + x.replace(/[01]. */g, '') + '"').join(',') + ')');
+	}
 	
 	fileText = fileText.replaceAll("\n", "\r\n");
 
 	rex.exercises[exerciseID].file = fileText;
+	rex.exercises[exerciseID].ext = "rnw";
 }
 
-function setExerciseFieldFromObject(field, content) {
+function setExerciseFieldFromObject(field, content, visible=true) {
 	if(field == 'figure') {
 		$('#exerciseFigureFiles_list_items').empty();
 		$('#exerciseFigureFiles_list_items').append(content);
@@ -1670,9 +1713,11 @@ function setExerciseFieldFromObject(field, content) {
 		$('#' + field).html(content);
 	}
 			
-	$('#' + field + '-info').show();
-	$('#' + field).show();
-	if($('label[for="'+ field +'"]').length > 0) $('label[for="'+ field +'"]').show();
+	if (visible) {
+		$('#' + field + '-info').show();
+		$('#' + field).show();
+		if($('label[for="'+ field +'"]').length > 0) $('label[for="'+ field +'"]').show();
+	}
 }
 
 function addExercise() {
@@ -1682,24 +1727,24 @@ function addExercise() {
 
 function removeExercise(exerciseID) {
 	confirmDialog('Aufgabe "' + rex.exercises[exerciseID].name + '" löschen?', 'Delete exercises "' + rex.exercises[exerciseID].name + '" ?', 'Ja', 'Yes', '<i class="fa-solid fa-check"></i>', 'Nein', 'No', '<i class="fa-solid fa-xmark"></i>',
-		function(remove) {
-			if(!remove)
-				return;
-			
-			rex.exercises.splice(exerciseID, 1);
-			exercises = exercises - 1;
-			
-			$('.exerciseItem').eq(exerciseID).remove();
-					
-			resetOutputFields();
-					
-			if($('.exerciseItem:not(.filtered)').length > 0) {
-				$('.exerciseItem.active:not(.filtered)').removeClass('active');
-				$('.exerciseItem:not(.filtered)').eq(Math.min(exerciseID, $('.exerciseItem:not(.filtered)').length - 1)).addClass('active');
-				viewExercise($('.exerciseItem.active:not(.filtered)').first().index('.exerciseItem'));
-			}
-			
-			examExercisesSummary();
+	function(remove) {
+		if(!remove)
+			return;
+		
+		rex.exercises.splice(exerciseID, 1);
+		exercises = exercises - 1;
+		
+		$('.exerciseItem').eq(exerciseID).remove();
+				
+		resetOutputFields();
+				
+		if($('.exerciseItem:not(.filtered)').length > 0) {
+			$('.exerciseItem.active:not(.filtered)').removeClass('active');
+			$('.exerciseItem:not(.filtered)').eq(Math.min(exerciseID, $('.exerciseItem:not(.filtered)').length - 1)).addClass('active');
+			viewExercise($('.exerciseItem.active:not(.filtered)').first().index('.exerciseItem'));
+		}
+		
+		examExercisesSummary();
 	}, exerciseID);	
 }
 
@@ -1809,6 +1854,21 @@ $('#exercise_list_items').on('change', '.exerciseBlock input', function(e) {
 	examExercisesSummary();
 });
 
+$('#exercise_list_items').on('click', '.exerciseDownload', function(e) {
+	e.preventDefault();
+	e.stopPropagation();
+	
+	exerciseDownload($(this).closest('.exerciseItem').index('.exerciseItem'));
+	$("#downloadExercise")[0].click();
+});
+
+$('#exercise_list_items').on('click', '.exerciseConvert', function(e) {
+	e.preventDefault();
+	e.stopPropagation();
+	
+	exerciseConvert($(this).closest('.exerciseItem').index('.exerciseItem'), true);
+});
+
 $('#exercise_list_items').on('click', '.exerciseParse', function(e) {
 	e.preventDefault();
 	e.stopPropagation();
@@ -1909,6 +1969,28 @@ function addExerciseFigureFile(file) {
 	}
 }
 
+function exerciseDownload(exerciseID) {	
+	if(rex.exercises[exerciseID].editable)
+		setSimpleExerciseFileContents(exerciseID);
+	
+	const exerciseName = rex.exercises[exerciseID].name;
+	const exerciseCode = rex.exercises[exerciseID].file;
+	const exerciseExt = rex.exercises[exerciseID].ext;
+			
+	Shiny.onInputChange("exerciseToDownload", {exerciseName:exerciseName, exerciseCode: exerciseCode, exerciseExt: exerciseExt}, {priority: 'event'});	
+}
+
+function exerciseConvert(exerciseID){
+	confirmDialog('Beim Konvertieren in eine bearbeitbare Aufgabe wird nur der aktuell geladene Text übernommen.<br/>Alle weiteren Details gehen verloren.<br/><br/>Möchten Sie die Aufgabe wirklich konvertieren?', 'When converting to an editable exercise, only the currently loaded text is transferred.<br/>All other details are lost.<br/><br/>Do you really want to convert the exercise?', 'Ja', 'Yes', '<i class="fa-solid fa-check"></i>', 'Nein', 'No', '<i class="fa-solid fa-xmark"></i>',
+	function(remove) {
+		if(!remove)
+			return;
+		
+		setSimpleExerciseFileContents(exerciseID, true);
+		viewExercise(exerciseID, true);
+	});	
+}
+
 function removeExerciseFigure(element) {
 	const exerciseID = getID();
 	
@@ -1938,6 +2020,11 @@ Shiny.addCustomMessageHandler('setExerciseSeed', function(seed) {
 Shiny.addCustomMessageHandler('setExerciseExamHistory', function(jsonData) {
 	const examHistory = JSON.parse(jsonData);
 	rex.exercises[getID()].examHistory = examHistory;
+});
+
+Shiny.addCustomMessageHandler('setExerciseAuthoredBy', function(jsonData) {
+	const authoredBy = JSON.parse(jsonData);
+	rex.exercises[getID()].authoredBy = authoredBy;
 });
 
 Shiny.addCustomMessageHandler('setExercisePoints', function(exercisePoints) {

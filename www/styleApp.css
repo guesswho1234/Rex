@@ -114,6 +114,7 @@ main {
 #confirmdialogOverlayContentBox {
 	display: block;
 	background: white;
+	text-align: center;
 }
 
 #confirmdialogOverlayContentButtons {
@@ -189,6 +190,7 @@ main {
 	top: 100px;
 }
 
+#exerciseDownloadAll, 
 #exerciseUpload {
 	font-weight: unset;
 }
@@ -207,7 +209,6 @@ body.iconButtonMode .iconButton {
 
 body.textButtonMode .textButton {
 	display: block !important;
-	text-wrap: nowrap;
 }
 
 #texActiveContainer i {
@@ -523,36 +524,50 @@ main > * {
 	height: auto;
 }
 
+#exercise_list {
+	min-width: 500px;
+}
+
 .listButton {
 	margin: 0.5rem;
-	padding: 0.5rem;
 	cursor: pointer;
+}
+
+#searchExercises,
+.listButton {
 	background: var(---background);
 	border: 2px solid var(---background);
 	border-radius: 5px;
+	white-space: nowrap;
+	padding: 0.5rem;
 }
 
-#downloadExercises {
-	height: 26px;
-	display: flex;
-	place-items: center;
-	border: none;
-	margin: 0;
-	padding: 0;
-	background: var(---transparent);
+#downloadExercises, 
+#downloadExercise {
+	display: none;
 }
 
 #searchExercises input {
 	width: 100%;
 }
 
-.listButton:hover {
+.listButton:hover,
+#searchExercises:hover {
 	border: 2px solid var(---main);
+}
+
+#exerciseListNav {
+	background: var(---background3);
+}
+
+#exerciseListSearch {
+	padding: 0.5rem;
+	padding-top: 0;
 }
 
 .listButtons {
 	display: flex;	
-	background: var(---background3);
+	place-content: space-between;
 }
 
 .list_butttonIcon {
@@ -639,9 +654,9 @@ main > * {
 
 .exerciseSequence {
 	display: grid;
-    gap: 5px;
 	cursor: pointer;
 	padding: 0 !important;
+	grid-template-rows: 1fr;
 }
 
 .sequenceButton {
@@ -723,6 +738,8 @@ main > * {
 	filter: opacity(0.2);
 }
 
+.exerciseDownload,
+.exerciseConvert,
 .exerciseParse,
 .examExercise,
 .exerciseRemove {
@@ -814,7 +831,7 @@ main > * {
 	display: none !important;
 }
 
-#exercise_info label:not(#exerciseDownload) {
+#exercise_info label {
 	font-weight: bold;
 	height: 25px;
 }
@@ -841,8 +858,9 @@ main > * {
 #examHistory span,
 #authoredBy span,
 #checkedBy span,
+#type > span,
+#points span,
 #exerciseName > span,
-#difficulty span,
 #topic span,
 #section span,
 #tags span,
@@ -860,7 +878,6 @@ main > * {
 #authoredBy span,
 #checkedBy span,
 #exerciseName > span,
-#difficulty span,
 #topic span,
 #section span,
 #tags span,
@@ -868,6 +885,12 @@ main > * {
 	background: var(---transparent);
 	color: var(---main);
 	font-style: italic;
+}
+
+#examHistory,
+#authoredBy,
+#tags {
+	display: flex;
 }
 
 #exercise_info .val {
@@ -896,7 +919,6 @@ main > * {
 	border: 2px solid var(---transparent);
 	border-radius: 3px;
 	padding: 2px;
-	width: 60px;
 	text-align: center;
 }
 
@@ -964,11 +986,6 @@ main > * {
 	border-color: var(---transparent);
 	background-color: var(---highlight_values) !important;
 	color: var(---main);
-}
-
-#exercise_info_buttons {
-	display: flex;
-	gap: 10px;
 }
 
 /* --------------------------------------------------------------
@@ -1529,11 +1546,13 @@ figcaption {
 /* --------------------------------------------------------------
  HOTKEY MODE
 -------------------------------------------------------------- */
-#exerciseDownload, 
+.exerciseDownload, 
+.exerciseConvert,
 .listButton,
 .sequenceButton,
 .exerciseButton,
-.inspectScanButton {
+.inspectScanButton,
+#searchExercises {
 	position: relative;
 }
 

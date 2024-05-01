@@ -1,10 +1,9 @@
 var rnwTemplate = `<<echo=FALSE, results=hide>>=
 @
 %% \\exextra[editable,numeric]{1}
-%% \\exextra[examHistory,character]{}
-%% \\exextra[authoredBy,character]{}
+%% \\exextra[examHistory,character]{?rnwTemplate_examHistory}
+%% \\exextra[authoredBy,character]{?rnwTemplate_authoredBy}
 %% \\exextra[topic,character]{?rnwTemplate_topic}
-%% \\exextra[tags,character]{}
 <<echo=FALSE, results=tex>>=
 rnwTemplate_question=?rnwTemplate_question;
 rnwTemplate_choices=?rnwTemplate_choices;

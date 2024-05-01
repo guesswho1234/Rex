@@ -158,12 +158,12 @@ source("./source/tryCatch.R")
       tags = c()
       
       if(length(html$exam1$exercise1$metainfo$examHistory) > 0) {
-        examHistory = trimws(strsplit(html$exam1$exercise1$metainfo$examHistory, ",")[[1]], "both")
+        examHistory = trimws(html$exam1$exercise1$metainfo$examHistory, "both")
         examHistory = rjs_vectorToJsonStringArray(examHistory)
       }
       
       if(length(html$exam1$exercise1$metainfo$authoredBy) > 0) {
-        authoredBy = trimws(strsplit(html$exam1$exercise1$metainfo$authoredBy, ",")[[1]], "both") 
+        authoredBy = trimws(html$exam1$exercise1$metainfo$authoredBy, "both")
         authoredBy = rjs_vectorToJsonStringArray(authoredBy) 
       }
       
@@ -1063,7 +1063,6 @@ server = function(input, output, session) {
       textInput_seedValueExercises = textInput("seedValueExercises", label = NULL, value = initSeed),
       button_downloadExercises = myDownloadButton(id='downloadExercises', deText="Alle speichern", enText="Save all"),
       button_downloadExercise = myDownloadButton(id='downloadExercise'),
-      
       exerciseFigureFileImport = myFileImport("exerciseFigure", "exerciseFigure"),
     
       # EXAM CREATE
