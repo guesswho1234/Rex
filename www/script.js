@@ -1540,105 +1540,104 @@ function loadExerciseFromObject(exerciseID) {
 	resetOutputFields();
 	
 	const editable = rex.exercises[exerciseID].editable; 
+	let field = '';
+	let content ='';
 	
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').removeClass("editable");
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseDownload').removeClass("disabled");
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseConvert').addClass("disabled");
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseParse').removeClass("disabled");
 	
-	if(rex.exercises[exerciseID].name !== null) {	
-		const field = 'exerciseName';
-		const content = '<span class="exerciseNameText" contenteditable="' + editable + '" spellcheck="false">' + rex.exercises[exerciseID].name + '</span>';
-		
-		setExerciseFieldFromObject(field, content);
+	// name
+	field = 'exerciseName';
+	content = rex.exercises[exerciseID].name === null ? '' : rex.exercises[exerciseID].name;
+	content = '<span class="exerciseNameText" contenteditable="' + editable + '" spellcheck="false">' + content + '</span>';
+	
+	setExerciseFieldFromObject(field, content);
+	
+	// question
+	field = 'question';
+	content = rex.exercises[exerciseID][field] === null ? '' : rex.exercises[exerciseID][field];
+	
+	if(Array.isArray(content)) {
+		content = '<span class="questionText highlightField" contenteditable="' + editable + '" spellcheck="false">' + content.join('') + '</span>';
+	} else {
+		content = '<span class="questionText highlightField" contenteditable="' + editable + '" spellcheck="false">' + content + '</span>';
 	}
 	
-	if(rex.exercises[exerciseID].question !== null) {
-		const field = 'question';
-		let content = '';
+	setExerciseFieldFromObject(field, content);
 		
-		if(Array.isArray(rex.exercises[exerciseID][field])) {
-			content = '<span class="questionText highlightField" contenteditable="' + editable + '" spellcheck="false">' + rex.exercises[exerciseID][field].join('') + '</span>';
-		} else {
-			content = '<span class="questionText highlightField" contenteditable="' + editable + '" spellcheck="false">' + rex.exercises[exerciseID][field] + '</span>';
-		}
-		
-		setExerciseFieldFromObject(field, content);
-	}
+	// points
+	field = 'points';
+	content = rex.exercises[exerciseID][field] === null ? '' : rex.exercises[exerciseID][field];
+	content = '<span class="points highlightField" contenteditable="' + editable + '" spellcheck="false">' + content + '</span>';
 	
-	if(editable) {
-		const field = 'figure';
-		
-		const imgContet = rex.exercises[exerciseID].figure !== null ? '<div class="exerciseFigureItem"><span class="exerciseFigureName"><img src="data:image/png;base64, ' + rex.exercises[exerciseID][field][2] + '"/></span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>' : '';
-		
-		const content = '<div id="exerciseFigureFiles_list_items">' + imgContet + '</div>';
-		
-		setExerciseFieldFromObject(field, content);
-	}
+	setExerciseFieldFromObject(field, content);
 	
-	if(rex.exercises[exerciseID].points !== null) {	
-		const field = 'points';
-				
-		const content = '<span class="points highlightField" contenteditable="' + editable + '" spellcheck="false">' + rex.exercises[exerciseID][field] + '</span>';
-		
-		setExerciseFieldFromObject(field, content);
-	}
+	// type
+	field = 'type';
+	content = rex.exercises[exerciseID][field] === null ? 'mchoice' : rex.exercises[exerciseID][field];
+	content = '<span class=\"type highlightField ' + content + (editable ? ' editType' : '') + '\">' + getTypeText(content) + '</span>'
 	
-	if(rex.exercises[exerciseID].type !== null) {
-		const field = 'type';
-		const content = '<span class=\"type highlightField ' + rex.exercises[exerciseID].type + (editable ? ' editType' : '') + '\">' + getTypeText(rex.exercises[exerciseID].type) + '</span>'
-		
-		setExerciseFieldFromObject(field, content);
-	}
-			
-	if(rex.exercises[exerciseID].type === "schoice" || rex.exercises[exerciseID].type === "mchoice" || rex.exercises[exerciseID].editable) {
-		const field = 'answers';
-		const zip = rex.exercises[exerciseID].solution.map((x, i) => [x, rex.exercises[exerciseID].choices[i], rex.exercises[exerciseID].solutionNotes[i]]);
-		let content = '<div id="answerContent">' + zip.map(i => '<p>' + (editable ? '<button type="button" class="removeAnswer btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></button>' : '') + '<span class=\"solution ' + (i[0] + 'Solution ') + (editable ? 'editTrueFalse' : '') + '\">' + getTrueFalseText(i[0]) + '</span><span class="answerText choice"><span class="choiceText highlightField" contenteditable="' + editable + '" spellcheck="false">' + i[1] + '</span></span><span class="answerText solutionNote"><span class="solutionNoteText" contenteditable="' + editable + '" spellcheck="false">' + i[2] + '</span></span></p>').join('') + '</div>';
+	setExerciseFieldFromObject(field, content);
+	
+	// answers
+	field = 'answers';
+	const zip = rex.exercises[exerciseID].solution.map((x, i) => [x, rex.exercises[exerciseID].choices[i], rex.exercises[exerciseID].solutionNotes[i]]);
+	content = '<div id="answerContent">' + zip.map(i => '<p>' + (editable ? '<button type="button" class="removeAnswer btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></button>' : '') + '<span class=\"solution ' + (i[0] + 'Solution ') + (editable ? 'editTrueFalse' : '') + '\">' + getTrueFalseText(i[0]) + '</span><span class="answerText choice"><span class="choiceText highlightField" contenteditable="' + editable + '" spellcheck="false">' + i[1] + '</span></span><span class="answerText solutionNote"><span class="solutionNoteText" contenteditable="' + editable + '" spellcheck="false">' + i[2] + '</span></span></p>').join('') + '</div>';
 
-		if( rex.exercises[exerciseID].editable ) {
-			content = '<button id="addNewAnswer" type="button" class="btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-plus"></i></span><span class="textButton"><span lang="de">Neue Antwortmöglichkeit</span><span lang="en">New Answer</span></span></button>' + content;
-		}
-		
-		setExerciseFieldFromObject(field, content);
+	if( rex.exercises[exerciseID].editable ) {
+		content = '<button id="addNewAnswer" type="button" class="btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-plus"></i></span><span class="textButton"><span lang="de">Neue Antwortmöglichkeit</span><span lang="en">New Answer</span></span></button>' + content;
 	}
 	
-	if(rex.exercises[exerciseID].examHistory !== null) {
-		const field = 'examHistory';
-		const content = rex.exercises[exerciseID][field].map(i => '<span>' + i + '</span>').join('');
-		
-		setExerciseFieldFromObject(field, content);
-	}
+	setExerciseFieldFromObject(field, content);
 	
-	if(rex.exercises[exerciseID].authoredBy !== null) {
-		const field = 'authoredBy';
-		const content = rex.exercises[exerciseID][field].map(i => '<span>' + i + '</span>').join('');
-		
-		setExerciseFieldFromObject(field, content);
-	}
+	// exam history
+	field = 'examHistory';
+	content = rex.exercises[exerciseID][field] === null ? [''] : rex.exercises[exerciseID][field];
+	content = content.map(i => '<span>' + i + '</span>').join('');
 	
-	if(rex.exercises[exerciseID].topic !== null) {
-		const field = 'topic'
-		const content = '<span class="topicText" contenteditable="' + editable + '" spellcheck="false">' + rex.exercises[exerciseID][field] + '</span>';
-		
-		setExerciseFieldFromObject(field, content);
-	}
+	setExerciseFieldFromObject(field, content, visible = !editable);
+
+	// authored by
+	field = 'authoredBy';
+	content = rex.exercises[exerciseID][field] === null ? [''] : rex.exercises[exerciseID][field];
+	content = content.map(i => '<span>' + i + '</span>').join('');
 	
-	if(rex.exercises[exerciseID].section !== null) {
-		const field = 'section';
-		const content = '<span class="sectionText" contenteditable="' + editable + '" spellcheck="false">' + rex.exercises[exerciseID][field] + '</span>';
-		
-		setExerciseFieldFromObject(field, content);
-	}
+	setExerciseFieldFromObject(field, content, visible = !editable);
+
+	// topic
+	field = 'topic'
+	content = rex.exercises[exerciseID][field] === null ? '' : rex.exercises[exerciseID][field];
+	content = '<span class="topicText" contenteditable="' + editable + '" spellcheck="false">' + content + '</span>';
 	
-	if(rex.exercises[exerciseID].tags !== null) {
-		const field = 'tags';
-		const content = rex.exercises[exerciseID][field].map(i => '<span>' + i + '</span>').join('');
-		
-		setExerciseFieldFromObject(field, content);
-	}
+	setExerciseFieldFromObject(field, content);
+	
+	// section
+	field = 'section';
+	content = rex.exercises[exerciseID][field] === null ? '' : rex.exercises[exerciseID][field];
+	content = '<span class="sectionText" contenteditable="' + editable + '" spellcheck="false">' + content + '</span>';
+
+	setExerciseFieldFromObject(field, content);
+	
+	// tags
+	field = 'tags';
+	content = rex.exercises[exerciseID][field] === null ? [''] : rex.exercises[exerciseID][field];
+	content = content.map(i => '<span>' + i + '</span>').join('');
+	
+	setExerciseFieldFromObject(field, content, visible = !editable);
 	
 	if(editable) {
+		// figure
+		field = 'figure';
+		
+		const imgContet = rex.exercises[exerciseID].figure === null ? '' : '<div class="exerciseFigureItem"><span class="exerciseFigureName"><img src="data:image/png;base64, ' + rex.exercises[exerciseID][field][2] + '"/></span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>';
+		
+		content = '<div id="exerciseFigureFiles_list_items">' + imgContet + '</div>';
+		
+		setExerciseFieldFromObject(field, content);
+		
+		// highlight as editable
 		$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').addClass("editable");
 		$('#exercise_info').addClass("editableExercise");
 	} else {
@@ -1706,7 +1705,7 @@ function setSimpleExerciseFileContents(exerciseID, convertFromComplex=false){
 	rex.exercises[exerciseID].ext = "rnw";
 }
 
-function setExerciseFieldFromObject(field, content) {
+function setExerciseFieldFromObject(field, content, visible=true) {
 	if(field == 'figure') {
 		$('#exerciseFigureFiles_list_items').empty();
 		$('#exerciseFigureFiles_list_items').append(content);
@@ -1714,9 +1713,11 @@ function setExerciseFieldFromObject(field, content) {
 		$('#' + field).html(content);
 	}
 			
-	$('#' + field + '-info').show();
-	$('#' + field).show();
-	if($('label[for="'+ field +'"]').length > 0) $('label[for="'+ field +'"]').show();
+	if (visible) {
+		$('#' + field + '-info').show();
+		$('#' + field).show();
+		if($('label[for="'+ field +'"]').length > 0) $('label[for="'+ field +'"]').show();
+	}
 }
 
 function addExercise() {
