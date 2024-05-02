@@ -855,13 +855,10 @@ main > * {
 }
 
 #exercise_info.editableExercise .highlightField,
-#examHistory span,
-#authoredBy span,
 #checkedBy span,
 #type > span,
 #points span,
 #exerciseName > span,
-#topic span,
 #section span,
 #tags span,
 .solutionNote > span {
@@ -874,11 +871,8 @@ main > * {
 	min-height: 28px
 }
 
-#examHistory span,
-#authoredBy span,
 #checkedBy span,
 #exerciseName > span,
-#topic span,
 #section span,
 #tags span,
 .solutionNote > span {
@@ -887,8 +881,6 @@ main > * {
 	font-style: italic;
 }
 
-#examHistory,
-#authoredBy,
 #tags {
 	display: flex;
 }

@@ -153,27 +153,16 @@ source("./source/tryCatch.R")
     session$sendCustomMessage("setExerciseId", id)
     
     if(!is.null(html)) {
-      examHistory = c() 
-      authoredBy = c()
       tags = c()
-      
-      if(length(html$exam1$exercise1$metainfo$examHistory) > 0) {
-        examHistory = trimws(html$exam1$exercise1$metainfo$examHistory, "both")
-        examHistory = rjs_vectorToJsonStringArray(examHistory)
-      }
-      
-      if(length(html$exam1$exercise1$metainfo$authoredBy) > 0) {
-        authoredBy = trimws(html$exam1$exercise1$metainfo$authoredBy, "both")
-        authoredBy = rjs_vectorToJsonStringArray(authoredBy) 
-      }
       
       if(length(html$exam1$exercise1$metainfo$tags) > 0) { 
         tags = trimws(html$exam1$exercise1$metainfo$tags, "both")
         tags = rjs_vectorToJsonStringArray(tags)
       }
+      
+      print(html$exam1$exercise1$metainfo)
 
       points = html$exam1$exercise1$metainfo$points
-      topic = html$exam1$exercise1$metainfo$topic
       type = html$exam1$exercise1$metainfo$type
       question = html$exam1$exercise1$question
       question_raw = html$exam1$exercise1$question_raw
@@ -186,10 +175,7 @@ source("./source/tryCatch.R")
       solutionNotes_raw = rjs_vectorToJsonStringArray(html$exam1$exercise1$solutionNotes_raw)
       section = html$exam1$exercise1$metainfo$section
 
-      session$sendCustomMessage("setExerciseExamHistory", examHistory)
-      session$sendCustomMessage("setExerciseAuthoredBy", authoredBy)
       session$sendCustomMessage("setExercisePoints", points)
-      session$sendCustomMessage("setExerciseTopic", topic)
       session$sendCustomMessage("setExerciseType", type)
       session$sendCustomMessage("setExerciseTags", tags)
       session$sendCustomMessage("setExerciseSection", section)
