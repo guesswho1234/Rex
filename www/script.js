@@ -1639,7 +1639,12 @@ function setSimpleExerciseFileContents(exerciseID, convertFromComplex=false){
 			content = '<span>' + content + '</span>';
 			content = $(content);
 			
-			let img = content.find('img').first().attr("src").split(/(data:image\/)(.*)(;base64,)/);
+			let img = content.find('img').first();
+
+			if (img.length === 0)
+				return null;
+			
+			img = img.attr("src").split(/(data:image\/)(.*)(;base64,)/);
 			
 			if( img.length !== 5 || img[2] !== "png")
 				return null;
