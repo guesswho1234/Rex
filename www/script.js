@@ -1151,7 +1151,8 @@ function createExercise(exerciseID, name='exercise',
 						    exam=false, 
 							points=1,
 							tags=null,
-							figure=null){
+							figure=null,
+							exExtra=null){
 	rex.exercises[exerciseID]['file'] = file;
 	rex.exercises[exerciseID]['ext'] = ext;
 	rex.exercises[exerciseID]['name'] = name;
@@ -1173,6 +1174,7 @@ function createExercise(exerciseID, name='exercise',
 	rex.exercises[exerciseID]['block'] = block;
 	rex.exercises[exerciseID]['section'] = section;
 	rex.exercises[exerciseID]['figure'] = figure;
+	rex.exercises[exerciseID]['exExtra'] = exExtra;
 	
 	if( file === null) {
 		setSimpleExerciseFileContents(exerciseID);
@@ -1525,6 +1527,11 @@ function loadExerciseFromObject(exerciseID) {
 	content = '<span class="exerciseNameText" contenteditable="' + editable + '" spellcheck="false">' + content + '</span>';
 	
 	setExerciseFieldFromObject(field, content);
+	
+	// exExtra
+	//todo: add field for each exExtra field
+	//todo: remove these fields in resetfields function
+	
 	
 	// question
 	field = 'question';
@@ -1984,6 +1991,11 @@ Shiny.addCustomMessageHandler('setExerciseId', function(exerciseID) {
 
 Shiny.addCustomMessageHandler('setExerciseSeed', function(seed) {
 	rex.exercises[getID()].seed = seed;
+});
+
+Shiny.addCustomMessageHandler('setExerciseExExtra', function(jsonData) {
+	const exerciseExExtra = JSON.parse(jsonData);
+	rex.exercises[getID()].exExtra = exerciseExExtra;
 });
 
 Shiny.addCustomMessageHandler('setExercisePoints', function(exercisePoints) {
