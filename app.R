@@ -159,8 +159,6 @@ source("./source/tryCatch.R")
         tags = trimws(html$exam1$exercise1$metainfo$tags, "both")
         tags = rjs_vectorToJsonStringArray(tags)
       }
-      
-      print(html$exam1$exercise1$metainfo)
 
       points = html$exam1$exercise1$metainfo$points
       type = html$exam1$exercise1$metainfo$type
