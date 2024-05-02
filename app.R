@@ -55,7 +55,6 @@ source("./source/tryCatch.R")
      out = tryCatch({
       warnings = collectWarnings({
         splitBy = ";\n" # originally it is ";\r\n" but "\r\n" is replaced by "\n"
-        
         # unify line breaks
         exercise$exerciseCode = gsub("\r\n", "\n", exercise$exerciseCode)
         
@@ -109,7 +108,9 @@ source("./source/tryCatch.R")
         
         file = tempfile(fileext = paste0(".", exercise$exerciseExt))
         writeLines(text=exercise$exerciseCode, con=file)
-  
+        
+        exExtra = suppressWarnings(exams::extract_extra(readLines(con=file), markup="latex"))
+
         htmlPreview = exams::exams2html(file, dir = dir, seed = seed, base64 = TRUE)
         
         htmlPreview$exam1$exercise1$question_raw = question_raw
@@ -137,7 +138,7 @@ source("./source/tryCatch.R")
         value = paste0("W1001: ", value)
       }
   
-      return(list(message=list(key=key, value=value), id=exercise$exerciseID, seed=seed, html=htmlPreview, figure=figure))
+      return(list(message=list(key=key, value=value), id=exercise$exerciseID, seed=seed, html=htmlPreview, exExtra=exExtra, figure=figure))
     },
     error = function(e){
       if(!grepl("E\\d{4}", e$message))
@@ -149,7 +150,7 @@ source("./source/tryCatch.R")
     return(out)
   }
   
-  loadExercise = function(session, id, seed, html, figure, message) {
+  loadExercise = function(session, id, seed, html, exExtra, figure, message) {
     session$sendCustomMessage("setExerciseId", id)
     
     if(!is.null(html)) {
@@ -160,6 +161,7 @@ source("./source/tryCatch.R")
         tags = rjs_vectorToJsonStringArray(tags)
       }
 
+      author = html$exam1$exercise1$metainfo$author
       points = html$exam1$exercise1$metainfo$points
       type = html$exam1$exercise1$metainfo$type
       question = html$exam1$exercise1$question
@@ -172,7 +174,15 @@ source("./source/tryCatch.R")
       solutionNotes = rjs_vectorToJsonStringArray(as.character(html$exam1$exercise1$solutionlist))
       solutionNotes_raw = rjs_vectorToJsonStringArray(html$exam1$exercise1$solutionNotes_raw)
       section = html$exam1$exercise1$metainfo$section
+      
+      exExtra = exExtra[names(exExtra)!= "editable"]
+      exExtra = Reduce(c, lapply(names(exExtra), \(x){
+        x = rjs_keyValuePairsToJsonObject(x, rjs_vectorToJsonStringArray(exExtra[[x]]), escapeValues=FALSE)
+      }))
+      exExtra = rjs_vectorToJsonArray(exExtra)
 
+      session$sendCustomMessage("setExerciseAuthor", author)
+      session$sendCustomMessage("setExerciseExExtra", exExtra)
       session$sendCustomMessage("setExercisePoints", points)
       session$sendCustomMessage("setExerciseType", type)
       session$sendCustomMessage("setExerciseTags", tags)
@@ -926,7 +936,7 @@ source("./source/tryCatch.R")
   
   rjs_keyValuePairsToJsonObject = function(keys, values, escapeValues=TRUE){
     if(length(escapeValues) < length(values))
-      escapeValues = rep(TRUE, length(values))
+      escapeValues = rep(escapeValues, length(values))
     
     values = sapply(seq_along(values), \(x){
       if(escapeValues[x]) {
@@ -1194,7 +1204,7 @@ server = function(input, output, session) {
       invalidateLater(millis = 10, session = session)
     } else {
       result = exerciseParsing()$get_result()
-      loadExercise(session, result$id, result$seed, result$html, result$figure, result$message)
+      loadExercise(session, result$id, result$seed, result$html, result$exExtra, result$figure, result$message)
       stopWait(session)
     }
   })

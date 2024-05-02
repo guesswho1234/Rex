@@ -854,6 +854,8 @@ main > * {
 	background: var(---yellow_warning_fade);
 }
 
+#author span,
+#exExtra div > span,
 #exercise_info.editableExercise .highlightField,
 #checkedBy span,
 #type > span,
@@ -871,6 +873,8 @@ main > * {
 	min-height: 28px
 }
 
+#author span,
+#exExtra div > span,
 #checkedBy span,
 #exerciseName > span,
 #section span,
