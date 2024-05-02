@@ -728,26 +728,26 @@ function examExercisesSummary() {
 	if($('.exerciseItem.exam').length == 0) { 
 		$('#s_numberOfExercises').html("");
 		$('#s_totalPoints').html("");
-		$('#s_topicsTable').html("");
+		$('#s_sectionsTable').html("");
 		
 		return;
 	}
 	
 	let numberOfExamExercisesCounter = 0;
 	let totalPoints = 0;
-	let topics = [];
+	let sections = [];
 		
 	rex.exercises.forEach((item, index) => {
 		if(item.exam) {
 			numberOfExamExercisesCounter++;
 			totalPoints += Number(item.points);
-			if (item.topic !== null) topics.push(item.topic);
+			if (item.section !== null) sections.push(item.section);
 		}
 	})
 	
 	$('#s_numberOfExercises').html(itemSingle(numberOfExamExercisesCounter, 'yellowLabelValue'));
 	$('#s_totalPoints').html(itemSingle(totalPoints, 'yellowLabelValue'));
-	$('#s_topicsTable').html(itemTable(topics));
+	$('#s_sectionsTable').html(itemTable(sections));
 }
 
 function itemSingle(item, className) {
@@ -933,18 +933,7 @@ function searchExercises() {
 			})
 			filterExercises(fieldsToFilter, filterBy);
 		}
-				
-		if (input.includes("topic:")) {
-			const fieldsToFilter = rex.exercises.map(exercise => {
-				if( exercise.topic === null) {
-					return "";
-				} 
-				
-				return exercise.topic;
-			})
-			filterExercises(fieldsToFilter, filterBy);
-		}
-				
+								
 		if (input.includes("section:")) {
 			const fieldsToFilter = rex.exercises.map(exercise => {
 				if( exercise.section === null) {
@@ -1100,7 +1089,6 @@ function loadExercise(file, block = 1) {
 const d_exerciseName = 'Name';
 const d_questionText = 'Text';
 const d_choiceText = 'Text';
-const d_topicText = '';
 const d_sectionText = '';
 const d_solution = false;
 const d_solutionNoteText = '';
@@ -1120,7 +1108,6 @@ function newSimpleExercise(file = '', block = 1) {
 					       true,
 						   "mchoice",
 						   block,
-						   d_topicText,
 						   d_sectionText);
 		viewExercise(exerciseID);
 }
@@ -1159,12 +1146,9 @@ function createExercise(exerciseID, name='exercise',
 							editable=false,
 							type=null,
 							block=1,
-							topic=null,
 							section=null,
 							seed=null, 
 						    exam=false, 
-							examHistory=null,
-							authoredBy=null,
 							points=1,
 							tags=null,
 							figure=null){
@@ -1180,10 +1164,7 @@ function createExercise(exerciseID, name='exercise',
 	rex.exercises[exerciseID]['solution'] = solution;
 	rex.exercises[exerciseID]['solutionNotes'] = solutionNotes;
 	rex.exercises[exerciseID]['solutionNotes_raw'] = solutionNotes;
-	rex.exercises[exerciseID]['examHistory'] = examHistory;
-	rex.exercises[exerciseID]['authoredBy'] = authoredBy;
 	rex.exercises[exerciseID]['points'] = points;
-	rex.exercises[exerciseID]['topic'] = topic;
 	rex.exercises[exerciseID]['tags'] = tags;
 	rex.exercises[exerciseID]['type'] = type;
 	rex.exercises[exerciseID]['statusMessage'] = statusMessage;	
@@ -1273,9 +1254,6 @@ function resetOutputFields() {
 				  'figure',
 			      'points',
 			      'answers',
-			      'examHistory',
-			      'authoredBy',
-			      'topic',
 				  'section',
 			      'tags'];
 			  
@@ -1430,14 +1408,7 @@ $('body').on('focus', '[contenteditable]', function() {
 			content = getIntegerInput(0, null, 1, content);
 			rex.exercises[exerciseID].points = content;
 		}
-		
-		if ($this.hasClass('topicText')) {
-			content = contenteditable_getPlain(content);
-			content = contentTextSanitize(content);
-			
-			rex.exercises[exerciseID].topic = content;
-		}
-		
+				
 		if ($this.hasClass('sectionText')) {
 			content = contenteditable_getPlain(content);
 			content = contentSectionSanitize(content);
@@ -1591,28 +1562,7 @@ function loadExerciseFromObject(exerciseID) {
 	}
 	
 	setExerciseFieldFromObject(field, content);
-	
-	// exam history
-	field = 'examHistory';
-	content = rex.exercises[exerciseID][field] === null ? [''] : rex.exercises[exerciseID][field];
-	content = content.map(i => '<span>' + i + '</span>').join('');
-	
-	setExerciseFieldFromObject(field, content, visible = !editable);
-
-	// authored by
-	field = 'authoredBy';
-	content = rex.exercises[exerciseID][field] === null ? [''] : rex.exercises[exerciseID][field];
-	content = content.map(i => '<span>' + i + '</span>').join('');
-	
-	setExerciseFieldFromObject(field, content, visible = !editable);
-
-	// topic
-	field = 'topic'
-	content = rex.exercises[exerciseID][field] === null ? '' : rex.exercises[exerciseID][field];
-	content = '<span class="topicText" contenteditable="' + editable + '" spellcheck="false">' + content + '</span>';
-	
-	setExerciseFieldFromObject(field, content);
-	
+			
 	// section
 	field = 'section';
 	content = rex.exercises[exerciseID][field] === null ? '' : rex.exercises[exerciseID][field];
@@ -1657,12 +1607,8 @@ function setSimpleExerciseFileContents(exerciseID, convertFromComplex=false){
 	fileText = fileText.replace("?rnwTemplate_type", rex.exercises[exerciseID].type);
 	fileText = fileText.replace("?rnwTemplate_solutions", 'c(' + rex.exercises[exerciseID].solution.map(x=>x?"T":"F").join(',') + ')');	
 	fileText = fileText.replace("?rnwTemplate_points", isNaN(parseInt(rex.exercises[exerciseID].points)) ? 1 : rex.exercises[exerciseID].points);
-	fileText = fileText.replace("?rnwTemplate_topic", rex.exercises[exerciseID].topic === null ? "" : rex.exercises[exerciseID].topic);
 	fileText = fileText.replace("?rnwTemplate_section", rex.exercises[exerciseID].section === null ? "" : rex.exercises[exerciseID].section);
-	fileText = fileText.replace("?rnwTemplate_examHistory", rex.exercises[exerciseID].examHistory === null ? "" : rex.exercises[exerciseID].examHistory.join('|'));
-	fileText = fileText.replace("?rnwTemplate_authoredBy", rex.exercises[exerciseID].authoredBy === null ? "" : rex.exercises[exerciseID].authoredBy.join('|'));
 	fileText = fileText.replace("?rnwTemplate_tags", rex.exercises[exerciseID].tags === null ? "" : rex.exercises[exerciseID].tags.join('|'));
-	fileText = fileText.replace("?rnwTemplate_figure", rex.exercises[exerciseID].figure == null ? '""' : 'c(' + rex.exercises[exerciseID].figure.map(x=>'"' + x + '"').join(',') + ')');
 	
 	if(convertFromComplex) {
 		function sanitizeComplexFieldValue(content){
@@ -1671,7 +1617,7 @@ function setSimpleExerciseFileContents(exerciseID, convertFromComplex=false){
 			
 			content = '<span>' + content + '</span>';
 			content = $(content);
-			
+						
 			content.contents().each(function() {
 				if(this.nodeType === Node.COMMENT_NODE) {
 					$(this).remove();
@@ -1682,18 +1628,36 @@ function setSimpleExerciseFileContents(exerciseID, convertFromComplex=false){
 			content = contenteditable_getPlain(content);
 			content = contentTexSanitize(content);
 			content = content.replaceAll('\\', '\\\\');
-			
+
 			return content;
 		}
 		
+		function extractFirstImg(content){
+			if( Array.isArray(content) )
+				content = content.join('')
+			
+			content = '<span>' + content + '</span>';
+			content = $(content);
+			
+			let img = content.find('img').first().attr("src").split(/(data:image\/)(.*)(;base64,)/);
+			
+			if( img.length !== 5 || img[2] !== "png")
+				return null;
+			
+			return ["extractedImg", img[2], img[4]];
+		}
+		
+		figure = extractFirstImg(rex.exercises[exerciseID].question);
 		question = sanitizeComplexFieldValue(rex.exercises[exerciseID].question);
 		choices = rex.exercises[exerciseID].choices.map(x=> sanitizeComplexFieldValue(x));
 		solutionNotes = rex.exercises[exerciseID].solutionNotes.map(x=> sanitizeComplexFieldValue(x));
 		
+		fileText = fileText.replace("?rnwTemplate_figure", figure === null ? '""' : 'c(' + figure.map(x=>'"' + x + '"').join(',') + ')');
 		fileText = fileText.replace("?rnwTemplate_question", '"' + question + '"');
 		fileText = fileText.replace("?rnwTemplate_choices", 'c(' + choices.map(x=>'"' + x + '"').join(',') + ')');
 		fileText = fileText.replace("?rnwTemplate_solutionNotes", 'c(' + solutionNotes.map(x => '"' + x.replace(/[01]. */g, '') + '"').join(',') + ')');
 	} else {
+		fileText = fileText.replace("?rnwTemplate_figure", rex.exercises[exerciseID].figure === null ? '""' : 'c(' + rex.exercises[exerciseID].figure.map(x=>'"' + x + '"').join(',') + ')');
 		fileText = fileText.replace("?rnwTemplate_question", '"' + rex.exercises[exerciseID].question_raw.replaceAll('\\', '\\\\') + '"');
 		fileText = fileText.replace("?rnwTemplate_choices", 'c(' + rex.exercises[exerciseID].choices_raw.map(x=>'"' + x.replaceAll('\\', '\\\\') + '"').join(',') + ')');
 		fileText = fileText.replace("?rnwTemplate_solutionNotes", 'c(' + rex.exercises[exerciseID].solutionNotes_raw.map((x, i) => '"' + x.replace(/[01]. */g, '') + '"').join(',') + ')');
@@ -2017,22 +1981,8 @@ Shiny.addCustomMessageHandler('setExerciseSeed', function(seed) {
 	rex.exercises[getID()].seed = seed;
 });
 
-Shiny.addCustomMessageHandler('setExerciseExamHistory', function(jsonData) {
-	const examHistory = JSON.parse(jsonData);
-	rex.exercises[getID()].examHistory = examHistory;
-});
-
-Shiny.addCustomMessageHandler('setExerciseAuthoredBy', function(jsonData) {
-	const authoredBy = JSON.parse(jsonData);
-	rex.exercises[getID()].authoredBy = authoredBy;
-});
-
 Shiny.addCustomMessageHandler('setExercisePoints', function(exercisePoints) {
 	rex.exercises[getID()].points = exercisePoints;
-});
-
-Shiny.addCustomMessageHandler('setExerciseTopic', function(exerciseTopic) {
-	rex.exercises[getID()].topic = exerciseTopic;
 });
 
 Shiny.addCustomMessageHandler('setExerciseTags', function(jsonData) {
@@ -2710,8 +2660,6 @@ function magnifier() {
 			$(window).on('wheel', function(e) {
 				event.preventDefault();
 				event.stopPropagation();
-				
-				console.log("wheel");
 				
 				const delta = e.originalEvent.deltaY;
 
