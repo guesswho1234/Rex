@@ -42,6 +42,7 @@ exams::answerlist(ifelse(rnwTemplate_solutions, "1", "0"), rnwTemplate_solutionN
 %% META-INFORMATION
 %% \\extype{?rnwTemplate_type}
 %% \\exsolution{\\Sexpr{exams::mchoice2string(rnwTemplate_solutions)}}
+%% \\exauthor{?rnwTemplate_author}
 %% \\expoints{?rnwTemplate_points}
 %% \\exsection{?rnwTemplate_section}
 %% \\extags{?rnwTemplate_tags}`

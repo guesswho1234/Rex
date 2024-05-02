@@ -1151,6 +1151,7 @@ function createExercise(exerciseID, name='exercise',
 						    exam=false, 
 							points=1,
 							tags=null,
+							author=null,
 							figure=null,
 							exExtra=null){
 	rex.exercises[exerciseID]['file'] = file;
@@ -1173,6 +1174,7 @@ function createExercise(exerciseID, name='exercise',
 	rex.exercises[exerciseID]['editable'] = editable;
 	rex.exercises[exerciseID]['block'] = block;
 	rex.exercises[exerciseID]['section'] = section;
+	rex.exercises[exerciseID]['author'] = author;
 	rex.exercises[exerciseID]['figure'] = figure;
 	rex.exercises[exerciseID]['exExtra'] = exExtra;
 	
@@ -1250,7 +1252,9 @@ function resetOutputFields() {
 	$('#exercise_info').addClass('hidden');	
 	$('#exercise_info').removeClass("editableExercise");
 	
-	let fields = ['exerciseName',
+	let fields = ['author',
+				  'exExtra',
+				  'exerciseName',
 				  'question',
 				  'type',
 				  'figure',
@@ -1377,6 +1381,13 @@ $('body').on('focus', '[contenteditable]', function() {
 			
 			$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseName').text(content);
 			rex.exercises[exerciseID].name = content;
+		}
+		
+		if ($this.hasClass('authorText')) {
+			content = contenteditable_getPlain(content);
+			content = contentFileNameSanitize(content);
+			
+			rex.exercises[exerciseID].author = content;
 		}
 		
 		if ($this.hasClass('questionText')) {
@@ -1528,10 +1539,36 @@ function loadExerciseFromObject(exerciseID) {
 	
 	setExerciseFieldFromObject(field, content);
 	
-	// exExtra
-	//todo: add field for each exExtra field
-	//todo: remove these fields in resetfields function
+	// author
+	field = 'author';
+	content = rex.exercises[exerciseID].author === null ? '' : rex.exercises[exerciseID].author;
+	content = '<span class="authorText" contenteditable="' + editable + '" spellcheck="false">' + content + '</span>';
 	
+	setExerciseFieldFromObject(field, content);
+	
+	// exExtra
+	field = 'exExtra';
+	content = rex.exercises[exerciseID][field] === null ? [''] : rex.exercises[exerciseID][field];
+	content = content.map(x => {
+		const exExtraField = Object.entries(x).map(entry => {
+			const [key, value] = entry;
+			
+			let exExtraField = "";
+		
+			if( Array.isArray(value) )
+				exExtraField =  value.map(i => '<span>' + i + '</span>').join('');
+			else
+				exExtraField = '<span>' + value + '</span>';
+			
+			exExtraField = '<label for=' + key + '><span lang="de">"' + key + '"</span><span lang="en">' + key + '</span></label><div id="' + key + '">' + exExtraField + '</div>';
+			
+			return exExtraField;
+		});
+		
+		return exExtraField
+	}).join('');
+		
+	setExerciseFieldFromObject(field, content);
 	
 	// question
 	field = 'question';
@@ -1612,6 +1649,7 @@ function setSimpleExerciseFileContents(exerciseID, convertFromComplex=false){
 	let fileText = rnwTemplate;
 			
 	fileText = fileText.replace("?rnwTemplate_type", rex.exercises[exerciseID].type);
+	fileText = fileText.replace("?rnwTemplate_author", rex.exercises[exerciseID].author === null ? "" : rex.exercises[exerciseID].author);
 	fileText = fileText.replace("?rnwTemplate_solutions", 'c(' + rex.exercises[exerciseID].solution.map(x=>x?"T":"F").join(',') + ')');	
 	fileText = fileText.replace("?rnwTemplate_points", isNaN(parseInt(rex.exercises[exerciseID].points)) ? 1 : rex.exercises[exerciseID].points);
 	fileText = fileText.replace("?rnwTemplate_section", rex.exercises[exerciseID].section === null ? "" : rex.exercises[exerciseID].section);
@@ -1690,7 +1728,6 @@ function setExerciseFieldFromObject(field, content, visible=true) {
 	}
 			
 	if (visible) {
-		$('#' + field + '-info').show();
 		$('#' + field).show();
 		if($('label[for="'+ field +'"]').length > 0) $('label[for="'+ field +'"]').show();
 	}
@@ -1991,6 +2028,10 @@ Shiny.addCustomMessageHandler('setExerciseId', function(exerciseID) {
 
 Shiny.addCustomMessageHandler('setExerciseSeed', function(seed) {
 	rex.exercises[getID()].seed = seed;
+});
+
+Shiny.addCustomMessageHandler('setExerciseAuthor', function(exerciseAuthor) {
+	rex.exercises[getID()].author = exerciseAuthor;
 });
 
 Shiny.addCustomMessageHandler('setExerciseExExtra', function(jsonData) {

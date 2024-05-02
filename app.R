@@ -161,6 +161,7 @@ source("./source/tryCatch.R")
         tags = rjs_vectorToJsonStringArray(tags)
       }
 
+      author = html$exam1$exercise1$metainfo$author
       points = html$exam1$exercise1$metainfo$points
       type = html$exam1$exercise1$metainfo$type
       question = html$exam1$exercise1$question
@@ -180,6 +181,7 @@ source("./source/tryCatch.R")
       }))
       exExtra = rjs_vectorToJsonArray(exExtra)
 
+      session$sendCustomMessage("setExerciseAuthor", author)
       session$sendCustomMessage("setExerciseExExtra", exExtra)
       session$sendCustomMessage("setExercisePoints", points)
       session$sendCustomMessage("setExerciseType", type)
