@@ -1568,7 +1568,7 @@ function loadExerciseFromObject(exerciseID) {
 		return exExtraField
 	}).join('');
 		
-	setExerciseFieldFromObject(field, content);
+	setExerciseFieldFromObject(field, content, visible = !editable);
 	
 	// question
 	field = 'question';
