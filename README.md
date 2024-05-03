@@ -64,7 +64,7 @@ main application. At the very top, you will find a navigation bar with the follo
 - Rex logo (click to get to the top of the page)
 - `EXERCISES` tab where exercises are managed
 - `EXAM` tab where exams are created and evaluated
-- `TOOLS` tab where aany additional addons are located > [!WARNING] experimental
+- `TOOLS` tab where aany additional addons are located
 - `TeX mode` button to enable or disable LaTeX input mode (when turned on, fields where LaTeX is accepted will appear with a pink border) 
 - `Hotkeys` button to enable or disable all hotkeys for the application (when hovered, overlays buttons with the corresponding hotkey mapping)
 - Switch for displaying buttons with icons or text
