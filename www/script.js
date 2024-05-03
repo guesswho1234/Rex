@@ -1981,6 +1981,7 @@ function addExerciseFigureFile(file, fileExt) {
 			
 			setSimpleExerciseFileContents(exerciseID);
 			loadExerciseFromObject(exerciseID);
+			invalidateAfterEdit(exerciseID);
 		};
 
 		fileReader.readAsDataURL(file);
@@ -2017,6 +2018,7 @@ function removeExerciseFigure(element) {
 	
 	setSimpleExerciseFileContents(exerciseID);
 	loadExerciseFromObject(exerciseID);
+	invalidateAfterEdit(exerciseID);
 }
 
 $('#exerciseFigureFiles_list_items').on('click', '.exerciseFigureItem', function() {

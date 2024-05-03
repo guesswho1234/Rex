@@ -717,10 +717,12 @@ source("./source/tryCatch.R")
         preparedEvaluation$files$nops_evaluationCsv = paste0(dir, "/", nops_evaluation_fileNamePrefix, ".csv")
         preparedEvaluation$files$nops_evaluationZip = paste0(dir, "/", nops_evaluation_fileNamePrefix, ".zip")
         
-        # statistics
+        # additional files
+        preparedEvaluation$files$nops_evalInputTxt = paste0(dir, "/input.txt")
         preparedEvaluation$files$nops_statisticsTxt = paste0(dir, "/statistics.txt")
         preparedEvaluation$evaluationStatistics = NULL
         
+        # evaluation
         with(preparedEvaluation, {
           # finalize evaluation
           exams::nops_eval(
@@ -778,6 +780,35 @@ source("./source/tryCatch.R")
           evaluationData[paste("answer", 1:length(solutionData[[1]]), sep=".")] = sprintf(paste0("%0", 5, "d"), unlist(evaluationData[paste("answer", 1:length(solutionData[[1]]), sep=".")]))
           evaluationData[paste("solution", 1:length(solutionData[[1]]), sep=".")] = sprintf(paste0("%0", 5, "d"), unlist(evaluationData[paste("solution", 1:length(solutionData[[1]]), sep=".")]))
           
+          # exam eval input field data
+          examEvalFields = list(registeredParticipants = files$registeredParticipants,
+          solutions = files$solution,
+          scans = files$scanEvaluation,
+          partial = fields$partial, 
+          negative = fields$negative, 
+          rule = fields$rule,
+          points = fields$points,
+          mark = fields$mark,
+          labels = fields$labels,
+          language = fields$language)
+          
+          examEvalInputTxt = Reduce(c, lapply(names(examEvalFields), \(x){
+            values = examEvalFields[[x]] 
+            
+            if(x %in% c("registeredParticipants", "solutions", "scans"))
+              values = lapply(values, \(y) gsub(paste0(dir, "/"), "", y, fixed = TRUE))
+            
+            if(is.matrix(values)){
+              paste0(c(x, 
+                       paste0(apply(values, 1, \(y) paste0(paste0(y, collapse=";"), "\n")), collapse="")
+              ), collapse="\n")
+            } else {
+              paste0(c(x, 
+                       paste0(paste0(unlist(values), "\n"), collapse="")
+              ), collapse="\n")
+            }
+          }))
+
           # statistics
           examMaxPoints = matrix(max(as.numeric(evaluationData$examMaxPoints)), dimnames=list("examMaxPoints", "value"))
           validExams = matrix(nrow(evaluationData), dimnames=list("validExams", "value"))
@@ -836,6 +867,7 @@ source("./source/tryCatch.R")
           }))
 
           # write
+          writeLines(examEvalInputTxt, files$nops_evalInputTxt)
           writeLines(evaluationStatisticsTxt, files$nops_statisticsTxt)
           write.csv2(evaluationData, files$nops_evaluationCsv, row.names = FALSE)
         })
