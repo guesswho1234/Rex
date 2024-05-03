@@ -498,7 +498,6 @@ main > * {
 }
 
 .dndInfo .title {
-	height: 50%;
     font-size: 62px;
     font-weight: bold;
     display: flex;
@@ -1107,6 +1106,10 @@ main > * {
 #inspectScanImage,
 #inspectScanTemplate {
 	width: 50%;
+}
+
+#inspectScanTemplate span span > span {
+	display: inline-block;
 }
 
 .magnify {
