@@ -143,12 +143,12 @@ Input fields that are empty do not require values and are optional. All other fi
 While initialized with the value 0, obviously, the `number of exercises` must be greater than 0 in order to be able to create an exam. 
 To set a different number than 0, however, requires exercises to be marked as examinable. In other words, the maximum number of exercises in an exam is the number of exercises marked as examinable.
 
-When pressing the `Create exam` button the exam creation process starts. When this process ends, a popup will show and, given that no errors where encountered, offer to save the exam. When saving the exam, a *.zip archive will be downloaded. In this archive you will find the following files:
-- One PDF file for each scrambling including the evaluation sheet with the institution title, and course text, the intro text, set number of blank pages, and any additionally added PDF pages 
-- One HTML file for each scrambling including the solutions and solution notes
-- One RDS file which is needed to evaluate the exam later 
+When pressing the `Create exam` button the exam creation process starts. When this process ends, a popup will show and, given that no errors where encountered, offer to save the exam. When saving the exam, a ZIP archive will be downloaded. In this archive you will find the following files:
+- A PDF file for each scrambling including the evaluation sheet with the institution title, and course text, the intro text, set number of blank pages, and any additionally added PDF pages 
+- A HTML file for each scrambling including the solutions and solution notes
+- A RDS file which is needed to evaluate the exam later 
 - All of the exercises used in the exam 
-- One file names `input.txt` containing all the input values used for creating the exam
+- A TXT file `input.txt` containing all the input values used for creating the exam
 
 #### Evaluate exams
 
@@ -171,11 +171,16 @@ Input fields that are empty as well as the `Grading key` fields when `Grade exam
 - `Registered participants`: a CSV file containing all the information of participants
 - `Evaluation scans`: all the evaluation sheet scans as either PDF or PNG files
 
-When pressing the `Evaluate exam` button the exam evaluation process starts. In a first stage, all the supplied scans are processed. Once this first stage is finished, a popup will show and, given that no errors where encountered, allow to inspect and edit all the scans together with the information extracted from them. When proceeding, the second and last stage starts. Once also this stage is finished, again a popup will show and, given that no errors where encountered, offer to save the exam evaluation. Also, it is possible to revert back to the first stage again. When saving the exam evaluation, a *.zip archive will be downloaded. In this archive you will find the following files:
-- todo:
+When pressing the `Evaluate exam` button the exam evaluation process starts. In a first stage, all the supplied scans are processed. Once this first stage is finished, a popup will show and, given that no errors where encountered, allow to inspect and edit all the scans together with the information extracted from them. When proceeding, the second and last stage starts. Once also this stage is finished, again a popup will show and, given that no errors where encountered, offer to save the exam evaluation. Also, it is possible to revert back to the first stage again. When saving the exam evaluation, a ZIP archive will be downloaded. In this archive you will find the following files:
+- Two ZIP archives, one containing the scans as PNG files matching what was supplied for the `Evaluation scans` field (ending with `_nops_scan.zip`) and another containing the evaluation documents of the participants (ending with `nops_eval.zip`). For each participant the evaluation document is further placed in a separate folder named after what was supplied in the `id` column of the file supplied for the `Registered participants` field
+- Two CSV files, one machting what was supplied for the `Registered participants` field and another containing all the evaluation data (ending in `nops_eval.csv`)
+- One RDS file matching what was supplied for the `Solutions` field
+- A TXT file `statistics.txt` containing some basic evaluation statistics of the exam 
+- A TXT file `input.txt` containing all the input values used for evaluating the exam
 
 ### Addons
 
+Addons are a way to add custom functionalities to the application that do not necessarily tie into the standard workflow described above.
 
 ## Contributing
 
