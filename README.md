@@ -11,8 +11,6 @@ and is still work-in-progress.
 
 ## Run
 
-There are multiple ways to get this applications running:
-
 ### Localhost
 
 Install all the necessary R packages (see `init.R`) including their dependencies.
@@ -68,14 +66,12 @@ At the very bottom you find all the information regarding source code and licens
 
 ### Workflow
 
-Generally, the intended workflow of using the application can be separated into the following three parts:
-
 #### Manage exercises
 
 The entire management of exercises takes place in the "Exercises" tab of the application. For all exercises the app 
 distinguishes between simple editable exercises (highlighted with purple accents) and complex not editable exercises. Based on that, various functionalities are enabled or disabled. 
 
-All together, the following functionalities for exercises exist:
+Exercise functionalities:
 - Change seed value used for random processes in complex exercises
 - Create new simple exercise from scratch. 
 - Import one or multiple existing simple exercises and complex exercises either as RNW or RMD files
@@ -88,7 +84,7 @@ All together, the following functionalities for exercises exist:
 - Reorder exercises
 - Group exercises into blocks to equally draw from when creating exams
 
-Beyond that, as mentioned above, simple exercise can be edited directly within the application. When editing an exercise, the following fields can be modified:
+Beyond that, as mentioned above, simple exercise can be edited directly within the application. When editing an exercise, the following fields can be edited:
 - Name
 - Author
 - Type
