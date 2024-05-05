@@ -216,9 +216,15 @@ source("./source/tryCatch.R")
 
         if(length(exam$exerciseNames) < settings$exerciseMin)
           stop("E1010")
+        
+        if(input$numberOfExercises < settings$exerciseMin)
+          stop("E1023")
 
         if(length(exam$exerciseNames) > settings$exerciseMax)
           stop("E1011")
+        
+        if(input$numberOfExercises > settings$exerciseMax)
+          stop("E1024")
         
         if(length(unique(exam$exerciseTypes)) > 1)
           stop("E1019")

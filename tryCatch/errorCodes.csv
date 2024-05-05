@@ -22,3 +22,5 @@ E1019;Exercises have varying types;Aufgaben haben verschiedene Typen.
 E1020;Exercises types all have to either be 'schoice' or 'mchoice';Aufgabentypen müssen alle entweder 'schoice' oder 'mchoice' sein.
 E1021;No valid exams to available.;Keine gültigen Prüfungen vorhanden.
 E1022;Exercise needs at least two choices.;Aufgabe benötigt mindestens zwei Antwortmöglichkeiten.
+E1023;Number of exam tasks must at least be one.;Anzahl an Prüfungsaufgaben muss mindestens eins sein.
+E1024;Number of exam tasks must not exceed 45.;Anzahl an Prüfungsaufgaben darf nicht größer als 45 sein.
