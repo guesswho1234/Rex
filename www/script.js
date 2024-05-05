@@ -73,12 +73,69 @@ function setShinyInputValue(field, value){
 }
 
 /* --------------------------------------------------------------
+ TAB TITLE 
+-------------------------------------------------------------- */
+const defaultTitle = 'Rex';
+let focusStatus = 1;
+let titleStatus = -1;
+
+window.addEventListener("blur", function() { 
+	focusStatus = 0;
+	changeTitle(titleStatus);
+});
+
+window.addEventListener("focus", function(){ 
+	focusStatus = 1;
+	document.title = defaultTitle;
+});
+
+Shiny.addCustomMessageHandler('changeTabTitle', function(status) {
+	changeTitle(status);
+});
+
+function changeTitle(status) {
+	titleStatus = status;
+	
+	if ( focusStatus !== 0 && status !== -1)
+		return;
+	
+	switch(status) {
+		// default
+		case -1: 
+			document.title = defaultTitle;
+			break;
+		// gray
+		case 4: 
+			document.title = '🔘 ' + defaultTitle;
+			break;
+		// blue
+		case 3: 
+			document.title = '🔵 ' + defaultTitle;
+			break;
+		// red
+		case 2: 
+			document.title = '🔴 ' + defaultTitle;
+			break;
+		// yellow
+		case 1: 
+			document.title = '🟡 ' + defaultTitle;
+			break;
+		// green
+		case 0: 
+			document.title = '🟢 ' + defaultTitle;
+			break;
+	}
+}
+
+
+/* --------------------------------------------------------------
  RSHINY CONNECTION 
 -------------------------------------------------------------- */
 let connected = false;
 $(document).on('shiny:disconnected', function(event) {
    connected = false;
    $('#heart span').addClass('dead');
+   changeTitle(4);
 }).on('shiny:connected', function(event) {
    connected = true;
 });

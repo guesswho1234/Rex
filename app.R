@@ -404,6 +404,8 @@ source("./source/tryCatch.R")
   }
   
   examCreationResponse = function(session, message, downloadable) {
+    session$sendCustomMessage("changeTabTitle", getMessageType(message))
+    
     showModal(modalDialog(
       title = tags$span(HTML('<span lang="de">Prüfung erstellen</span><span lang="en">Create exam</span>')),
       tags$span(id="responseMessage", myMessage(message, "modal")),
@@ -649,6 +651,8 @@ source("./source/tryCatch.R")
   }
   
   evaluateExamScansResponse = function(session, result) {
+    session$sendCustomMessage("changeTabTitle", getMessageType(result$message))
+    
     showModal(modalDialog(
       title = tags$span(HTML('<span lang="de">Scans überprüfen</span><span lang="en">Check scans</span>')),
       tags$span(id="responseMessage", myMessage(result$message, "modal")),
@@ -895,6 +899,8 @@ source("./source/tryCatch.R")
   }
   
   evaluateExamFinalizeResponse = function(session, input, result) {
+    session$sendCustomMessage("changeTabTitle", getMessageType(result$message))
+    
     # evaluation statistics
     showModalStatistics = !is.null(result$preparedEvaluation$files$nops_evaluationCsv) && length(unlist(result$preparedEvaluation$files, recursive = TRUE)) > 0
     chartData = NULL
@@ -1245,6 +1251,7 @@ server = function(input, output, session) {
   examFiles = reactiveVal()
 
   examCreation = eventReactive(input$createExam, {
+    session$sendCustomMessage("changeTabTitle", 3)
     startWait(session)
     
     settings = list(edirName=edirName,
@@ -1285,6 +1292,7 @@ server = function(input, output, session) {
   observeEvent(input$dismiss_examCreationResponse, {
     removeModal()
     stopWait(session)
+    session$sendCustomMessage("changeTabTitle", "reset")
   })
 
   # EVALUATE EXAM -------------------------------------------------------------
@@ -1309,6 +1317,7 @@ server = function(input, output, session) {
   
   # evaluate scans - trigger
   examScanEvaluation = eventReactive(input$evaluateExam, {
+    session$sendCustomMessage("changeTabTitle", 3)
     startWait(session)
     
     settings = list(cores=cores,
@@ -1341,6 +1350,8 @@ server = function(input, output, session) {
 
   # finalizing evaluation - trigger
   examFinalizeEvaluation = eventReactive(input$proceedEvaluation, {
+    session$sendCustomMessage("changeTabTitle", 3)
+    
     dir = getDir(session)
     removeModal()
     
@@ -1403,11 +1414,13 @@ server = function(input, output, session) {
   observeEvent(input$dismiss_evaluateExamScansResponse, {
     removeModal()
     stopWait(session)
+    session$sendCustomMessage("changeTabTitle", "reset")
   })
 
   observeEvent(input$dismiss_evaluateExamFinalizeResponse, {
     removeModal()
     stopWait(session)
+    session$sendCustomMessage("changeTabTitle", "reset")
   })
   
   # ADDONS ------------------------------------------------------------------
