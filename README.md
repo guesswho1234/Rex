@@ -68,7 +68,7 @@ At the very bottom you find all the information regarding source code and licens
 
 #### Manage exercises
 
-The entire management of exercises takes place in the "Exercises" tab of the application. For all exercises the app 
+The entire management of exercises takes place in the "EXERCISES" tab of the application. For all exercises the app 
 distinguishes between simple editable exercises (highlighted with purple accents) and complex not editable exercises. Based on that, various functionalities are enabled or disabled. 
 
 Exercise functionalities:
