@@ -145,13 +145,15 @@
 								</div>
 								<input type="file" id="file-upload_exercises" onchange='exercisesFileDialog(this.files);' multiple>
 							</label>
+							<label id="exerciseDownload" class="listButton" for="downloadExercise">
+								{{ button_downloadExercise }}  
+							</label>
 							<label id="exerciseDownloadAll" class="listButton" for="downloadExercises">
 								<span class="hotkeyInfo"><span lang="de">SHIFT S</span><span lang="en">SHIFT S</span></span>
 								<div class="list_butttonIcon">
 									<span class="iconButton"><i class="fa-solid fa-download"></i></span>
 									<span class="textButton"><span lang="de">Alle speichern</span><span lang="en">Save all</span></span>
 								</div>
-								{{ button_downloadExercise }}  
 								{{ button_downloadExercises }}
 							</label>
 							<div id="exerciseConvertAll" class="listButton">

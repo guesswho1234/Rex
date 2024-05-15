@@ -190,6 +190,10 @@ main {
 	top: 100px;
 }
 
+#exerciseDownload {
+	display: none;
+}
+
 #exerciseDownloadAll, 
 #exerciseUpload {
 	font-weight: unset;
