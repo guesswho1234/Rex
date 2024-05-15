@@ -1045,7 +1045,7 @@ source("./source/tryCatch.R")
   addons = unique(Reduce(c, lapply(addons[grepl("/", addons)], \(x) strsplit(x, split="/")[[1]][1])))
   
   invisible(lapply(addons, \(addon) {
-    source(paste0(addons_path_www, addons, "/", addons, ".R"))
+    source(paste0(addons_path_www, addon, "/", addon, ".R"))
   }))
   
   # AUTH --------------------------------------------------------------------

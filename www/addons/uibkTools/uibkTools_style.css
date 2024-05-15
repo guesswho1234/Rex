@@ -77,13 +77,3 @@
 #uibkTools a.btn {
 	margin-top: 25px;
 }
-
-.packgeIncludesContainer {
-	display: flex;
-	float: right;
-	place-content: end;
-}
-
-.packageIncludes {
-	margin-left: 0.5rem;
-}

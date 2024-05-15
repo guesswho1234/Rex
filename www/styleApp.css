@@ -1624,3 +1624,13 @@ figcaption {
 .noAddons {
 	display: none !important;
 }
+
+.AddonInfoContainer {
+	display: flex;
+	float: right;
+	place-content: end;
+}
+
+.AddonInfoText {
+	margin-left: 0.5rem;
+}
