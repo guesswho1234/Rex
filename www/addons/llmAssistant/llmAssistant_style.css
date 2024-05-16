@@ -1,0 +1,18 @@
+#exerciseLlmAssistant {
+	display: flex;
+	float: right;
+	place-content: end;
+}
+
+#exerciseLlmAssistant .exerciseLlmAssistantButton {
+	cursor: pointer;
+	font-weight: bold;
+	padding: 0.25rem;
+	background: var(---highlight_values);
+	border-radius: 5px;
+	border: 2px solid var(---background);
+}
+
+#exerciseLlmAssistant .exerciseLlmAssistantButton:hover {
+	border: 2px solid var(---main) !important;
+}
