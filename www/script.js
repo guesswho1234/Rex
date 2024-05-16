@@ -136,6 +136,14 @@ $(document).on('shiny:disconnected', function(event) {
    connected = false;
    $('#heart span').addClass('dead');
    changeTitle(4);
+   confirmDialog('Die Verbindung zu Rex wurde unterbrochen.', 'Connection to Rex was lost.', 'OK', 'OK', '<i class="fa-solid fa-check"></i>', '', '', '',
+	function(remove) {
+		if(!remove)
+			return;
+		
+		setSimpleExerciseFileContents(exerciseID, true);
+		viewExercise(exerciseID, true);
+	});	
 }).on('shiny:connected', function(event) {
    connected = true;
 });
@@ -541,12 +549,22 @@ Shiny.addCustomMessageHandler('wait', function(status) {
 function confirmDialog(deMessage, enMessage, deButtonYes, enButtonYes, iconButtonYes, deButtonNo, enButtonNo, iconButtonNo, callback, ...args) {
 	$('#confirmdialogOverlayContent span[lang="de"]').html(deMessage);
 	$('#confirmdialogOverlayContent span[lang="en"]').html(enMessage);
-	$('#confirmdialogYes .textButton span[lang="de"]').html(deButtonYes);
-	$('#confirmdialogYes .textButton span[lang="en"]').html(enButtonYes);
-	$('#confirmdialogYes .iconButton').html(iconButtonYes);
-	$('#confirmdialogNo .textButton span[lang="de"]').html(deButtonNo);
-	$('#confirmdialogNo .textButton span[lang="en"]').html(enButtonNo);
-	$('#confirmdialogNo .iconButton').html(iconButtonNo);
+	
+	if( deButtonYes !== '' && enButtonYes !== '' && iconButtonYes !== '' ) {
+		$('#confirmdialogYes .textButton span[lang="de"]').html(deButtonYes);
+		$('#confirmdialogYes .textButton span[lang="en"]').html(enButtonYes);
+		$('#confirmdialogYes .iconButton').html(iconButtonYes);
+	} else {
+		$('#confirmdialogYes').hide();
+	}
+
+	if( deButtonNo !== '' && enButtonNo !== '' && iconButtonNo !== '' ) {
+		$('#confirmdialogNo .textButton span[lang="de"]').html(deButtonNo);
+		$('#confirmdialogNo .textButton span[lang="en"]').html(enButtonNo);
+		$('#confirmdialogNo .iconButton').html(iconButtonNo);
+	} else {
+		$('#confirmdialogNo').hide();
+	}
 		
 	$('#confirmdialogOverlay').addClass("active");
 	$('nav .nav.navbar-nav li').addClass("disabled");
