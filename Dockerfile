@@ -8,15 +8,17 @@ RUN set -eu \
         ;apt-get install -y \
 				libsodium-dev \
                 libpoppler-cpp-dev \
+				texlive-full \
         ;apt-get -y autoremove \
         ;apt-get -y clean \
         ;rm -rf /var/lib/apt/lists/* \
         ;
 	
-RUN R -e "install.packages(c('shinyjs', 'shinyWidgets', 'shinycssloaders', 'xtable', 'tth', 'png', 'callr', 'qpdf', 'pdftools', 'openssl', 'tinytex', 'shinyauthr', 'sodium'), dependencies=TRUE)"						 
+#RUN R -e "install.packages(c('shinyjs', 'shinyWidgets', 'shinycssloaders', 'xtable', 'tth', 'png', 'callr', 'qpdf', 'pdftools', 'openssl', 'tinytex', 'shinyauthr', 'sodium'), dependencies=TRUE)"
+RUN R -e "install.packages(c('shinyjs', 'shinyWidgets', 'shinycssloaders', 'xtable', 'tth', 'png', 'callr', 'qpdf', 'pdftools', 'openssl', 'shinyauthr', 'sodium'), dependencies=TRUE)"							 
 RUN R -e "install.packages('exams', repos='http://R-Forge.R-project.org', type='source')"
-RUN R -e "tinytex::install_tinytex()"
-RUN R -e "tinytex::tlmgr_install('babel-german')"
+#RUN R -e "tinytex::install_tinytex()"
+#RUN R -e "tinytex::tlmgr_install('babel-german')"
 
 COPY . /rex
 EXPOSE 8180
