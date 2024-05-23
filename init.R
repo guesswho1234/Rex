@@ -10,7 +10,7 @@ helpers.installPackages(
   "qpdf",
   "pdftools",
   "openssl",
-  "tinytex",
+  #"tinytex",
   "shinyauthr",
   "sodium"
 )
@@ -19,6 +19,6 @@ helpers.installPackages(
 install.packages("./iuftools", repos=NULL, type="source")
 install.packages("exams", repos="http://R-Forge.R-project.org", type="source") # need new version for handling faulty scans properly
 
-# tex setup
-tinytex::install_tinytex()
-tinytex::tlmgr_install("babel-german")
+# tinytex setup
+#tinytex::install_tinytex()
+#tinytex::tlmgr_install("babel-german")
