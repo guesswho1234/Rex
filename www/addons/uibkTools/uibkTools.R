@@ -112,7 +112,6 @@ if(!any(installed.packages()[,1]=="iuftools"))
     
     evalData = Reduce(rbind, lapply(args$rexEvaluationLists, \(x){
       content = read.table(text=x[[3]], sep=";", header = TRUE, colClasses = "character", fill=TRUE)
-	  print(head(content))
     }))
     
     if(is.null(evalData))
