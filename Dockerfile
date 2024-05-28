@@ -17,8 +17,6 @@ RUN set -eu \
 	
 RUN R -e "install.packages(c('shinyjs', 'shinyWidgets', 'shinycssloaders', 'xtable', 'tth', 'png', 'callr', 'qpdf', 'pdftools', 'openssl', 'shinyauthr', 'sodium'), dependencies=TRUE)"						 
 RUN R -e "install.packages('exams', repos='http://R-Forge.R-project.org', type='source')"
-RUN R -e "tinytex::install_tinytex()"
-RUN R -e "tinytex::tlmgr_install('babel-german')"
 
 # WITH TINYTEX
 #RUN set -eu \
