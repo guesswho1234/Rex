@@ -13,12 +13,20 @@ and is still work-in-progress.
 
 ### Localhost
 
-Install all the necessary R packages (see `init.R`) including their dependencies.
+Install all the necessary R packages including their dependencies.
 
 Start up via `shiny::runApp(appDir = 'base directory containing app.R', host = '127.0.0.1', port = 8180);` or, alternatively, via RStudio by 
 opening and running `app.R`.
 
+### Docker
+
+Build your image with the supplied docker file: `docker build --platform linux/x86_64 -t shiny-docker-rex .`.
+
+Run your image: `docker run -p 8180:8180 shiny-docker-rex`.
+
 ### Heroku
+> [!WARNING]
+Hosting Rex on Heroku is not optimal and is generally not recommended.
 
 Install the following buildpacks in the following order on your heroku app:
 - https://github.com/rricard/heroku-buildpack-dpkg.git
@@ -38,15 +46,8 @@ This setup was tested on the "heroku-22" stack.
 Heroku shuts down your application if you exceed the memory allocated to your dyno type.
 If you are using the "Eco" dyno type, the application also shuts down when there is no traffic for 30 minutes.
 
-> [!WARNING]
-While most features of Rex can be used with the low tier dyno types Heroku offers, evaluating exams cannot.
-Therefore, make sure to switch to high performance dyno types if you wish to evaluate exams with Rex hosted on Heroku.  
-
-### Docker
-
-Build your image with the supplied docker file: `docker build --platform linux/x86_64 -t shiny-docker-rex .`.
-
-Run your image: `docker run -p 8180:8180 shiny-docker-rex`. 
+> [!NOTE]
+While most features of Rex can be used with the low tier dyno types Heroku offers, evaluating exams cannot. Therefore, make sure to switch to high performance dyno types if you wish to evaluate exams with Rex hosted on Heroku.   
 
 ## Use
 
