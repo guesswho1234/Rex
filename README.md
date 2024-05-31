@@ -26,7 +26,7 @@ Run your image: `docker run -p 8180:8180 shiny-docker-rex`.
 
 ### Heroku
 > [!WARNING]
-Hosting Rex on Heroku is not optimal and is generally not recommended.
+Hosting Rex on Heroku is not recommended.
 
 Install the following buildpacks in the following order on your heroku app:
 - https://github.com/rricard/heroku-buildpack-dpkg.git
