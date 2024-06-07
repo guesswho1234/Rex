@@ -28,6 +28,9 @@ Run your image: `docker run -p 8180:8180 shiny-docker-rex`.
 > [!WARNING]
 Hosting Rex on Heroku is not recommended.
 
+> [!WARNING]
+There is currently a bug with tinytex. As texlive full is not an alternative on Heroku, hosting Rex on it is further restriced until this is fixed. 
+
 Install the following buildpacks in the following order on your heroku app:
 - https://github.com/rricard/heroku-buildpack-dpkg.git
 - https://github.com/virtualstaticvoid/heroku-buildpack-r
