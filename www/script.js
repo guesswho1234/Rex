@@ -2168,12 +2168,13 @@ Shiny.addCustomMessageHandler('setExerciseSolutions', function(jsonData) {
 
 Shiny.addCustomMessageHandler('setExerciseSolutionNotes', function(jsonData) {
 	const exerciseSolutionNotes = JSON.parse(jsonData);
-	rex.exercises[getID()].solutionNotes = exerciseSolutionNotes.map(x=>x.replace(/[01]. */g, ''));
+	console.log(exerciseSolutionNotes)
+	rex.exercises[getID()].solutionNotes = exerciseSolutionNotes.map(x=>x.replace(/^[01]. */g, ''));
 });
 
 Shiny.addCustomMessageHandler('setExerciseSolutionNotesRaw', function(jsonData) {
 	const exerciseSolutionNotesRaw = JSON.parse(jsonData);
-	rex.exercises[getID()].solutionNotes_raw = exerciseSolutionNotesRaw.map(x=>x.replace(/[01]. */g, ''));
+	rex.exercises[getID()].solutionNotes_raw = exerciseSolutionNotesRaw.map(x=>x.replace(/^[01]. */g, ''));
 });
 
 Shiny.addCustomMessageHandler('setExerciseEditable', function(editable) {
