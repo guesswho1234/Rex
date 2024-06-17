@@ -1,0 +1,71 @@
+<<echo=FALSE, results=tex>>=
+library(exams)
+library(iuftools)
+
+## DATA GENERATION
+value = 1/2
+
+## CHOICES
+qpool <- c()
+spool <- c()
+npool <- c()
+
+sel <- sample(1:2, 1)
+qpool[1] <- "Choice text 1."
+spool[1] <- TRUE # TRUE oder FALSE 
+npool[1] <- "Solution note text 1."
+
+qpool[2] <- "Choice text 2."
+spool[2] <- TRUE # TRUE oder FALSE 
+npool[2] <- "Solution note text 2."
+
+qpool[3] <- "Choice text 3."
+spool[3] <- TRUE # TRUE oder FALSE 
+npool[3] <- "Solution note text 3."
+
+qpool[4] <- "Choice text 4."
+spool[4] <- TRUE # TRUE oder FALSE 
+npool[4] <- "Solution note text 4."
+
+# Select four out of all choices
+sel = sample(length(qpool), 4)
+qpool = qpool[sel]
+spool = spool[sel]
+npool = npool[sel]
+
+# Adds "None of the other choices is correct." as fifth choice
+qpool[5] <- "None of the other choices is correct."
+spool[5] <- sum(spool) == 0
+npool[5] <- ""
+sel <- sample(length(qpool), 5)
+
+## Set default variables
+questions <- qpool[sel]
+solutions <- spool[sel]
+solutionNotes <- npool[sel]
+
+@
+\begin{question}
+Question text... Add plain variables: \Sexpr{value}... 
+
+<<echo=FALSE, results=hide, results=tex>>=
+answerlist(unlist(questions))
+@ 
+
+\end{question}
+
+\begin{solution}
+<<echo=FALSE, results=hide, results=tex>>=
+answerlist(ifelse(solutions, "1", "0"), unlist(solutionNotes))
+@
+
+\end{solution}
+
+
+%% META-INFORMATION
+%% \extype{mchoice}
+%% \exsolution{\Sexpr{mchoice2string(solutions)}}
+%% \expoints{1}
+%% \exsection{Section name}
+%% \extags{tag1|tag2}
+%% \exauthor{name1, name2, ...}
