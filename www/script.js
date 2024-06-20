@@ -1787,12 +1787,12 @@ function setSimpleExerciseFileContents(exerciseID, convertFromComplex=false){
 		fileText = fileText.replace("?rnwTemplate_figure", figure === null ? '""' : 'c(' + figure.map(x=>'"' + x + '"').join(',') + ')');
 		fileText = fileText.replace("?rnwTemplate_question", '"' + question + '"');
 		fileText = fileText.replace("?rnwTemplate_choices", 'c(' + choices.map(x=>'"' + x + '"').join(',') + ')');
-		fileText = fileText.replace("?rnwTemplate_solutionNotes", 'c(' + solutionNotes.map(x => '"' + x.replace(/[01]. */g, '') + '"').join(',') + ')');
+		fileText = fileText.replace("?rnwTemplate_solutionNotes", 'c(' + solutionNotes.map(x => '"' + x.replace(/^[01]\. */, '') + '"').join(',') + ')');
 	} else {
 		fileText = fileText.replace("?rnwTemplate_figure", rex.exercises[exerciseID].figure === null ? '""' : 'c(' + rex.exercises[exerciseID].figure.map(x=>'"' + x + '"').join(',') + ')');
 		fileText = fileText.replace("?rnwTemplate_question", '"' + rex.exercises[exerciseID].question_raw.replaceAll('\\', '\\\\') + '"');
 		fileText = fileText.replace("?rnwTemplate_choices", 'c(' + rex.exercises[exerciseID].choices_raw.map(x=>'"' + x.replaceAll('\\', '\\\\') + '"').join(',') + ')');
-		fileText = fileText.replace("?rnwTemplate_solutionNotes", 'c(' + rex.exercises[exerciseID].solutionNotes_raw.map((x, i) => '"' + x.replace(/[01]. */g, '') + '"').join(',') + ')');
+		fileText = fileText.replace("?rnwTemplate_solutionNotes", 'c(' + rex.exercises[exerciseID].solutionNotes_raw.map((x, i) => '"' + x.replace(/^[01]\. */, '') + '"').join(',') + ')');
 	}
 	
 	fileText = fileText.replaceAll("\n", "\r\n");
@@ -2168,13 +2168,12 @@ Shiny.addCustomMessageHandler('setExerciseSolutions', function(jsonData) {
 
 Shiny.addCustomMessageHandler('setExerciseSolutionNotes', function(jsonData) {
 	const exerciseSolutionNotes = JSON.parse(jsonData);
-	console.log(exerciseSolutionNotes)
-	rex.exercises[getID()].solutionNotes = exerciseSolutionNotes.map(x=>x.replace(/^[01]. */g, ''));
+	rex.exercises[getID()].solutionNotes = exerciseSolutionNotes.map(x=>x.replace(/^[01]\. */, ''));
 });
 
 Shiny.addCustomMessageHandler('setExerciseSolutionNotesRaw', function(jsonData) {
 	const exerciseSolutionNotesRaw = JSON.parse(jsonData);
-	rex.exercises[getID()].solutionNotes_raw = exerciseSolutionNotesRaw.map(x=>x.replace(/^[01]. */g, ''));
+	rex.exercises[getID()].solutionNotes_raw = exerciseSolutionNotesRaw.map(x=>x.replace(/^[01]\. */, ''));
 });
 
 Shiny.addCustomMessageHandler('setExerciseEditable', function(editable) {
