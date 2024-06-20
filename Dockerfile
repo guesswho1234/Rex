@@ -18,5 +18,5 @@ RUN R -e "install.packages(c('shinyjs', 'shinyWidgets', 'shinycssloaders', 'xtab
 RUN R -e "install.packages('exams', repos='http://R-Forge.R-project.org', type='source')"
 
 COPY . /rex
-EXPOSE 8180
+EXPOSE 80
 CMD Rscript app.R

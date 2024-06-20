@@ -26,10 +26,7 @@ Run your image: `docker run -p 8180:8180 shiny-docker-rex`.
 
 ### Heroku
 > [!WARNING]
-Hosting Rex on Heroku is not recommended.
-
-> [!WARNING]
-There is currently a bug with tinytex. As texlive full is not an alternative on Heroku, hosting Rex on it is further restriced until this is fixed. 
+Hosting Rex on Heroku is not recommended and some functions might not work properly. Therefore, please use Docker or host it locally instead.
 
 Install the following buildpacks in the following order on your heroku app:
 - https://github.com/rricard/heroku-buildpack-dpkg.git
@@ -47,10 +44,7 @@ This setup was tested on the "heroku-22" stack.
 
 > [!NOTE]
 Heroku shuts down your application if you exceed the memory allocated to your dyno type.
-If you are using the "Eco" dyno type, the application also shuts down when there is no traffic for 30 minutes.
-
-> [!NOTE]
-While most features of Rex can be used with the low tier dyno types Heroku offers, evaluating exams cannot. Therefore, make sure to switch to high performance dyno types if you wish to evaluate exams with Rex hosted on Heroku.   
+If you are using the "Eco" dyno type, the application also shuts down when there is no traffic for 30 minutes. 
 
 ## Use
 

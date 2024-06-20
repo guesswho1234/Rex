@@ -23,7 +23,7 @@ library(sodium) # sodium_1.3.1
 
 # CONNECTION --------------------------------------------------------------
 options(shiny.host = "0.0.0.0")
-options(shiny.port = 8180)
+options(shiny.port = 80)
 
 # RESOURCES
 shiny::addResourcePath("www", "./www")
