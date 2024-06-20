@@ -2652,10 +2652,10 @@ $('body').on('click', '.compareListItem:not(.notAssigned)', function() {
 	// populate input fields
 	let registrations = rex.examEvaluation.scans_reg_fullJoinData.filter(x => x.scan === 'NA').map(x => ({registration:x.registration, name:x.name}));
 	
-	$('#replacementSheet').append('<input type="checkbox"' + (scanFocused.replacement === "1" ? ' checked="checked"' : '') + '>');
-	
-	if(scanFocused.registration !== d_registration)
+	if(scanFocused.registration !== d_registration) {
 		registrations.push({registration:d_registration, name:""});
+		$('#selectedRegistration').val(scanFocused.registration);
+	}
 	
 	registrations.sort();
 	registrations.unshift({registration:scanFocused.registration, name:scanFocused.name} );
@@ -2663,7 +2663,9 @@ $('body').on('click', '.compareListItem:not(.notAssigned)', function() {
 	$.each(registrations, function (i, p) {
 		$('#selectRegistration').append($('<option></option>').val(p.registration).html(p.registration + " " + p.name));
 	});
-			
+		
+	$('#replacementSheet').append('<input type="checkbox"' + (scanFocused.replacement === "1" ? ' checked="checked"' : '') + '>');
+	
 	let examIds = rex.examEvaluation['examIds'];
 	examIds.sort()
 	
