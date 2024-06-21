@@ -344,8 +344,6 @@ source("./source/tryCatch.R")
             ), collapse="\n")
           }
         }))
-        
-        warning(examInputTxt)
 
         # write
         writeLines(examInputTxt, examInputFile)
