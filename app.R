@@ -328,9 +328,12 @@ source("./source/tryCatch.R")
         examInputTxt = Reduce(c, lapply(names(examFields)[!names(examFields) %in% c("edir", "header", "logo")], \(x){
           values = examFields[[x]] 
           
-          if(x=="file") 
+          if(x=="file")  
             values = lapply(values, \(y) gsub(paste0(examFields$edir, "/"), "", y, fixed = TRUE))
-            
+          
+          if(x=="pages")  
+            values = lapply(values, \(y) gsub(paste0(dir, "/"), "", y, fixed = TRUE))
+     
           if(is.matrix(values)){
             paste0(c(x, 
                      paste0(apply(values, 1, \(y) paste0(paste0(y, collapse=";"), "\n")), collapse="")
@@ -341,6 +344,8 @@ source("./source/tryCatch.R")
             ), collapse="\n")
           }
         }))
+        
+        warning(examInputTxt)
 
         # write
         writeLines(examInputTxt, examInputFile)
