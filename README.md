@@ -22,7 +22,7 @@ opening and running `app.R`.
 
 Build your image with the supplied docker file: `docker build --platform linux/x86_64 -t shiny-docker-rex .`.
 
-Run your image: `docker run -p 8180:8180 shiny-docker-rex`.
+Run your image: `docker run -p 80:80 shiny-docker-rex`.
 
 ### Heroku
 > [!WARNING]
