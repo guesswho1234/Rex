@@ -15,7 +15,7 @@ and is still work-in-progress.
 
 Install all the necessary R packages including their dependencies.
 
-Start up via `shiny::runApp(appDir = 'base directory containing app.R', host = '127.0.0.1', port = 8180);` or, alternatively, via RStudio by 
+Start up via `shiny::runApp(appDir = 'base directory containing app.R', host = '0.0.0.0', port = 80);` or, alternatively, via RStudio by 
 opening and running `app.R`.
 
 ### Docker
