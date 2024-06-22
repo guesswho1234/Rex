@@ -307,7 +307,6 @@ source("./source/tryCatch.R")
           samepage = input$samepage,
           newpage = input$newpage,
           logo = NULL
-          # nchoice = "5" # why character? if set, need to change padded zeros?
         )
         
         # needed for pdf files (not for html files) - somehow exams needs it that way
