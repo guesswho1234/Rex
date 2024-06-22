@@ -61,7 +61,7 @@ main {
 	background-color: var(---red_error);
 	border-color: var(---red_error);
 	border: 2px solid var(---background);
-	border-radius: 5px;
+	border-radius: 3px;
 }
 
 #logout-button:hover {
@@ -128,7 +128,7 @@ main {
 	cursor: pointer;
 	background: var(---gray_passive);
 	border: 2px solid var(---gray_passive);
-	border-radius: 5px;	
+	border-radius: 3px;	
 }
 
 #confirmdialogOverlayContentButtons .confirmDialogButton:hover {
@@ -540,7 +540,7 @@ main > * {
 .listButton {
 	background: var(---background);
 	border: 2px solid var(---background);
-	border-radius: 5px;
+	border-radius: 3px;
 	white-space: nowrap;
 	padding: 0.5rem;
 }
@@ -668,7 +668,7 @@ main > * {
 	display: flex;
 	place-content: center;
 	background: var(---background);
-	border-radius: 5px;
+	border-radius: 3px;
 	border: 2px solid var(---background);
 }
 
@@ -750,19 +750,19 @@ main > * {
 }
 
 .exerciseButton {
-	border-radius: 5px;
+	border-radius: 3px;
 }
 
 .exerciseItem.active .exerciseButton,
 .exerciseItem:hover .exerciseButton {
 	background: var(---background);
-	border-radius: 5px;
+	border-radius: 3px;
 	border: 2px solid var(---background);
 }
 
 .exerciseItem:not(.active):not(:hover) .exerciseButton {
 	background: var(---background3);
-	border-radius: 5px;
+	border-radius: 3px;
 	border: 2px solid var(---background3);
 }
 
@@ -871,6 +871,14 @@ main > * {
 	padding: 3px;
 	border-radius: 3px;
 	display: block;
+	width: fit-content;
+	min-width: 12px;
+	min-height: 28px
+}
+
+#exerciseFigureContainer {
+	margin: 5px;
+	border-radius: 3px;
 	width: fit-content;
 	min-width: 12px;
 	min-height: 28px
@@ -1187,7 +1195,7 @@ main > * {
 }
 
 .inspectScanButton {
-	border-radius: 5px;
+	border-radius: 3px;
 	padding: 0.25rem;
 	background: var(---background3);
 	border: 2px solid var(---transparent);
@@ -1364,8 +1372,8 @@ main > * {
 	margin-top: 5px;
 	padding: 0.5rem;
 	background: var(---highlight_values);
-	border-radius: 5px;
-	border: 2px solid var(---background);
+	border-radius: 3px;
+	border: 2px solid var(---highlight_values);
 }
 
 .exerciseFigureFileButton:hover,
