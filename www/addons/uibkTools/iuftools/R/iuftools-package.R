@@ -1,3 +1,0 @@
-#' @import xtable
-NULL
-#> NULL
