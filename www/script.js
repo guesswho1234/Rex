@@ -73,6 +73,28 @@ function setShinyInputValue(field, value){
 }
 
 /* --------------------------------------------------------------
+LOCAL STORAGE
+-------------------------------------------------------------- */
+if (localStorage.getItem("rexExercises") !== null) {
+	confirmDialog('Es befinden sich Aufgaben im Zwischenspeicher. Sollen diese geladen werden?', 'There are exercises in the cache. Should these be loaded?', 'Ja', 'Yes', '<i class="fa-solid fa-check"></i>', 'Nein', 'No', '<i class="fa-solid fa-xmark"></i>',
+	function(remove) {
+		if(!remove) {
+			localStorage.removeItem("rexExercises");
+			return;
+		}
+				
+		rex.exercises = [];
+		$('#exercise_list_items').empty();
+		JSON.parse(localStorage.getItem("rexExercises")).forEach(exercise => rex.exercises.push(exercise));
+		
+		for (let i = 0; i < rex.exercises.length; i++) {
+			addExerciseToView(i);
+			viewExercise(i, forceParse=true);
+		}
+	});
+}
+
+/* --------------------------------------------------------------
  TAB TITLE 
 -------------------------------------------------------------- */
 const defaultTitle = 'Rex';
@@ -880,7 +902,7 @@ function exerciseRemoveAll(){
 		}).get();
 		
 		for (let i = removeIndices.length -1; i >= 0; i--) {
-			rex.exercises.splice(removeIndices[i],1);
+			rex.exercises.splice(removeIndices[i], 1);
 			exercises = exercises - 1;
 		}
 		
@@ -1236,6 +1258,7 @@ function createExercise(exerciseID, name='exercise',
 							author=null,
 							figure=null,
 							exExtra=null){
+	rex.exercises[exerciseID] = {}; // make sure that its an object and not an associative array
 	rex.exercises[exerciseID]['file'] = file;
 	rex.exercises[exerciseID]['ext'] = ext;
 	rex.exercises[exerciseID]['name'] = name;
@@ -1263,8 +1286,12 @@ function createExercise(exerciseID, name='exercise',
 	if( file === null) {
 		setSimpleExerciseFileContents(exerciseID);
 	}
+	
+	addExerciseToView(exerciseID);
+}
 
-	$('#exercise_list_items').append('<div class="exerciseItem sidebarListItem"><span class="exerciseSequence"><span class="sequenceButton sequenceUp"><span class="hotkeyInfo"><span lang="de">Y</span><span lang="en">Y</span></span><i class="fa-solid fa-sort-up"></i></span><span class="sequenceButton sequenceDown"><span class="hotkeyInfo"><span lang="de">X</span><span lang="en">X</span></span><i class="fa-solid fa-sort-down"></i></span></span><span class="exerciseName">' + name + '</span></span><span class="exerciseBlock"><span lang="de">Block:</span><span lang="en">Block:</span><input value="' + block + '"/></span><span class="exerciseButtons"><span class="exerciseDownload exerciseButton disabled"><span class="hotkeyInfo"><span lang="de">S</span><span lang="en">S</span></span><span class="iconButton"><i class="fa-solid fa-download"></i></span><span class="textButton"><span lang="de">Speichern</span><span lang="en">Save</span></span></span><span class="exerciseConvert exerciseButton disabled"><span class="hotkeyInfo"><span lang="de">C</span><span lang="en">C</span></span><span class="iconButton"><i class="fa-solid fa-screwdriver-wrench"></i></span><span class="textButton"><span lang="de">Konvertieren</span><span lang="en">Convert</span></span></span><span class="exerciseParse exerciseButton disabled"><span class="hotkeyInfo"><span lang="de">R</span><span lang="en">R</span></span><span class="iconButton"><i class="fa-solid fa-rotate"></i></span><span class="textButton"><span lang="de">Berechnen</span><span lang="en">Parse</span></span></span><span class="examExercise exerciseButton disabled"><span class="hotkeyInfo"><span lang="de">E</span><span lang="en">E</span></span><span class="iconButton"><i class="fa-solid fa-star"></i></span><span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span></span><span class="exerciseRemove exerciseButton"><span class="hotkeyInfo"><span lang="de">D</span><span lang="en">D</span></span><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></span></span></div>');
+function addExerciseToView(exerciseID) {
+	$('#exercise_list_items').append('<div class="exerciseItem sidebarListItem" data-internalid="' + exerciseID + '"><span class="exerciseSequence"><span class="sequenceButton sequenceUp"><span class="hotkeyInfo"><span lang="de">Y</span><span lang="en">Y</span></span><i class="fa-solid fa-sort-up"></i></span><span class="sequenceButton sequenceDown"><span class="hotkeyInfo"><span lang="de">X</span><span lang="en">X</span></span><i class="fa-solid fa-sort-down"></i></span></span><span class="exerciseName">' + rex.exercises[exerciseID]['name'] + '</span></span><span class="exerciseBlock"><span lang="de">Block:</span><span lang="en">Block:</span><input value="' + rex.exercises[exerciseID]['block'] + '"/></span><span class="exerciseButtons"><span class="exerciseDownload exerciseButton disabled"><span class="hotkeyInfo"><span lang="de">S</span><span lang="en">S</span></span><span class="iconButton"><i class="fa-solid fa-download"></i></span><span class="textButton"><span lang="de">Speichern</span><span lang="en">Save</span></span></span><span class="exerciseConvert exerciseButton disabled"><span class="hotkeyInfo"><span lang="de">C</span><span lang="en">C</span></span><span class="iconButton"><i class="fa-solid fa-screwdriver-wrench"></i></span><span class="textButton"><span lang="de">Konvertieren</span><span lang="en">Convert</span></span></span><span class="exerciseParse exerciseButton disabled"><span class="hotkeyInfo"><span lang="de">R</span><span lang="en">R</span></span><span class="iconButton"><i class="fa-solid fa-rotate"></i></span><span class="textButton"><span lang="de">Berechnen</span><span lang="en">Parse</span></span></span><span class="examExercise exerciseButton disabled"><span class="hotkeyInfo"><span lang="de">E</span><span lang="en">E</span></span><span class="iconButton"><i class="fa-solid fa-star"></i></span><span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span></span><span class="exerciseRemove exerciseButton"><span class="hotkeyInfo"><span lang="de">D</span><span lang="en">D</span></span><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></span></span></div>');
 }
 
 function parseExercise(exerciseID) {	
@@ -2194,9 +2221,12 @@ Shiny.addCustomMessageHandler('setExerciseStatusCode', function(statusCode) {
 	
 	rex.exercises[exerciseID].statusCode = statusCode === 0 ? "S000" : statusCode;
 
-	if(rex.exercises[exerciseID].statusCode === "S000" || rex.exercises[exerciseID].statusCode.charAt(0) === "W")
+	if(rex.exercises[exerciseID].statusCode === "S000" || rex.exercises[exerciseID].statusCode.charAt(0) === "W") {
 		$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .examExercise').removeClass('disabled');
 		loadExerciseFromObject(exerciseID);
+	}
+	
+	localStorage.setItem("rexExercises", JSON.stringify(rex.exercises));
 });
 
 /* --------------------------------------------------------------
