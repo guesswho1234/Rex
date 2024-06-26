@@ -3125,12 +3125,9 @@ Shiny.addCustomMessageHandler('evaluationStatistics', function(jsonData) {
 });
 
 $('body').on('click', '#proceedEval', function() {
-	const scans_reg_fullJoinData = rex.examEvaluation.scans_reg_fullJoinData;
 	const properties = ['scan', 'sheet', 'scrambling', 'type', 'replacement', 'registration'].concat(new Array(45).fill(1).map( (_, i) => i+1 ));
-	const datenTxt = Object.assign({}, scans_reg_fullJoinData.filter(x => scanValid(x)).map(x => Object.assign({}, properties.map(y => x[y] === undefined ? "00000" : x[y], {}))));
+	const datenTxt = Object.assign({}, rex.examEvaluation.scans_reg_fullJoinData.filter(x => scanValid(x)).map(x => Object.assign({}, properties.map(y => x[y] === undefined ? "00000" : x[y], {}))));
 	
-	//todo: memory overflow: scans_reg_fullJoinData is the problem
-	// Shiny.onInputChange("proceedEvaluation", {scans_reg_fullJoinData:scans_reg_fullJoinData, datenTxt:datenTxt}, {priority: 'event'});
 	Shiny.onInputChange("proceedEvaluation", {scans_reg_fullJoinData:null, datenTxt:datenTxt}, {priority: 'event'});
 });
 
