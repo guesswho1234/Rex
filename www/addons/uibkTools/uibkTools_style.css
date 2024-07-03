@@ -1,0 +1,89 @@
+#visParticipantsContainer ,
+#rexEvaluationContainer ,
+#visGradingContainer {
+	display: flex;
+	width: 300px;
+}
+
+#file-upload_visParticipants ,
+#file-upload_rexEvaluation ,
+#file-upload_visGrading {
+    display: none;
+}
+
+#visParticipantsFiles ,
+#rexEvaluationFiles ,
+#visGradingFiles {
+	min-height: 34px;
+	background: var(---background3);
+}
+
+#visParticipantsFiles_list_items ,
+#rexEvaluationFiles_list_items ,
+#visGradingFiles_list_items {
+	min-width: 200px;
+	display: block;
+	padding: 0.25rem;
+}
+
+.visParticipantsFileItem ,
+.rexEvaluationFileItem ,
+.visGradingFileItem {
+	display: flex;
+	margin: 0.25rem;
+	padding: 0.25rem;
+	justify-content: space-between;
+	gap: 10px;
+}
+
+.visParticipantsFileName ,
+.rexEvaluationFileName ,
+.visGradingFileName {
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+.visParticipantsFileItem .removeText ,
+.rexEvaluationFileItem .removeText ,
+.visGradingFileItem .removeText {
+	display: block;
+}
+
+.visParticipantsFileItem:hover ,
+.rexEvaluationFileItem:hover ,
+.visGradingFileItem:hover {
+	background: var(---red_error);
+	cursor: pointer;
+}
+
+.uibkToolsFileUpload {
+	margin-right: 0.25rem;
+	cursor: pointer;
+	display: table;
+}
+
+.uibkToolsFileButton {
+	margin-top: 5px;
+	padding: 0.5rem;
+	background: var(---highlight_values);
+	border-radius: 5px;
+	border: 2px solid var(---transparent);
+}
+
+.uibkToolsFileButton:hover {
+	border: 2px solid var(---main);
+}
+
+#uibkTools a.btn {
+	margin-top: 25px;
+}
+
+.packgeIncludesContainer {
+	display: flex;
+	float: right;
+	place-content: end;
+}
+
+.packageIncludes {
+	margin-left: 0.5rem;
+}

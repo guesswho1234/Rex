@@ -92,7 +92,7 @@ myEvaluationCharts = function(chartData, examMaxPoints, validExams, showGradingC
 }
 
 myPointsChart = function(id, values, examMaxPoints, deCaption, enCaption) {
-	meanValue = round(values[1], 2)
+	meanValue = values[1]
 	
 	values_	= values
 	
@@ -109,7 +109,7 @@ myPointsChart = function(id, values, examMaxPoints, deCaption, enCaption) {
 			paste0('<figcaption><span lang="de">', deCaption, ' (', examMaxPoints, ' erreichbare Punkte):</span><span lang="en">', enCaption, ' (Total points: ', examMaxPoints, ' achievable points):</span></figcaption>'),
 		  '<div class="graph rowGraph" style="grid: repeat(1, auto) max-content / max-content repeat(7, auto);">',
 			'<div class="graphRowBar valueBar fullBar" style="grid-row: 1; width: 100%;"><span class="markValue">', tail(colnames(values),1), '</span></div>',
-    		paste0(sapply(length(values_):1, \(v) paste0('<div class="graphRowBar valueBar ', ifelse(colnames(values_)[v]=="mean", 'meanValue', ''), '" style="grid-row: 1; width: ', values_[v] * 100, '%;"><span class="markValue">', ifelse(colnames(values_)[v]=="mean", paste0('&#x2205; ', meanValue*examMaxPoints), colnames(values_)[v]), '</span></div>')), collapse=""),
+    		paste0(sapply(length(values_):1, \(v) paste0('<div class="graphRowBar valueBar ', ifelse(colnames(values_)[v]=="mean", 'meanValue', ''), '" style="grid-row: 1; width: ', values_[v] * 100, '%;"><span class="markValue">', ifelse(colnames(values_)[v]=="mean", paste0('&#x2205; ', round(meanValue * examMaxPoints,0)), colnames(values_)[v]), '</span></div>')), collapse=""),
 			'<div class="graphRowBar valueBar nullBar" style="grid-row: 1; width: 0%;"></div>',
 			'<div class="graphRowBar overlayBar" style="grid-row: 1; width: 100%;"><span class="absoluteValue"></span></div>',
 		  '</div>',

@@ -85,3 +85,12 @@ collectWarnings = function(expr) {
   
   return(warnings)
 }
+
+log_ = function(content, append=TRUE){
+  timestamp = Sys.time()
+  
+  if(!is.character(content))
+    write(paste0(timestamp, ": ", "ERROR - INVALID LOG CONTENT"), "log.txt", append = append)  
+  
+  write(paste0(timestamp, ": ", content), "log.txt", append = append) 
+}

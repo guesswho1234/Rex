@@ -15,36 +15,14 @@ and is still work-in-progress.
 
 Install all the necessary R packages including their dependencies.
 
-Start up via `shiny::runApp(appDir = 'base directory containing app.R', host = '0.0.0.0', port = 80);` or, alternatively, via RStudio by 
+Start up via `shiny::runApp(appDir = 'base directory containing app.R', host = '0.0.0.0', port = 3838);` or, alternatively, via RStudio by 
 opening and running `app.R`.
 
 ### Docker
 
 Build your image with the supplied docker file: `docker build --platform linux/x86_64 -t shiny-docker-rex .`.
 
-Run your image: `docker run -p 80:80 shiny-docker-rex`.
-
-### Heroku
-> [!WARNING]
-Hosting Rex on Heroku is not recommended and some functions might not work properly. Therefore, please use Docker or host it locally instead.
-
-Install the following buildpacks in the following order on your heroku app:
-- https://github.com/rricard/heroku-buildpack-dpkg.git
-- https://github.com/virtualstaticvoid/heroku-buildpack-r
-
-Set the following environment variables (called "*Config Vars*" on Heroku):
-- `INCLUDE_DIR`: `/app/.dpkg/usr/include/poppler/cpp/`
-- `LD_LIBRARY_PATH`: `/app/.dpkg/usr/lib/x86_64-linux-gnu/:/app/R/lib/R/lib:/app/tcltk/lib`
-- `LIB_DIR`: `/app/.dpkg/usr/lib/x86_64-linux-gnu/`
-
-Deploy this repository to your Heroku app and make sure the web dyno is turned on.
-
-> [!NOTE]
-This setup was tested on the "heroku-22" stack.
-
-> [!NOTE]
-Heroku shuts down your application if you exceed the memory allocated to your dyno type.
-If you are using the "Eco" dyno type, the application also shuts down when there is no traffic for 30 minutes. 
+Run your image: `docker run -p 3838:3838 shiny-docker-rex`.
 
 ## Use
 

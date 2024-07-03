@@ -20,10 +20,12 @@ library(qpdf) # qpdf_1.3.2
 library(openssl) # openssl_2.1.1
 library(shinyauthr) # shinyauthr_1.0.0
 library(sodium) # sodium_1.3.1
+library(magick) # magick_2.7.4
+# library(RSQLite) # for using shinyauthr wit sqlite, https://cran.r-project.org/web/packages/shinyauthr/readme/README.html
 
 # CONNECTION --------------------------------------------------------------
 options(shiny.host = "0.0.0.0")
-options(shiny.port = 80)
+options(shiny.port = 3838)
 
 # RESOURCES
 shiny::addResourcePath("www", "./www")
@@ -32,6 +34,7 @@ shiny::addResourcePath("www", "./www")
 source("./source/filesAndDirectories.R")
 source("./source/customElements.R")
 source("./source/tryCatch.R")
+source("./source/rToJson.R")
 
 # FUNCTIONS ----------------------------------------------------------------
   # PREPARE DOWNLOAD EXERCISES ----------------------------------------------
@@ -51,9 +54,11 @@ source("./source/tryCatch.R")
   }
   
   # PARSE EXERCISES ---------------------------------------------------------
-  parseExercise = function(exercise, seed, collectWarnings, dir){
+  parseExercise = function(exercise, seed, collectWarnings, log_, dir){
      out = tryCatch({
       warnings = collectWarnings({
+        cat("Rex: Preparing parameters.\n")
+        
         splitBy = ";\n" # originally it is ";\r\n" but "\r\n" is replaced by "\n"
         # unify line breaks
         exercise$exerciseCode = gsub("\r\n", "\n", exercise$exerciseCode)
@@ -111,6 +116,7 @@ source("./source/tryCatch.R")
         
         exExtra = suppressWarnings(exams::extract_extra(readLines(con=file), markup="latex"))
 
+        cat("Rex: Parsing exercise.\n")
         htmlPreview = exams::exams2html(file, dir = dir, seed = seed, base64 = TRUE)
         
         htmlPreview$exam1$exercise1$question_raw = question_raw
@@ -145,9 +151,10 @@ source("./source/tryCatch.R")
         e$message = paste0("E1001: ", e) #$message)
       
       return(list(message=list(key="Error", value=e), id=exercise$exerciseID, seed=NULL, html=NULL))
+    },
+    finally = {
+      cat("Rex: Parsing exercise completed.\n")
     })
-    
-    return(out)
   }
   
   loadExercise = function(session, id, seed, html, exExtra, figure, message) {
@@ -205,9 +212,11 @@ source("./source/tryCatch.R")
   }
   
   # CREATE EXAM -------------------------------------------------------------
-  createExam = function(exam, settings, input, collectWarnings, dir) {
+  createExam = function(exam, settings, input, collectWarnings, log_, dir) {
     out = tryCatch({
       warnings = collectWarnings({
+        cat("Rex: Preparing parameters.\n")
+        
         if(any(input$seedValueExam < settings$seedMin))
           stop("E1008")
         
@@ -350,6 +359,7 @@ source("./source/tryCatch.R")
         # prepared exam data
         preparedExam = list(examFields=examFields, examFiles=list(examHtmlFiles=examHtmlFiles, pdfFiles=examPdfFiles, rdsFile=examRdsFile, examInputFile=examInputFile), sourceFiles=list(exerciseFiles=exerciseFiles, additionalPdfFiles=additionalPdfFiles))
         
+        cat("Rex: Creating exam.\n")
         with(preparedExam$examFields, {
           # create exam html preview with solutions
           set.seed(1)
@@ -406,9 +416,10 @@ source("./source/tryCatch.R")
         e$message = paste0("E1002: ", e) #$message)
   
       return(list(message=list(key="Error", value=e), files=list()))
+    },
+    finally = {
+      cat("Rex: Creating exam completed.\n")
     })
-  
-    return(out)
   }
   
   examCreationResponse = function(session, message, downloadable) {
@@ -427,12 +438,13 @@ source("./source/tryCatch.R")
   }
   
   # EVALUATE EXAM -----------------------------------------------------------
-  evaluateExamScans = function(input, settings, collectWarnings, dir){
+  evaluateExamScans = function(input, settings, collectWarnings, log_, dir){
     out = tryCatch({
+      cat("Rex: Preparing parameters.\n")
       scans_reg_fullJoinData = NULL
       
       warnings = collectWarnings({
-        # settings
+        rotate = input$rotateScans
         regLength = input$evaluationRegLength
         
         points = input$fixedPointsExamEvaluate
@@ -465,7 +477,9 @@ source("./source/tryCatch.R")
         
         language = input$evaluationLanguage
         
-        # exam
+        cat("Rex: Preparing input files.\n")
+        
+        # exam solutions
         input$evaluateExam$examSolutionsName = unlist(input$evaluateExam$examSolutionsName)[1]
         
         solutionFile = unlist(lapply(seq_along(input$evaluateExam$examSolutionsName), function(i){
@@ -496,42 +510,19 @@ source("./source/tryCatch.R")
           return(file)
         }))
         
-        # process scans to end up with only png files at the end
+        # scans
         pngFiles = NULL
         pdfFiles = NULL
-        convertedPngFiles = NULL
 
         if(length(input$evaluateExam$examScanPdfNames) > 0){
           input$evaluateExam$examScanPdfNames = as.list(make.unique(unlist(input$evaluateExam$examScanPdfNames), sep="_"))
 
-          pdfFiles = lapply(setNames(seq_along(input$evaluateExam$examScanPdfNames), input$evaluateExam$examScanPdfNames), function(i){
+          pdfFiles = unlist(lapply(setNames(seq_along(input$evaluateExam$examScanPdfNames), input$evaluateExam$examScanPdfNames), function(i){
             file = paste0(dir, "/", input$evaluateExam$examScanPdfNames[[i]], ".pdf")
             raw = openssl::base64_decode(input$evaluateExam$examScanPdfFiles[[i]])
-
-            if(input$rotateScans){
-              file = gsub(".pdf", "_.pdf", file)
-              writeBin(raw, con = file)
-              output = paste0(dir, "/", input$evaluateExam$examScanPdfNames[[i]], ".pdf")
-              numberOfPages = qpdf::pdf_length(file)
-              qpdf::pdf_rotate_pages(input=file, output=output, pages=1:numberOfPages, angle=ifelse(input$rotateScans, 180, 0))
-
-              file = output
-            } else {
-              writeBin(raw, con = file)
-            }
-
+            writeBin(raw, con = file)
 
             return(file)
-          })
-
-          convertedPngFiles = unlist(lapply(seq_along(pdfFiles), function(i){
-            numberOfPages = qpdf::pdf_length(pdfFiles[[i]])
-
-            filenames = sapply(1:numberOfPages, function(page){
-              paste0(dir, "/", names(pdfFiles)[i], "_scan", page, ".png")
-            })
-
-            convertedFiles = pdftools::pdf_convert(pdf=pdfFiles[[i]], filenames=filenames, pages=NULL, format='png', dpi=300, antialias=TRUE, verbose=FALSE)
           }))
         }
 
@@ -549,19 +540,20 @@ source("./source/tryCatch.R")
           }))
         }
 
-        scanFiles = c(convertedPngFiles, pngFiles)
+        scanFiles = c(pdfFiles, pngFiles)
 
-        # meta data
+        cat("Rex: Preparing meta data.\n")
+        
         examName = input$evaluateExam$examSolutionsName[[1]]
         examIds = names(examExerciseMetaData)
         numExercises = length(examExerciseMetaData[[1]])
         numChoices = length(examExerciseMetaData[[1]][[1]]$questionlist)
         
         preparedEvaluation = list(meta=list(examIds=examIds, examName=examName, numExercises=numExercises, numChoices=numChoices),
-                                  fields=list(points=points, regLength=regLength, partial=partial, negative=negative, rule=rule, mark=mark, labels=labels, language=language),
+                                  fields=list(rotate=rotate, points=points, regLength=regLength, partial=partial, negative=negative, rule=rule, mark=mark, labels=labels, language=language),
                                   files=list(solution=solutionFile, registeredParticipants=registeredParticipantsFile, scans=scanFiles))
         
-        with(preparedEvaluation, {
+        preparedEvaluation = within(preparedEvaluation, {
           if(length(files$scans) < 1)
             stop("E1012")
   
@@ -577,7 +569,6 @@ source("./source/tryCatch.R")
           if(any(as.numeric(mark) < 1) && any(as.numeric(mark) >= 1))
             stop("E1018")
 
-          # read registered participants
           registeredParticipantData = read.csv2(files$registeredParticipants)
   
           if(ncol(registeredParticipantData) != 3)
@@ -585,34 +576,47 @@ source("./source/tryCatch.R")
   
           if(!all(names(registeredParticipantData)[1:3] == c("registration", "name", "id")))
             stop("E1016")
-    
-          scanData = exams::nops_scan(images=files$scans,
-                           file=FALSE,
-                           dir=dir,
-                           cores=settings$cores)
           
+          scanFileZipName = gsub("_+", "_", paste0(examName, "_nops_scan.zip"))
+
+          cat("Rex: Evaluating scans.\n")
+          
+          scanData = exams::nops_scan(images=files$scans,
+                           file=scanFileZipName,
+                           dir=dir,
+                           rotate=rotate,
+                           cores=settings$cores,
+                           verbose=TRUE)
+
+          files$scanEvaluation = paste0(dir, "/", scanFileZipName)
+
           dummyFirstRow = paste0(rep(NA,51), collapse=" ")
           scanData = read.table(text=c(dummyFirstRow, scanData), sep=" ", fill=TRUE)
           scanData = scanData[-1,]
           
           names(scanData)[c(1:6)] = c("scan", "sheet", "scrambling", "type", "replacement", "registration")
           names(scanData)[-c(1:6)] = (7:ncol(scanData)) - 6
-          
+
           # reduce columns using additional data from exam to know how many questions and answer per question existed
           scanData = scanData[,-which(grepl("^[[:digit:]]+$", names(scanData)))[-c(1:meta$numExercises)]] # remove unnecessary placeholders for unused questions
           scanData$numExercises = meta$numExercises
           scanData$numChoices = meta$numChoices
-          
+
           # add scans as base64 to be displayed in browser
-          scanData$blob = lapply(scanData$scan, function(x) {
-            file = paste0(dir, "/", x)
-            blob = readBin(file, "raw", n=file.info(file)$size)
-            openssl::base64_encode(blob)
-          })
-  
+          scanFilesData = setNames(unzip(files$scanEvaluation, list=TRUE)[,1:2], c("scan", "size"))
+          
+          if(nrow(scanFilesData) > 1) {
+            scanData = merge(scanData, scanFilesData, by="scan")
+            
+            scanData$blob = lapply(1:nrow(scanData), function(x) {
+              blob = readBin(unz(files$scanEvaluation, scanData$scan[x], open="rb"), "raw", n=scanData$size[x])
+              openssl::base64_encode(blob)
+            })
+          }
+
           # full outer join of scanData and registeredParticipantData
           scans_reg_fullJoinData = merge(scanData, registeredParticipantData, by="registration", all=TRUE)
-  
+
           # in case of duplicates, set "XXXXXXX" as registration number and "NA" for name and id for every match following the first one
           dups = duplicated(scans_reg_fullJoinData$registration)
           scans_reg_fullJoinData$registration[dups] = "XXXXXXX"
@@ -624,26 +628,27 @@ source("./source/tryCatch.R")
   
           # set "XXXXXXX" as registration number for scans which show "ERROR" in any field
           scans_reg_fullJoinData$registration[apply(scans_reg_fullJoinData, 1, function(x) any(x=="ERROR"))] = "XXXXXXX"
-          
+
           # pad zeroes to registration numbers and answers
           scans_reg_fullJoinData$registration[scans_reg_fullJoinData$registration != "XXXXXXX"] = sprintf(paste0("%0", fields$regLength, "d"), as.numeric(scans_reg_fullJoinData$registration[scans_reg_fullJoinData$registration != "XXXXXXX"]))
           scans_reg_fullJoinData[,as.character(1:meta$numExercises)] = apply(scans_reg_fullJoinData[,as.character(1:meta$numExercises)], 2, function(x){
             x[is.na(x)] = 0
             x = sprintf(paste0("%0", settings$maxChoices, "d"), as.numeric(x))
           })
-  
+
           scans_reg_fullJoinData <<- scans_reg_fullJoinData
         })
   
         NULL
       })
+      
       key = "Success"
       value = paste(unique(unlist(warnings)), collapse="<br>")
       if(value != "") {
         key = "Warning"
         value = paste0("W1003: ", value)
       }
-  
+
       return(list(message=list(key=key, value=value),
                   scans_reg_fullJoinData=scans_reg_fullJoinData,
                   preparedEvaluation=preparedEvaluation))
@@ -653,9 +658,10 @@ source("./source/tryCatch.R")
         e$message = paste0("E1003: ", e) #$message)
 
       return(list(message=list(key="Error", value=e), scans_reg_fullJoinData=NULL, examName=NULL, files=list(), data=list()))
+    },
+    finally = {
+      cat("Rex: Evaluating Scans completed.\n")
     })
-  
-    return(out)
   }
   
   evaluateExamScansResponse = function(session, result) {
@@ -701,26 +707,25 @@ source("./source/tryCatch.R")
     }
   }
   
-  evaluateExamFinalize = function(preparedEvaluation, proceedEvaluation, settings, collectWarnings, dir){
+  evaluateExamFinalize = function(preparedEvaluation, proceedEvaluation, settings, collectWarnings, log_, dir){
     out = tryCatch({
       warnings = collectWarnings({
-        # process scanData
+        # scanData
+        cat("Rex: Updating scan data.\n")
+        
         scanData = Reduce(c, lapply(proceedEvaluation$datenTxt, function(x) paste0(unlist(unname(x)), collapse=" ")))
         scanData = paste0(scanData, collapse="\n")
         
         if(scanData == "")
           stop("E1021")
-
-        # write scanData
         scanDatafile = paste0(dir, "/", "Daten.txt")
         writeLines(text=scanData, con=scanDatafile)
         
-        # create *_nops_scan.zip file needed for exams::nops_eval
-        zipFile = gsub("_+", "_", paste0(dir, "/", preparedEvaluation$meta$examName, "_nops_scan.zip"))
-        zip(zipFile, c(preparedEvaluation$files$scans, scanDatafile), flags='-r9XjFS')
+        # update *_nops_scan.zip file
+        zip(preparedEvaluation$files$scanEvaluation, scanDatafile, flags='-r9Xj')
 
-        # manage preparedEvaluation data
-        preparedEvaluation$files$scanEvaluation = zipFile
+        # manage preparedEvaluation data to include in download
+        cat("Rex: Preparing evaluation files.\n")
         preparedEvaluation$files = within(preparedEvaluation$files, rm(list=c("scans")))
         
         # file path and name settings
@@ -734,7 +739,8 @@ source("./source/tryCatch.R")
         preparedEvaluation$files$nops_statisticsTxt = paste0(dir, "/statistics.txt")
         preparedEvaluation$evaluationStatistics = NULL
         
-        # evaluation
+        cat("Rex: Evaluating exam.\n")
+        
         with(preparedEvaluation, {
           # finalize evaluation
           exams::nops_eval(
@@ -749,7 +755,7 @@ source("./source/tryCatch.R")
             dir = dir,
             file = nops_evaluation_fileNames,
             language = fields$language,
-            interactive = TRUE
+            interactive = FALSE
           )
   
           solutionData = readRDS(files$solution)
@@ -901,9 +907,10 @@ source("./source/tryCatch.R")
         e$message = paste0("E1004: ", e) #$message)
 
       return(list(message=list(key="Error", value=e), examName=NULL, files=list()))
+    }, 
+    finally = {
+      cat("Rex: Evaluating exam completed.\n")
     })
-  
-    return(out)
   }
   
   evaluateExamFinalizeResponse = function(session, input, result) {
@@ -951,7 +958,7 @@ source("./source/tryCatch.R")
     session$sendCustomMessage("f_langDeEn", 1)
   }
   
-  # WAIT --------------------------------------------------------------------
+  # MISC --------------------------------------------------------------------
   startWait = function(session){
     session$sendCustomMessage("wait", 0)
   }
@@ -961,48 +968,30 @@ source("./source/tryCatch.R")
     session$sendCustomMessage("wait", 1)
   }
 
-  # HELPER FUNCTIONS ---------------------------------------
-  rjs_vectorToJsonArray = function(vector){
-    x = paste(vector, collapse=",")
-    x = paste0(c("[", x, "]"), collapse="")
-    return(x)
+  initProrgress = function(session){
+    session$sendCustomMessage("progress", 0)
   }
   
-  rjs_vectorToJsonStringArray = function(vector){
-    x = paste0("\"", vector, "\"")
-    x = rjs_vectorToJsonArray(x)
-    return(x)
+  updateProrgress = function(session, increment, message){
+    message = unname(unlist(message))
+    
+    if(length(message) > 1)
+      message = paste0("...\n", tail(message,1))
+    
+    update = rjs_keyValuePairsToJsonObject(keys=c("increment", "message"), values=c(increment, message))
+    
+    session$sendCustomMessage("UpdateProgress", update)
   }
   
-  rjs_vectorToJsonNumericArray = function(vector, rounding=0){
-    x = paste0(round(vector, round(rounding, 0)))
-    x = rjs_vectorToJsonArray(x)
-    return(x)
+  finalizeProgress = function(session){
+    session$sendCustomMessage("progress", 1)
   }
   
-  rjs_keyValuePairsToJsonObject = function(keys, values, escapeValues=TRUE){
-    if(length(escapeValues) < length(values))
-      escapeValues = rep(escapeValues, length(values))
-    
-    values = sapply(seq_along(values), \(x){
-      if(escapeValues[x]) {
-        values[x] = gsub("\"", "\\\\\"", values[x])
-        values[x] = gsub(":", "\\:", values[x])
-        values[x] = gsub("\\n", " ", values[x])
-        values[x] = paste0("\"", values[x], "\"")
-      }
-        
-      return(values[x])
-    })
-
-    keys = paste0("\"", keys, "\":")
-    
-    x = paste0(keys, values, collapse=", ")
-    x = paste0("{", x, "}")
-    
-    return(x)
+  out_ = function(x){
+    if(x != "")
+      cat(x)
   }
-
+  
 # PARAMETERS --------------------------------------------------------------
   # REXAMS ------------------------------------------------------------------
   cores = NULL
@@ -1065,8 +1054,8 @@ ui = htmlTemplate(
   
 # SERVER -----------------------------------------------------------------
 server = function(input, output, session) {
-  session$sendCustomMessage("debugMessage", Sys.info()) # ping
-  
+  # log_("INIT", append=FALSE)
+
   # AUTH --------------------------------------------------------------------
   credentials = shinyauthr::loginServer(
     id = "login",
@@ -1086,7 +1075,7 @@ server = function(input, output, session) {
   eventReactive
   output$rexApp = renderUI({
     req(credentials()$user_auth)
-    
+
     # STARTUP -------------------------------------------------------------
     unlink(getDir(session), recursive = TRUE)
     dir.create(getDir(session))
@@ -1202,7 +1191,7 @@ server = function(input, output, session) {
   })
   
   observeEvent(input$pong, {
-    # pong
+    cat("")
   })
 
   # EXPORT SINGLE EXERCISE ------------------------------------------------------
@@ -1224,19 +1213,41 @@ server = function(input, output, session) {
       result = prepareExerciseDownloadFiles(session, isolate(input$exercisesToDownload))
       exerciseFiles = unlist(result$exerciseFiles, recursive = TRUE)
 
-      zip(zipfile=fname, files=exerciseFiles, flags='-r9XjFS')
+      # zip(zipfile=fname, files=exerciseFiles, flags='-r9XjFS')
+      zip(zipfile=fname, files=exerciseFiles, flags='-r9Xj')
       removeRuntimeFiles(session)
     },
     contentType = "application/zip",
   )
 
   # PARSE EXERCISES -------------------------------------------------------------
+  # observeEvent(input$parseExercise, {
+  #   startWait(session)
+  # 
+  #   future_promise({
+  #     Sys.sleep(10)
+  #     result = parseExercise(isolate(input$parseExercise), isolate(input$seedValueExercises), collectWarnings, log_, getDir(session))
+  #     
+  #   }, seed = TRUE) %...>% (function(result) {
+  #     loadExercise(session, result$id, result$seed, result$html, result$exExtra, result$figure, result$message)
+  #     stopWait(session)
+  #   })
+  # 
+  #   startWait(session)
+  # 
+  #   result = parseExercise(isolate(input$parseExercise), isolate(input$seedValueExercises), collectWarnings, log_, getDir(session))
+  # 
+  #   loadExercise(session, result$id, result$seed, result$html, result$exExtra, result$figure, result$message)
+  # 
+  #   stopWait(session)
+  # })
+  
   exerciseParsing = eventReactive(input$parseExercise, {
     startWait(session)
-    
+
     x = callr::r_bg(
       func = parseExercise,
-      args = list(isolate(input$parseExercise), isolate(input$seedValueExercises), collectWarnings, getDir(session)),
+      args = list(isolate(input$parseExercise), isolate(input$seedValueExercises), collectWarnings, log_, getDir(session)),
       supervise = TRUE
     )
 
@@ -1248,7 +1259,10 @@ server = function(input, output, session) {
   observe({
     if (exerciseParsing()$is_alive()) {
       invalidateLater(millis = 10, session = session)
+      
+      out_(exerciseParsing()$read_output())
     } else {
+      out_(exerciseParsing()$read_output())
       result = exerciseParsing()$get_result()
       loadExercise(session, result$id, result$seed, result$html, result$exExtra, result$figure, result$message)
       stopWait(session)
@@ -1257,20 +1271,55 @@ server = function(input, output, session) {
 
   # CREATE EXAM -------------------------------------------------------------
   examFiles = reactiveVal()
+  
+  # observeEvent(input$createExam, {
+  #   session$sendCustomMessage("changeTabTitle", 3)
+  #   startWait(session)
+  # 
+  #   settings = list(edirName=edirName,
+  #                   exerciseMin=exerciseMin,
+  #                   exerciseMax=exerciseMax,
+  #                   seedMin=seedMin,
+  #                   seedMax=seedMax)
+  # 
+  #   future({
+  #     result = createExam(isolate(input$createExam), settings, isolate(reactiveValuesToList(input)), collectWarnings, log_, getDir(session))
+  # 
+  #     return(result)
+  #   }, seed = TRUE) %...>% (function(result) {
+  #     examFiles(unlist(result$files, recursive = TRUE))
+  #     examCreationResponse(session, result$message, length(isolate(examFiles())) > 0)
+  #   })
+  # 
+  #   session$sendCustomMessage("changeTabTitle", 3)
+  #   startWait(session)
+  # 
+  #   settings = list(edirName=edirName,
+  #                   exerciseMin=exerciseMin,
+  #                   exerciseMax=exerciseMax,
+  #                   seedMin=seedMin,
+  #                   seedMax=seedMax)
+  # 
+  #   result = createExam(isolate(input$createExam), settings, isolate(reactiveValuesToList(input)), collectWarnings, log_, getDir(session))
+  # 
+  #   examFiles(unlist(result$files, recursive = TRUE))
+  # 
+  #   examCreationResponse(session, result$message, length(isolate(examFiles())) > 0)
+  # })
 
   examCreation = eventReactive(input$createExam, {
     session$sendCustomMessage("changeTabTitle", 3)
     startWait(session)
-    
+
     settings = list(edirName=edirName,
                     exerciseMin=exerciseMin,
                     exerciseMax=exerciseMax,
                     seedMin=seedMin,
                     seedMax=seedMax)
-    
+
     x = callr::r_bg(
       func = createExam,
-      args = list(isolate(input$createExam), settings, isolate(reactiveValuesToList(input)), collectWarnings, getDir(session)),
+      args = list(isolate(input$createExam), settings, isolate(reactiveValuesToList(input)), collectWarnings, log_, getDir(session)),
       supervise = TRUE
     )
 
@@ -1280,7 +1329,10 @@ server = function(input, output, session) {
   observe({
     if (examCreation()$is_alive()) {
       invalidateLater(millis = 100, session = session)
+      
+      out_(examCreation()$read_output())
     } else {
+      out_(examCreation()$read_output())
       result = examCreation()$get_result()
       examFiles(unlist(result$files, recursive = TRUE))
 
@@ -1291,7 +1343,8 @@ server = function(input, output, session) {
   output$downloadExamFiles = downloadHandler(
     filename = "exam.zip",
     content = function(fname) {
-      zip(zipfile=fname, files=isolate(examFiles()), flags='-r9XjFS')
+      # zip(zipfile=fname, files=isolate(examFiles()), flags='-r9XjFS')
+      zip(zipfile=fname, files=isolate(examFiles()), flags='-r9Xj')
     },
     contentType = "application/zip"
   )
@@ -1323,21 +1376,20 @@ server = function(input, output, session) {
     session$sendCustomMessage("f_langDeEn", 1)
   })
   
-  # evaluate scans - trigger
   examScanEvaluation = eventReactive(input$evaluateExam, {
     session$sendCustomMessage("changeTabTitle", 3)
     startWait(session)
-    
+
     settings = list(cores=cores,
                     maxChoices=maxChoices)
-
+    
     # background exercise
     x = callr::r_bg(
       func = evaluateExamScans,
-      args = list(isolate(reactiveValuesToList(input)), settings, collectWarnings, getDir(session)),
+      args = list(isolate(reactiveValuesToList(input)), settings, collectWarnings, log_, getDir(session)),
       supervise = TRUE
     )
-    
+
     return(x)
   })
 
@@ -1345,36 +1397,62 @@ server = function(input, output, session) {
   observe({
     if (examScanEvaluation()$is_alive()) {
       invalidateLater(millis = 100, session = session)
-    } else {
-      result = examScanEvaluation()$get_result()
       
+      out_(examScanEvaluation()$read_output())
+    } else {
+      out_(examScanEvaluation()$read_output())
+      result = examScanEvaluation()$get_result()
+
       # save result in reactive value
       examScanEvaluationData(result)
-      
+
       # open modal
       evaluateExamScansResponse(session, result)
     }
   })
+  
+  # observeEvent(input$proceedEvaluation, {
+  #   session$sendCustomMessage("changeTabTitle", 3)
+  # 
+  #   dir = getDir(session)
+  #   removeModal()
+  # 
+  #   result = isolate(examScanEvaluationData())
+  #   result$scans_reg_fullJoinData = isolate(input$proceedEvaluation$scans_reg_fullJoinData)
+  #   result$scans_reg_fullJoinData = as.data.frame(Reduce(rbind, result$scans_reg_fullJoinData))
+  # 
+  #   examScanEvaluationData(result)
+  # 
+  #   settings = list(edirName=edirName)
+  # 
+  #   result = evaluateExamFinalize(isolate(examScanEvaluationData()$preparedEvaluation), isolate(input$proceedEvaluation), settings, collectWarnings, log_, dir)
+  # 
+  #   # save result in reactive value
+  #   examFinalizeEvaluationData(result)
+  # 
+  #   # open modal
+  #   evaluateExamFinalizeResponse(session, isolate(reactiveValuesToList(input)), result)
+  # })
 
   # finalizing evaluation - trigger
   examFinalizeEvaluation = eventReactive(input$proceedEvaluation, {
     session$sendCustomMessage("changeTabTitle", 3)
-    
+
     dir = getDir(session)
     removeModal()
-    
+
     result = isolate(examScanEvaluationData())
     result$scans_reg_fullJoinData = isolate(input$proceedEvaluation$scans_reg_fullJoinData)
-    result$scans_reg_fullJoinData = as.data.frame(Reduce(rbind, result$scans_reg_fullJoinData)) 
-    
+    result$scans_reg_fullJoinData = as.data.frame(Reduce(rbind, result$scans_reg_fullJoinData))
+
     examScanEvaluationData(result)
-    
+
     settings = list(edirName=edirName)
-    
+
     # background exercise
     x = callr::r_bg(
       func = evaluateExamFinalize,
-      args = list(isolate(examScanEvaluationData()$preparedEvaluation), isolate(input$proceedEvaluation), settings, collectWarnings, dir),
+      args = list(isolate(examScanEvaluationData()$preparedEvaluation), isolate(input$proceedEvaluation), settings, collectWarnings, log_, dir),
       supervise = TRUE
     )
 
@@ -1385,12 +1463,15 @@ server = function(input, output, session) {
   observe({
     if (examFinalizeEvaluation()$is_alive()) {
       invalidateLater(millis = 100, session = session)
-    } else {
-      result = examFinalizeEvaluation()$get_result()
       
+      out_(examFinalizeEvaluation()$read_output())
+    } else {
+      out_(examFinalizeEvaluation()$read_output())
+      result = examFinalizeEvaluation()$get_result()
+
       # save result in reactive value
       examFinalizeEvaluationData(result)
-      
+
       # open modal
       evaluateExamFinalizeResponse(session, isolate(reactiveValuesToList(input)), result)
     }
@@ -1400,7 +1481,8 @@ server = function(input, output, session) {
   output$downloadEvaluationFiles = downloadHandler(
     filename = "evaluation.zip",
     content = function(fname) {
-      zip(zipfile=fname, files=unlist(isolate(examFinalizeEvaluationData()$preparedEvaluation$files), recursive = TRUE), flags='-r9XjFS')
+      # zip(zipfile=fname, files=unlist(isolate(examFinalizeEvaluationData()$preparedEvaluation$files), recursive = TRUE), flags='-r9XjFS')
+      zip(zipfile=fname, files=unlist(isolate(examFinalizeEvaluationData()$preparedEvaluation$files), recursive = TRUE), flags='-r9Xj')
     },
     contentType = "application/zip"
   )
@@ -1409,9 +1491,10 @@ server = function(input, output, session) {
   observeEvent(input$backTo_evaluateExamScansResponse, {
     removeModal()
     
-    unlink(examFinalizeEvaluationData()$preparedEvaluation$files$scanEvaluation)
     unlink(examFinalizeEvaluationData()$preparedEvaluation$files$nops_evaluationCsv)
     unlink(examFinalizeEvaluationData()$preparedEvaluation$files$nops_evaluationZip)
+    unlink(examFinalizeEvaluationData()$preparedEvaluation$files$nops_evalInputTxt)
+    unlink(examFinalizeEvaluationData()$preparedEvaluation$files$nops_statisticsTxt)
     
     result = isolate(examScanEvaluationData())
     
