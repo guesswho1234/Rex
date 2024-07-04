@@ -1,4 +1,4 @@
-# Rex: Shiny R/exams Dashboard <img src="https://raw.githubusercontent.com/guesswho1234/Rex/main/www/logo.svg" align="right" alt="Rex logo" width="20vw" />
+# Rex: Shiny R/exams Dashboard <img src="https://raw.githubusercontent.com/guesswho1234/Rex/main/www/logo.svg" align="right" alt="Rex logo" width="60vw" />
 
 This repository provides an interactive [shiny](https://shiny.posit.co/) dashboard
 for creating and evaluating written single and multiple-choice exams. The underlying workhorse
