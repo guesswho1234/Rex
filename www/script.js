@@ -565,6 +565,24 @@ Shiny.addCustomMessageHandler('wait', function(status) {
 	}
 });
 
+Shiny.addCustomMessageHandler('progress', function(status) {
+	if(status === 0) {
+		$('#progressBar').addClass("active");
+	} else {
+		$('#progressBar').removeClass("active");
+	}
+	
+	$('#progressBarValue').removeClass();
+	$('#progressBarValue').addClass("value-000");
+});
+
+Shiny.addCustomMessageHandler('updateProgress', function(update) {
+	if ( !$('#progressBarValue').hasClass("value-100") ){
+		$('#progressBarValue').removeClass();
+		$('#progressBarValue').addClass("value-" + update);
+	}
+});
+
 /* --------------------------------------------------------------
  CONFIRM  
 -------------------------------------------------------------- */
@@ -3101,12 +3119,18 @@ $('body').on('click', '#shiny-modal button[data-dismiss="modal"]', function() {
 });
 
 Shiny.addCustomMessageHandler('setExanIds', function(jsonData) {
-	rex.examEvaluation['examIds'] = JSON.parse(jsonData);
+	rex.examEvaluation.examIds = JSON.parse(jsonData);
 });
 
-Shiny.addCustomMessageHandler('compareScanRegistrationData', function(jsonData) {
-	rex.examEvaluation.scans_reg_fullJoinData = JSON.parse(jsonData);
-	
+Shiny.addCustomMessageHandler('resetScanRegistrationData', function(x) {
+	rex.examEvaluation.scans_reg_fullJoinData = [];
+});
+
+Shiny.addCustomMessageHandler('appendScanRegistrationData', function(jsonData) {
+	rex.examEvaluation.scans_reg_fullJoinData.push(...JSON.parse(jsonData));
+});
+
+Shiny.addCustomMessageHandler('finalizeScanRegistrationData', function(x) {
 	rex.examEvaluation.scans_reg_fullJoinData = rex.examEvaluation.scans_reg_fullJoinData.map(obj => {
 		return { ...obj, sheet: zeroPad(obj.sheet, 11), scrambling: zeroPad(obj.scrambling, 2), type: zeroPad(obj.type, 3), changeHistory: 0 }
 	});
@@ -3124,7 +3148,7 @@ Shiny.addCustomMessageHandler('evaluationStatistics', function(jsonData) {
 	rex.examEvaluation.statistics = JSON.parse(jsonData);	
 });
 
-$('body').on('click', '#proceedEval', function() {
+$('body').on('click', '#proceedEval', function() {	
 	const properties = ['scan', 'sheet', 'scrambling', 'type', 'replacement', 'registration'].concat(new Array(45).fill(1).map( (_, i) => i+1 ));
 	const datenTxt = Object.assign({}, rex.examEvaluation.scans_reg_fullJoinData.filter(x => scanValid(x)).map(x => Object.assign({}, properties.map(y => x[y] === undefined ? "00000" : x[y], {}))));
 	

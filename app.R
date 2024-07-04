@@ -21,7 +21,7 @@ library(openssl) # openssl_2.1.1
 library(shinyauthr) # shinyauthr_1.0.0
 library(sodium) # sodium_1.3.1
 library(magick) # magick_2.7.4
-# library(RSQLite) # for using shinyauthr wit sqlite, https://cran.r-project.org/web/packages/shinyauthr/readme/README.html
+# library(RSQLite) # for using shinyauthr with sqlite, https://cran.r-project.org/web/packages/shinyauthr/readme/README.html
 
 # CONNECTION --------------------------------------------------------------
 options(shiny.host = "0.0.0.0")
@@ -513,6 +513,8 @@ source("./source/rToJson.R")
         # scans
         pngFiles = NULL
         pdfFiles = NULL
+        totalPdfLength = 0
+        totalPngLength = length(input$evaluateExam$examScanPngNames)
 
         if(length(input$evaluateExam$examScanPdfNames) > 0){
           input$evaluateExam$examScanPdfNames = as.list(make.unique(unlist(input$evaluateExam$examScanPdfNames), sep="_"))
@@ -521,6 +523,8 @@ source("./source/rToJson.R")
             file = paste0(dir, "/", input$evaluateExam$examScanPdfNames[[i]], ".pdf")
             raw = openssl::base64_decode(input$evaluateExam$examScanPdfFiles[[i]])
             writeBin(raw, con = file)
+            
+            totalPdfLength <<- totalPdfLength + qpdf::pdf_length(file)
 
             return(file)
           }))
@@ -549,7 +553,7 @@ source("./source/rToJson.R")
         numExercises = length(examExerciseMetaData[[1]])
         numChoices = length(examExerciseMetaData[[1]][[1]]$questionlist)
         
-        preparedEvaluation = list(meta=list(examIds=examIds, examName=examName, numExercises=numExercises, numChoices=numChoices),
+        preparedEvaluation = list(meta=list(examIds=examIds, examName=examName, numExercises=numExercises, numChoices=numChoices, totalPdfLength=totalPdfLength, totalPngLength=totalPngLength),
                                   fields=list(rotate=rotate, points=points, regLength=regLength, partial=partial, negative=negative, rule=rule, mark=mark, labels=labels, language=language),
                                   files=list(solution=solutionFile, registeredParticipants=registeredParticipantsFile, scans=scanFiles))
         
@@ -580,6 +584,8 @@ source("./source/rToJson.R")
           scanFileZipName = gsub("_+", "_", paste0(examName, "_nops_scan.zip"))
 
           cat("Rex: Evaluating scans.\n")
+          cat(paste0("Rex: Scans to convert = ", meta$totalPdfLength), "\n")
+          cat(paste0("Rex: Scans to process = ", meta$totalPdfLength + meta$totalPngLength), "\n")
           
           scanData = exams::nops_scan(images=files$scans,
                            file=scanFileZipName,
@@ -689,16 +695,35 @@ source("./source/rToJson.R")
     
     # display scanData in modal
     if (!is.null(result$scans_reg_fullJoinData) && nrow(result$scans_reg_fullJoinData) > 0) {
-      scans_reg_fullJoinData_json = rjs_vectorToJsonArray(
-        apply(result$scans_reg_fullJoinData, 1, function(x) {
-          rjs_keyValuePairsToJsonObject(names(result$scans_reg_fullJoinData), x)
-        })
-      )
+      session$sendCustomMessage("resetScanRegistrationData", 1)
+
+      init = 1
+      from = 1
+      to = nrow(result$scans_reg_fullJoinData)
+      step = 10
+      
+      repeat{
+        chunk = from:min(from + step - 1, to)
+        
+        scans_reg_fullJoinData_json = rjs_vectorToJsonArray(
+          apply(result$scans_reg_fullJoinData[chunk,], 1, function(x) {
+            rjs_keyValuePairsToJsonObject(names(result$scans_reg_fullJoinData), x)
+          })
+        )
+        
+        session$sendCustomMessage("appendScanRegistrationData", scans_reg_fullJoinData_json)
+        
+        from = from + step
+        
+        if(from > to){
+          break
+        }
+      }
       
       examIds_json = rjs_vectorToJsonStringArray(result$preparedEvaluation$meta$examIds)
-  
+      
       session$sendCustomMessage("setExanIds", examIds_json)
-      session$sendCustomMessage("compareScanRegistrationData", scans_reg_fullJoinData_json)
+      session$sendCustomMessage("finalizeScanRegistrationData", 1)
     } 
     
     # display scanData again after going back from "evaluateExamFinalizeResponse"
@@ -972,24 +997,54 @@ source("./source/rToJson.R")
     session$sendCustomMessage("progress", 0)
   }
   
-  updateProrgress = function(session, increment, message){
-    message = unname(unlist(message))
+  updateProrgress = function(session, increment){
+    update = sprintf(paste0("%0", 3, "d"), round(increment, 0))
     
-    if(length(message) > 1)
-      message = paste0("...\n", tail(message,1))
-    
-    update = rjs_keyValuePairsToJsonObject(keys=c("increment", "message"), values=c(increment, message))
-    
-    session$sendCustomMessage("UpdateProgress", update)
+    session$sendCustomMessage("updateProgress", update)
   }
   
   finalizeProgress = function(session){
     session$sendCustomMessage("progress", 1)
   }
   
-  out_ = function(x){
-    if(x != "")
-      cat(x)
+  monitorProgressScanEval = function(session, out, data){
+    data = within(data, {
+      progress = progress + sum(sapply(strsplit(out, split="\n"), function(x){
+        if(length(x) == 0)
+          return(0)
+        
+        matchTotalPdfLength = "Rex: Scans to convert = "
+        
+        if(any(grepl(matchTotalPdfLength, x)) && is.null(totalPdfLength))
+          totalPdfLength <<- as.numeric(gsub(matchTotalPdfLength, "", x[which(grepl(matchTotalPdfLength, x))]))
+        
+        matchTotalPngLength = "Rex: Scans to process = "
+        
+        if(any(grepl(matchTotalPngLength, x)) && is.null(totalPngLength))
+          totalPngLength <<- as.numeric(gsub(matchTotalPngLength, "", x[which(grepl(matchTotalPngLength, x))]))
+        
+        if(is.null(totalPngLength) || is.null(totalPdfLength))
+          return(0)
+        
+        converts = sum(grepl("Converting PDF to PNG", x))
+        reads = sum(grepl(".PNG:", x))
+        adds = sum(grepl("adding:", x))
+        
+        (converts + reads + adds) / (totalPdfLength + totalPngLength * 2 + 1) * 100 
+      })) 
+      
+      if(progress - previousProgress > 1) {
+        previousProgress = progress
+        updateProrgress(session, progress)
+      }
+    })
+
+    return(data)
+  }
+  
+  out_ = function(out){
+    if(out != "")
+      cat(out)
   }
   
 # PARAMETERS --------------------------------------------------------------
@@ -1220,28 +1275,6 @@ server = function(input, output, session) {
     contentType = "application/zip",
   )
 
-  # PARSE EXERCISES -------------------------------------------------------------
-  # observeEvent(input$parseExercise, {
-  #   startWait(session)
-  # 
-  #   future_promise({
-  #     Sys.sleep(10)
-  #     result = parseExercise(isolate(input$parseExercise), isolate(input$seedValueExercises), collectWarnings, log_, getDir(session))
-  #     
-  #   }, seed = TRUE) %...>% (function(result) {
-  #     loadExercise(session, result$id, result$seed, result$html, result$exExtra, result$figure, result$message)
-  #     stopWait(session)
-  #   })
-  # 
-  #   startWait(session)
-  # 
-  #   result = parseExercise(isolate(input$parseExercise), isolate(input$seedValueExercises), collectWarnings, log_, getDir(session))
-  # 
-  #   loadExercise(session, result$id, result$seed, result$html, result$exExtra, result$figure, result$message)
-  # 
-  #   stopWait(session)
-  # })
-  
   exerciseParsing = eventReactive(input$parseExercise, {
     startWait(session)
 
@@ -1271,41 +1304,6 @@ server = function(input, output, session) {
 
   # CREATE EXAM -------------------------------------------------------------
   examFiles = reactiveVal()
-  
-  # observeEvent(input$createExam, {
-  #   session$sendCustomMessage("changeTabTitle", 3)
-  #   startWait(session)
-  # 
-  #   settings = list(edirName=edirName,
-  #                   exerciseMin=exerciseMin,
-  #                   exerciseMax=exerciseMax,
-  #                   seedMin=seedMin,
-  #                   seedMax=seedMax)
-  # 
-  #   future({
-  #     result = createExam(isolate(input$createExam), settings, isolate(reactiveValuesToList(input)), collectWarnings, log_, getDir(session))
-  # 
-  #     return(result)
-  #   }, seed = TRUE) %...>% (function(result) {
-  #     examFiles(unlist(result$files, recursive = TRUE))
-  #     examCreationResponse(session, result$message, length(isolate(examFiles())) > 0)
-  #   })
-  # 
-  #   session$sendCustomMessage("changeTabTitle", 3)
-  #   startWait(session)
-  # 
-  #   settings = list(edirName=edirName,
-  #                   exerciseMin=exerciseMin,
-  #                   exerciseMax=exerciseMax,
-  #                   seedMin=seedMin,
-  #                   seedMax=seedMax)
-  # 
-  #   result = createExam(isolate(input$createExam), settings, isolate(reactiveValuesToList(input)), collectWarnings, log_, getDir(session))
-  # 
-  #   examFiles(unlist(result$files, recursive = TRUE))
-  # 
-  #   examCreationResponse(session, result$message, length(isolate(examFiles())) > 0)
-  # })
 
   examCreation = eventReactive(input$createExam, {
     session$sendCustomMessage("changeTabTitle", 3)
@@ -1357,8 +1355,11 @@ server = function(input, output, session) {
   })
 
   # EVALUATE EXAM -------------------------------------------------------------
+  scanEvaluationProgressData = list()
+  
   examScanEvaluationData = reactiveVal()
   examFinalizeEvaluationData = reactiveVal()
+  
   
   # add / remove grading key item
   observeEvent(input$addGradingKeyitem, {
@@ -1379,7 +1380,12 @@ server = function(input, output, session) {
   examScanEvaluation = eventReactive(input$evaluateExam, {
     session$sendCustomMessage("changeTabTitle", 3)
     startWait(session)
-
+    initProrgress(session)
+    scanEvaluationProgressData <<- list(totalPdfLength = NULL,
+                                        totalPngLength = NULL,
+                                        previousProgress = 0,
+                                        progress = 0)
+    
     settings = list(cores=cores,
                     maxChoices=maxChoices)
     
@@ -1392,15 +1398,22 @@ server = function(input, output, session) {
 
     return(x)
   })
-
+  
   # evaluate scans - callback
   observe({
     if (examScanEvaluation()$is_alive()) {
       invalidateLater(millis = 100, session = session)
       
-      out_(examScanEvaluation()$read_output())
+      out = examScanEvaluation()$read_output()
+      scanEvaluationProgressData <<- monitorProgressScanEval(session, out, scanEvaluationProgressData)
+      out_(out)
     } else {
-      out_(examScanEvaluation()$read_output())
+      
+      out = examScanEvaluation()$read_output()
+      scanEvaluationProgressData <<- monitorProgressScanEval(session, out, scanEvaluationProgressData)
+      finalizeProgress(session)
+      out_(out)
+      
       result = examScanEvaluation()$get_result()
 
       # save result in reactive value
@@ -1410,29 +1423,6 @@ server = function(input, output, session) {
       evaluateExamScansResponse(session, result)
     }
   })
-  
-  # observeEvent(input$proceedEvaluation, {
-  #   session$sendCustomMessage("changeTabTitle", 3)
-  # 
-  #   dir = getDir(session)
-  #   removeModal()
-  # 
-  #   result = isolate(examScanEvaluationData())
-  #   result$scans_reg_fullJoinData = isolate(input$proceedEvaluation$scans_reg_fullJoinData)
-  #   result$scans_reg_fullJoinData = as.data.frame(Reduce(rbind, result$scans_reg_fullJoinData))
-  # 
-  #   examScanEvaluationData(result)
-  # 
-  #   settings = list(edirName=edirName)
-  # 
-  #   result = evaluateExamFinalize(isolate(examScanEvaluationData()$preparedEvaluation), isolate(input$proceedEvaluation), settings, collectWarnings, log_, dir)
-  # 
-  #   # save result in reactive value
-  #   examFinalizeEvaluationData(result)
-  # 
-  #   # open modal
-  #   evaluateExamFinalizeResponse(session, isolate(reactiveValuesToList(input)), result)
-  # })
 
   # finalizing evaluation - trigger
   examFinalizeEvaluation = eventReactive(input$proceedEvaluation, {

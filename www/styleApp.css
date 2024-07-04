@@ -85,16 +85,12 @@ main {
 
 #disableOverlay div,
 #confirmdialogOverlayContent {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100vw;
-	height: 100vh;
+	position: relative;
+	top: 50vh;
 	background: var(---transparent);
 	z-index: 999;
 	display: flex;
-	justify-content: center;
-	align-items: center;
+	margin: auto;
 }
 
 #disableOverlay div span,
@@ -104,12 +100,140 @@ main {
 	font-weight: bold;
 	padding: 10px;
 	border-radius: 3px;
+	margin: auto;
 }
 
 #disableOverlay div span {
 	display: flex;
 	background: var(---background);
 }
+
+
+#progressBar {
+	display: none;
+	width: 100px;
+	height: 6px;
+	font-weight: bold;
+	margin: auto;
+	position: relative;
+	top: calc(50vh + 10px);
+	background: var(---background);
+}
+
+#progressBar.active {
+	display: grid !important;
+}
+
+#progressBarContainer {
+	display: flex;
+	background: var(---transparent);
+	overflow: hidden;
+	padding: 1px;
+}
+#progressBarValue {
+	background: var(---main);
+}
+
+.value-001 { width: 1%; }
+.value-002 { width: 2%; }
+.value-003 { width: 3%; }
+.value-004 { width: 4%; }
+.value-005 { width: 5%; }
+.value-006 { width: 6%; }
+.value-007 { width: 7%; }
+.value-008 { width: 8%; }
+.value-009 { width: 9%; }
+.value-010 { width: 10%; }
+.value-011 { width: 11%; }
+.value-012 { width: 12%; }
+.value-013 { width: 13%; }
+.value-014 { width: 14%; }
+.value-015 { width: 15%; }
+.value-016 { width: 16%; }
+.value-017 { width: 17%; }
+.value-018 { width: 18%; }
+.value-019 { width: 19%; }
+.value-020 { width: 20%; }
+.value-021 { width: 21%; }
+.value-022 { width: 22%; }
+.value-023 { width: 23%; }
+.value-024 { width: 24%; }
+.value-025 { width: 25%; }
+.value-026 { width: 26%; }
+.value-027 { width: 27%; }
+.value-028 { width: 28%; }
+.value-029 { width: 29%; }
+.value-030 { width: 30%; }
+.value-031 { width: 31%; }
+.value-032 { width: 32%; }
+.value-033 { width: 33%; }
+.value-034 { width: 34%; }
+.value-035 { width: 35%; }
+.value-036 { width: 36%; }
+.value-037 { width: 37%; }
+.value-038 { width: 38%; }
+.value-039 { width: 39%; }
+.value-040 { width: 40%; }
+.value-041 { width: 41%; }
+.value-042 { width: 42%; }
+.value-043 { width: 43%; }
+.value-044 { width: 44%; }
+.value-045 { width: 45%; }
+.value-046 { width: 46%; }
+.value-047 { width: 47%; }
+.value-048 { width: 48%; }
+.value-049 { width: 49%; }
+.value-050 { width: 50%; }
+.value-051 { width: 51%; }
+.value-052 { width: 52%; }
+.value-053 { width: 53%; }
+.value-054 { width: 54%; }
+.value-055 { width: 55%; }
+.value-056 { width: 56%; }
+.value-057 { width: 57%; }
+.value-058 { width: 58%; }
+.value-059 { width: 59%; }
+.value-060 { width: 60%; }
+.value-061 { width: 61%; }
+.value-062 { width: 62%; }
+.value-063 { width: 63%; }
+.value-064 { width: 64%; }
+.value-065 { width: 65%; }
+.value-066 { width: 66%; }
+.value-067 { width: 67%; }
+.value-068 { width: 68%; }
+.value-069 { width: 69%; }
+.value-070 { width: 70%; }
+.value-071 { width: 71%; }
+.value-072 { width: 72%; }
+.value-073 { width: 73%; }
+.value-074 { width: 74%; }
+.value-075 { width: 75%; }
+.value-076 { width: 76%; }
+.value-077 { width: 77%; }
+.value-078 { width: 78%; }
+.value-079 { width: 79%; }
+.value-080 { width: 80%; }
+.value-081 { width: 81%; }
+.value-082 { width: 82%; }
+.value-083 { width: 83%; }
+.value-084 { width: 84%; }
+.value-085 { width: 85%; }
+.value-086 { width: 86%; }
+.value-087 { width: 87%; }
+.value-088 { width: 88%; }
+.value-089 { width: 89%; }
+.value-090 { width: 90%; }
+.value-091 { width: 91%; }
+.value-092 { width: 92%; }
+.value-093 { width: 93%; }
+.value-094 { width: 94%; }
+.value-095 { width: 95%; }
+.value-096 { width: 96%; }
+.value-097 { width: 97%; }
+.value-098 { width: 98%; }
+.value-099 { width: 99%; }
+.value-100 { width: 100%; }
 
 #confirmdialogOverlayContentBox {
 	display: block;
