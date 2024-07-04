@@ -3,26 +3,36 @@
 This repository provides an interactive [shiny](https://shiny.posit.co/) dashboard
 for creating and evaluating written single and multiple-choice exams. The underlying workhorse
 is [R/exams](https://www.R-exams.org/), in particular the so-called
-[NOPS exams](https://www.R-exams.org/tutorials/exams2nops/) functions which support both
-single-choice and multiple-choice exercises along with automatic evaluation.
+[NOPS exams](https://www.R-exams.org/tutorials/exams2nops/) functions, which support both
+randomized single-choice and multiple-choice exercises along with automatic evaluation.
 
 Rex is developed by [Sebastian Bachler](https://www.uibk.ac.at/ibf/team/bachler.html.en)
 and is still work-in-progress.
+
+## System Resources
+
+For Rex to function properly, make sure the following resources are available on your system. 
+
+- libsodium-dev
+- libmagick++-dev 
+- libpoppler-cpp-dev
+- ghostscript
+- texlive-full
 
 ## Run
 
 ### Localhost
 
-Install all the necessary R packages including their dependencies.
+Install all the necessary R packages including their dependencies (see section "PACKAGES" in `app.R`). 
 
-Start up via `shiny::runApp(appDir = 'base directory containing app.R', host = '0.0.0.0', port = 3838);` or, alternatively, via RStudio by 
+Start up via `shiny::runApp(appDir = '<base directory containing app.R>', host = '0.0.0.0', port = 3838);` or, alternatively, via RStudio by 
 opening and running `app.R`.
 
 ### Docker
 
-Build your image with the supplied docker file: `docker build --platform linux/x86_64 -t shiny-docker-rex .`.
+Build your image with the supplied docker file: `docker build --platform linux/x86_64 -t rex .`.
 
-Run your image: `docker run -p 3838:3838 shiny-docker-rex`.
+Run your image: `docker run -p 3838:3838 rex`.
 
 ## Use
 
@@ -32,8 +42,9 @@ Once you got the application running, authenticate using "rex" as both login and
 
 #### Manage exercises
 
-The entire management of exercises takes place in the "EXERCISES" tab of the application. For all exercises the app 
-distinguishes between simple editable exercises (exercises created within Rex) and complex exercises (exercises created / programmed outside of Rex) that are not editable. Based on that, various functionalities are enabled or disabled.
+The entire management of exercises takes place in the "EXERCISES" tab of the application. For all exercises the app distinguishes between two types of exercises. Based on that, various functionalities are enabled or disabled.
+- Simple editable exercises (exercises created within Rex) 
+- Complex non-editable exercises (exercises created / programmed outside of Rex)
 
 When editing simple exercise, the following fields can be edited:
 - Name
@@ -73,7 +84,7 @@ Input fields that are empty as well as the "Grading key" fields when "Grade exam
 - "Evaluation scans": all the evaluation sheet scans as either PDF files in the same orientation
 
 When clicking the "Evaluate exam" button the exam evaluation process starts. In a first stage, all the supplied scans are processed. Once this first stage is finished, a popup will show and, given that no errors where encountered, allow to inspect and edit all the scans together with the information extracted from them. When proceeding, the second and last stage starts. Once also this stage is finished, again a popup will show and, given that no errors where encountered, offer to save the exam evaluation. Also, it is possible to revert back to the first stage again. When saving the exam evaluation, a ZIP archive will be downloaded. In this archive you will find the following files:
-- Two ZIP archives, one containing all the scans as PNG files (ending with "_nops_scan.zip") and another containing the evaluation documents of each participant (ending with "_nops_eval.zip").
+- Two ZIP archives, one containing all the scans as PNG files plus the extracted raw data (ending with "_nops_scan.zip") and another containing the evaluation documents of each participant (ending with "_nops_eval.zip").
 - Two CSV files, one contsining the registered participants and another containing all the evaluation data (ending with "_nops_eval.csv")
 - The RDS file used to evaluate the exam
 - A TXT file "statistics.txt" containing some basic evaluation statistics of the exam 
