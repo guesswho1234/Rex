@@ -31,6 +31,11 @@
 		</div>	
 	</div>
 </div>
+<div id="userProfileInterfaceOverlay">
+	<div id="userProfileInterfaceOverlayContent">
+		{{ userProfileInterface }}
+	</div>
+</div>
 <nav class="navbar navbar-default navbar-static-top" role="navigation">
 	<ul class="nav navbar-nav" data-tabsetid="9289">
 		<li>
@@ -84,9 +89,11 @@
 				<span>&#10084;</span>
 			</div>
 		</div>
+		<div id="userProfile">
+			{{ userProfileButton }}
+		</div>
 		<div id="logoutContainer">
 			{{ shinyauthr::logoutUI(id = "logout") }}
-			<div id="logoutOverlay"></div>
 		</div>
 	</div>
 </nav>

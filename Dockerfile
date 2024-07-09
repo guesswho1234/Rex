@@ -16,7 +16,7 @@ RUN set -eu \
         ;rm -rf /var/lib/apt/lists/* \
         ;
 	
-RUN R -e "install.packages(c('shinyjs', 'shinyWidgets', 'shinycssloaders', 'xtable', 'tth', 'png', 'callr', 'pdftools', 'openssl', 'shinyauthr', 'sodium', 'magick'), dependencies=TRUE)"						 
+RUN R -e "install.packages(c('shinyjs', 'shinyWidgets', 'shinycssloaders', 'xtable', 'tth', 'png', 'callr', 'pdftools', 'openssl', 'shinyauthr', 'sodium', 'magick', 'RSQLite', 'DBI'), dependencies=TRUE)"						 
 RUN R -e "install.packages('exams', repos='http://R-Forge.R-project.org', type='source')"
 RUN R -e "install.packages('qpdf', repos='http://cran.us.r-project.org')"
 

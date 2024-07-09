@@ -21,7 +21,8 @@ library(openssl) # openssl_2.1.1
 library(shinyauthr) # shinyauthr_1.0.0
 library(sodium) # sodium_1.3.1
 library(magick) # magick_2.7.4
-# library(RSQLite) # for using shinyauthr with sqlite, https://cran.r-project.org/web/packages/shinyauthr/readme/README.html
+library(RSQLite) # RSQLite_2.3.6
+library(DBI) # DBI_1.2.3
 
 # CONNECTION --------------------------------------------------------------
 options(shiny.host = "0.0.0.0")
@@ -35,6 +36,8 @@ source("./source/filesAndDirectories.R")
 source("./source/customElements.R")
 source("./source/tryCatch.R")
 source("./source/rToJson.R")
+source("./source/appStatus.R")
+source("./source/database.R")
 
 # FUNCTIONS ----------------------------------------------------------------
   # PREPARE DOWNLOAD EXERCISES ----------------------------------------------
@@ -983,30 +986,7 @@ source("./source/rToJson.R")
     session$sendCustomMessage("f_langDeEn", 1)
   }
   
-  # MISC --------------------------------------------------------------------
-  startWait = function(session){
-    session$sendCustomMessage("wait", 0)
-  }
-  
-  stopWait = function(session){
-    removeRuntimeFiles(session)
-    session$sendCustomMessage("wait", 1)
-  }
-
-  initProrgress = function(session){
-    session$sendCustomMessage("progress", 0)
-  }
-  
-  updateProrgress = function(session, increment){
-    update = sprintf(paste0("%0", 3, "d"), round(increment, 0))
-    
-    session$sendCustomMessage("updateProgress", update)
-  }
-  
-  finalizeProgress = function(session){
-    session$sendCustomMessage("progress", 1)
-  }
-  
+  # MONITORING --------------------------------------------------------------------
   monitorProgressScanEval = function(session, out, data){
     data = within(data, {
       progress = progress + sum(sapply(strsplit(out, split="\n"), function(x){
@@ -1041,12 +1021,7 @@ source("./source/rToJson.R")
 
     return(data)
   }
-  
-  out_ = function(out){
-    if(out != "")
-      cat(out)
-  }
-  
+
 # PARAMETERS --------------------------------------------------------------
   # REXAMS ------------------------------------------------------------------
   cores = NULL
@@ -1094,13 +1069,8 @@ source("./source/rToJson.R")
     source(paste0(addons_path_www, addons, "/", addons, ".R"))
   }))
   
-  # AUTH --------------------------------------------------------------------
-  user_base = data.frame(
-    user = c("rex"),
-    password = sapply(c("rex"), sodium::password_store),
-    permissions = c("admin"),
-    name = c("Rex")
-  )
+# LOG ------------------------------------------------------
+log_(content="INIT", session="", append=FALSE)
 
 # UI -----------------------------------------------------------------
 ui = htmlTemplate(
@@ -1109,27 +1079,28 @@ ui = htmlTemplate(
   
 # SERVER -----------------------------------------------------------------
 server = function(input, output, session) {
-  # log_("INIT", append=FALSE)
-
   # AUTH --------------------------------------------------------------------
-  credentials = shinyauthr::loginServer(
+  credentials = Myloginserver(
     id = "login",
-    data = user_base,
-    user_col = user,
-    pwd_col = password,
-    sodium_hashed = TRUE,
-    log_out = reactive(logout_init())
+    id_col = "id",
+    pw_col = "pw",
+    table = "user",
+    log_out = reactive(logout_init()),
+    reload_on_logout = TRUE,
+	  sodium_hashed = TRUE
   )
-
+  
   # Logout to hide
   logout_init = shinyauthr::logoutServer(
     id = "logout",
     active = reactive(credentials()$user_auth)
   )
-  
+
   eventReactive
   output$rexApp = renderUI({
     req(credentials()$user_auth)
+    
+    log_(content="Successful login.", sessionToken=session$token)
 
     # STARTUP -------------------------------------------------------------
     unlink(getDir(session), recursive = TRUE)
@@ -1142,6 +1113,10 @@ server = function(input, output, session) {
     fluidPage(
      htmlTemplate(
       filename = "app.html",
+      
+      # PROFILE MANAGER
+      userProfileButton = myUserProfileButton(),
+      userProfileInterface = myUserProfileInterface(),
     
       # EXERCISES
       textInput_seedValueExercises = textInput("seedValueExercises", label = NULL, value = initSeed),
@@ -1232,6 +1207,7 @@ server = function(input, output, session) {
   # CLEANUP -------------------------------------------------------------
   onStop(function() {
     unlink(getDir(session), recursive = TRUE)
+    log_(content="Session closed.", sessionToken=session$token)
   })
   
   # HEARTBEAT -------------------------------------------------------------
@@ -1248,7 +1224,21 @@ server = function(input, output, session) {
   observeEvent(input$pong, {
     cat("")
   })
-
+  
+  # USER --------------------------------------------------------------------
+  observeEvent(input$`profile-button`, {
+    session$sendCustomMessage("setCurrentUser", credentials()$info$id)
+  })
+  
+  observeEvent(input$`change-password-button`, {
+    userInfo = credentials()$info
+    c_pw = input$`current-login-password`
+    n_pw1 = input$`new-login-password1`
+    n_pw2 = input$`new-login-password2`
+    
+    changePassword(session, userInfo, c_pw, n_pw1, n_pw2)
+  })
+  
   # EXPORT SINGLE EXERCISE ------------------------------------------------------
   output$downloadExercise = downloadHandler(
     filename = function() {
@@ -1268,13 +1258,13 @@ server = function(input, output, session) {
       result = prepareExerciseDownloadFiles(session, isolate(input$exercisesToDownload))
       exerciseFiles = unlist(result$exerciseFiles, recursive = TRUE)
 
-      # zip(zipfile=fname, files=exerciseFiles, flags='-r9XjFS')
       zip(zipfile=fname, files=exerciseFiles, flags='-r9Xj')
       removeRuntimeFiles(session)
     },
     contentType = "application/zip",
   )
 
+  # PARSE EXERCISE ------------------------------------------------------
   exerciseParsing = eventReactive(input$parseExercise, {
     startWait(session)
 
@@ -1299,6 +1289,8 @@ server = function(input, output, session) {
       result = exerciseParsing()$get_result()
       loadExercise(session, result$id, result$seed, result$html, result$exExtra, result$figure, result$message)
       stopWait(session)
+      
+      log_(content="Exercise parsed.", sessionToken=session$token)
     }
   })
 
@@ -1331,10 +1323,13 @@ server = function(input, output, session) {
       out_(examCreation()$read_output())
     } else {
       out_(examCreation()$read_output())
+
       result = examCreation()$get_result()
       examFiles(unlist(result$files, recursive = TRUE))
 
       examCreationResponse(session, result$message, length(isolate(examFiles())) > 0)
+      
+      log_(content="Exam created.", sessionToken=session$token)
     }
   })
 
@@ -1457,6 +1452,7 @@ server = function(input, output, session) {
       out_(examFinalizeEvaluation()$read_output())
     } else {
       out_(examFinalizeEvaluation()$read_output())
+
       result = examFinalizeEvaluation()$get_result()
 
       # save result in reactive value
@@ -1464,6 +1460,8 @@ server = function(input, output, session) {
 
       # open modal
       evaluateExamFinalizeResponse(session, isolate(reactiveValuesToList(input)), result)
+      
+      log_(content="Exam evaluated.", sessionToken=session$token)
     }
   })
   

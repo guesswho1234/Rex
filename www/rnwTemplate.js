@@ -1,7 +1,4 @@
-var rnwTemplate = `<<echo=FALSE, results=hide>>=
-@
-%% \\exextra[editable,numeric]{1}
-<<echo=FALSE, results=tex>>=
+var rnwTemplate = `<<echo=FALSE, results=tex>>=
 rnwTemplate_question=?rnwTemplate_question;
 rnwTemplate_choices=?rnwTemplate_choices;
 rnwTemplate_solutions=?rnwTemplate_solutions;
@@ -40,6 +37,7 @@ exams::answerlist(ifelse(rnwTemplate_solutions, "1", "0"), rnwTemplate_solutionN
 @
 \\end{solution}
 %% META-INFORMATION
+%% \\exextra[editable,numeric]{1}
 %% \\extype{?rnwTemplate_type}
 %% \\exsolution{\\Sexpr{exams::mchoice2string(rnwTemplate_solutions)}}
 %% \\exauthor{?rnwTemplate_author}

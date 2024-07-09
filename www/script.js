@@ -163,18 +163,48 @@ $(document).on('shiny:disconnected', function(event) {
 		if(!remove)
 			return;
 		
-		setSimpleExerciseFileContents(exerciseID, true);
-		viewExercise(exerciseID, true);
+		if(typeof exerciseId !== 'undefined' ){
+			setSimpleExerciseFileContents(exerciseID, true);
+			viewExercise(exerciseID, true);
+		}
 	});	
 }).on('shiny:connected', function(event) {
    connected = true;
 });
 
 /* --------------------------------------------------------------
- LOGOUT 
+ USER PROFILE 
 -------------------------------------------------------------- */
-$('body').on('click', '#logout-button', function() {
-	location.reload();
+$('body').on('click', '#cancle-change-password-button', function() {
+	closeUserProfile();
+});
+
+function closeUserProfile() {
+	$('#userProfileInterfaceOverlay').removeClass("active");
+	$('#current-login-user_name').val("");
+	$('#current-login-password').val("");
+	$('#new-login-password1').val("");
+	$('#new-login-password2').val("");
+	$('#change-password-error').hide();
+	$('#change-password-error p').text("");
+}
+
+Shiny.addCustomMessageHandler('setCurrentUser', function(user) {
+	closeUserProfile();
+	$('#current-login-user_name').val(user);
+	$('#userProfileInterfaceOverlay').addClass("active");
+});
+
+Shiny.addCustomMessageHandler('errorUpdateUserProfile', function(error) {
+	$('#change-password-error p').text(error);
+	shinyjs.show({id:"change-password-error", anim:true, time:1, animType:"fade"});
+	setTimeout(function() {
+      shinyjs.hide({id:"change-password-error", time:1, anim:true, animType:"fade"})
+    }, 5000);
+});
+
+Shiny.addCustomMessageHandler('closeUserProfile', function(user) {
+	closeUserProfile();
 });
 
 /* --------------------------------------------------------------
@@ -402,6 +432,18 @@ document.onkeydown = function(evt) {
 		}
 	} 
 	
+	// USER PROFILE
+	if( $('#userProfileInterfaceOverlay').hasClass("active") ) {
+		switch (evtobj.keyCode) {
+			case 13: // enter
+				console.log("enter");
+				break;
+			case 27: // ESC
+				closeUserProfile();
+				break;
+		}
+	} 
+			
 	if($('#disableOverlay').hasClass("active")) return;
 		
 	// EXERCISES

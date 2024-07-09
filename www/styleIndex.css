@@ -20,6 +20,7 @@
 	---green_success_fade: rgba(67, 168, 145, 0.35);
 	---yellow_warning_fade: rgba(255, 211, 128, 0.35);
 	---red_error_fade: rgba(211, 85, 85, 0.35);	
+	---change_blue: rgba(51, 122, 183, 1);
 }
 
 html {
@@ -41,8 +42,8 @@ body {
 }	
 
 #login-button {
-	background-color: var(---green_success);
-	border-color: var(---green_success);
+	background-color: var(---change_blue);
+	border-color: var(---change_blue);
 	border: 2px solid var(---background);
 	border-radius: 5px;
 }

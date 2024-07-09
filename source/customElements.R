@@ -1,3 +1,54 @@
+myUserProfileInterface = function() {
+  content = paste0('<div class="well">
+     <h2 class="text-center" style="padding-top: 0;">
+     	User Profile
+     </h2>
+        <div class="form-group shiny-input-container">
+     	<label class="control-label" id="current-login-user_name-label" for="current-login-user_name">
+            <i class="far fa-user" role="presentation" aria-label="user icon"></i>
+     		User Name
+     	</label>
+     	<input id="current-login-user_name" type="text" class="form-control shinyjs-resettable shiny-bound-input" value="" disabled>
+        </div>
+        <div class="form-group shiny-input-container">
+			<label class="control-label" id="current-login-password-label" for="current-login-password">
+				<i class="fas fa-unlock-keyhole" role="presentation" aria-label="unlock-keyhole icon"></i>
+				Current Password
+			</label>
+			<input id="current-login-password" type="password" class="form-control shinyjs-resettable shiny-bound-input" value="" data-shinyjs-resettable-id="login-password1" data-shinyjs-resettable-type="Password" data-shinyjs-resettable-value="">
+			<br/>
+			<label class="control-label" id="new-login-password-label1" for="new-login-password1">
+				<i class="fas fa-unlock-keyhole" role="presentation" aria-label="unlock-keyhole icon"></i>
+				New Password
+			</label>
+			<input id="new-login-password1" type="password" class="form-control shinyjs-resettable shiny-bound-input" value="" data-shinyjs-resettable-id="login-password1" data-shinyjs-resettable-type="Password" data-shinyjs-resettable-value="">
+			<br/>
+			<label class="control-label" id="new-login-password-label2" for="new-login-password2">
+				<i class="fas fa-unlock-keyhole" role="presentation" aria-label="unlock-keyhole icon"></i>
+				Repeat New Password
+			</label>
+			<input id="new-login-password2" type="password" class="form-control shinyjs-resettable shiny-bound-input" value="" data-shinyjs-resettable-id="login-password2" data-shinyjs-resettable-type="Password" data-shinyjs-resettable-value="">
+		</div>
+		<div style="text-align: center;">
+			<button class="btn btn-default action-button btn-primary shiny-bound-input" id="cancle-change-password-button" style="color: white;" type="button">Cancle</button>
+			<button class="btn btn-default action-button btn-primary shiny-bound-input" id="change-password-button" style="color: white;" type="button">Change Password</button>
+		</div>
+		<div id="change-password-error" class="" style="display: none;">
+			<p style="color: red; font-weight: bold; padding-top: 5px;" class="text-center"></p>
+		</div>
+   </div>', collapse='')
+
+  return(HTML(content))
+}
+
+myChangePasswordButton = function() {
+  tags$button(id='changePassword-button', class='btn btn-default action-button shiny-bound-input', type='button', label=NULL, 'Change Password')
+}
+
+myUserProfileButton = function() {
+  tags$button(id='profile-button', class='btn btn-default action-button shiny-bound-input', type='button', label=NULL, 'User')
+}
+
 myActionButton = function(id, deText, enText, icon){
   tags$button(id = id, class = "btn btn-default action-button shiny-bound-input", type="button", myButtonStyle(deText, enText, icon))
 }

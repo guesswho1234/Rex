@@ -57,17 +57,29 @@ main {
 	cursor: no-drop;
 }
 
+#profile-button,
+#logout-button {
+	border: 2px solid var(---background);
+	border-radius: 3px;
+	color: white;
+}
+
+#profile-button {
+	background-color: var(---change_blue);
+	border-color: var(---change_blue);
+}
+
 #logout-button {
 	background-color: var(---red_error);
 	border-color: var(---red_error);
-	border: 2px solid var(---background);
-	border-radius: 3px;
 }
 
+#profile-button:hover,
 #logout-button:hover {
 	border: 2px solid var(---main);
 }
 
+#userProfileInterfaceOverlay,
 #disableOverlay,
 #confirmdialogOverlay {
 	width: 100%;
@@ -78,13 +90,30 @@ main {
 	background: var(---background4);
 }
 
+#userProfileInterfaceOverlay.active,
 #disableOverlay.active,
 #confirmdialogOverlay.active {
 	display: block !important;
 }
 
+#userProfileInterfaceOverlayContent {
+	-webkit-transform: translateY(-50%);
+	-ms-transform: translateY(-50%);
+	transform: translateY(-50%);
+	position: relative;
+	top: 50vh;
+	background: var(---transparent);
+	z-index: 999;
+	margin: auto;
+	display: flex;
+	width: fit-content;
+}
+
 #disableOverlay div,
 #confirmdialogOverlayContent {
+	-webkit-transform: translateY(-50%);
+	-ms-transform: translateY(-50%);
+	transform: translateY(-50%);
 	position: relative;
 	top: 50vh;
 	background: var(---transparent);
