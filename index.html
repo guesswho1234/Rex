@@ -19,7 +19,7 @@
 	</head>
 	<body class="color-theme textButtonMode">
 		{{ textOutput("debug") }}
-		{{ shinyauthr::loginUI(id = "login", tags$img(id = "logoLogin", class="logo", src="/www/logo.svg")) }}
+		{{ shinyauthr::loginUI(id = "login",  user_title = tags$span(HTML('<span lang="de">Benutzername</span><span lang="en">User name</span>')), pass_title = tags$span(HTML('<span lang="de">Passwort</span><span lang="en">Password</span>')),  login_title = myButtonStyle("Einloggen", "Log in"), tags$img(id = "logoLogin", class="logo", src="/www/logo.svg")) }}
 		<div class="fullHLine"></div>
 		{{ htmlOutput("rexApp", inline=TRUE) }}
 		<footer>
@@ -30,4 +30,38 @@
 			</div>
 		</footer>
 	</body>	
+	<script>
+		$('html').attr('lang', 'en');
+		$('html').attr('xml:lang', 'en');
+		
+		$('[lang="de"]').hide();
+		$('[lang="en"]').show();
+					
+		name = 'REX_JS_lang';
+		ca = document.cookie.split(';');
+		for(let i=0;i < ca.length;i++) {
+			let c = ca[i];
+			while (c.charAt(0)==' ') c = c.substring(1,c.length);
+			if (c.indexOf(name) == 0) {
+				let lang = c.substring(name.length + 1,c.length);
+				
+				if (lang === 'en') {
+					$('html').attr('lang', 'en');
+					$('html').attr('xml:lang', 'en');
+					
+					$('[lang="de"]').hide();
+					$('[lang="en"]').show();
+				} else {
+					$('html').attr('lang', 'de');
+					$('html').attr('xml:lang', 'de');
+					
+					$('[lang="en"]').hide();
+					$('[lang="de"]').show();
+				}
+			}
+		}
+		
+		delete name;
+		delete ca;
+	</script>
 </html>

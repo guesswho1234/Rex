@@ -96,6 +96,10 @@ main {
 	display: block !important;
 }
 
+#userProfileInterfaceOverlayContent .well {
+	width: 450px;
+}
+
 #userProfileInterfaceOverlayContent {
 	-webkit-transform: translateY(-50%);
 	-ms-transform: translateY(-50%);

@@ -1,5 +1,8 @@
+dbname = "rex.sqlite"
+table = "user"
+
 con = function() {
-	dbConnect(SQLite(), dbname = "rex.sqlite")
+	dbConnect(SQLite(), dbname = dbname)
 }
 
 discon = function(){
@@ -7,7 +10,10 @@ discon = function(){
 }
 
 Myloginserver <- function(id, sodium_hashed = FALSE, id_col, pw_col, table, log_out = shiny::reactiveVal(), reload_on_logout = FALSE) {
-  data <- reactive(DBI::dbGetQuery(con(), paste0("SELECT * FROM ", table)))
+  query = sqlInterpolate(ANSI(), "SELECT * FROM ?table",
+                         table = dbQuoteIdentifier(ANSI(), table))
+
+  data <- reactive(DBI::dbGetQuery(con(), query))
   discon()
   
   shiny::moduleServer(id, function(input, output, session) {
@@ -62,26 +68,24 @@ Myloginserver <- function(id, sodium_hashed = FALSE, id_col, pw_col, table, log_
 }
 
 changePassword = function(session, userInfo, c_pw, n_pw1, n_pw2){
-	if(userInfo$id == "rex"){
-      session$sendCustomMessage("errorUpdateUserProfile", "This user is protected.")
-      return(NULL)
-    }
-
-	if(!sodium::password_verify(userInfo$pw, c_pw)){
-      session$sendCustomMessage("errorUpdateUserProfile", "Incorrect password.")
-      return(NULL)
-    }
-
-    if (n_pw1 != n_pw2){
-      session$sendCustomMessage("errorUpdateUserProfile", "New passwords differ.")
-      return(NULL)
-    }
-    
-	tryCatch({
-		DBI::dbExecute(con(), "UPDATE user SET pw = ? WHERE id = ?", c(sodium::password_store(n_pw2), userInfo$id))
-		session$sendCustomMessage("closeUserProfile", 1)
+  if(!sodium::password_verify(userInfo$pw, c_pw)){
+    session$sendCustomMessage("errorUpdateUserProfile", '<span lang="de">Falsches Passwort.</span><span lang="en">Incorrect password.</span>')
+    return(NULL)
+  }
+  
+  if (n_pw1 != n_pw2){
+	
+    session$sendCustomMessage("errorUpdateUserProfile", '<span lang="de">Neue Passwörter unterscheiden sich.</span><span lang="en">New passwords differ.</span>')
+    return(NULL)
+  }
+  
+	tryCatch({  
+		DBI::dbExecute(con(), paste("UPDATE", DBI::dbQuoteIdentifier(DBI::ANSI(), table), "SET pw = ? WHERE id = ?"), list(sodium::password_store(n_pw2), userInfo$id))
+	  discon()
+	  session$sendCustomMessage("closeUserProfile", 1)
+		session$reload()
 	},
 	error = function(e) {
-		session$sendCustomMessage("errorUpdateUserProfile", "Unknown error.")
+		session$sendCustomMessage("errorUpdateUserProfile", '<span lang="de">Unbekannter Fehler.</span><span lang="en">Unknown error..</span>')
 	})
 }

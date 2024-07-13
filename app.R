@@ -38,6 +38,7 @@ source("./source/tryCatch.R")
 source("./source/rToJson.R")
 source("./source/appStatus.R")
 source("./source/database.R")
+source("./source/permission.R")
 
 # FUNCTIONS ----------------------------------------------------------------
   # PREPARE DOWNLOAD EXERCISES ----------------------------------------------
@@ -144,14 +145,14 @@ source("./source/database.R")
       value = paste(unique(unlist(warnings)), collapse="<br>")
       if(value != "") {
         key = "Warning"
-        value = paste0("W1001: ", value)
+        value = "W1001"
       }
   
       return(list(message=list(key=key, value=value), id=exercise$exerciseID, seed=seed, html=htmlPreview, exExtra=exExtra, figure=figure))
     },
     error = function(e){
       if(!grepl("E\\d{4}", e$message))
-        e$message = paste0("E1001: ", e) #$message)
+        e$message = "E1001"
       
       return(list(message=list(key="Error", value=e), id=exercise$exerciseID, seed=NULL, html=NULL))
     },
@@ -409,14 +410,14 @@ source("./source/database.R")
       value = paste(unique(unlist(warnings)), collapse="<br>")
       if(value != "") {
         key = "Warning"
-        value = paste0("W1002: ", value)
+        value = "W1002"
       }
   
       return(list(message=list(key=key, value=value), files=list(sourceFiles=preparedExam$sourceFiles, examFiles=preparedExam$examFiles)))
     },
     error = function(e){
       if(!grepl("E\\d{4}", e$message))
-        e$message = paste0("E1002: ", e) #$message)
+        e$message = "E1002"
   
       return(list(message=list(key="Error", value=e), files=list()))
     },
@@ -443,10 +444,20 @@ source("./source/database.R")
   # EVALUATE EXAM -----------------------------------------------------------
   evaluateExamScans = function(input, settings, collectWarnings, log_, dir){
     out = tryCatch({
-      cat("Rex: Preparing parameters.\n")
       scans_reg_fullJoinData = NULL
       
       warnings = collectWarnings({
+        cat("Rex: Preparing parameters.\n")
+        
+        if(length(input$evaluateExam$examScanPdfNames) + length(input$evaluateExam$examScanPngNames) < 1)
+          stop("E1025")
+        
+        if(length(input$evaluateExam$examRegisteredParticipantsnName) != 1)
+          stop("E1026")
+        
+        if(length(input$evaluateExam$examSolutionsName) != 1)
+          stop("E1027")
+
         rotate = input$rotateScans
         regLength = input$evaluationRegLength
         
@@ -563,16 +574,16 @@ source("./source/database.R")
         preparedEvaluation = within(preparedEvaluation, {
           if(length(files$scans) < 1)
             stop("E1012")
-  
+
           if(length(files$registeredParticipants) != 1)
             stop("E1013")
-  
+
           if(length(files$solution) != 1)
             stop("E1014")
-          
+
           if(any(order(as.numeric(mark)) != seq_along(mark)))
             stop("E1017")
-          
+
           if(any(as.numeric(mark) < 1) && any(as.numeric(mark) >= 1))
             stop("E1018")
 
@@ -655,7 +666,7 @@ source("./source/database.R")
       value = paste(unique(unlist(warnings)), collapse="<br>")
       if(value != "") {
         key = "Warning"
-        value = paste0("W1003: ", value)
+        value = "W1003"
       }
 
       return(list(message=list(key=key, value=value),
@@ -664,7 +675,7 @@ source("./source/database.R")
     },
     error = function(e){
       if(!grepl("E\\d{4}", e$message))
-        e$message = paste0("E1003: ", e) #$message)
+        e$message = "E1003"
 
       return(list(message=list(key="Error", value=e), scans_reg_fullJoinData=NULL, examName=NULL, files=list(), data=list()))
     },
@@ -924,7 +935,7 @@ source("./source/database.R")
       value = paste(unique(unlist(warnings)), collapse="<br>")
       if(value != "") {
         key = "Warning"
-        value = paste0("W1004: ", value)
+        value = "W1004"
       }
       
       return(list(message=list(key=key, value=value), 
@@ -932,7 +943,7 @@ source("./source/database.R")
     },
     error = function(e){
       if(!grepl("E\\d{4}", e$message))
-        e$message = paste0("E1004: ", e) #$message)
+        e$message = "E1004"
 
       return(list(message=list(key="Error", value=e), examName=NULL, files=list()))
     }, 
@@ -1099,7 +1110,7 @@ server = function(input, output, session) {
   eventReactive
   output$rexApp = renderUI({
     req(credentials()$user_auth)
-    
+ 
     log_(content="Successful login.", sessionToken=session$token)
 
     # STARTUP -------------------------------------------------------------
@@ -1117,6 +1128,7 @@ server = function(input, output, session) {
       # PROFILE MANAGER
       userProfileButton = myUserProfileButton(),
       userProfileInterface = myUserProfileInterface(),
+      userLogoutButton = myUserLogoutButton(),
     
       # EXERCISES
       textInput_seedValueExercises = textInput("seedValueExercises", label = NULL, value = initSeed),
@@ -1231,12 +1243,14 @@ server = function(input, output, session) {
   })
   
   observeEvent(input$`change-password-button`, {
-    userInfo = credentials()$info
-    c_pw = input$`current-login-password`
-    n_pw1 = input$`new-login-password1`
-    n_pw2 = input$`new-login-password2`
+    checkPm = checkPermission("P1000", credentials()$info$pm)
     
-    changePassword(session, userInfo, c_pw, n_pw1, n_pw2)
+    if(!checkPm$hasPermission){
+      session$sendCustomMessage("errorUpdateUserProfile", getNoPermissionMessage(checkPm$code, checkPm$response))
+      return(NULL)
+    }
+
+    changePassword(session, credentials()$info, input$`current-login-password`, input$`new-login-password1`, input$`new-login-password2`)
   })
   
   # EXPORT SINGLE EXERCISE ------------------------------------------------------
@@ -1266,6 +1280,14 @@ server = function(input, output, session) {
 
   # PARSE EXERCISE ------------------------------------------------------
   exerciseParsing = eventReactive(input$parseExercise, {
+    checkPm = checkPermission("P1001", credentials()$info$pm)
+    
+    if(!checkPm$hasPermission){
+      session$sendCustomMessage("removeAllExercises", 1)
+      session$sendCustomMessage("errorNoPermission", getNoPermissionMessage(checkPm$code, checkPm$response, FALSE))
+      return(callr::r_bg(function() NULL))
+    }
+    
     startWait(session)
 
     x = callr::r_bg(
@@ -1285,6 +1307,13 @@ server = function(input, output, session) {
       
       out_(exerciseParsing()$read_output())
     } else {
+      if(is.null(exerciseParsing()$get_result())){
+        removeModal()
+        stopWait(session)
+        session$sendCustomMessage("changeTabTitle", "reset")
+        return(NULL)
+      }
+      
       out_(exerciseParsing()$read_output())
       result = exerciseParsing()$get_result()
       loadExercise(session, result$id, result$seed, result$html, result$exExtra, result$figure, result$message)
@@ -1298,6 +1327,13 @@ server = function(input, output, session) {
   examFiles = reactiveVal()
 
   examCreation = eventReactive(input$createExam, {
+    checkPm = checkPermission("P1002", credentials()$info$pm)
+    
+    if(!checkPm$hasPermission){
+      session$sendCustomMessage("errorNoPermission", getNoPermissionMessage(checkPm$code, checkPm$response, FALSE))
+      return(callr::r_bg(function() NULL))
+    }
+
     session$sendCustomMessage("changeTabTitle", 3)
     startWait(session)
 
@@ -1322,6 +1358,13 @@ server = function(input, output, session) {
       
       out_(examCreation()$read_output())
     } else {
+      if(is.null(examCreation()$get_result())){
+        removeModal()
+        stopWait(session)
+        session$sendCustomMessage("changeTabTitle", "reset")
+        return(NULL)
+      }
+      
       out_(examCreation()$read_output())
 
       result = examCreation()$get_result()
@@ -1350,7 +1393,10 @@ server = function(input, output, session) {
   })
 
   # EVALUATE EXAM -------------------------------------------------------------
-  scanEvaluationProgressData = list()
+  scanEvaluationProgressData = list(totalPdfLength = NULL,
+                                    totalPngLength = NULL,
+                                    previousProgress = 0,
+                                    progress = 0)
   
   examScanEvaluationData = reactiveVal()
   examFinalizeEvaluationData = reactiveVal()
@@ -1373,6 +1419,13 @@ server = function(input, output, session) {
   })
   
   examScanEvaluation = eventReactive(input$evaluateExam, {
+    checkPm = checkPermission("P1003", credentials()$info$pm)
+    
+    if(!checkPm$hasPermission){
+      session$sendCustomMessage("errorNoPermission", getNoPermissionMessage(checkPm$code, checkPm$response, FALSE))
+      return(callr::r_bg(function() NULL))
+    }
+    
     session$sendCustomMessage("changeTabTitle", 3)
     startWait(session)
     initProrgress(session)
@@ -1403,6 +1456,13 @@ server = function(input, output, session) {
       scanEvaluationProgressData <<- monitorProgressScanEval(session, out, scanEvaluationProgressData)
       out_(out)
     } else {
+      if(is.null(examScanEvaluation()$get_result())){
+        removeModal()
+        stopWait(session)
+        session$sendCustomMessage("changeTabTitle", "reset")
+        finalizeProgress(session)
+        return(NULL)
+      }
       
       out = examScanEvaluation()$read_output()
       scanEvaluationProgressData <<- monitorProgressScanEval(session, out, scanEvaluationProgressData)
@@ -1421,6 +1481,13 @@ server = function(input, output, session) {
 
   # finalizing evaluation - trigger
   examFinalizeEvaluation = eventReactive(input$proceedEvaluation, {
+    checkPm = checkPermission("P1004", credentials()$info$pm)
+    
+    if(!checkPm$hasPermission){
+      session$sendCustomMessage("errorNoPermission", getNoPermissionMessage(checkPm$code, checkPm$response, FALSE))
+      return(callr::r_bg(function() NULL))
+    }
+    
     session$sendCustomMessage("changeTabTitle", 3)
 
     dir = getDir(session)
@@ -1451,6 +1518,13 @@ server = function(input, output, session) {
       
       out_(examFinalizeEvaluation()$read_output())
     } else {
+      if(is.null(examFinalizeEvaluation()$get_result())){
+        removeModal()
+        stopWait(session)
+        session$sendCustomMessage("changeTabTitle", "reset")
+        return(NULL)
+      }
+      
       out_(examFinalizeEvaluation()$read_output())
 
       result = examFinalizeEvaluation()$get_result()

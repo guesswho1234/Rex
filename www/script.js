@@ -195,8 +195,10 @@ Shiny.addCustomMessageHandler('setCurrentUser', function(user) {
 	$('#userProfileInterfaceOverlay').addClass("active");
 });
 
-Shiny.addCustomMessageHandler('errorUpdateUserProfile', function(error) {
-	$('#change-password-error p').text(error);
+Shiny.addCustomMessageHandler('errorUpdateUserProfile', function(errorMessage) {
+	$('#change-password-error p').html(errorMessage);
+	f_langDeEn();
+	
 	shinyjs.show({id:"change-password-error", anim:true, time:1, animType:"fade"});
 	setTimeout(function() {
       shinyjs.hide({id:"change-password-error", time:1, anim:true, animType:"fade"})
@@ -205,6 +207,14 @@ Shiny.addCustomMessageHandler('errorUpdateUserProfile', function(error) {
 
 Shiny.addCustomMessageHandler('closeUserProfile', function(user) {
 	closeUserProfile();
+});
+
+Shiny.addCustomMessageHandler('errorNoPermission', function(errorMessage) {
+	confirmDialog(errorMessage.code + ': ' + errorMessage.de, errorMessage.code + ': ' + errorMessage.en, 'OK', 'OK', '<i class="fa-solid fa-check"></i>', '', '', '',
+	function(remove) {
+		if(!remove)
+			return;
+	});
 });
 
 /* --------------------------------------------------------------
@@ -436,28 +446,32 @@ document.onkeydown = function(evt) {
 	if( $('#userProfileInterfaceOverlay').hasClass("active") ) {
 		switch (evtobj.keyCode) {
 			case 13: // enter
-				console.log("enter");
+				$('#change-password-button').click();
 				break;
 			case 27: // ESC
 				closeUserProfile();
 				break;
 		}
 	} 
-			
-	if($('#disableOverlay').hasClass("active")) return;
-		
-	// EXERCISES
+	
+	// CONFIRM DIALOG
 	if( $('#confirmdialogOverlay').hasClass('active') ) {
 		switch (evtobj.keyCode) {
 			case 13: // enter
 				$('#confirmdialogYes').click();
 				break;
 			case 27: // ESC
-				$('#confirmdialogNo').click();
+				if( $('#confirmdialogNo:hidden').length == 1 )
+					$('#confirmdialogYes').click();
+				else
+					$('#confirmdialogNo').click();
 				break;
 		}
 	} 
-	
+			
+	if($('#disableOverlay').hasClass("active")) return;
+		
+	// EXERCISES	
 	if( $('#exercises').hasClass('active') && !$('#confirmdialogOverlay').hasClass('active') ) {	
 		if ($(evtobj.target).is('input') && evtobj.keyCode == 13) { // enter
 			$(evtobj.target).change();
@@ -487,7 +501,7 @@ document.onkeydown = function(evt) {
 							examExerciseAll();
 							break;
 						case 68: // shift+d
-							exerciseRemoveAll();
+							exerciseRemoveAllDialog();
 							break;
 						case 83: // shift+s
 							exerciseDownloadAll();
@@ -636,6 +650,7 @@ function confirmDialog(deMessage, enMessage, deButtonYes, enButtonYes, iconButto
 		$('#confirmdialogYes .textButton span[lang="de"]').html(deButtonYes);
 		$('#confirmdialogYes .textButton span[lang="en"]').html(enButtonYes);
 		$('#confirmdialogYes .iconButton').html(iconButtonYes);
+		$('#confirmdialogYes').show();
 	} else {
 		$('#confirmdialogYes').hide();
 	}
@@ -644,6 +659,7 @@ function confirmDialog(deMessage, enMessage, deButtonYes, enButtonYes, iconButto
 		$('#confirmdialogNo .textButton span[lang="de"]').html(deButtonNo);
 		$('#confirmdialogNo .textButton span[lang="en"]').html(enButtonNo);
 		$('#confirmdialogNo .iconButton').html(iconButtonNo);
+		$('#confirmdialogNo').show();
 	} else {
 		$('#confirmdialogNo').hide();
 	}
@@ -951,27 +967,35 @@ function examExerciseAll(){
 	examExercisesSummary();
 }
 
-function exerciseRemoveAll(){
+function exerciseRemoveAllDialog(){
 	confirmDialog('Alle Aufgaben löschen?', 'Delete all exercises?', 'Ja', 'Yes', '<i class="fa-solid fa-check"></i>', 'Nein', 'No', '<i class="fa-solid fa-xmark"></i>',
 	function(remove) {
 		if(!remove)
 			return;
 		
-		const removeIndices = $('.exerciseItem:not(.filtered)').map(function() {
-		return $(this).index();
-		}).get();
-		
-		for (let i = removeIndices.length -1; i >= 0; i--) {
-			rex.exercises.splice(removeIndices[i], 1);
-			exercises = exercises - 1;
-		}
-		
-		$('.exerciseItem:not(.filtered)').remove();
-
-		resetOutputFields();
-		examExercisesSummary();
+		exerciseRemoveAll();
 	});
 }
+
+function exerciseRemoveAll(){
+	const removeIndices = $('.exerciseItem:not(.filtered)').map(function() {
+	return $(this).index();
+	}).get();
+	
+	for (let i = removeIndices.length -1; i >= 0; i--) {
+		rex.exercises.splice(removeIndices[i], 1);
+		exercises = exercises - 1;
+	}
+	
+	$('.exerciseItem:not(.filtered)').remove();
+
+	resetOutputFields();
+	examExercisesSummary();
+}
+
+Shiny.addCustomMessageHandler('removeAllExercises', function(x) {
+	exerciseRemoveAll();
+});
 
 function exerciseParseAll(forceParse = false){
 	rex.exercises.forEach((t, index) => {
@@ -1032,7 +1056,7 @@ $('#examExerciseAll').click(function () {
 });
 
 $('#exerciseRemoveAll').click(function () {
-	exerciseRemoveAll();	
+	exerciseRemoveAllDialog();	
 });
 
 $('#exerciseParseAll').click(function () {
@@ -1507,6 +1531,8 @@ function invalidateAfterEdit(exerciseID) {
 	setExamExercise(exerciseID, false);
 	rex.exercises[exerciseID].statusCode = "E000";
 	rex.exercises[exerciseID].statusMessage = '<span class="exerciseTryCatch tryCatch Error"><span class="responseSign ErrorSign"><i class="fa-solid fa-circle-exclamation"></i></span><span class="exerciseTryCatchText tryCatchText"><span lang="de">Aufgabe muss neu berechnet werden.</span><span lang="en">Exercise needs to be parsed again.</span></span></span>';
+	
+	f_langDeEn();
 	
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseConvert').addClass("disabled");
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseDownload').addClass('disabled');

@@ -1,37 +1,41 @@
 myUserProfileInterface = function() {
   content = paste0('<div class="well">
      <h2 class="text-center" style="padding-top: 0;">
-     	User Profile
+     	<span lang="de">Benutzerprofil</span><span lang="en">User Profile</span>
      </h2>
         <div class="form-group shiny-input-container">
      	<label class="control-label" id="current-login-user_name-label" for="current-login-user_name">
             <i class="far fa-user" role="presentation" aria-label="user icon"></i>
-     		User Name
+			<span lang="de">Benutzername</span><span lang="en">User name</span>
      	</label>
      	<input id="current-login-user_name" type="text" class="form-control shinyjs-resettable shiny-bound-input" value="" disabled>
         </div>
         <div class="form-group shiny-input-container">
 			<label class="control-label" id="current-login-password-label" for="current-login-password">
 				<i class="fas fa-unlock-keyhole" role="presentation" aria-label="unlock-keyhole icon"></i>
-				Current Password
+				<span lang="de">Aktuelles Passwort</span><span lang="en">Current password</span>
 			</label>
 			<input id="current-login-password" type="password" class="form-control shinyjs-resettable shiny-bound-input" value="" data-shinyjs-resettable-id="login-password1" data-shinyjs-resettable-type="Password" data-shinyjs-resettable-value="">
 			<br/>
 			<label class="control-label" id="new-login-password-label1" for="new-login-password1">
 				<i class="fas fa-unlock-keyhole" role="presentation" aria-label="unlock-keyhole icon"></i>
-				New Password
+				<span lang="de">Neues Passwort</span><span lang="en">New password</span>
 			</label>
 			<input id="new-login-password1" type="password" class="form-control shinyjs-resettable shiny-bound-input" value="" data-shinyjs-resettable-id="login-password1" data-shinyjs-resettable-type="Password" data-shinyjs-resettable-value="">
 			<br/>
 			<label class="control-label" id="new-login-password-label2" for="new-login-password2">
 				<i class="fas fa-unlock-keyhole" role="presentation" aria-label="unlock-keyhole icon"></i>
-				Repeat New Password
+				<span lang="de">Neues Passwort wiederholen</span><span lang="en">Repeat new password</span>
 			</label>
 			<input id="new-login-password2" type="password" class="form-control shinyjs-resettable shiny-bound-input" value="" data-shinyjs-resettable-id="login-password2" data-shinyjs-resettable-type="Password" data-shinyjs-resettable-value="">
 		</div>
 		<div style="text-align: center;">
-			<button class="btn btn-default action-button btn-primary shiny-bound-input" id="cancle-change-password-button" style="color: white;" type="button">Cancle</button>
-			<button class="btn btn-default action-button btn-primary shiny-bound-input" id="change-password-button" style="color: white;" type="button">Change Password</button>
+			<button class="btn btn-default action-button btn-primary shiny-bound-input" id="cancle-change-password-button" style="color: white;" type="button">
+			<span lang="de">Abbrechen</span><span lang="en">Cancle</span>
+			</button>
+			<button class="btn btn-default action-button btn-primary shiny-bound-input" id="change-password-button" style="color: white;" type="button">
+			<span lang="de">Passwort ändern</span><span lang="en">Change password</span>
+			</button>
 		</div>
 		<div id="change-password-error" class="" style="display: none;">
 			<p style="color: red; font-weight: bold; padding-top: 5px;" class="text-center"></p>
@@ -41,12 +45,12 @@ myUserProfileInterface = function() {
   return(HTML(content))
 }
 
-myChangePasswordButton = function() {
-  tags$button(id='changePassword-button', class='btn btn-default action-button shiny-bound-input', type='button', label=NULL, 'Change Password')
+myUserProfileButton = function() {
+  tags$button(id='profile-button', class='btn btn-default action-button shiny-bound-input', type='button', tags$span(HTML('<span lang="de">Benutzer</span><span lang="en">User</span>')))
 }
 
-myUserProfileButton = function() {
-  tags$button(id='profile-button', class='btn btn-default action-button shiny-bound-input', type='button', label=NULL, 'User')
+myUserLogoutButton = function() {
+  tags$button(id='logout-button', class='btn btn-default action-button btn-danger shiny-bound-input', type='button', tags$span(HTML('<span lang="de">Ausloggen</span><span lang="en">Log out</span>')))
 }
 
 myActionButton = function(id, deText, enText, icon){
@@ -62,8 +66,11 @@ myCheckBox = function(id, deText, enText) {
   tags$span(id = id, HTML(text), tags$input(type="checkbox"))
 }
 
-myButtonStyle = function(deText, enText, icon) {
-  icon = paste0('<span class="iconButton"><i class="', icon, '"></i></span>')
+myButtonStyle = function(deText, enText, icon="") {
+  if(icon != "")
+	icon = paste0('<span class="iconButton"><i class="', icon, '"></i></span>')
+	
+  text = paste0('<span class="textButton"><span lang="de">', deText, '</span><span lang="en">', enText, '</span></span>')
   text = paste0('<span class="textButton"><span lang="de">', deText, '</span><span lang="en">', enText, '</span></span>')
   
   return(tags$span(HTML(paste0(icon, text, collapse=""))))
