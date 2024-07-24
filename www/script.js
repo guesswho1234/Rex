@@ -88,6 +88,7 @@ if (localStorage.getItem("rexExercises") !== null) {
 		JSON.parse(localStorage.getItem("rexExercises")).forEach(exercise => rex.exercises.push(exercise));
 		
 		for (let i = 0; i < rex.exercises.length; i++) {
+			exercises = exercises + 1;
 			addExerciseToView(i);
 			viewExercise(i, forceParse=true);
 		}
@@ -2300,6 +2301,8 @@ Shiny.addCustomMessageHandler('setExerciseStatusMessage', function(statusMessage
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').prepend(statusMessage);
 	
 	rex.exercises[exerciseID].statusMessage = statusMessage;
+	
+	f_langDeEn();
 });
 
 Shiny.addCustomMessageHandler('setExerciseStatusCode', function(statusCode) {
