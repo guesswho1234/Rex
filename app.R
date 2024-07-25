@@ -58,13 +58,10 @@ source("./source/permission.R")
   }
   
   # PARSE EXERCISES ---------------------------------------------------------
-  parseExercise = function(exercise, seed, collectWarnings, log_, checkPathTraversalStrings, dir){
+  parseExercise = function(exercise, seed, collectWarnings, log_, dir){
      out = tryCatch({
       warnings = collectWarnings({
         cat("Rex: Preparing parameters.\n")
-        
-        if(checkPathTraversalStrings(exercise$exerciseCode))
-          stop("E1028")
         
         splitBy = ";\n" # originally it is ";\r\n" but "\r\n" is replaced by "\n"
         # unify line breaks
@@ -219,7 +216,7 @@ source("./source/permission.R")
   }
   
   # CREATE EXAM -------------------------------------------------------------
-  createExam = function(exam, settings, input, collectWarnings, log_, checkPathTraversalStrings, dir) {
+  createExam = function(exam, settings, input, collectWarnings, log_, dir) {
     out = tryCatch({
       warnings = collectWarnings({
         cat("Rex: Preparing parameters.\n")
@@ -253,9 +250,6 @@ source("./source/permission.R")
         
         exam$exerciseNames = as.list(make.unique(unlist(exam$exerciseNames), sep="_"))
         exerciseFiles = unlist(lapply(setNames(seq_along(exam$exerciseNames), exam$exerciseNames), function(i){
-          if(checkPathTraversalStrings(exam$exerciseCodes[[i]]))
-            stop("E1029")
-          
           file = paste0(edir, "/", exam$exerciseNames[[i]], ".", exam$exerciseExts[[i]])
           writeLines(text=gsub("\r\n", "\n", exam$exerciseCodes[[i]]), con=file, sep="")
           
@@ -1039,26 +1033,6 @@ source("./source/permission.R")
     return(data)
   }
 
-  # PATH TRAVERSAL ----------------------------------------------------------
-  checkPathTraversalStrings = function(code){
-    unixPathTraverseStrings = c("..\\",
-                                "../",
-                                "%2e%2e%2f",         # represents ../
-                                "%2e%2e/",           # represents ../
-                                "..%2f",             # represents ../
-                                "%2e%2e%5c",         # represents ..\
-                                "%2e%2e\\",          # represents ..\
-                                "..%5c",             # represents ..\
-                                "%252e%252e%255c",   # represents ..\
-                                "..%255c",           # represents ..\
-                                "..%c0%af",          # represents ../
-                                "..%c1%9c")          # represents ..\
-    
-    any(sapply(unixPathTraverseStrings, \(x){
-      grepl(x, code, fixed = TRUE)
-    }))
-  }
-  
 # PARAMETERS --------------------------------------------------------------
   # REXAMS ------------------------------------------------------------------
   cores = NULL
@@ -1318,7 +1292,7 @@ server = function(input, output, session) {
     
     x = callr::r_bg(
       func = parseExercise,
-      args = list(isolate(input$parseExercise), isolate(input$seedValueExercises), collectWarnings, log_, checkPathTraversalStrings, getDir(session)),
+      args = list(isolate(input$parseExercise), isolate(input$seedValueExercises), collectWarnings, log_, getDir(session)),
       supervise = TRUE
     )
 
@@ -1371,7 +1345,7 @@ server = function(input, output, session) {
 
     x = callr::r_bg(
       func = createExam,
-      args = list(isolate(input$createExam), settings, isolate(reactiveValuesToList(input)), collectWarnings, log_, checkPathTraversalStrings, getDir(session)),
+      args = list(isolate(input$createExam), settings, isolate(reactiveValuesToList(input)), collectWarnings, log_, getDir(session)),
       supervise = TRUE
     )
 
