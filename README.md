@@ -34,6 +34,12 @@ Build your image with the supplied docker file: `docker build --platform linux/x
 
 Run your image: `docker run -p 3838:3838 rex`.
 
+
+## Hosting
+> [!CAUTION]
+> Do not host this version of Rex with public access!
+> Code from user input is parsed and evaluated without any security measures.
+
 ## Use
 
 Once you got the application running, authenticate using "rex" as both login and password.
