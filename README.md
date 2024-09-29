@@ -37,7 +37,7 @@ Run your image: `docker run -p 3838:3838 rex`.
 
 ## Hosting
 > [!CAUTION]
-> Do not host this version of Rex with publicly - Code from user input is parsed and evaluated without any security measures!
+> Do not host this version of Rex with uncontrolled / public access - Code from user input is parsed and evaluated without any security measures!
 
 ## Use
 
