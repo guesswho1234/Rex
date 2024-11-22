@@ -21,7 +21,7 @@ For Rex to operate properly, make sure the following resources are available.
 
 ## Run
 
-### Localhost
+### Local
 
 Install all required R packages including their dependencies (see section "PACKAGES" in `app.R` and `worker.R`). 
 
