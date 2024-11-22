@@ -1,6 +1,6 @@
 services:
-  test_rex:
-    container_name: test_rex
+  rex:
+    container_name: rex
     build:
       dockerfile: dockerfile
       context: https://github.com/guesswho1234/Rex.git#main
@@ -12,8 +12,8 @@ services:
         source: /home/rex.sqlite
         target: /rex/rex.sqlite
       - shared-content:/tmp/
-  test_rex-worker:
-    container_name: test_rex-worker
+  rex-worker:
+    container_name: rex-worker
     build:
       dockerfile: dockerfile_worker
       context: https://github.com/guesswho1234/Rex.git#main
