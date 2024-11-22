@@ -7,23 +7,24 @@ RUN set -eu \
         ;apt-get update  \
         ;apt-get install -y \
 				libsodium-dev \
-				libmagick++-dev \
-				ghostscript \
-                libpoppler-cpp-dev \
-				texlive-full \
         ;apt-get -y autoremove \
         ;apt-get -y clean \
         ;rm -rf /var/lib/apt/lists/* \
         ;
 	
-RUN R -e "install.packages(c('shinyjs', 'shinyWidgets', 'shinycssloaders', 'xtable', 'tth', 'png', 'callr', 'pdftools', 'openssl', 'shinyauthr', 'sodium', 'magick', 'RSQLite', 'DBI'), dependencies=TRUE)"						 
-RUN R -e "install.packages('exams', repos='http://R-Forge.R-project.org', type='source')"
-RUN R -e "install.packages('qpdf', repos='http://cran.us.r-project.org')"
+RUN R -e "install.packages(c('shinyjs', 'shinyWidgets', 'shinycssloaders', 'shinyauthr', 'sodium', 'RSQLite', 'DBI'), dependencies=TRUE)"						 
 
-ARG imagemagic_config=/etc/ImageMagick-6/policy.xml
-RUN if [ -f $imagemagic_config ] ; then sed -i 's/<policy domain="coder" rights="none" pattern="PDF" \/>/<policy domain="coder" rights="read|write" pattern="PDF" \/>/g' $imagemagic_config ; else echo did not see file $imagemagic_config ; fi
+pattern="PDF" \/>/<policy domain="coder" #rights="read|write" pattern="PDF" \/>/g' $imagemagic_config ; else echo did not see file $imagemagic_config ; fi
 
-COPY . /rex
+RUN rm -rf /tmp/Rtmp*/
+
+COPY ./app.R /rex/
+COPY ./index.html /rex/
+COPY ./app.html /rex/
+COPY ./www /rex/www
+COPY ./source/main /rex/source/main
+COPY ./source/shared /rex/source/shared
+COPY ./permission /rex/permission
 
 EXPOSE 3838
 

@@ -10,8 +10,8 @@ discon = function(){
 }
 
 Myloginserver <- function(id, sodium_hashed = FALSE, id_col, pw_col, table, log_out = shiny::reactiveVal(), reload_on_logout = FALSE) {
-  query = sqlInterpolate(ANSI(), "SELECT * FROM ?table",
-                         table = dbQuoteIdentifier(ANSI(), table))
+  query = DBI::sqlInterpolate(DBI::ANSI(), "SELECT * FROM ?table",
+                         table = DBI::dbQuoteIdentifier(DBI::ANSI(), table))
 
   data <- reactive(DBI::dbGetQuery(con(), query))
   discon()
@@ -80,7 +80,12 @@ changePassword = function(session, userInfo, c_pw, n_pw1, n_pw2){
   }
   
 	tryCatch({  
-		DBI::dbExecute(con(), paste("UPDATE", DBI::dbQuoteIdentifier(DBI::ANSI(), table), "SET pw = ? WHERE id = ?"), list(sodium::password_store(n_pw2), userInfo$id))
+	  query = DBI::sqlInterpolate(DBI::ANSI(), "UPDATE ?table SET pw = ?pw WHERE id = ?id",
+	                              table = DBI::dbQuoteIdentifier(ANSI(), table),
+	                              pw = sodium::password_store(n_pw2),
+	                              id = userInfo$id)
+
+		DBI::dbExecute(con(), query)
 	  discon()
 	  session$sendCustomMessage("closeUserProfile", 1)
 		session$reload()

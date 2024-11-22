@@ -27,3 +27,5 @@ E1024;Number of exam tasks must not exceed 45.;Anzahl an Prüfungsaufgaben darf 
 E1025;No evaluation scans found.;Keine Bewertungs-Scans gefunden.
 E1026;No registered participants found.;Keine angemeldete Teilnehmerinnen und Teilnehmer gefunden.
 E1027;No exam solutions found.;Keine Prüfungslösungen gefunden.
+E1028;Invalid grading key;Ungültiger Notenschlüssel.
+E1029;Invalid grading key;Ungültiger Notenschlüssel.

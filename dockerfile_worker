@@ -1,0 +1,33 @@
+FROM rocker/r-ver:4.2.2
+
+RUN mkdir /rex-worker
+WORKDIR /rex-worker
+
+RUN set -eu \
+        ;apt-get update  \
+        ;apt-get install -y \
+				libmagick++-dev \
+				ghostscript \
+                libpoppler-cpp-dev \
+				texlive-full \
+				pandoc \
+        ;apt-get -y autoremove \
+        ;apt-get -y clean \
+        ;rm -rf /var/lib/apt/lists/* \
+        ;
+
+RUN R -e "install.packages(c('xtable', 'tth', 'png', 'callr', 'openssl', 'magick'), dependencies=TRUE)"								 
+RUN R -e "install.packages('exams', repos='http://R-Forge.R-project.org', type='source')"
+RUN R -e "install.packages('qpdf', repos='http://cran.us.r-project.org')"
+
+ARG imagemagic_config=/etc/ImageMagick-6/policy.xml
+RUN if [ -f $imagemagic_config ] ; then sed -i 's/<policy domain="coder" rights="none" pattern="PDF" \/>/<policy domain="coder" rights="read|write" pattern="PDF" \/>/g' $imagemagic_config ; else echo did not see file $imagemagic_config ; fi
+
+RUN rm -rf /tmp/Rtmp*/
+
+COPY ./worker.R /rex-worker/
+COPY ./source/worker /rex-worker/source/worker
+COPY ./source/shared /rex-worker/source/shared
+
+CMD Rscript worker.R
+

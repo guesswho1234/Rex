@@ -1,0 +1,26 @@
+services:
+  test_rex:
+    container_name: test_rex
+    build:
+      dockerfile: dockerfile
+      context: https://<token>:@github.com/guesswho1234/Rex.git#main
+    restart: unless-stopped
+    ports:
+      - "32780:3838"
+    volumes:
+      - type: bind
+        source: /home/rex.sqlite
+        target: /rex/rex.sqlite
+      - shared-content:/tmp/
+  test_rex-worker:
+    container_name: test_rex-worker
+    build:
+      dockerfile: dockerfile_worker
+      context: https://<token>:@github.com/guesswho1234/Rex.git#main
+    restart: unless-stopped
+    volumes:
+      - shared-content:/tmp/
+
+volumes:
+  shared-content:
+      

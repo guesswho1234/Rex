@@ -1,12 +1,3 @@
-log_ = function(content, sessionToken, append=TRUE){
-  timestamp = Sys.time()
-  
-  if(sessionToken != "")
-	write(paste0(timestamp, ": ", sessionToken, ": ", content), "log.txt", append = append) 
-  else  
-	write(paste0(timestamp, ": ", content), "log.txt", append = append) 
-}
-
 out_ = function(out){
   if(out != "")
     cat(out)

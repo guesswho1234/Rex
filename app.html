@@ -37,8 +37,8 @@
 	</div>
 </div>
 <nav class="navbar navbar-default navbar-static-top" role="navigation">
-	<ul class="nav navbar-nav" data-tabsetid="9289">
-		<li>
+	<ul id="navMain" class="nav navbar-nav">
+		<li id="logo-container">
 			<img id="logoApp" class="logo" src="www/logo.svg">
 			<span class="hotkeyInfo"><span lang="de">T</span><span lang="en">T</span></span>
 		</li>
@@ -67,34 +67,45 @@
 			</a>
 		</li>
 	</ul>
-	<div id="navMisc">
-		<div id="texActiveContainer" class="texMode texInputsEscaped">
-			<span id="texButtons" class="buttonModeSelector"><span lang="de">TeX Modus</span><span lang="en">TeX mode</span><i class="fa-regular fa-circle-dot"></i></span>
-		</div>
-		<div id="hotkeysActiveContainer">
-			<span id="hotkeyButtons" class="buttonModeSelector"><span lang="de">Tastenkürzel</span><span lang="en">Hotkeys</span><i class="fa-regular fa-circle-dot"></i></span>
-		</div>
-		<div id="buttonModeSwitchContainer">
-			<span id="iconButtons" class="buttonModeSelector"><i class="fa-solid fa-icons"></i></span>
-			<span> | </span>
-			<span id="textButtons" class="buttonModeSelector active"><i class="fa-solid fa-font"></i></span>
-		</div>
-		<div id="languageSwitchContainer">
-			<span id="deLang" class="langSelector active">DE</span>
-			<span> | </span>
-			<span id="enLang" class="langSelector">EN</span>
-		</div>
-		<div id="heartbeatContainer">
+	<ul id="navHeartbeat" class="nav navbar-nav">
+		<li id="heartbeatContainer">
 			<div id="heart">
 				<span>&#10084;</span>
 			</div>
-		</div>
-		<div id="userProfile">
-			{{ userProfileButton }}
-		</div>
-		<div id="logoutContainer">
-			{{ userLogoutButton }}
-		</div>
+		</li>
+	</ul>
+	<div id="nav-popout-container" class="folded">
+		<ul id="navUser" class="nav navbar-nav nav-popout">
+			<li id="userProfile">
+				{{ userProfileButton }}
+			</li>
+			<li id="logoutContainer">
+				{{ userLogoutButton }}
+			</li>
+		</ul>
+		<ul id="navSettings" class="nav navbar-nav nav-popout">
+			<li id="texActiveContainer" class="texMode texInputsEscaped">
+				<span id="texButtons" class="buttonModeSelector"><span lang="de">TeX Modus</span><span lang="en">TeX mode</span><i class="fa-regular fa-circle-dot"></i></span>
+			</li>
+			<li id="hotkeysActiveContainer">
+				<span id="hotkeyButtons" class="buttonModeSelector"><span lang="de">Tastenkürzel</span><span lang="en">Hotkeys</span><i class="fa-regular fa-circle-dot"></i></span>
+			</li>
+			<li id="buttonModeSwitchContainer">
+				<span id="iconButtons" class="buttonModeSelector"><i class="fa-solid fa-icons"></i></span>
+				<span> | </span>
+				<span id="textButtons" class="buttonModeSelector active"><i class="fa-solid fa-font"></i></span>
+			</li>
+			<li id="languageSwitchContainer">
+				<span id="deLang" class="langSelector active">DE</span>
+				<span> | </span>
+				<span id="enLang" class="langSelector">EN</span>
+			</li>
+		</ul>
+		<ul id="navPopout" class="nav navbar-nav nav-popout">
+			<li id="nav-popout-button-container">
+				<span id="nav-popout-button"><i class="fa-solid fa-bars"></i></span>
+			</li>
+		</ul>
 	</div>
 </nav>
 <main>
@@ -428,9 +439,7 @@
 									<th><span lang="de">Note</span><span lang="en">Mark</span></th>
 									<th></th>
 								</tr>
-								
-								{{ gradingKey }}
-								
+								{{ gradingKey }}							
 							</table>
 						</div>
 						<div>

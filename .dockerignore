@@ -4,3 +4,4 @@
 .gitignore
 .git
 Debfile
+compose.yaml

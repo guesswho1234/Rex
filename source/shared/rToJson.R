@@ -4,14 +4,18 @@ rjs_vectorToJsonArray = function(vector){
   return(x)
 }
 
-rjs_vectorToJsonStringArray = function(vector){
-  x = paste0("\"", vector, "\"")
-  x = rjs_vectorToJsonArray(x)
-  return(x)
+escapeSpecialCharacters = function(values){
+  values = gsub("[\\]", "\\\\\\\\", values)
+  values = gsub("\"", "\\\\\"", values)
+  values = gsub(":", "\\:", values)
+  values = gsub("\\n", " ", values)
+  values = gsub("\\t", " ", values)
+  values = paste0("\"", values, "\"")
+  return(values)
 }
 
-rjs_vectorToJsonNumericArray = function(vector, rounding=0){
-  x = paste0(round(vector, round(rounding, 0)))
+rjs_vectorToJsonStringArray = function(vector){
+  x = paste0("\"", vector, "\"")
   x = rjs_vectorToJsonArray(x)
   return(x)
 }
@@ -22,10 +26,7 @@ rjs_keyValuePairsToJsonObject = function(keys, values, escapeValues=TRUE){
   
   values = sapply(seq_along(values), \(x){
     if(escapeValues[x]) {
-      values[x] = gsub("\"", "\\\\\"", values[x])
-      values[x] = gsub(":", "\\:", values[x])
-      values[x] = gsub("\\n", " ", values[x])
-      values[x] = paste0("\"", values[x], "\"")
+      values[x] = escapeSpecialCharacters(values[x])
     }
       
     return(values[x])

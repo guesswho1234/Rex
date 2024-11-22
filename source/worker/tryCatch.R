@@ -1,9 +1,9 @@
 messageSymbols = c('<i class=\"fa-solid fa-circle-check\"></i>', '<i class=\"fa-solid fa-triangle-exclamation\"></i>', '<i class=\"fa-solid fa-circle-exclamation\"></i>')
   
-errorCodes = read.csv2("tryCatch/errorCodes.csv")
+errorCodes = read.csv2("./source/worker/tryCatch/errorCodes.csv")
 errorCodes = setNames(apply(errorCodes[,-1], 1, FUN=as.list), errorCodes[,1])
 
-warningCodes = read.csv2("tryCatch/warningCodes.csv")
+warningCodes = read.csv2("./source/worker/tryCatch/warningCodes.csv")
 warningCodes = setNames(apply(warningCodes[,-1], 1, FUN=as.list), warningCodes[,1])
 
 getErrorCodeMessage = function(errorCode) {
@@ -32,7 +32,7 @@ getMessageType = function(message){
 
 getMessageCode = function(message){
   type = getMessageType(message)
-  code = 0
+  code = "S000"
   
   if(type == 2) 
     code = strsplit(message$value$message, ":")[[1]][1]
@@ -71,7 +71,7 @@ myMessage = function(message, class) {
   messageText = paste0('<span class="', paste0(class, 'TryCatchText'), ' tryCatchText">', message$value , '</span>')
   messageObject = paste0('<span class="', paste0(class, 'TryCatch'), ' tryCatch ', message$key, '">', messageSign, messageText, '</span>')
   
-  HTML(messageObject)
+  messageObject
 }
 
 collectWarnings = function(expr) {

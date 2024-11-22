@@ -1,23 +1,88 @@
 /* --------------------------------------------------------------
  GENERAL 
 -------------------------------------------------------------- */
+@media all and (max-width: 1000px) {
+	#navMain, 
+	#navHeartbeat {
+		position: fixed;
+		top: 0;
+		height: 50px;
+		margin: 0;
+	}
+	
+	#navMain {
+		left: 0;
+	}
+
+	#navHeartbeat {
+		left: calc(100vw - 50px);
+	}
+
+	#nav-popout-container {
+		position: absolute;
+		top: 3px;
+		left: calc(50vw - 23.125px);
+		border: 2px solid var(---main);
+		display: flex;
+		place-items: center;
+		height: fit-content !important;
+		background: var(---background3);
+		flex-direction: column-reverse;
+		padding: 10px 15px 10px 15px;
+		border-radius: 12px;
+		cursor: move;
+	}
+		
+	#nav-popout-container > ul {
+		display: grid;
+		place-content: center;
+		margin: 0;
+	}
+	
+	.nav-popout > li {
+		min-width: max-content;
+	}
+	
+	#nav-popout-container.folded {
+		padding: 10px 15px 10px 15px;
+	}
+	
+	#nav-popout-container.folded > ul:not(#navPopout) {
+		display: none;
+	}
+		
+	#navPopout {
+		display: flex !important;
+		margin-bottom: 0px !important;
+		cursor: pointer;
+	}
+}
+
+#logo-container {
+	float: left;
+}	
+
 nav {
-	z-index: 998 !important;
+	z-index: 1052 !important;
 	position: fixed !important;
 	width: 100%;
+	height: 50px !important;
 }
 
 nav .nav.navbar-nav a.disabled {
 	cursor: unset;
-	height: 51px;
+}
+
+#nav-popout-container {
+	height: inherit;
 }
 
 main {
-	margin-top: 51px;
+	margin-top: 50px;
 }
 
 #shiny-modal {
-	top: 51px;
+	top: 50px;
 }
 
 .modal-backdrop {
@@ -296,19 +361,28 @@ main {
 	padding: 0px;
 }
 
-#navMisc {
-	position: absolute;
-	top: 0;
-	right: 0;
+/* #navSettings { */
+nav ul.nav {
 	display: flex;
-	gap: 25px;
 	font-weight: bold;
 	height: 100%;
 	place-items: center;
 }
 
-#navMisc .buttonModeSelector, 
-#navMisc .langSelector {
+#navPopout {
+	display: none;
+}
+
+#navSettings,
+#navUser,
+#navHeartbeat {
+	gap: 25px;
+  float: right;
+  margin-left: -25px;
+}
+
+#navSettings .buttonModeSelector, 
+#navSettings .langSelector {
 	cursor: pointer;
 }
 
@@ -451,10 +525,6 @@ body.textButtonMode .textButton {
 
 #shiny-disconnected-overlay {
 	display: none;
-}
-
-#logoutContainer {
-	margin-right: 20px;
 }
 
 .datepicker {

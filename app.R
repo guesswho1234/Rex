@@ -1,26 +1,20 @@
-# developed in r version 4.2.1
+# developed in r version 4.2.2
 
 # STARTUP -----------------------------------------------------------------
 rm(list = ls())
 cat("\f")
 gc()
 
+# DOCKER_WORKER ------------------------------------------------------------------
+DOCKER_WORKER = !file.exists("./worker.R")
+
 # PACKAGES ----------------------------------------------------------------
 library(shiny) # shiny_1.8.0
 library(shinyjs) # shinyjs_2.1.0
 library(shinyWidgets) # shinyWidgets_0.8.0
 library(shinycssloaders) #shinycssloaders_1.0.0
-library(exams) #exams_2.4-1
-library(png) #png_0.1-8 
-library(tth) #tth_4.12-0-1 
-library(xtable) #xtable_1.8-4
-library(callr) # callr_3.7.3
-library(pdftools) # pdftools_3.4.0
-library(qpdf) # qpdf_1.3.2
-library(openssl) # openssl_2.1.1
 library(shinyauthr) # shinyauthr_1.0.0
 library(sodium) # sodium_1.3.1
-library(magick) # magick_2.7.4
 library(RSQLite) # RSQLite_2.3.6
 library(DBI) # DBI_1.2.3
 
@@ -28,20 +22,24 @@ library(DBI) # DBI_1.2.3
 options(shiny.host = "0.0.0.0")
 options(shiny.port = 3838)
 
-# RESOURCES
+# RESOURCES ---------------------------------------------------------------
 shiny::addResourcePath("www", "./www")
 
 # SOURCE ------------------------------------------------------------------
-source("./source/filesAndDirectories.R")
-source("./source/customElements.R")
-source("./source/tryCatch.R")
-source("./source/rToJson.R")
-source("./source/appStatus.R")
-source("./source/database.R")
-source("./source/permission.R")
+source("./source/main/filesAndDirectories.R")
+source("./source/main/customElements.R")
+source("./source/shared/rToJson.R")
+source("./source/shared/log.R")
+source("./source/main/appStatus.R")
+source("./source/main/database.R")
+source("./source/main/permission.R")
+source("./source/main/processingResponses.R")
+source("./source/main/progressMonitoring.R")
+
+if(!DOCKER_WORKER)
+  source("./worker.R")  
 
 # FUNCTIONS ----------------------------------------------------------------
-  # PREPARE DOWNLOAD EXERCISES ----------------------------------------------
   prepareExerciseDownloadFiles = function(session, exercises){
     dir = getDir(session)
     
@@ -55,982 +53,6 @@ source("./source/permission.R")
     }))
     
     return(list(exerciseFiles=exerciseFiles))
-  }
-  
-  # PARSE EXERCISES ---------------------------------------------------------
-  parseExercise = function(exercise, seed, collectWarnings, log_, dir){
-     out = tryCatch({
-      warnings = collectWarnings({
-        cat("Rex: Preparing parameters.\n")
-        
-        splitBy = ";\n" # originally it is ";\r\n" but "\r\n" is replaced by "\n"
-        # unify line breaks
-        exercise$exerciseCode = gsub("\r\n", "\n", exercise$exerciseCode)
-        
-        # show all possible choices when viewing exercises (only relevant for editable exercises)
-        exercise$exerciseCode = sub("maxChoices=5", "maxChoices=NULL", exercise$exerciseCode)
-        
-        # remove image from question when viewing exercises (only relevant for editable exercises)
-        exercise$exerciseCode = sub("rnwTemplate_showFigure=TRUE", "rnwTemplate_showFigure=FALSE", exercise$exerciseCode)
-  
-        # extract figure to display it in the respective field when viewing a exercise (only relevant for editable exercises)
-        figure = strsplit(exercise$exerciseCode, "rnwTemplate_figure=")[[1]][2]
-        figure = strsplit(figure, splitBy)[[1]][1]
-        
-        figure_split = strsplit(figure,",")[[1]]
-        figure = ""
-        
-        if(length(figure_split) == 3) {
-          figure_name = sub("^[^\"]*\"([^\"]+)\".*", "\\1", figure_split[1])
-          figure_fileExt = sub("^[^\"]*\"([^\"]+)\".*", "\\1", figure_split[2])
-          figure_blob = sub("^[^\"]*\"([^\"]+)\".*", "\\1", figure_split[3])
-          
-          figure = list(name=figure_name, fileExt=figure_fileExt, blob=figure_blob)
-        }
-        
-        # extract raw question text
-        question_raw = strsplit(exercise$exerciseCode, "rnwTemplate_question=")[[1]][2]
-        question_raw = strsplit(question_raw, splitBy)[[1]][1]
-        question_raw = paste0(rev(rev(strsplit(question_raw, "")[[1]][-1])[-1]), collapse="") # trim
-        question_raw = gsub("\\\\", "\\", question_raw, fixed=TRUE)
-        
-        # extract raw choice texts
-        choices_raw = strsplit(exercise$exerciseCode, "rnwTemplate_choices=")[[1]][2]
-        choices_raw = strsplit(choices_raw, splitBy)[[1]][1]
-        choices_raw = strsplit(choices_raw, ",\"")[[1]]
-        choices_raw[1] = paste0(strsplit(choices_raw[1], "")[[1]][-c(1:3)], collapse="")
-        choices_raw[length(choices_raw)] = paste0(rev(rev(strsplit(choices_raw[length(choices_raw)], "")[[1]])[-1]), collapse="") #trim
-        choices_raw = Reduce(c, lapply(choices_raw, \(x) paste0(rev(rev(strsplit(x, "")[[1]])[-c(1)]), collapse=""))) # trim
-        
-        if(grepl("rnwTemplate_choices", exercise$exerciseCode) & length(choices_raw) < 2)
-          stop("E1022")
-        
-        # extract raw solution note texts
-        solutionNotes_raw = strsplit(exercise$exerciseCode, "rnwTemplate_solutionNotes=")[[1]][2]
-        solutionNotes_raw = strsplit(solutionNotes_raw, splitBy)[[1]][1]
-        solutionNotes_raw = strsplit(solutionNotes_raw, ",\"")[[1]]
-        solutionNotes_raw[1] = paste0(strsplit(solutionNotes_raw[1], "")[[1]][-c(1:3)], collapse="")
-        solutionNotes_raw[length(solutionNotes_raw)] = paste0(rev(rev(strsplit(solutionNotes_raw[length(solutionNotes_raw)], "")[[1]])[-1]), collapse="") #trim
-        solutionNotes_raw = Reduce(c, lapply(solutionNotes_raw, \(x) paste0(rev(rev(strsplit(x, "")[[1]])[-c(1)]), collapse=""))) # trim
-        
-        seed = if(seed == "") NULL else seed
-        
-        file = tempfile(fileext = paste0(".", exercise$exerciseExt))
-        writeLines(text=exercise$exerciseCode, con=file)
-        
-        exExtra = suppressWarnings(exams::extract_extra(readLines(con=file), markup="latex"))
-
-        cat("Rex: Parsing exercise.\n")
-        htmlPreview = exams::exams2html(file, dir = dir, seed = seed, base64 = TRUE)
-        
-        htmlPreview$exam1$exercise1$question_raw = question_raw
-        htmlPreview$exam1$exercise1$choices_raw = choices_raw
-        htmlPreview$exam1$exercise1$solutionNotes_raw = solutionNotes_raw
-
-        if (!htmlPreview$exam1$exercise1$metainfo$type %in% c("schoice", "mchoice")) {
-          stop("E1005")
-        }
-        
-        if (length(htmlPreview$exam1$exercise1$questionlist) < 2) {
-          stop("E1006")
-        }
-        
-        if (any(duplicated(htmlPreview$exam1$exercise1$questionlist))) {
-          stop("E1007")
-        }
-  
-        NULL
-      })
-      key = "Success"
-      value = paste(unique(unlist(warnings)), collapse="<br>")
-      if(value != "") {
-        key = "Warning"
-        value = "W1001"
-      }
-  
-      return(list(message=list(key=key, value=value), id=exercise$exerciseID, seed=seed, html=htmlPreview, exExtra=exExtra, figure=figure))
-    },
-    error = function(e){
-      if(!grepl("E\\d{4}", e$message))
-        e$message = "E1001"
-      
-      return(list(message=list(key="Error", value=e), id=exercise$exerciseID, seed=NULL, html=NULL))
-    },
-    finally = {
-      cat("Rex: Parsing exercise completed.\n")
-    })
-  }
-  
-  loadExercise = function(session, id, seed, html, exExtra, figure, message) {
-    session$sendCustomMessage("setExerciseId", id)
-    
-    if(!is.null(html)) {
-      tags = c()
-      
-      if(length(html$exam1$exercise1$metainfo$tags) > 0) { 
-        tags = trimws(html$exam1$exercise1$metainfo$tags, "both")
-        tags = rjs_vectorToJsonStringArray(tags)
-      }
-
-      author = html$exam1$exercise1$metainfo$author
-      points = html$exam1$exercise1$metainfo$points
-      type = html$exam1$exercise1$metainfo$type
-      question = html$exam1$exercise1$question
-      question_raw = html$exam1$exercise1$question_raw
-      figure = rjs_vectorToJsonStringArray(unlist(figure))
-      editable = ifelse(html$exam1$exercise1$metainfo$editable == 1, 1, 0)
-      choices = rjs_vectorToJsonStringArray(html$exam1$exercise1$questionlist)
-      choices_raw = rjs_vectorToJsonStringArray(html$exam1$exercise1$choices_raw)
-      solutions = rjs_vectorToJsonArray(tolower(as.character(html$exam1$exercise1$metainfo$solution)))
-      solutionNotes = rjs_vectorToJsonStringArray(as.character(html$exam1$exercise1$solutionlist))
-      solutionNotes_raw = rjs_vectorToJsonStringArray(html$exam1$exercise1$solutionNotes_raw)
-      section = html$exam1$exercise1$metainfo$section
-      
-      exExtra = exExtra[names(exExtra)!= "editable"]
-      exExtra = Reduce(c, lapply(names(exExtra), \(x){
-        x = rjs_keyValuePairsToJsonObject(x, rjs_vectorToJsonStringArray(exExtra[[x]]), escapeValues=FALSE)
-      }))
-      exExtra = rjs_vectorToJsonArray(exExtra)
-
-      session$sendCustomMessage("setExerciseAuthor", author)
-      session$sendCustomMessage("setExerciseExExtra", exExtra)
-      session$sendCustomMessage("setExercisePoints", points)
-      session$sendCustomMessage("setExerciseType", type)
-      session$sendCustomMessage("setExerciseTags", tags)
-      session$sendCustomMessage("setExerciseSection", section)
-      session$sendCustomMessage("setExerciseSeed", seed)
-      session$sendCustomMessage("setExerciseQuestion", question)
-      session$sendCustomMessage("setExerciseQuestionRaw", question_raw)
-      session$sendCustomMessage("setExerciseFigure", figure)
-      session$sendCustomMessage("setExerciseEditable", editable)
-      session$sendCustomMessage("setExerciseChoices", choices)
-      session$sendCustomMessage("setExerciseChoicesRaw", choices_raw)
-      session$sendCustomMessage("setExerciseSolutions", solutions)
-      session$sendCustomMessage("setExerciseSolutionNotes", solutionNotes)
-      session$sendCustomMessage("setExerciseSolutionNotesRaw", solutionNotes_raw)
-    }
-  
-    session$sendCustomMessage("setExerciseStatusMessage", myMessage(message, "exercise"))
-    session$sendCustomMessage("setExerciseStatusCode", getMessageCode(message))
-    session$sendCustomMessage("setExerciseId", -1)
-  }
-  
-  # CREATE EXAM -------------------------------------------------------------
-  createExam = function(exam, settings, input, collectWarnings, log_, dir) {
-    out = tryCatch({
-      warnings = collectWarnings({
-        cat("Rex: Preparing parameters.\n")
-        
-        if(any(as.numeric(input$seedValueExam) < settings$seedMin))
-          stop("E1008")
-        
-        if(any(as.numeric(input$seedValueExam) > settings$seedMax))
-          stop("E1009")
-
-        if(length(exam$exerciseNames) < settings$exerciseMin)
-          stop("E1010")
-        
-        if(as.numeric(input$numberOfExercises) < settings$exerciseMin)
-          stop("E1023")
-
-        if(length(exam$exerciseNames) > settings$exerciseMax)
-          stop("E1011")
-        
-        if(as.numeric(input$numberOfExercises) > settings$exerciseMax)
-          stop("E1024")
-        
-        if(length(unique(exam$exerciseTypes)) > 1)
-          stop("E1019")
-        
-        if(!all(unique(exam$exerciseTypes) %in% c("schoice", "mchoice")))
-          stop("E1020")
-
-        edir = paste0(dir, "/", settings$edirName)
-        dir.create(file.path(edir), showWarnings = TRUE)
-        
-        exam$exerciseNames = as.list(make.unique(unlist(exam$exerciseNames), sep="_"))
-        exerciseFiles = unlist(lapply(setNames(seq_along(exam$exerciseNames), exam$exerciseNames), function(i){
-          file = paste0(edir, "/", exam$exerciseNames[[i]], ".", exam$exerciseExts[[i]])
-          writeLines(text=gsub("\r\n", "\n", exam$exerciseCodes[[i]]), con=file, sep="")
-          
-          return(file)
-        }))
-        
-        numberOfExams = as.numeric(input$numberOfExams)
-        blocks = as.numeric(exam$blocks)
-        uniqueBlocks = unique(blocks)
-        numberOfExercises = as.numeric(input$numberOfExercises)
-        exercisesPerBlock = numberOfExercises / length(uniqueBlocks)
-        exercises = lapply(uniqueBlocks, function(x) exerciseFiles[blocks==x])
-        
-        seedList = matrix(1, nrow=numberOfExams, ncol=length(exam$exerciseNames))
-        seedList = seedList * as.numeric(paste0(if(is.na(is.numeric(input$seedValueExam))) NULL else input$seedValueExam, 1:numberOfExams))
-        
-        pages = NULL
-        additionalPdfFiles = list()
-        
-        if(length(exam$additionalPdfNames) > 0) {
-          exam$additionalPdfNames = as.list(make.unique(unlist(exam$additionalPdfNames), sep="_"))
-          additionalPdfFiles = unlist(lapply(setNames(seq_along(exam$additionalPdfNames), exam$additionalPdfNames), function(i){
-            file = paste0(dir, "/", exam$additionalPdfNames[[i]], ".pdf")
-            raw = openssl::base64_decode(exam$additionalPdfFiles[[i]])
-            writeBin(raw, con = file)
-            
-            return(file)
-          }))
-          
-          pages = additionalPdfFiles
-        }
-        
-        title = input$examTitle
-        course = input$examCourse
-        points = if(!is.na(as.numeric(input$fixedPointsExamCreate))) input$fixedPointsExamCreate else NULL
-        reglength = if(!is.na(as.numeric(input$examRegLength))) as.numeric(input$examRegLength) else 7
-        date = input$examDate
-        name = paste0(c("exam", input$seedValueExam, ""), collapse="_")
-
-        nsamp = NULL
-        if(!input$fixSequence) 
-          nsamp = exercisesPerBlock
-        
-        if(input$fixSequence) 
-          exercises = unlist(exercises)
-
-        examFields = list(
-          file = exercises,
-          edir = edir,
-          n = numberOfExams,
-          nsamp = nsamp,
-          name = name,
-          language = input$examLanguage,
-          title = title,
-          course = course,
-          institution = input$examInstitution,
-          date = date,
-          blank = input$numberOfBlanks,
-          duplex = input$duplex,
-          pages = pages,
-          points = points,
-          showpoints = input$showPoints,
-          seed = seedList,
-          reglength = reglength,
-          header = NULL,
-          intro = c(input$examIntro), 
-          replacement = input$replacement,
-          samepage = input$samepage,
-          newpage = input$newpage,
-          logo = NULL
-        )
-        
-        # needed for pdf files (not for html files) - somehow exams needs it that way
-        fileIds = 1:numberOfExams
-        fileIdSizes = floor(log10(fileIds))
-        fileIdSizes = max(fileIdSizes) - fileIdSizes
-        fileIds = sapply(seq_along(fileIdSizes), function(x){
-          paste0(paste0(rep("0", max(fileIdSizes))[0:fileIdSizes[x]], collapse=""), fileIds[x])
-        })
-        
-        examHtmlFiles = paste0(dir, "/", name, 1:numberOfExams, ".html")
-        examPdfFiles = paste0(dir, "/", name, fileIds, ".pdf")
-        examRdsFile = paste0(dir, "/", name, ".rds")
-        
-        # exam input field data
-        examInputFile = paste0(dir, "/input.txt")
-        
-        examInputTxt = Reduce(c, lapply(names(examFields)[!names(examFields) %in% c("edir", "header", "logo")], \(x){
-          values = examFields[[x]] 
-          
-          if(x=="file")  
-            values = lapply(values, \(y) gsub(paste0(examFields$edir, "/"), "", y, fixed = TRUE))
-          
-          if(x=="pages")  
-            values = lapply(values, \(y) gsub(paste0(dir, "/"), "", y, fixed = TRUE))
-     
-          if(is.matrix(values)){
-            paste0(c(x, 
-                     paste0(apply(values, 1, \(y) paste0(paste0(y, collapse=";"), "\n")), collapse="")
-            ), collapse="\n")
-          } else {
-            paste0(c(x, 
-                     paste0(paste0(unlist(values), "\n"), collapse="")
-            ), collapse="\n")
-          }
-        }))
-
-        # write
-        writeLines(examInputTxt, examInputFile)
-
-        # prepared exam data
-        preparedExam = list(examFields=examFields, examFiles=list(examHtmlFiles=examHtmlFiles, pdfFiles=examPdfFiles, rdsFile=examRdsFile, examInputFile=examInputFile), sourceFiles=list(exerciseFiles=exerciseFiles, additionalPdfFiles=additionalPdfFiles))
-        
-        cat("Rex: Creating exam.\n")
-        with(preparedExam$examFields, {
-          # create exam html preview with solutions
-          set.seed(1)
-          exams::exams2html(file = file,
-                            edir = edir,
-                            n = n,
-                            nsamp = nsamp,
-                            name = name,
-                            dir = dir,
-                            seed = seed)
-  
-          # create exam
-          set.seed(1)
-          exams::exams2nops(file = file,
-                            edir = edir,
-                            n = n,
-                            nsamp = nsamp,
-                            name = name,
-                            dir = dir,
-                            language = language,
-                            title = title,
-                            course = course,
-                            institution = institution,
-                            date = date,
-                            blank = blank,
-                            duplex = duplex,
-                            pages = pages,
-                            points = points,
-                            showpoints = showpoints,
-                            seed = seed,
-                            encoding = "UTF-8",
-                            reglength = reglength,
-                            header = header,
-                            intro = intro,
-                            replacement = replacement,
-                            samepage = samepage,
-                            newpage = newpage,
-                            logo = NULL)
-        })
-  
-      NULL
-      })
-      key = "Success"
-      value = paste(unique(unlist(warnings)), collapse="<br>")
-      if(value != "") {
-        key = "Warning"
-        value = "W1002"
-      }
-  
-      return(list(message=list(key=key, value=value), files=list(sourceFiles=preparedExam$sourceFiles, examFiles=preparedExam$examFiles)))
-    },
-    error = function(e){
-      if(!grepl("E\\d{4}", e$message))
-        e$message = "E1002"
-  
-      return(list(message=list(key="Error", value=e), files=list()))
-    },
-    finally = {
-      cat("Rex: Creating exam completed.\n")
-    })
-  }
-  
-  examCreationResponse = function(session, message, downloadable) {
-    session$sendCustomMessage("changeTabTitle", getMessageType(message))
-    
-    showModal(modalDialog(
-      title = tags$span(HTML('<span lang="de">Prüfung erstellen</span><span lang="en">Create exam</span>')),
-      tags$span(id="responseMessage", myMessage(message, "modal")),
-      footer = tagList(
-        myActionButton("dismiss_examCreationResponse", "Schließen", "Close", "fa-solid fa-xmark"),
-        if (downloadable)
-          myDownloadButton('downloadExamFiles')
-      )
-    ))
-    session$sendCustomMessage("f_langDeEn", 1)
-  }
-  
-  # EVALUATE EXAM -----------------------------------------------------------
-  evaluateExamScans = function(input, settings, collectWarnings, log_, dir){
-    out = tryCatch({
-      scans_reg_fullJoinData = NULL
-      
-      warnings = collectWarnings({
-        cat("Rex: Preparing parameters.\n")
-        
-        if(length(input$evaluateExam$examScanPdfNames) + length(input$evaluateExam$examScanPngNames) < 1)
-          stop("E1025")
-        
-        if(length(input$evaluateExam$examRegisteredParticipantsnName) != 1)
-          stop("E1026")
-        
-        if(length(input$evaluateExam$examSolutionsName) != 1)
-          stop("E1027")
-
-        rotate = input$rotateScans
-        regLength = input$evaluationRegLength
-        
-        points = input$fixedPointsExamEvaluate
-        if(is.numeric(points) && points > 0) {
-          points = rep(points, numExercises)
-        } else {
-          points = NULL
-        }
-        
-        partial = input$partialPoints
-        negative = input$negativePoints
-        rule = input$rule
-        
-        mark = input$mark
-        labels = NULL
-        
-        if(mark) {
-          markThresholdsInputIds = paste0("markThreshold", 1:length(which(grepl("markThreshold", names(input)))))
-          markLabelsInputIds = paste0("markLabel", 1:length(which(grepl("markLabel", names(input)))))
-          
-          mark = as.numeric(input[markThresholdsInputIds])
-          labels = unlist(input[markLabelsInputIds])
-          
-          invalidGradingKeyItems = mark == "" | labels == ""
-          
-          mark = mark[!invalidGradingKeyItems][-1]
-
-          labels = labels[!invalidGradingKeyItems]
-        }
-        
-        language = input$evaluationLanguage
-        
-        cat("Rex: Preparing input files.\n")
-        
-        # exam solutions
-        input$evaluateExam$examSolutionsName = unlist(input$evaluateExam$examSolutionsName)[1]
-        
-        solutionFile = unlist(lapply(seq_along(input$evaluateExam$examSolutionsName), function(i){
-          file = paste0(dir, "/", input$evaluateExam$examSolutionsName[[i]], ".rds")
-          raw = openssl::base64_decode(input$evaluateExam$examSolutionsFile[[i]])
-          writeBin(raw, con = file)
-          
-          return(file)
-        }))
-        examExerciseMetaData = readRDS(solutionFile)
-        
-        # registered participants
-        input$evaluateExam$examRegisteredParticipantsnName = unlist(input$evaluateExam$examRegisteredParticipantsnName)[1]
-        
-        registeredParticipantsFile = unlist(lapply(seq_along(input$evaluateExam$examRegisteredParticipantsnName), function(i){
-          file = paste0(dir, "/", input$evaluateExam$examRegisteredParticipantsnName[[i]], ".csv")
-          content = gsub("\r\n", "\n", input$evaluateExam$examRegisteredParticipantsnFile[[i]])
-          content = gsub(",", ";", content)
-          content = read.table(text=content, sep=";", header = TRUE)
-          
-          if(all(content$id==content$registration))
-            content$id = sprintf(paste0("%0", regLength, "d"), as.numeric(content$id))
-          
-          content$registration = sprintf(paste0("%0", regLength, "d"), as.numeric(content$registration))
-
-          write.csv2(content, file, row.names = FALSE, quote = FALSE)
-          
-          return(file)
-        }))
-        
-        # scans
-        pngFiles = NULL
-        pdfFiles = NULL
-        totalPdfLength = 0
-        totalPngLength = length(input$evaluateExam$examScanPngNames)
-
-        if(length(input$evaluateExam$examScanPdfNames) > 0){
-          input$evaluateExam$examScanPdfNames = as.list(make.unique(unlist(input$evaluateExam$examScanPdfNames), sep="_"))
-
-          pdfFiles = unlist(lapply(setNames(seq_along(input$evaluateExam$examScanPdfNames), input$evaluateExam$examScanPdfNames), function(i){
-            file = paste0(dir, "/", input$evaluateExam$examScanPdfNames[[i]], ".pdf")
-            raw = openssl::base64_decode(input$evaluateExam$examScanPdfFiles[[i]])
-            writeBin(raw, con = file)
-            
-            totalPdfLength <<- totalPdfLength + qpdf::pdf_length(file)
-
-            return(file)
-          }))
-        }
-
-        if(length(input$evaluateExam$examScanPngNames) > 0){
-          namesToConsider = c(sub("(.*\\/)([^.]+)(\\.[[:alnum:]]+$)", "\\2", convertedPngFiles), unlist(input$evaluateExam$examScanPngNames))
-          namesToConsider_idx = (length(namesToConsider)-length(input$evaluateExam$examScanPngNames) + 1):length(namesToConsider)
-
-          input$evaluateExam$examScanPngNames = as.list(make.unique(namesToConsider, sep="_"))[namesToConsider_idx]
-          pngFiles = unlist(lapply(seq_along(input$evaluateExam$examScanPngNames), function(i){
-            file = paste0(dir, "/", input$evaluateExam$examScanPngNames[[i]], ".png")
-            raw = openssl::base64_decode(input$evaluateExam$examScanPngFiles[[i]])
-            writeBin(raw, con = file)
-
-            return(file)
-          }))
-        }
-
-        scanFiles = c(pdfFiles, pngFiles)
-
-        cat("Rex: Preparing meta data.\n")
-        
-        examName = input$evaluateExam$examSolutionsName[[1]]
-        examIds = names(examExerciseMetaData)
-        numExercises = length(examExerciseMetaData[[1]])
-        numChoices = length(examExerciseMetaData[[1]][[1]]$questionlist)
-        
-        preparedEvaluation = list(meta=list(examIds=examIds, examName=examName, numExercises=numExercises, numChoices=numChoices, totalPdfLength=totalPdfLength, totalPngLength=totalPngLength),
-                                  fields=list(rotate=rotate, points=points, regLength=regLength, partial=partial, negative=negative, rule=rule, mark=mark, labels=labels, language=language),
-                                  files=list(solution=solutionFile, registeredParticipants=registeredParticipantsFile, scans=scanFiles))
-        
-        preparedEvaluation = within(preparedEvaluation, {
-          if(length(files$scans) < 1)
-            stop("E1012")
-
-          if(length(files$registeredParticipants) != 1)
-            stop("E1013")
-
-          if(length(files$solution) != 1)
-            stop("E1014")
-
-          if(any(order(as.numeric(mark)) != seq_along(mark)))
-            stop("E1017")
-
-          if(any(as.numeric(mark) < 1) && any(as.numeric(mark) >= 1))
-            stop("E1018")
-
-          registeredParticipantData = read.csv2(files$registeredParticipants)
-  
-          if(ncol(registeredParticipantData) != 3)
-            stop("E1015")
-  
-          if(!all(names(registeredParticipantData)[1:3] == c("registration", "name", "id")))
-            stop("E1016")
-          
-          scanFileZipName = gsub("_+", "_", paste0(examName, "_nops_scan.zip"))
-
-          cat("Rex: Evaluating scans.\n")
-          cat(paste0("Rex: Scans to convert = ", meta$totalPdfLength), "\n")
-          cat(paste0("Rex: Scans to process = ", meta$totalPdfLength + meta$totalPngLength), "\n")
-          
-          scanData = exams::nops_scan(images=files$scans,
-                           file=scanFileZipName,
-                           dir=dir,
-                           rotate=rotate,
-                           cores=settings$cores,
-                           verbose=TRUE)
-
-          files$scanEvaluation = paste0(dir, "/", scanFileZipName)
-
-          dummyFirstRow = paste0(rep(NA,51), collapse=" ")
-          scanData = read.table(text=c(dummyFirstRow, scanData), sep=" ", fill=TRUE)
-          scanData = scanData[-1,]
-          
-          names(scanData)[c(1:6)] = c("scan", "sheet", "scrambling", "type", "replacement", "registration")
-          names(scanData)[-c(1:6)] = (7:ncol(scanData)) - 6
-
-          # reduce columns using additional data from exam to know how many questions and answer per question existed
-          scanData = scanData[,-which(grepl("^[[:digit:]]+$", names(scanData)))[-c(1:meta$numExercises)]] # remove unnecessary placeholders for unused questions
-          scanData$numExercises = meta$numExercises
-          scanData$numChoices = meta$numChoices
-
-          # add scans as base64 to be displayed in browser
-          scanFilesData = setNames(unzip(files$scanEvaluation, list=TRUE)[,1:2], c("scan", "size"))
-          
-          if(nrow(scanFilesData) > 1) {
-            scanData = merge(scanData, scanFilesData, by="scan")
-            
-            scanData$blob = lapply(1:nrow(scanData), function(x) {
-              blob = readBin(unz(files$scanEvaluation, scanData$scan[x], open="rb"), "raw", n=scanData$size[x])
-              openssl::base64_encode(blob)
-            })
-          }
-
-          # full outer join of scanData and registeredParticipantData
-          scans_reg_fullJoinData = merge(scanData, registeredParticipantData, by="registration", all=TRUE)
-
-          # in case of duplicates, set "XXXXXXX" as registration number and "NA" for name and id for every match following the first one
-          dups = duplicated(scans_reg_fullJoinData$registration)
-          scans_reg_fullJoinData$registration[dups] = "XXXXXXX"
-          scans_reg_fullJoinData$name[dups] = "NA"
-          scans_reg_fullJoinData$id[dups] = "NA"
-  
-          # set "XXXXXXX" as registration number for scans which were not matched with any of the registered participants
-          scans_reg_fullJoinData$registration[is.na(scans_reg_fullJoinData$name) & is.na(scans_reg_fullJoinData$id)] = "XXXXXXX"
-  
-          # set "XXXXXXX" as registration number for scans which show "ERROR" in any field
-          scans_reg_fullJoinData$registration[apply(scans_reg_fullJoinData, 1, function(x) any(x=="ERROR"))] = "XXXXXXX"
-
-          # pad zeroes to registration numbers and answers
-          scans_reg_fullJoinData$registration[scans_reg_fullJoinData$registration != "XXXXXXX"] = sprintf(paste0("%0", fields$regLength, "d"), as.numeric(scans_reg_fullJoinData$registration[scans_reg_fullJoinData$registration != "XXXXXXX"]))
-          scans_reg_fullJoinData[,as.character(1:meta$numExercises)] = apply(scans_reg_fullJoinData[,as.character(1:meta$numExercises)], 2, function(x){
-            x[is.na(x)] = 0
-            x = sprintf(paste0("%0", settings$maxChoices, "d"), as.numeric(x))
-          })
-
-          scans_reg_fullJoinData <<- scans_reg_fullJoinData
-        })
-  
-        NULL
-      })
-      
-      key = "Success"
-      value = paste(unique(unlist(warnings)), collapse="<br>")
-      if(value != "") {
-        key = "Warning"
-        value = "W1003"
-      }
-
-      return(list(message=list(key=key, value=value),
-                  scans_reg_fullJoinData=scans_reg_fullJoinData,
-                  preparedEvaluation=preparedEvaluation))
-    },
-    error = function(e){
-      if(!grepl("E\\d{4}", e$message))
-        e$message = "E1003"
-
-      return(list(message=list(key="Error", value=e), scans_reg_fullJoinData=NULL, examName=NULL, files=list(), data=list()))
-    },
-    finally = {
-      cat("Rex: Evaluating Scans completed.\n")
-    })
-  }
-  
-  evaluateExamScansResponse = function(session, result) {
-    session$sendCustomMessage("changeTabTitle", getMessageType(result$message))
-    
-    showModal(modalDialog(
-      title = tags$span(HTML('<span lang="de">Scans überprüfen</span><span lang="en">Check scans</span>')),
-      tags$span(id="responseMessage", myMessage(result$message, "modal")),
-      
-      if (!is.null(result$scans_reg_fullJoinData)) 
-        tagList(
-          tags$div(id="scanStats"),
-          tags$div(id="inspectScan"),
-          tags$div(id="compareScanRegistrationDataTable", HTML('<div class="loadingCompareScanRegistrationDataTable"><span lang="de">BITTE WARTEN ...</span><span lang="en">PLEASE WAIT ...</span></div>')),
-        ),
-      
-      footer = tagList(
-        myActionButton(id="dismiss_evaluateExamScansResponse", deText="Abbrechen", enText="Cancle", icon="fa-solid fa-xmark"),
-        if (!is.null(result$scans_reg_fullJoinData)) 
-          myActionButton(id="proceedEval", deText="Weiter", enText="Proceed", icon="fa-solid fa-circle-right")
-      ),
-      size = "l"
-    ))
-    session$sendCustomMessage("f_langDeEn", 1)
-    
-    # display scanData in modal
-    if (!is.null(result$scans_reg_fullJoinData) && nrow(result$scans_reg_fullJoinData) > 0) {
-      session$sendCustomMessage("resetScanRegistrationData", 1)
-
-      init = 1
-      from = 1
-      to = nrow(result$scans_reg_fullJoinData)
-      step = 10
-      
-      repeat{
-        chunk = from:min(from + step - 1, to)
-        
-        scans_reg_fullJoinData_json = rjs_vectorToJsonArray(
-          apply(result$scans_reg_fullJoinData[chunk,], 1, function(x) {
-            rjs_keyValuePairsToJsonObject(names(result$scans_reg_fullJoinData), x)
-          })
-        )
-        
-        session$sendCustomMessage("appendScanRegistrationData", scans_reg_fullJoinData_json)
-        
-        from = from + step
-        
-        if(from > to){
-          break
-        }
-      }
-      
-      examIds_json = rjs_vectorToJsonStringArray(result$preparedEvaluation$meta$examIds)
-      
-      session$sendCustomMessage("setExanIds", examIds_json)
-      session$sendCustomMessage("finalizeScanRegistrationData", 1)
-    } 
-    
-    # display scanData again after going back from "evaluateExamFinalizeResponse"
-    if (!is.null(result$scans_reg_fullJoinData) && nrow(result$scans_reg_fullJoinData) == 0) {
-      session$sendCustomMessage("backTocompareScanRegistrationData", 1)
-    }
-  }
-  
-  evaluateExamFinalize = function(preparedEvaluation, proceedEvaluation, settings, collectWarnings, log_, dir){
-    out = tryCatch({
-      warnings = collectWarnings({
-        # scanData
-        cat("Rex: Updating scan data.\n")
-        
-        scanData = Reduce(c, lapply(proceedEvaluation$datenTxt, function(x) paste0(unlist(unname(x)), collapse=" ")))
-        scanData = paste0(scanData, collapse="\n")
-        
-        if(scanData == "")
-          stop("E1021")
-        scanDatafile = paste0(dir, "/", "Daten.txt")
-        writeLines(text=scanData, con=scanDatafile)
-        
-        # update *_nops_scan.zip file
-        zip(preparedEvaluation$files$scanEvaluation, scanDatafile, flags='-r9Xj')
-
-        # manage preparedEvaluation data to include in download
-        cat("Rex: Preparing evaluation files.\n")
-        preparedEvaluation$files = within(preparedEvaluation$files, rm(list=c("scans")))
-        
-        # file path and name settings
-        nops_evaluation_fileNames = "evaluation.html"
-        nops_evaluation_fileNamePrefix = gsub("_+", "_", paste0(preparedEvaluation$meta$examName, "_nops_eval"))
-        preparedEvaluation$files$nops_evaluationCsv = paste0(dir, "/", nops_evaluation_fileNamePrefix, ".csv")
-        preparedEvaluation$files$nops_evaluationZip = paste0(dir, "/", nops_evaluation_fileNamePrefix, ".zip")
-        
-        # additional files
-        preparedEvaluation$files$nops_evalInputTxt = paste0(dir, "/input.txt")
-        preparedEvaluation$files$nops_statisticsTxt = paste0(dir, "/statistics.txt")
-        preparedEvaluation$evaluationStatistics = NULL
-        
-        cat("Rex: Evaluating exam.\n")
-        
-        with(preparedEvaluation, {
-          # finalize evaluation
-          exams::nops_eval(
-            register = files$registeredParticipants,
-            solutions = files$solution,
-            scans = files$scanEvaluation,
-            eval = exams::exams_eval(partial = fields$partial, negative = fields$negative, rule = fields$rule),
-            points = fields$points,
-            mark = fields$mark,
-            labels = fields$labels,
-            results = nops_evaluation_fileNamePrefix,
-            dir = dir,
-            file = nops_evaluation_fileNames,
-            language = fields$language,
-            interactive = FALSE
-          )
-  
-          solutionData = readRDS(files$solution)
-          evaluationData = read.csv2(files$nops_evaluationCsv)
-          
-          # pad zeroes to registration numbers and ids (if same as registrations numbers)
-          if(all(evaluationData$id==evaluationData$registration))
-            evaluationData$id = sprintf(paste0("%0", fields$regLength, "d"), as.numeric(evaluationData$id))
-          
-          evaluationData$registration = sprintf(paste0("%0", fields$regLength, "d"), as.numeric(evaluationData$registration))
-          
-          # add additional exercise columns
-          exerciseTable = as.data.frame(Reduce(rbind, lapply(evaluationData$exam, \(exam) {
-            exerciseNames = Reduce(cbind, lapply(solutionData[[as.character(exam)]], \(exercise) exercise$metainfo$file))
-            if(all(grepl(paste0(settings$edirName, "_"), exerciseNames)))
-              exerciseNames = sapply(strsplit(exerciseNames, paste0(settings$edirName, "_")), \(name) name[2])
-            
-            exerciseNames = matrix(exerciseNames, nrow=1)
-            
-            return(exerciseNames)
-          })))
-          
-          names(exerciseTable) = paste0("exercise.", 1:ncol(exerciseTable))
-  
-          evaluationData = cbind(evaluationData, exerciseTable)
-          
-          # add max points column
-          examMaxPoints = as.data.frame(Reduce(rbind, lapply(evaluationData$exam, \(exam) {
-            examPoints = sum(as.numeric(sapply(solutionData[[as.character(exam)]], \(exercise) exercise$metainfo$points)))
-            examPoints = matrix(examPoints, nrow=1)
-            
-            return(examPoints)
-          })))
-          
-          names(examMaxPoints) = paste0("examMaxPoints")
-          
-          evaluationData = cbind(evaluationData, examMaxPoints)
-          
-          # pad zeros for answers and solutions
-          evaluationData[paste("answer", 1:length(solutionData[[1]]), sep=".")] = sprintf(paste0("%0", 5, "d"), unlist(evaluationData[paste("answer", 1:length(solutionData[[1]]), sep=".")]))
-          evaluationData[paste("solution", 1:length(solutionData[[1]]), sep=".")] = sprintf(paste0("%0", 5, "d"), unlist(evaluationData[paste("solution", 1:length(solutionData[[1]]), sep=".")]))
-          
-          # exam eval input field data
-          examEvalFields = list(registeredParticipants = files$registeredParticipants,
-          solutions = files$solution,
-          scans = files$scanEvaluation,
-          partial = fields$partial, 
-          negative = fields$negative, 
-          rule = fields$rule,
-          points = fields$points,
-          mark = fields$mark,
-          labels = fields$labels,
-          language = fields$language)
-          
-          examEvalInputTxt = Reduce(c, lapply(names(examEvalFields), \(x){
-            values = examEvalFields[[x]] 
-            
-            if(x %in% c("registeredParticipants", "solutions", "scans"))
-              values = lapply(values, \(y) gsub(paste0(dir, "/"), "", y, fixed = TRUE))
-            
-            if(is.matrix(values)){
-              paste0(c(x, 
-                       paste0(apply(values, 1, \(y) paste0(paste0(y, collapse=";"), "\n")), collapse="")
-              ), collapse="\n")
-            } else {
-              paste0(c(x, 
-                       paste0(paste0(unlist(values), "\n"), collapse="")
-              ), collapse="\n")
-            }
-          }))
-
-          # statistics
-          examMaxPoints = matrix(max(as.numeric(evaluationData$examMaxPoints)), dimnames=list("examMaxPoints", "value"))
-          validExams = matrix(nrow(evaluationData), dimnames=list("validExams", "value"))
-
-          exerciseNames = unique(unlist(evaluationData[,grepl("exercise.*", names(evaluationData))]))
-          if(all(grepl(paste0(settings$edirName, "_"), exerciseNames)) )
-            exerciseNames = sapply(strsplit(exerciseNames, paste0(settings$edirName, "_")), \(name) name[2])
-
-          exercisePoints = Reduce(rbind, lapply(exerciseNames, \(exercise){
-            summary(apply(evaluationData, 1, \(participant){
-
-              if(!exercise %in% participant)
-                return(NULL)
-
-              as.numeric(participant[gsub("exercise", "check", names(evaluationData)[participant==exercise])])
-            }))
-          }))
-
-          rownames(exercisePoints) = exerciseNames
-
-          totalPoints = t(summary(as.numeric(evaluationData$points)))
-          rownames(totalPoints) = "totalPoints"
-
-          points = matrix(mean(as.numeric(evaluationData$points))/examMaxPoints)
-          colnames(points) = c("mean")
-          rownames(points) = "points"
-
-          marks = matrix()
-
-          if(fields$mark[1] != FALSE) {
-            marks = table(factor(evaluationData$mark, fields$labels))
-            marks = cbind(marks, marks/sum(marks), rev(cumsum(rev(marks)))/sum(marks))
-            colnames(marks) = c("absolute", "relative", "relative cumulative")
-
-            points = as.matrix(cbind(points, t(c(0, fields$mark))), nrow=1)
-            colnames(points) = c("mean", fields$labels)
-            rownames(points) = "points"
-          }
-
-          evaluationStatistics = list(
-            points=points,
-            examMaxPoints=examMaxPoints,
-            validExams=validExams,
-            exercisePoints=exercisePoints,
-            totalPoints=totalPoints,
-            marks=marks
-          )
-
-          preparedEvaluation$evaluationStatistics <<- evaluationStatistics
-          
-          evaluationStatisticsTxt = Reduce(c, lapply(names(evaluationStatistics), \(x){
-            paste0(c(x, 
-                     paste0(c("name", colnames(evaluationStatistics[[x]])), collapse=";"),
-                     paste0(rownames(evaluationStatistics[[x]]), ";", apply(evaluationStatistics[[x]], 1, \(y) paste0(paste0(y, collapse=";"), "\n")), collapse="")
-                     ), collapse="\n")
-          }))
-
-          # write
-          writeLines(examEvalInputTxt, files$nops_evalInputTxt)
-          writeLines(evaluationStatisticsTxt, files$nops_statisticsTxt)
-          write.csv2(evaluationData, files$nops_evaluationCsv, row.names = FALSE)
-        })
-  
-        NULL
-      })
-      key = "Success"
-      value = paste(unique(unlist(warnings)), collapse="<br>")
-      if(value != "") {
-        key = "Warning"
-        value = "W1004"
-      }
-      
-      return(list(message=list(key=key, value=value), 
-                  preparedEvaluation=preparedEvaluation))
-    },
-    error = function(e){
-      if(!grepl("E\\d{4}", e$message))
-        e$message = "E1004"
-
-      return(list(message=list(key="Error", value=e), examName=NULL, files=list()))
-    }, 
-    finally = {
-      cat("Rex: Evaluating exam completed.\n")
-    })
-  }
-  
-  evaluateExamFinalizeResponse = function(session, input, result) {
-    session$sendCustomMessage("changeTabTitle", getMessageType(result$message))
-    
-    # evaluation statistics
-    showModalStatistics = !is.null(result$preparedEvaluation$files$nops_evaluationCsv) && length(unlist(result$preparedEvaluation$files, recursive = TRUE)) > 0
-    chartData = NULL
-    
-    if (showModalStatistics) {
-      with(result$preparedEvaluation, {
-        chartData <<- list(ids = list("evaluationPointStatistics", "evaluationExerciseStatistics", "evaluationGradingStatistics"),
-                         values = list(evaluationStatistics$points, evaluationStatistics$exercisePoints, evaluationStatistics$marks),
-                         deCaptions = c("Punkte", "Aufgaben", "Noten"),
-                         enCaptions = c("Points", "Exercises", "Marks"))
-        
-        evaluationStatistics_json = rjs_vectorToJsonArray(Reduce(c, lapply(seq_along(evaluationStatistics), \(x) {
-          rjs_keyValuePairsToJsonObject(names(evaluationStatistics)[x],
-                                        rjs_vectorToJsonArray(Reduce(c, lapply(1:nrow(evaluationStatistics[[x]]), \(y) {
-                                          rjs_keyValuePairsToJsonObject(c("name", colnames(evaluationStatistics[[x]])),
-                                                                        c(rownames(evaluationStatistics[[x]])[y], evaluationStatistics[[x]][y,]),
-                                                                        c(TRUE, rep(FALSE, length(evaluationStatistics[[x]][y,]))))
-                                        }))), FALSE)
-        })))
-        
-        session$sendCustomMessage("evaluationStatistics", evaluationStatistics_json)
-      })
-    }
-    
-    # show modal
-    showModal(modalDialog(
-      title = tags$span(HTML('<span lang="de">Prüfung auswerten</span><span lang="en">Evaluate exam</span>')),
-      tags$span(id='responseMessage', myMessage(result$message, "modal")),
-      if (showModalStatistics)
-        with(result$preparedEvaluation, {
-          myEvaluationCharts(chartData, evaluationStatistics$examMaxPoints, evaluationStatistics$validExams, input$mark)
-        }),
-      footer = tagList(
-        myActionButton("dismiss_evaluateExamFinalizeResponse", "Schließen", "Close", "fa-solid fa-xmark"),
-        myActionButton("backTo_evaluateExamScansResponse", "Zurück", "Back", "fa-solid fa-arrow-left"),
-        if (length(unlist(result$preparedEvaluation$files, recursive = TRUE)) > 0)
-          myDownloadButton('downloadEvaluationFiles')
-      )
-    ))
-    session$sendCustomMessage("f_langDeEn", 1)
-  }
-  
-  # MONITORING --------------------------------------------------------------------
-  monitorProgressScanEval = function(session, out, data){
-    data = within(data, {
-      progress = progress + sum(sapply(strsplit(out, split="\n"), function(x){
-        if(length(x) == 0)
-          return(0)
-        
-        matchTotalPdfLength = "Rex: Scans to convert = "
-        
-        if(any(grepl(matchTotalPdfLength, x)) && is.null(totalPdfLength))
-          totalPdfLength <<- as.numeric(gsub(matchTotalPdfLength, "", x[which(grepl(matchTotalPdfLength, x))]))
-        
-        matchTotalPngLength = "Rex: Scans to process = "
-        
-        if(any(grepl(matchTotalPngLength, x)) && is.null(totalPngLength))
-          totalPngLength <<- as.numeric(gsub(matchTotalPngLength, "", x[which(grepl(matchTotalPngLength, x))]))
-        
-        if(is.null(totalPngLength) || is.null(totalPdfLength))
-          return(0)
-        
-        converts = sum(grepl("Converting PDF to PNG", x))
-        reads = sum(grepl(".PNG:", x))
-        adds = sum(grepl("adding:", x))
-        
-        (converts + reads + adds) / (totalPdfLength + totalPngLength * 2 + 1) * 100 
-      })) 
-      
-      if(progress - previousProgress > 1) {
-        previousProgress = progress
-        updateProrgress(session, progress)
-      }
-    })
-
-    return(data)
   }
 
 # PARAMETERS --------------------------------------------------------------
@@ -1070,18 +92,21 @@ source("./source/permission.R")
   #               "tr")
   rules = list("1/nwrong"="false", "1/max(nwrong, 2)"="false2", "1/ncorrect"="true", "1"="all", "0"="none")
 
+  # USER --------------------------------------------------------------------
+  USERNAME = ""
+  
   # ADDONS ------------------------------------------------------------------
   addons_path = "./addons/"
   addons_path_www = "./www/addons/"
   addons = list.files(addons_path_www, recursive = TRUE) 
   addons = unique(Reduce(c, lapply(addons[grepl("/", addons)], \(x) strsplit(x, split="/")[[1]][1])))
-  
+
   invisible(lapply(addons, \(addon) {
-    source(paste0(addons_path_www, addons, "/", addons, ".R"))
+    source(paste0(addons_path_www, addons, "/main/", addons, "_main.R"))
   }))
   
 # LOG ------------------------------------------------------
-log_(content="INIT", session="", append=FALSE)
+log_(content="INIT", append=FALSE)
 
 # UI -----------------------------------------------------------------
 ui = htmlTemplate(
@@ -1090,6 +115,7 @@ ui = htmlTemplate(
   
 # SERVER -----------------------------------------------------------------
 server = function(input, output, session) {
+  #todo: Warning: call dbDisconnect() when finished working with a connection
   # AUTH --------------------------------------------------------------------
   credentials = Myloginserver(
     id = "login",
@@ -1110,8 +136,9 @@ server = function(input, output, session) {
   eventReactive
   output$rexApp = renderUI({
     req(credentials()$user_auth)
+    USERNAME <<- credentials()$info[1]
  
-    log_(content="Successful login.", sessionToken=session$token)
+    log_(content="Successful login.", USERNAME, sessionToken=session$token)
 
     # STARTUP -------------------------------------------------------------
     unlink(getDir(session), recursive = TRUE)
@@ -1168,21 +195,6 @@ server = function(input, output, session) {
       
       gradingKey = myGradingKey(5),
     
-      textInput_markThreshold1 = disabled(textInput("markThreshold1", label = NULL, value = 0)),
-      textInput_markLabel1 = textInput("markLabel1", label = NULL, value = NULL),
-      
-      textInput_markThreshold2 = textInput("markThreshold2", label = NULL, value = 0.5),
-      textInput_markLabel2 = textInput("markLabel2", label = NULL, value = NULL),
-    
-      textInput_markThreshold3 = textInput("markThreshold3", label = NULL, value = 0.6),
-      textInput_markLabel3 = textInput("markLabel3", label = NULL, value = NULL),
-    
-      textInput_markThreshold4 = textInput("markThreshold4", label = NULL, value = 0.75),
-      textInput_markLabel4 = textInput("markLabel4", label = NULL, value = NULL),
-    
-      textInput_markThreshold5 = textInput("markThreshold5", label = NULL, value = 0.85),
-      textInput_markLabel5 = textInput("markLabel5", label = NULL, value = NULL),
-    
       selectInput_evaluationLanguage = selectInput("evaluationLanguage", label = NULL, choices = languages, selected = "de", multiple = FALSE),
       checkboxInput_rotateScans = checkboxInput("rotateScans", label = NULL, value = TRUE),
       
@@ -1192,11 +204,11 @@ server = function(input, output, session) {
       
       # ADDON CONTENT
       addonSidebarListItems = lapply(addons, \(addon) {
-        htmlTemplate(filename = paste0(addons_path_www, addon, "/", addon, "_sidebarListItem.html"))
+        htmlTemplate(filename = paste0(addons_path_www, addon, "/main/", addon, "_sidebarListItem.html"))
       }),
       
       addonContentTabs = lapply(addons, \(addon) {
-        htmlTemplate(filename = paste0(addons_path_www, addon, "/", addon, "_contentTab.html"), init=get(paste0(addon, "_fields")))
+        htmlTemplate(filename = paste0(addons_path_www, addon, "/main/", addon, "_contentTab.html"), init=get(paste0(addon, "_fields")))
       })
     ),
     
@@ -1206,12 +218,12 @@ server = function(input, output, session) {
     
     # ADDON SCRIPTS
     lapply(addons, \(addon) {
-      tags$script(src=paste0(addons_path_www, addon, "/", addon, "_script.js"))
+      tags$script(src=paste0(addons_path_www, addon, "/main/", addon, "_script.js"))
     }),
     
     # ADDON STYLESHEET
     lapply(addons, \(addon) {
-      tags$link(rel="stylesheet", type="text/css", href=paste0(addons_path_www, addon, "/", addon, "_style.css"))
+      tags$link(rel="stylesheet", type="text/css", href=paste0(addons_path_www, addon, "/main/", addon, "_style.css"))
     }),
    )
   })
@@ -1219,7 +231,7 @@ server = function(input, output, session) {
   # CLEANUP -------------------------------------------------------------
   onStop(function() {
     unlink(getDir(session), recursive = TRUE)
-    log_(content="Session closed.", sessionToken=session$token)
+    log_(content="Session closed.", USERNAME, sessionToken=session$token)
   })
   
   # HEARTBEAT -------------------------------------------------------------
@@ -1279,129 +291,290 @@ server = function(input, output, session) {
   )
 
   # PARSE EXERCISE ------------------------------------------------------
-  exerciseParsing = eventReactive(input$parseExercise, {
-    checkPm = checkPermission("P1001", credentials()$info$pm)
-    
-    if(!checkPm$hasPermission){
-      session$sendCustomMessage("removeAllExercises", 1)
-      session$sendCustomMessage("errorNoPermission", getNoPermissionMessage(checkPm$code, checkPm$response, FALSE))
-      return(callr::r_bg(function() NULL))
-    }
-    
-    startWait(session)
-    
-    x = callr::r_bg(
-      func = parseExercise,
-      args = list(isolate(input$parseExercise), isolate(input$seedValueExercises), collectWarnings, log_, getDir(session)),
-      supervise = TRUE
-    )
-
-    x$wait()
-
-    return(x)
-  })
-
-  observe({
-    if (exerciseParsing()$is_alive()) {
-      invalidateLater(millis = 10, session = session)
+    # PARAMETERS ---------------------------------------------------------------
+    parseExercise_req = paste0(getDir(session), "/parseExercise_req.rds")
+    parseExercise_log = paste0(getDir(session), "/parseExercise_log.txt")
+    parseExercise_res = paste0(getDir(session), "/parseExercise_res.txt")
+    parseExercise_fin = paste0(getDir(session), "/parseExercise_fin.txt")
+  
+    parseExercise_req_content = list()
+    parseExercise_logHistory = c()
+    parseExerciseProgressData = list(totalExercises = NULL,
+                                previousProgress = 0,
+                                progress = 0)
+  
+    # CALL ---------------------------------------------------------------
+    exerciseParsing = eventReactive(input$parseExercise, {
+      checkPm = checkPermission("P1001", credentials()$info$pm)
       
-      out_(exerciseParsing()$read_output())
-    } else {
-      if(is.null(exerciseParsing()$get_result())){
-        removeModal()
-        stopWait(session)
-        session$sendCustomMessage("changeTabTitle", "reset")
-        return(NULL)
+      if(!checkPm$hasPermission){
+        session$sendCustomMessage("removeAllExercises", 1)
+        session$sendCustomMessage("errorNoPermission", getNoPermissionMessage(checkPm$code, checkPm$response, FALSE))
+        return(0)
       }
       
-      out_(exerciseParsing()$read_output())
-      result = exerciseParsing()$get_result()
-      loadExercise(session, result$id, result$seed, result$html, result$exExtra, result$figure, result$message)
-      stopWait(session)
+      if(length(parseExercise_req_content) == 0) {
+        session$sendCustomMessage("changeTabTitle", 3)
+        startWait(session)
+        initProrgress(session)
+      }
       
-      log_(content="Exercise parsed.", sessionToken=session$token)
-    }
-  })
+      # write exercise file
+      file = tempfile(fileext = paste0(".", input$parseExercise$exerciseExt), tmpdir = getDir(session))
+      file = gsub("\\", "/", file, fixed=TRUE)
+      writeChar(input$parseExercise$exerciseCode, con=file, nchars=nchar(input$parseExercise$exerciseCode), eos=NULL)
+      
+      # request content
+      parseExercise_req_content <<- append(parseExercise_req_content, 
+                                           list(list(progress=as.numeric(input$parseExercise$progress),
+                                                     id=as.numeric(input$parseExercise$exerciseID), 
+                                                     file=tail(strsplit(file, split="/")[[1]], 1), 
+                                                     seed=as.numeric(input$seedValueExercises))))
+  
+      if(input$parseExercise$progress == 1) {
+        parseExercise_req_content <<- append(list(dir=getDir(session)), list(exercises=parseExercise_req_content))
+        saveRDS(parseExercise_req_content, parseExercise_req)
+      }
+  
+      return(input$parseExercise$progress)
+    })
+  
+    # PROCESSING ---------------------------------------------------------------
+    observe({
+      if(exerciseParsing() != 1)
+        return(0)
+      
+      if (is.na(file.mtime(parseExercise_fin))) {
+        invalidateLater(millis = 100, session = session)
+        
+        logData = processLogFile(parseExercise_log, parseExercise_logHistory)
+        parseExercise_logHistory <<- logData$history
+        parseExerciseProgressData <<- monitorProgressExerciseParse(session, logData$out, parseExerciseProgressData)
+  
+        if(!DOCKER_WORKER)
+          checkWorkerRequests()
+      } else {
+        if(!DOCKER_WORKER)
+          readOutput()
+  
+        logData = processLogFile(parseExercise_log, parseExercise_logHistory)
+        parseExercise_logHistory <<- logData$history
+        parseExerciseProgressData <<- monitorProgressExerciseParse(session, logData$out, parseExerciseProgressData)
+        
+        # process results
+        result = readLines(parseExercise_res)
+        
+        items = 20
+        exercises = floor(length(result) / items)
+        
+        messageType = c()
+  
+        lapply(0:(exercises - 1), \(x){
+          result = setNames(as.list(result[1:items + items * x]),
+                                  c("id",
+                                    "messageType",
+                                    "statusMessage",
+                                    "statusCode",
+                                    "author",
+                                    "exExtra",
+                                    "points",
+                                    "type",
+                                    "tags",
+                                    "section",
+                                    "seed",
+                                    "question",
+                                    "question_raw",
+                                    "figure",
+                                    "editable",
+                                    "choices",
+                                    "choices_raw",
+                                    "solutions",
+                                    "solutionNotes",
+                                    "solutionNotes_raw"))
+  
+          error = grepl("E\\d{4}", result$statusCode)
+          messageType <<- max(messageType, as.numeric(result$messageType))
+  
+          examParseResponse(session, result, error)
+        })
+        
+        session$sendCustomMessage("changeTabTitle", messageType)
+        
+        # wrap up
+        finalizeProgress(session)
+        parseExercise_req_content <<- list()
+        parseExercise_logHistory <<- c()
+        parseExerciseProgressData <<- list(totalExercises = NULL,
+                                           previousProgress = 0,
+                                           progress = 0)
+        stopWait(session)
+        session$sendCustomMessage("changeTabTitle", "reset")
+        log_(content="Exercise parsed.", USERNAME, sessionToken=session$token)
+      }
+    })
 
   # CREATE EXAM -------------------------------------------------------------
-  examFiles = reactiveVal()
-
-  examCreation = eventReactive(input$createExam, {
-    checkPm = checkPermission("P1002", credentials()$info$pm)
+    # PARAMETERS ---------------------------------------------------------------
+    createExam_req = paste0(getDir(session), "/createExam_req.rds")
+    createExam_log = paste0(getDir(session), "/createExam_log.txt")
+    createExam_res = paste0(getDir(session), "/createExam_res.txt")
+    createExam_fin = paste0(getDir(session), "/createExam_fin.txt")
     
-    if(!checkPm$hasPermission){
-      session$sendCustomMessage("errorNoPermission", getNoPermissionMessage(checkPm$code, checkPm$response, FALSE))
-      return(callr::r_bg(function() NULL))
-    }
+    createExam_req_content = list()
+    createExam_logHistory = c()
+    createExamProgressData = list(totalExams = NULL,
+                                  previousProgress = 0,
+                                  progress = 0)
+    
+    examFiles = reactiveVal()
 
-    session$sendCustomMessage("changeTabTitle", 3)
-    startWait(session)
-
-    settings = list(edirName=edirName,
-                    exerciseMin=exerciseMin,
-                    exerciseMax=exerciseMax,
-                    seedMin=seedMin,
-                    seedMax=seedMax)
-
-    x = callr::r_bg(
-      func = createExam,
-      args = list(isolate(input$createExam), settings, isolate(reactiveValuesToList(input)), collectWarnings, log_, getDir(session)),
-      supervise = TRUE
-    )
-
-    return(x)
-  })
-
-  observe({
-    if (examCreation()$is_alive()) {
-      invalidateLater(millis = 100, session = session)
-      
-      out_(examCreation()$read_output())
-    } else {
-      if(is.null(examCreation()$get_result())){
-        removeModal()
-        stopWait(session)
-        session$sendCustomMessage("changeTabTitle", "reset")
-        return(NULL)
+    # CALL ---------------------------------------------------------------
+    examCreation = eventReactive(input$createExam, {
+      checkPm = checkPermission("P1002", credentials()$info$pm)
+  
+      if(!checkPm$hasPermission){
+        session$sendCustomMessage("errorNoPermission", getNoPermissionMessage(checkPm$code, checkPm$response, FALSE))
+        return(0)
       }
       
-      out_(examCreation()$read_output())
-
-      result = examCreation()$get_result()
-      examFiles(unlist(result$files, recursive = TRUE))
-
-      examCreationResponse(session, result$message, length(isolate(examFiles())) > 0)
+      if(length(createExam_req_content) == 0) {
+        session$sendCustomMessage("changeTabTitle", 3)
+        startWait(session)
+        initProrgress(session)
+      }
       
-      log_(content="Exam created.", sessionToken=session$token)
-    }
-  })
-
-  output$downloadExamFiles = downloadHandler(
-    filename = "exam.zip",
-    content = function(fname) {
-      # zip(zipfile=fname, files=isolate(examFiles()), flags='-r9XjFS')
-      zip(zipfile=fname, files=isolate(examFiles()), flags='-r9Xj')
-    },
-    contentType = "application/zip"
-  )
-
-  # modal close
-  observeEvent(input$dismiss_examCreationResponse, {
-    removeModal()
-    stopWait(session)
-    session$sendCustomMessage("changeTabTitle", "reset")
-  })
+      exam = input$createExam
+      dir = getDir(session)
+      edir = paste0(dir, "/", edirName)
+  
+      # write exercise files
+      exerciseFiles = c()
+      if(length(exam$exerciseNames) > 0) {
+        dir.create(file.path(edir), showWarnings = TRUE)
+        
+        exam$exerciseNames = as.list(make.unique(unlist(exam$exerciseNames), sep="_"))
+        exerciseFiles = unname(unlist(lapply(setNames(seq_along(exam$exerciseNames), exam$exerciseNames), function(i){
+          file = paste0(edir, "/", exam$exerciseNames[[i]], ".", exam$exerciseExts[[i]])
+          writeLines(text=gsub("\r\n", "\n", exam$exerciseCodes[[i]]), con=file, sep="")
+          
+          return(file)
+        })))
+      }
+      
+      # write additional pdf files
+      additionalPdfFiles = c()
+      
+      if(length(exam$additionalPdfNames) > 0) {
+        exam$additionalPdfNames = as.list(make.unique(unlist(exam$additionalPdfNames), sep="_"))
+        additionalPdfFiles = unname(unlist(lapply(setNames(seq_along(exam$additionalPdfNames), exam$additionalPdfNames), function(i){
+          file = paste0(dir, "/", exam$additionalPdfNames[[i]], ".pdf")
+          raw = openssl::base64_decode(exam$additionalPdfFiles[[i]])
+          writeBin(raw, con = file)
+          
+          return(file)
+        })))
+      }
+  
+      # request content
+      createExam_req_content <<- list(dir=dir,
+                                      edir=edir,
+                                      exerciseMin=exerciseMin,
+                                      exerciseMax=exerciseMax,
+                                      seedMin=seedMin,
+                                      seedMax=seedMax,
+                                      exerciseTypes=unlist(exam$exerciseTypes),
+                                      blocks=unlist(exam$blocks),
+                                      seedValueExam=as.numeric(input$seedValueExam),
+                                      numberOfExercises=as.numeric(input$numberOfExercises),
+                                      numberOfExams=as.numeric(input$numberOfExams),
+                                      examTitle=input$examTitle,
+                                      examCourse=input$examCourse,
+                                      fixedPointsExamCreate=as.numeric(input$fixedPointsExamCreate),
+                                      examRegLength=as.numeric(input$examRegLength),
+                                      fixSequence=input$fixSequence,
+                                      examLanguage=input$examLanguage,
+                                      examInstitution=input$examInstitution,
+                                      numberOfBlanks=input$numberOfBlanks,
+                                      duplex=input$duplex,
+                                      showPoints=input$showPoints,
+                                      examIntro=input$examIntro,
+                                      replacement=input$replacement,
+                                      samepage=input$samepage,
+                                      newpage=input$newpage,
+                                      exerciseFiles=exerciseFiles,
+                                      additionalPdfFiles=additionalPdfFiles)
+      
+      saveRDS(createExam_req_content, createExam_req)
+  
+      return(1)
+    })
+    
+    # PROCESSING ---------------------------------------------------------------
+    observe({
+      if(examCreation() != 1)
+        return(0)
+      
+      if (is.na(file.mtime(createExam_fin))) {
+        invalidateLater(millis = 100, session = session)
+        
+        logData = processLogFile(createExam_log, createExam_logHistory)
+        createExam_logHistory <<- logData$history
+        createExamProgressData <<- monitorProgressExamCreate(session, logData$out, createExamProgressData)
+        
+        if(!DOCKER_WORKER)
+          checkWorkerRequests()
+      } else {
+        if(!DOCKER_WORKER)
+          readOutput()
+        
+        logData = processLogFile(createExam_log, createExam_logHistory)
+        createExam_logHistory <<- logData$history
+        createExamProgressData <<- monitorProgressExamCreate(session, logData$out, createExamProgressData)
+        
+        # process results
+        result = readLines(createExam_res)
+  
+        messageType = unlist(result[1])
+        message = unlist(result[2])
+        
+        if(messageType != "2"){
+          examFiles(result[-c(1:2)])
+        } else{
+          examFiles(NULL)
+        }
+  
+        examCreationResponse(session, messageType, message, length(isolate(examFiles())) > 0)
+        
+        # wrap up
+        finalizeProgress(session)
+        createExam_req_content <<- c()
+        createExam_logHistory <<- c()
+        createExamProgressData <<- list(totalExams = NULL,
+                                        previousProgress = 0,
+                                        progress = 0)
+        log_(content="Exam created.", USERNAME, sessionToken=session$token)
+      }
+    })
+  
+    # ADDITIONAL HANDLERS -----------------------------------------------------
+    # download exam files
+    output$downloadExamFiles = downloadHandler(
+      filename = "exam.zip",
+      content = function(fname) {
+        # zip(zipfile=fname, files=isolate(examFiles()), flags='-r9XjFS')
+        zip(zipfile=fname, files=isolate(examFiles()), flags='-r9Xj')
+      },
+      contentType = "application/zip"
+    )
+  
+    # modal close
+    observeEvent(input$dismiss_examCreationResponse, {
+      removeModal()
+      stopWait(session)
+      session$sendCustomMessage("changeTabTitle", "reset")
+    })
 
   # EVALUATE EXAM -------------------------------------------------------------
-  scanEvaluationProgressData = list(totalPdfLength = NULL,
-                                    totalPngLength = NULL,
-                                    previousProgress = 0,
-                                    progress = 0)
-  
-  examScanEvaluationData = reactiveVal()
-  examFinalizeEvaluationData = reactiveVal()
-  
-  
   # add / remove grading key item
   observeEvent(input$addGradingKeyitem, {
     gradingKeyItemID = isolate(input$addGradingKeyitem)
@@ -1418,164 +591,375 @@ server = function(input, output, session) {
     session$sendCustomMessage("f_langDeEn", 1)
   })
   
-  examScanEvaluation = eventReactive(input$evaluateExam, {
-    checkPm = checkPermission("P1003", credentials()$info$pm)
-    
-    if(!checkPm$hasPermission){
-      session$sendCustomMessage("errorNoPermission", getNoPermissionMessage(checkPm$code, checkPm$response, FALSE))
-      return(callr::r_bg(function() NULL))
-    }
-    
-    session$sendCustomMessage("changeTabTitle", 3)
-    startWait(session)
-    initProrgress(session)
-    scanEvaluationProgressData <<- list(totalPdfLength = NULL,
-                                        totalPngLength = NULL,
-                                        previousProgress = 0,
-                                        progress = 0)
-    
-    settings = list(cores=cores,
-                    maxChoices=maxChoices)
-    
-    # background exercise
-    x = callr::r_bg(
-      func = evaluateExamScans,
-      args = list(isolate(reactiveValuesToList(input)), settings, collectWarnings, log_, getDir(session)),
-      supervise = TRUE
-    )
-
-    return(x)
-  })
-  
-  # evaluate scans - callback
-  observe({
-    if (examScanEvaluation()$is_alive()) {
-      invalidateLater(millis = 100, session = session)
+    # EVALUATE EXAM SCANS -----------------------------------------------------
+      # PARAMETERS ---------------------------------------------------------------
+      evaluateExamScans_req = paste0(getDir(session), "/evaluateExamScans_req.rds")
+      evaluateExamScans_log = paste0(getDir(session), "/evaluateExamScans_log.txt")
+      evaluateExamScans_res = paste0(getDir(session), "/evaluateExamScans_res.txt")
+      evaluateExamScans_fin = paste0(getDir(session), "/evaluateExamScans_fin.txt")
       
-      out = examScanEvaluation()$read_output()
-      scanEvaluationProgressData <<- monitorProgressScanEval(session, out, scanEvaluationProgressData)
-      out_(out)
-    } else {
-      if(is.null(examScanEvaluation()$get_result())){
+      evaluateExamScans_req_content = list()
+      evaluateExamScans_logHistory = c()
+      evaluateExamScansProgressData = list(totalPdfLength = NULL,
+                                           totalPngLength = NULL,
+                                           previousProgress = 0,
+                                           progress = 0)
+      
+      examScanEvaluationData = reactiveVal()
+    
+      # CALL --------------------------------------------------------------------
+      examScanEvaluation = eventReactive(input$evaluateExam, {
+        checkPm = checkPermission("P1003", credentials()$info$pm)
+    
+        if(!checkPm$hasPermission){
+          session$sendCustomMessage("errorNoPermission", getNoPermissionMessage(checkPm$code, checkPm$response, FALSE))
+          return(0)
+        }
+        
+        if(length(evaluateExamScans_req_content) == 0) {
+          session$sendCustomMessage("changeTabTitle", 3)
+          startWait(session)
+          initProrgress(session)
+        }
+        
+        exam = input$evaluateExam
+        dir = getDir(session)
+    
+        # write solutions file
+        exam$examSolutionsName = unlist(exam$examSolutionsName)[1]
+    
+    		solutionFile = unlist(lapply(seq_along(exam$examSolutionsName), function(i){
+    		  file = paste0(dir, "/", exam$examSolutionsName[[i]], ".rds")
+    		  raw = openssl::base64_decode(exam$examSolutionsFile[[i]])
+    		  writeBin(raw, con = file)
+    
+    		  return(file)
+    		}))
+    
+    		# write registered participants file
+    		exam$examRegisteredParticipantsnName = unlist(exam$examRegisteredParticipantsnName)[1]
+    
+    		registeredParticipantsFile = unlist(lapply(seq_along(exam$examRegisteredParticipantsnName), function(i){
+    		  file = paste0(dir, "/", exam$examRegisteredParticipantsnName[[i]], ".csv")
+    		  content = gsub("\r\n", "\n", exam$examRegisteredParticipantsnFile[[i]])
+    		  content = gsub(",", ";", content)
+    		  content = read.table(text=content, sep=";", header = TRUE)
+    
+    		  if(all(content$id==content$registration))
+    			content$id = sprintf(paste0("%0", input$evaluationRegLength, "d"), as.numeric(content$id))
+    
+    		  content$registration = sprintf(paste0("%0", input$evaluationRegLength, "d"), as.numeric(content$registration))
+    
+    		  write.csv2(content, file, row.names = FALSE, quote = FALSE)
+    
+    		  return(file)
+    		}))
+    
+    		# write scan files
+    		pngFiles = NULL
+    		pdfFiles = NULL
+    		totalPdfLength = 0
+    		totalPngLength = length(exam$examScanPngNames)
+    
+    		if(length(exam$examScanPdfNames) > 0){
+    		  exam$examScanPdfNames = as.list(make.unique(unlist(exam$examScanPdfNames), sep="_"))
+    
+    		  pdfFiles = unlist(lapply(setNames(seq_along(exam$examScanPdfNames), exam$examScanPdfNames), function(i){
+    			file = paste0(dir, "/", exam$examScanPdfNames[[i]], ".pdf")
+    			raw = openssl::base64_decode(exam$examScanPdfFiles[[i]])
+    			writeBin(raw, con = file)
+    
+    			totalPdfLength <<- totalPdfLength + qpdf::pdf_length(file)
+    
+    			return(file)
+    		  }))
+    		}
+    
+    		if(length(exam$examScanPngNames) > 0){
+    		  namesToConsider = c(sub("(.*\\/)([^.]+)(\\.[[:alnum:]]+$)", "\\2", convertedPngFiles), unlist(exam$examScanPngNames))
+    		  namesToConsider_idx = (length(namesToConsider)-length(exam$examScanPngNames) + 1):length(namesToConsider)
+    
+    		  exam$examScanPngNames = as.list(make.unique(namesToConsider, sep="_"))[namesToConsider_idx]
+    		  pngFiles = unlist(lapply(seq_along(exam$examScanPngNames), function(i){
+    			file = paste0(dir, "/", exam$examScanPngNames[[i]], ".png")
+    			raw = openssl::base64_decode(exam$examScanPngFiles[[i]])
+    			writeBin(raw, con = file)
+    
+    			return(file)
+    		  }))
+    		}
+    
+    		scanFiles = c(pdfFiles, pngFiles)
+    		
+    		# get mark and mark label input fields
+    		markThresholdsInputIds = paste0("markThreshold", 1:length(which(grepl("markThreshold", names(input)))))
+    		markLabelsInputIds = paste0("markLabel", 1:length(which(grepl("markLabel", names(input)))))
+    		
+    		marks = as.numeric(isolate(reactiveValuesToList(input))[markThresholdsInputIds])
+    		labels = unlist(isolate(reactiveValuesToList(input))[markLabelsInputIds])
+    
+        # request content
+    		evaluateExamScans_req_content <<- list(dir=dir,
+    		                                       edirName=edirName,
+    		                                       totalPdfLength=totalPdfLength,
+    		                                       totalPngLength=totalPngLength,
+    		                                       scanFiles=scanFiles,
+    		                                       registeredParticipantsFile=registeredParticipantsFile,
+    		                                       solutionFile=solutionFile,
+    		                                       examName=exam$examSolutionsName,
+    		                                       rotate=input$rotateScans,
+    		                                       regLength=input$evaluationRegLength,
+    		                                       points=input$fixedPointsExamEvaluate,
+                                           		 partial=input$partialPoints,
+                                           		 negative=input$negativePoints,
+                                           		 rule=input$rule,
+                                           		 mark=input$mark,
+    		                                       marks=marks,
+    		                                       labels=labels,
+    		                                       language=input$evaluationLanguage,
+    		                                       cores=cores,
+    		                                       maxChoices=maxChoices)
+        
+        saveRDS(evaluateExamScans_req_content, evaluateExamScans_req)
+        
+        return(1)
+      })
+    
+      # PROCESSING --------------------------------------------------------------
+      observe({
+        if(examScanEvaluation() != 1)
+          return(0)
+        
+        if (is.na(file.mtime(evaluateExamScans_fin))) {
+          invalidateLater(millis = 100, session = session)
+    
+          logData = processLogFile(evaluateExamScans_log, evaluateExamScans_logHistory)
+          evaluateExamScans_logHistory <<- logData$history
+          evaluateExamScansProgressData <<- monitorProgressExamScanEvaluation(session, logData$out, evaluateExamScansProgressData)
+    
+          if(!DOCKER_WORKER)
+            checkWorkerRequests()
+        } else {
+          if(!DOCKER_WORKER)
+            readOutput()
+    
+          logData = processLogFile(evaluateExamScans_log, evaluateExamScans_logHistory)
+          evaluateExamScans_logHistory <<- logData$history
+          evaluateExamScansProgressData <<- monitorProgressExamScanEvaluation(session, logData$out, evaluateExamScansProgressData)
+          
+          # process results
+          result = as.list(readLines(evaluateExamScans_res))
+          
+          messageType = unlist(result[1])
+          message = unlist(result[2])
+          
+          if(messageType != "2"){
+            names(result) = c("messageType", "message", "examIds", "examName", "numExercises", "numChoices", "totalPdfLength", "totalPngLength", "scanFileZipName",
+                              "dir", "edirName", "cores", "rotate", "points", "regLength", "partial", "negative", "rule", "mark", "labels", "language",
+                              "solution", "registeredParticipants", "scans", "scanEvaluation", "scans_reg_fullJoin")
+            
+            result = lapply(setNames(result, names(result)), function(x) strsplit(x, ";")[[1]])
+            
+            result = with(result, {
+              data = list(messageType=unlist(messageType),
+                          message=unlist(message),
+                          preparedEvaluation=list(meta=list(examIds=examIds, examName=examName, numExercises=as.numeric(numExercises), numChoices=as.numeric(numChoices), totalPdfLength=as.numeric(totalPdfLength), totalPngLength=as.numeric(totalPngLength), scanFileZipName=scanFileZipName), 
+                                                  fields=list(dir=dir, edirName=edirName, cores=as.numeric(cores), rotate=as.logical(rotate), points=switch((length(points)==0)+1,as.numeric(points),NULL), regLength=as.numeric(regLength), partial=as.logical(partial), negative=as.logical(negative), rule=rule, mark=ifelse(mark=="FALSE",FALSE,as.numeric(mark)), labels=labels, language=language),
+                                                  files=list(solution=solution, registeredParticipants=registeredParticipants, scans=scans, scanEvaluation=scanEvaluation, scans_reg_fullJoin=scans_reg_fullJoin)),
+                          scans_reg_fullJoinData=read.csv2(file=result$scans_reg_fullJoin, check.names = FALSE, colClasses = "character")
+              )
+      
+              return(data)
+            })
+            
+            examScanEvaluationData(result)
+          } else{
+            result = list(messageType=messageType,
+                          message=message,
+                          scans_reg_fullJoinData=NULL)
+          }
+          
+          evaluateExamScansResponse(session, result)
+          
+          # wrap up
+          finalizeProgress(session)
+          evaluateExamScans_req_content <<- list()
+          evaluateExamScans_logHistory <<- c()
+          evaluateExamScansProgressData <<- list(totalPdfLength = NULL,
+                                               totalPngLength = NULL,
+                                               previousProgress = 0,
+                                               progress = 0)
+          
+          log_(content="Exam scans evaluated.", USERNAME, sessionToken=session$token)
+        }
+      })
+      
+      # ADDITIONAL HANDLERS -----------------------------------------------------
+      # modal close
+      observeEvent(input$dismiss_evaluateExamScansResponse, {
         removeModal()
         stopWait(session)
         session$sendCustomMessage("changeTabTitle", "reset")
-        finalizeProgress(session)
-        return(NULL)
-      }
-      
-      out = examScanEvaluation()$read_output()
-      scanEvaluationProgressData <<- monitorProgressScanEval(session, out, scanEvaluationProgressData)
-      finalizeProgress(session)
-      out_(out)
-      
-      result = examScanEvaluation()$get_result()
-
-      # save result in reactive value
-      examScanEvaluationData(result)
-
-      # open modal
-      evaluateExamScansResponse(session, result)
-    }
-  })
-
-  # finalizing evaluation - trigger
-  examFinalizeEvaluation = eventReactive(input$proceedEvaluation, {
-    checkPm = checkPermission("P1004", credentials()$info$pm)
+      })
     
-    if(!checkPm$hasPermission){
-      session$sendCustomMessage("errorNoPermission", getNoPermissionMessage(checkPm$code, checkPm$response, FALSE))
-      return(callr::r_bg(function() NULL))
-    }
-    
-    session$sendCustomMessage("changeTabTitle", 3)
-
-    dir = getDir(session)
-    removeModal()
-
-    result = isolate(examScanEvaluationData())
-    result$scans_reg_fullJoinData = isolate(input$proceedEvaluation$scans_reg_fullJoinData)
-    result$scans_reg_fullJoinData = as.data.frame(Reduce(rbind, result$scans_reg_fullJoinData))
-
-    examScanEvaluationData(result)
-
-    settings = list(edirName=edirName)
-
-    # background exercise
-    x = callr::r_bg(
-      func = evaluateExamFinalize,
-      args = list(isolate(examScanEvaluationData()$preparedEvaluation), isolate(input$proceedEvaluation), settings, collectWarnings, log_, dir),
-      supervise = TRUE
-    )
-
-    return(x)
-  })
-
-  # finalizing evaluation - callback
-  observe({
-    if (examFinalizeEvaluation()$is_alive()) {
-      invalidateLater(millis = 100, session = session)
+    # EVALUATE EXAM FINALIZE --------------------------------------------------
+      # PARAMETERS ---------------------------------------------------------------
+      evaluateExamFinalize_req = paste0(getDir(session), "/evaluateExamFinalize_req.rds")
+      evaluateExamFinalize_log = paste0(getDir(session), "/evaluateExamFinalize_log.txt")
+      evaluateExamFinalize_res = paste0(getDir(session), "/evaluateExamFinalize_res.txt")
+      evaluateExamFinalize_fin = paste0(getDir(session), "/evaluateExamFinalize_fin.txt")
       
-      out_(examFinalizeEvaluation()$read_output())
-    } else {
-      if(is.null(examFinalizeEvaluation()$get_result())){
+      evaluateExamFinalize_req_content = list()
+      evaluateExamFinalize_logHistory = c()
+      evaluateExamFinalizeProgressData = list(totalExams = NULL,
+                                              previousProgress = 0,
+                                              progress = 0)
+      
+      examFinalizeEvaluationData = reactiveVal()
+  
+      # CALL --------------------------------------------------------------------
+      examFinalizeEvaluation = eventReactive(input$proceedEvaluation, {
+        checkPm = checkPermission("P1004", credentials()$info$pm)
+    
+        if(!checkPm$hasPermission){
+          session$sendCustomMessage("errorNoPermission", getNoPermissionMessage(checkPm$code, checkPm$response, FALSE))
+          return(callr::r_bg(function() NULL))
+        }
+        
+        if(length(evaluateExamFinalize_req_content) == 0) {
+          session$sendCustomMessage("changeTabTitle", 3)
+          startWait(session)
+          initProrgress(session)
+        }
+    
+        dir = getDir(session)
+        removeModal()
+    
+        result = isolate(examScanEvaluationData())
+
+        result$scans_reg_fullJoinData = isolate(input$proceedEvaluation$scans_reg_fullJoinData)
+        result$scans_reg_fullJoinData = as.data.frame(Reduce(rbind, result$scans_reg_fullJoinData))
+        
+        examScanEvaluationData(result)
+        
+        # request content
+        evaluateExamFinalize_req_content <<- c(isolate(examScanEvaluationData()), proceedEvaluation=list(isolate(input$proceedEvaluation)))
+    
+        saveRDS(evaluateExamFinalize_req_content, evaluateExamFinalize_req)
+        
+        return(1)
+      })
+  
+      # PROCESSING --------------------------------------------------------------
+      observe({
+        if(examFinalizeEvaluation() != 1)
+          return(0)
+        
+        if (is.na(file.mtime(evaluateExamFinalize_fin))) {
+          invalidateLater(millis = 100, session = session)
+          
+          logData = processLogFile(evaluateExamFinalize_log, evaluateExamFinalize_logHistory)
+          evaluateExamFinalize_logHistory <<- logData$history
+          evaluateExamFinalizeProgressData <<- monitorProgressExamFinalizeEvaluation(session, logData$out, evaluateExamFinalizeProgressData)
+          
+          if(!DOCKER_WORKER)
+            checkWorkerRequests()
+        } else {
+          if(!DOCKER_WORKER)
+            readOutput()
+          
+          logData = processLogFile(evaluateExamFinalize_log, evaluateExamFinalize_logHistory)
+          evaluateExamFinalize_logHistory <<- logData$history
+          evaluateExamFinalizeProgressData <<- monitorProgressExamFinalizeEvaluation(session, logData$out, evaluateExamFinalizeProgressData)
+          
+          # process results
+          result = as.list(readLines(evaluateExamFinalize_res))
+          
+          messageType = unlist(result[1])
+          message = unlist(result[2])
+
+          if(messageType != "2"){
+            names(result) = c("messageType", "message", "examIds", "examName", "numExercises", "numChoices", "totalPdfLength", "totalPngLength", "scanFileZipName",
+                              "dir", "edirName", "cores", "rotate", "points", "regLength", "partial", "negative", "rule", "mark", "labels", "language",
+                              "solution", "registeredParticipants", "scanEvaluation", "scans_reg_fullJoin", "nops_evaluationCsv", "nops_evaluationZip", "nops_evalInputTxt", "nops_statisticsTxt")
+            
+            result = lapply(setNames(result, names(result)), function(x) strsplit(x, ";")[[1]])
+            
+            result = with(result, {
+              data = list(messageType=unlist(messageType),
+                          message=unlist(message),
+                          preparedEvaluation=list(meta=list(examIds=examIds, examName=examName, numExercises=as.numeric(numExercises), numChoices=as.numeric(numChoices), totalPdfLength=as.numeric(totalPdfLength), totalPngLength=as.numeric(totalPngLength), scanFileZipName=scanFileZipName),
+                                                  fields=list(dir=dir, edirName=edirName, cores=as.numeric(cores), rotate=as.logical(rotate), points=switch((length(points)==0)+1,as.numeric(points),NULL), regLength=as.numeric(regLength), partial=as.logical(partial), negative=as.logical(negative), rule=rule, mark=ifelse(mark=="FALSE",FALSE,as.numeric(mark)), labels=labels, language=language),
+                                                  files=list(solution=solution, registeredParticipants=registeredParticipants, scanEvaluation=scanEvaluation, 
+                                                             #scans_reg_fullJoin=scans_reg_fullJoin, # we do not want this in the file export
+                                                             nops_evaluationCsv=nops_evaluationCsv, nops_evaluationZip=nops_evaluationZip, nops_evalInputTxt=nops_evalInputTxt, nops_statisticsTxt=nops_statisticsTxt)),
+                          evaluationStatistics=readLines(nops_statisticsTxt)
+              )
+              
+              data$evaluationStatistics = rev(split(data$evaluationStatistics, rev(cumsum(rev(data$evaluationStatistics=="")))))
+              data$evaluationStatistics = lapply(data$evaluationStatistics, function(x) setNames(list(read.csv2(text=paste0(x[x!=""][-1], collapse="\n"))), x[1]))
+              data$evaluationStatistics = Reduce(c, data$evaluationStatistics)
+      
+              return(data)
+            })
+      
+            examFinalizeEvaluationData(result)
+          } else{
+            result = list(messageType=messageType,
+                          message=message,
+                          preparedEvaluation=list(files=NULL))
+          }
+            
+          evaluateExamFinalizeResponse(session, result)
+    
+          # wrap up
+          evaluateExamFinalize_req_content <<- list()
+          evaluateExamFinalize_logHistory <<- c()
+          evaluateExamFinalizeProgressData <<- list(totalExams = NULL,
+                                                  previousProgress = 0,
+                                                  progress = 0)
+    
+          log_(content="Exam evaluated.", USERNAME, sessionToken=session$token)
+        }
+      })
+    
+      # ADDITIONAL HANDLERS -----------------------------------------------------
+      # download evaluation files
+      output$downloadEvaluationFiles = downloadHandler(
+        filename = "evaluation.zip",
+        content = function(fname) {
+          # zip(zipfile=fname, files=unlist(isolate(examFinalizeEvaluationData()$preparedEvaluation$files), recursive = TRUE), flags='-r9XjFS')
+          zip(zipfile=fname, files=unlist(isolate(examFinalizeEvaluationData()$preparedEvaluation$files), recursive = TRUE), flags='-r9Xj')
+        },
+        contentType = "application/zip"
+      )
+    
+      # go back one step
+      observeEvent(input$backTo_evaluateExamScansResponse, {
+        removeModal()
+        
+        unlink(evaluateExamFinalize_req)
+        unlink(evaluateExamFinalize_log)
+        unlink(evaluateExamFinalize_res)
+        unlink(evaluateExamFinalize_fin)
+      
+        unlink(examFinalizeEvaluationData()$preparedEvaluation$files$nops_evaluationCsv)
+        unlink(examFinalizeEvaluationData()$preparedEvaluation$files$nops_evaluationZip)
+        unlink(examFinalizeEvaluationData()$preparedEvaluation$files$nops_evalInputTxt)
+        unlink(examFinalizeEvaluationData()$preparedEvaluation$files$nops_statisticsTxt)
+        
+        result = isolate(examScanEvaluationData())
+        
+        evaluateExamScansResponse(session, result)
+      })
+    
+      # modal close
+      observeEvent(input$dismiss_evaluateExamFinalizeResponse, {
         removeModal()
         stopWait(session)
         session$sendCustomMessage("changeTabTitle", "reset")
-        return(NULL)
-      }
-      
-      out_(examFinalizeEvaluation()$read_output())
-
-      result = examFinalizeEvaluation()$get_result()
-
-      # save result in reactive value
-      examFinalizeEvaluationData(result)
-
-      # open modal
-      evaluateExamFinalizeResponse(session, isolate(reactiveValuesToList(input)), result)
-      
-      log_(content="Exam evaluated.", sessionToken=session$token)
-    }
-  })
-  
-  # finalizing evaluation - download
-  output$downloadEvaluationFiles = downloadHandler(
-    filename = "evaluation.zip",
-    content = function(fname) {
-      # zip(zipfile=fname, files=unlist(isolate(examFinalizeEvaluationData()$preparedEvaluation$files), recursive = TRUE), flags='-r9XjFS')
-      zip(zipfile=fname, files=unlist(isolate(examFinalizeEvaluationData()$preparedEvaluation$files), recursive = TRUE), flags='-r9Xj')
-    },
-    contentType = "application/zip"
-  )
-
-  # back to evaluateExamScansResponse
-  observeEvent(input$backTo_evaluateExamScansResponse, {
-    removeModal()
+      })
     
-    unlink(examFinalizeEvaluationData()$preparedEvaluation$files$nops_evaluationCsv)
-    unlink(examFinalizeEvaluationData()$preparedEvaluation$files$nops_evaluationZip)
-    unlink(examFinalizeEvaluationData()$preparedEvaluation$files$nops_evalInputTxt)
-    unlink(examFinalizeEvaluationData()$preparedEvaluation$files$nops_statisticsTxt)
-    
-    result = isolate(examScanEvaluationData())
-    
-    evaluateExamScansResponse(session, result)
-  })
-
-  # modal close
-  observeEvent(input$dismiss_evaluateExamScansResponse, {
-    removeModal()
-    stopWait(session)
-    session$sendCustomMessage("changeTabTitle", "reset")
-  })
-
-  observeEvent(input$dismiss_evaluateExamFinalizeResponse, {
-    removeModal()
-    stopWait(session)
-    session$sendCustomMessage("changeTabTitle", "reset")
-  })
-  
   # ADDONS ------------------------------------------------------------------
   lapply(addons, \(addon) {
     get(paste0(addon, "_callModules"))()

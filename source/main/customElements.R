@@ -79,24 +79,35 @@ myButtonStyle = function(deText, enText, icon="") {
 myGradingKey = function(size) {
 	if (!is.numeric(size) || is.infinite(size) || size < 2)
 		size = 2
+		
+	thresholdValues = round(c(0.5, seq(0.5+0.5/size, 1, 0.5/size)), 2)
+    markValues = size:1	
 	
-	  gradingKey = sapply(1:size, \(x){
-
-		gradingKeyItem = myGradingkeyItem(x)
+	gradingKey = sapply(1:size, \(x){
+		gradingKeyItem = myGradingkeyItem(x, thresholdValues[x], markValues[x])
 	})
 	
 	return(HTML(paste0(gradingKey, collapse="")))
 } 
 
-myGradingkeyItem = function(index) {
+myGradingKeyThresholdItem = function(index, value, disabled){
+	paste0('<td><div class="form-group shiny-input-container', ifelse(disabled,' shinyjs-disabled disabled" disabled="disabled"','"'), '><input id="markThreshold', index, '" type="text" class="markThreshold form-control shiny-bound-input shinyjs-resettable', ifelse(disabled,' disabled',''), '" value="', value, '" data-shinyjs-resettable-id="markThreshold', index, '" data-shinyjs-resettable-type="Text" data-shinyjs-resettable-value=""', ifelse(disabled,' disabled=""',''), '></td>')
+}
+
+myGradingKeyMarkItem = function(index, value){
+	paste0('<td><div class="form-group shiny-input-container"><input id="markLabel', index, '" type="text" value="', value, '" class="markLabel form-control shiny-bound-input shinyjs-resettable" data-shinyjs-resettable-id="markLabel', index, '" data-shinyjs-resettable-type="Text" data-shinyjs-resettable-value=""></div></td>')
+}
+
+
+myGradingkeyItem = function(index, thresholdValue, markValue) {
   firstItem = index == 1
   removable = index > 2
   
   itemClasses = paste0('gradingKeyItem ', ifelse(removable,"removable",""))
+
+  itemThresholdItem = myGradingKeyThresholdItem(index, thresholdValue, firstItem)
   
-  itemThresholdItem = paste0('<td><div class="form-group shiny-input-container', ifelse(firstItem,' shinyjs-disabled disabled" disabled="disabled"','"'), '><input id="markThreshold', index, '" type="text" class="markThreshold form-control shiny-bound-input shinyjs-resettable', ifelse(firstItem,' disabled',''), '" value="0" data-shinyjs-resettable-id="markThreshold', index, '" data-shinyjs-resettable-type="Text" data-shinyjs-resettable-value=""', ifelse(firstItem,' disabled=""',''), '></td>')
-  
-  itemMarkItem = paste0('<td><div class="form-group shiny-input-container"><input id="markLabel', index, '" type="text" class="markLabel form-control shiny-bound-input shinyjs-resettable" data-shinyjs-resettable-id="markLabel', index, '" data-shinyjs-resettable-type="Text" data-shinyjs-resettable-value=""></div></td>')
+  itemMarkItem = myGradingKeyMarkItem(index, markValue)
   
   itemRemoveItem = paste0('<td><div class="form-group modifyGradingkeyItems"><span class="modifyGradingkeyItemButtons"><button type="button" class="removeGradingKeyItem btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></button><button type="button" class="addGradingKeyItem btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-plus"></i></span><span class="textButton"><span style="" lang="de">Hinzufügen</span><span lang="en">Add</span></span></button></span></div></td>')
   
@@ -140,34 +151,37 @@ myEvaluationCharts = function(chartData, examMaxPoints, validExams, showGradingC
 	pointsChart = myPointsChart(chartData$ids[[1]], chartData$values[[1]], examMaxPoints, chartData$deCaptions[[1]], chartData$enCaptions[[1]])
 	
 	exerciseChart = myExerciseChart(chartData$ids[[2]], chartData$values[[2]], chartData$deCaptions[[2]], chartData$enCaptions[[2]])
-	
-	if(!showGradingChart)
+
+	if(showGradingChart[1] == FALSE)
 		return(HTML(paste0(pointsChart, exerciseChart)))
-	
+
 	gradingChart = myGradingChart(chartData$ids[[3]], chartData$values[[3]], validExams, chartData$deCaptions[[3]], chartData$enCaptions[[3]])
-	
+
 	return(HTML(paste0(pointsChart, exerciseChart, gradingChart)))
 }
 
 myPointsChart = function(id, values, examMaxPoints, deCaption, enCaption) {
-	meanValue = values[1]
-	
-	values_	= values
-	
-	if(length(values)>1) {
-		colnames(values_) = c(colnames(values)[1], "", colnames(values)[-c(1,length(values))])
-		values_ = values_[,values_>0,drop=FALSE]
-		values_ = values_[,order(values_),drop=FALSE]
-	} else {
-		colnames(values) = ""
-	}
-
+  names = values[,1]
+  values = values[,-1,drop=F]
+  meanValue = values[1]
+  
+  values_	= values
+  
+  if(length(values) > 1) {
+    names(values_) = c(names(values)[1], "", names(values)[-c(1,length(values))])
+    values_ = values_[,as.numeric(values_)>0,drop=FALSE]
+    values_ = values_[,order(as.numeric(values_)),drop=FALSE]
+  } else {
+    names(values) = ""
+  }
+  
 	cssChart = paste0('',
 		'<figure id="', id, '" aria-hidden="true">',
 			paste0('<figcaption><span lang="de">', deCaption, ' (', examMaxPoints, ' erreichbare Punkte):</span><span lang="en">', enCaption, ' (Total points: ', examMaxPoints, ' achievable points):</span></figcaption>'),
 		  '<div class="graph rowGraph" style="grid: repeat(1, auto) max-content / max-content repeat(7, auto);">',
-			'<div class="graphRowBar valueBar fullBar" style="grid-row: 1; width: 100%;"><span class="markValue">', tail(colnames(values),1), '</span></div>',
-    		paste0(sapply(length(values_):1, \(v) paste0('<div class="graphRowBar valueBar ', ifelse(colnames(values_)[v]=="mean", 'meanValue', ''), '" style="grid-row: 1; width: ', values_[v] * 100, '%;"><span class="markValue">', ifelse(colnames(values_)[v]=="mean", paste0('&#x2205; ', round(meanValue * examMaxPoints,0)), colnames(values_)[v]), '</span></div>')), collapse=""),
+			'<div class="graphRowBar valueBar fullBar" style="grid-row: 1; width: 100%;"><span class="markValue">', tail(names(values), 1), '</span></div>',
+    		paste0(sapply(ncol(values_):1, \(v) paste0('<div class="graphRowBar valueBar ', ifelse(names(values_)[v]=="mean", 'meanValue', ''), '" style="grid-row: 1; width: ', 
+    		                                           as.numeric(values_[,v]) * 100, '%;"><span class="markValue">', ifelse(names(values_)[v]=="mean", paste0('&#x2205; ', round(as.numeric(meanValue) * as.numeric(examMaxPoints),0)), names(values_)[v]), '</span></div>')), collapse=""),
 			'<div class="graphRowBar valueBar nullBar" style="grid-row: 1; width: 0%;"></div>',
 			'<div class="graphRowBar overlayBar" style="grid-row: 1; width: 100%;"><span class="absoluteValue"></span></div>',
 		  '</div>',
@@ -178,6 +192,9 @@ myPointsChart = function(id, values, examMaxPoints, deCaption, enCaption) {
 }
 
 myExerciseChart = function(id, values, deCaption, enCaption) {
+  names = values[,1]
+  values = values[,-1,drop=F]
+  
 	cssChart = paste0('',
 		'<figure id="', id, '" aria-hidden="true">',
 			paste0('<figcaption><span lang="de">', deCaption, ' (', nrow(values), ' Aufgaben):</span><span lang="en">', enCaption, ' (', nrow(values), ' Exercises):</span></figcaption>'),
@@ -186,13 +203,13 @@ myExerciseChart = function(id, values, deCaption, enCaption) {
 					paste0(sapply(1:nrow(values), \(v) {
 						paste0('',
 							'<div class="graphColumnBar valueBar" style="grid-column: ', v, '; height: 100%;"></div>',
-							'<div class="graphColumnBar backgroundBar" style="grid-column: ', v, '; height: ', (1 - values[v,4]) * 100, '%;"></div>',
-							'<div class="graphColumnBar overlayBar" style="grid-column: ', v, '; height: 100%;"><span class="absoluteValue">', round(values[v,4]*100, 0), '%</span></div>'
+							'<div class="graphColumnBar backgroundBar" style="grid-column: ', v, '; height: ', (1 - as.numeric(values[v,4])) * 100, '%;"></div>',
+							'<div class="graphColumnBar overlayBar" style="grid-column: ', v, '; height: 100%;"><span class="absoluteValue">', round(as.numeric(values[v,4]) * 100, 0), '%</span></div>'
 						)
 					}), collapse=""),
 				'</div>',
 				'<div class="graphLabels">',
-					paste0(sapply(1:nrow(values), \(v) paste0('<span class="graphColumnLabel" style="grid-column: ', v, '; height: 100%;"><span class="graphColumnLabelText">', v, '</span><span class="graphColumnLabelHoverText"><span lang="de">Aufgabe: ', rownames(values)[v], '</span><span lang="en">Exercise: ', rownames(values)[v], '</span></span></span>')), collapse=""),
+					paste0(sapply(1:nrow(values), \(v) paste0('<span class="graphColumnLabel" style="grid-column: ', v, '; height: 100%;"><span class="graphColumnLabelText">', v, '</span><span class="graphColumnLabelHoverText"><span lang="de">Aufgabe: ', names[v], '</span><span lang="en">Exercise: ', names[v], '</span></span></span>')), collapse=""),
 				'</div>',
 			'</div>',
 		'</figure>'
@@ -202,6 +219,9 @@ myExerciseChart = function(id, values, deCaption, enCaption) {
 }
 
 myGradingChart = function(id, values, validExams, deCaption, enCaption) {
+  names = values[,1]
+  values = values[,-1,drop=F]
+  
 	cssChart = paste0('',
 		'<figure id="', id, '" aria-hidden="true">',
 			paste0('<figcaption><span lang="de">', deCaption, ' (', validExams, ' gültige Prüfungen):</span><span lang="en">', enCaption, ' (', validExams, ' valid exams):</span></figcaption>'),
@@ -210,13 +230,13 @@ myGradingChart = function(id, values, validExams, deCaption, enCaption) {
 					paste0(sapply(1:nrow(values), \(v) {
 						paste0('',
 							'<div class="graphColumnBar valueBar" style="grid-column: ', v, '; height: 100%;"></div>',
-							'<div class="graphColumnBar backgroundBar" style="grid-column: ', v, '; height: ', (1 - values[v,2]) * 100, '%;"></div>',
-							'<div class="graphColumnBar overlayBar" style="grid-column: ', v, '; height: 100%;"><span class="absoluteValue">', round(values[v,2]*100, 0), '%</span></div>'
+							'<div class="graphColumnBar backgroundBar" style="grid-column: ', v, '; height: ', (1 - as.numeric(values[v,2])) * 100, '%;"></div>',
+							'<div class="graphColumnBar overlayBar" style="grid-column: ', v, '; height: 100%;"><span class="absoluteValue">', round(as.numeric(values[v,2]) * 100, 0), '%</span></div>'
 						)
 					}), collapse=""),
 				'</div>',
 				'<div class="graphLabels">',
-					paste0(sapply(1:nrow(values), \(v) paste0('<span class="graphColumnLabel" style="grid-column: ', v, '; height: 100%;">', rownames(values)[v], '</span>')), collapse=""),
+					paste0(sapply(1:nrow(values), \(v) paste0('<span class="graphColumnLabel" style="grid-column: ', v, '; height: 100%;">', names[v], '</span>')), collapse=""),
 				'</div>',
 			'</div>',
 		'</figure>'
