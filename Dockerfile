@@ -13,9 +13,6 @@ RUN set -eu \
         ;
 	
 RUN R -e "install.packages(c('shinyjs', 'shinyWidgets', 'shinycssloaders', 'shinyauthr', 'sodium', 'RSQLite', 'DBI'), dependencies=TRUE)"						 
-
-pattern="PDF" \/>/<policy domain="coder" #rights="read|write" pattern="PDF" \/>/g' $imagemagic_config ; else echo did not see file $imagemagic_config ; fi
-
 RUN rm -rf /tmp/Rtmp*/
 
 COPY ./app.R /rex/
