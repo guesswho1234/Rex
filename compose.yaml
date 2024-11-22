@@ -3,7 +3,7 @@ services:
     container_name: test_rex
     build:
       dockerfile: dockerfile
-      context: https://<token>:@github.com/guesswho1234/Rex.git#main
+      context: https://github.com/guesswho1234/Rex.git#main
     restart: unless-stopped
     ports:
       - "32780:3838"
@@ -16,7 +16,7 @@ services:
     container_name: test_rex-worker
     build:
       dockerfile: dockerfile_worker
-      context: https://<token>:@github.com/guesswho1234/Rex.git#main
+      context: https://github.com/guesswho1234/Rex.git#main
     restart: unless-stopped
     volumes:
       - shared-content:/tmp/
