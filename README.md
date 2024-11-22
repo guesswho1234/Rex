@@ -30,9 +30,7 @@ opening and running `app.R`.
 
 ### Docker
 
-Build your docker infrastructure with the supplied docker compose file.
-
-Run: `docker-compose -f compose_rex.yaml up`.
+Build your docker infrastructure with the supplied docker compose file by running `docker-compose -f compose_rex.yaml up`.
 
 ## Hosting
 > [!CAUTION]
