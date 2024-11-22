@@ -34,7 +34,7 @@ Build your docker infrastructure with the supplied docker compose file by runnin
 
 ## Hosting
 > [!CAUTION]
-> Do not host this version of Rex with uncontrolled / public access without additional security measures.
+> Do not host this version of Rex with uncontrolled / public access and no additional security measures.
 > Code from user input is parsed and evaluated by the `rex_worker` container.
 
 ## Use
