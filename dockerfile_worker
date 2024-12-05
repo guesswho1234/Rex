@@ -18,7 +18,6 @@ RUN set -eu \
 
 RUN R -e "install.packages(c('xtable', 'tth', 'png', 'callr', 'openssl', 'magick'), dependencies=TRUE)"								 
 RUN R -e "install.packages('exams', repos='http://R-Forge.R-project.org', type='source')"
-RUN R -e "install.packages('qpdf', repos='http://cran.us.r-project.org')"
 
 ARG imagemagic_config=/etc/ImageMagick-6/policy.xml
 RUN if [ -f $imagemagic_config ] ; then sed -i 's/<policy domain="coder" rights="none" pattern="PDF" \/>/<policy domain="coder" rights="read|write" pattern="PDF" \/>/g' $imagemagic_config ; else echo did not see file $imagemagic_config ; fi
