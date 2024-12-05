@@ -22,9 +22,6 @@ For Rex to operate properly, make sure the following resources are available.
 ## Run
 
 ### Local
-> [!WARNING]
-> There currently is a bug where sometimes worker requests are not properly processed and the app gets stuck on the "please wait" overlay.
-> Until fixed, an old version without the worker feature in the noWorker branch can be used.
 
 Install all required R packages including their dependencies (see section "PACKAGES" in `app.R` and `worker.R`). 
 
