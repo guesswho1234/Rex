@@ -397,7 +397,7 @@ server = function(input, output, session) {
           examParseResponse(session, result, error)
         })
         
-        session$sendCustomMessage("changeTabTitle", messageType)
+        session$sendCustomMessage("changeTabTitle", as.numeric(messageType))
         
         # wrap up
         finalizeProgress(session)
@@ -543,6 +543,8 @@ server = function(input, output, session) {
         }
   
         examCreationResponse(session, messageType, message, length(isolate(examFiles())) > 0)
+		
+		session$sendCustomMessage("changeTabTitle", as.numeric(messageType))
         
         # wrap up
         finalizeProgress(session)
@@ -779,6 +781,8 @@ server = function(input, output, session) {
           }
           
           evaluateExamScansResponse(session, result)
+		  
+		  session$sendCustomMessage("changeTabTitle", as.numeric(messageType))
           
           # wrap up
           finalizeProgress(session)
@@ -910,6 +914,8 @@ server = function(input, output, session) {
           }
             
           evaluateExamFinalizeResponse(session, result)
+		  
+		  session$sendCustomMessage("changeTabTitle", as.numeric(messageType))
     
           # wrap up
           evaluateExamFinalize_req_content <<- list()
