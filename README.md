@@ -10,7 +10,7 @@ Rex is developed by [Sebastian Bachler] and is still work-in-progress.
 
 ## System Resources
 
-For Rex to operate properly, make sure the following resources are available. 
+For Rex to operate properly, make sure that the following resources are available on your system.
 
 - libsodium-dev
 - libmagick++-dev 
