@@ -493,6 +493,7 @@ server = function(input, output, session) {
                                       fixSequence=input$fixSequence,
                                       examLanguage=input$examLanguage,
                                       examInstitution=input$examInstitution,
+									  examDate=input$examDate,
                                       numberOfBlanks=input$numberOfBlanks,
                                       duplex=input$duplex,
                                       showPoints=input$showPoints,
