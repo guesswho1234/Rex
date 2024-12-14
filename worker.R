@@ -19,7 +19,6 @@ library(xtable) #xtable_1.8-4
 library(openssl) # openssl_2.1.1
 library(magick) # magick_2.7.4
 library(callr) # callr_3.7.3
-library(qpdf) # qpdf_1.3.2
 
 # SOURCE ------------------------------------------------------------------
 source("./source/shared/log.R")
@@ -46,11 +45,15 @@ source("./source/shared/log.R")
                                  pattern = REQ_FILES_PATTERN, 
                                  recursive = TRUE,
                                  full.names = TRUE)
+
     REQUESTS = c()
     
     if(length(CHECK_REQ_FILES)){
       COMPARE_TIME_NEW = Sys.time()
-      REQUESTS = CHECK_REQ_FILES[which(sapply(CHECK_REQ_FILES, function(x) file.mtime(x) > COMPARE_TIME))]
+      REQUESTS = CHECK_REQ_FILES[which(sapply(CHECK_REQ_FILES, function(x){
+        file.mtime(x) > COMPARE_TIME
+      }))]
+
       COMPARE_TIME <<- COMPARE_TIME_NEW
     }
 
@@ -61,69 +64,65 @@ source("./source/shared/log.R")
       EVALUATE_EXAM_FINALIZE_REQUEST = REQUESTS[grepl("evaluateExamFinalize", REQUESTS)]
       
       if(length(PARSE_EXERCISE_REQUEST) > 0){
-        log_(content="PARSE_EXERCISE_REQUEST", "WORKER", "WORKER")
-        
-        requestContent = readRDS(PARSE_EXERCISE_REQUEST[1])
-        processFiles = getProcessFiles(requestContent$dir, "parseExercise")
-        
-        # if no response, consider polling outputs to keep alive
-        R_BG_STACK <<- c(R_BG_STACK, list(list(log=processFiles$log, process=callr::r_bg(
-          func = process_parseExerciseRequest,
-          args = list(requestContent, processFiles$res, processFiles$fin, parseExercise, prepare_exerciseResponse),
-          supervise = TRUE
-        ))))
-        
-        # DEBUG: run without background process
-        # process_parseExerciseRequestrequestContent, processFiles$res, processFiles$fin, parseExercise, prepare_exerciseResponse)
+        lapply(PARSE_EXERCISE_REQUEST, function(x){
+          log_(content="PARSE_EXERCISE_REQUEST", "WORKER", "WORKER")
+          
+          requestContent = readRDS(x)
+          processFiles = getProcessFiles(requestContent$dir, "parseExercise")
+
+          # if no response, consider polling outputs to keep alive
+          R_BG_STACK <<- c(R_BG_STACK, list(list(log=processFiles$log, process=callr::r_bg(
+            func = process_parseExerciseRequest,
+            args = list(requestContent, processFiles$res, processFiles$fin, parseExercise, prepare_exerciseResponse),
+            supervise = TRUE
+          ))))
+        })
       }
       
       if(length(CREATE_EXAM_REQUEST) > 0){
-        log_(content="CREATE_EXAM_REQUEST", "WORKER", "WORKER")
-        
-        requestContent = readRDS(CREATE_EXAM_REQUEST[1])
-        processFiles = getProcessFiles(requestContent$dir, "createExam")
-        
-        # if no response, consider polling outputs to keep alive
-        R_BG_STACK <<- c(R_BG_STACK, list(list(log=processFiles$log, process=callr::r_bg(
-          func = process_createExamRequest,
-          args = list(requestContent, processFiles$res, processFiles$fin, createExam, prepare_createExamResponse),
-          supervise = TRUE
-        ))))
-        
-        # DEBUG: run without background process
-        # process_createExamRequest(requestContent, processFiles$res, processFiles$fin, createExam, prepare_createExamResponse)
+        lapply(CREATE_EXAM_REQUEST, function(x){
+          log_(content="CREATE_EXAM_REQUEST", "WORKER", "WORKER")
+          
+          requestContent = readRDS(x)
+          processFiles = getProcessFiles(requestContent$dir, "createExam")
+          
+          # if no response, consider polling outputs to keep alive
+          R_BG_STACK <<- c(R_BG_STACK, list(list(log=processFiles$log, process=callr::r_bg(
+            func = process_createExamRequest,
+            args = list(requestContent, processFiles$res, processFiles$fin, createExam, prepare_createExamResponse),
+            supervise = TRUE
+          ))))
+        })
       }
       
       if(length(EVALUATE_EXAM_SCANS_REQUEST) > 0){
-        log_(content="EVALUATE_EXAM_SCANS_REQUEST", "WORKER", "WORKER")
-        
-        requestContent = readRDS(EVALUATE_EXAM_SCANS_REQUEST[1])
-        processFiles = getProcessFiles(requestContent$dir, "evaluateExamScans")
-
-        R_BG_STACK <<- c(R_BG_STACK, list(list(log=processFiles$log, process=callr::r_bg(
-    		  func = process_evaluateExamScansRequest,
-    		  args = list(requestContent, processFiles$res, processFiles$fin, evaluateExamScans, prepare_evaluateExamScansResponse),
-    		  supervise = TRUE
-  	    ))))
-
-		    # DEBUG: run without background process
-        # process_evaluateExamScansRequest(requestContent, processFiles$res, processFiles$fin, evaluateExamScans, prepare_evaluateExamScansResponse)
+        lapply(EVALUATE_EXAM_SCANS_REQUEST, function(x){
+          log_(content="EVALUATE_EXAM_SCANS_REQUEST", "WORKER", "WORKER")
+          
+          requestContent = readRDS(x)
+          processFiles = getProcessFiles(requestContent$dir, "evaluateExamScans")
+          
+          R_BG_STACK <<- c(R_BG_STACK, list(list(log=processFiles$log, process=callr::r_bg(
+            func = process_evaluateExamScansRequest,
+            args = list(requestContent, processFiles$res, processFiles$fin, evaluateExamScans, prepare_evaluateExamScansResponse),
+            supervise = TRUE
+          ))))
+        })
       }
       
       if(length(EVALUATE_EXAM_FINALIZE_REQUEST) > 0){
-        log_(content="EVALUATE_EXAM_FINALIZE_REQUEST", "WORKER", "WORKER")
-        
-        requestContent = readRDS(EVALUATE_EXAM_FINALIZE_REQUEST[1])
-        processFiles = getProcessFiles(requestContent$preparedEvaluation$fields$dir, "evaluateExamFinalize")
-
-        R_BG_STACK <<- c(R_BG_STACK, list(list(log=processFiles$log, process=callr::r_bg(
-    		  func = process_evaluateExamFinalizeRequest,
-    		  args = list(requestContent, processFiles$res, processFiles$fin, evaluateExamFinalize, prepare_evaluateExamFinalizeResponse),
-    		  supervise = TRUE
-  	    ))))
-
-		    # DEBUG: run without background process
-        # process_evaluateExamFinalizeRequest(requestContent, processFiles$res, processFiles$fin, evaluateExamFinalize, prepare_evaluateExamFinalizeResponse)
+        lapply(EVALUATE_EXAM_FINALIZE_REQUEST, function(x){
+          log_(content="EVALUATE_EXAM_FINALIZE_REQUEST", "WORKER", "WORKER")
+          
+          requestContent = readRDS(EVALUATE_EXAM_FINALIZE_REQUEST[1])
+          processFiles = getProcessFiles(requestContent$preparedEvaluation$fields$dir, "evaluateExamFinalize")
+          
+          R_BG_STACK <<- c(R_BG_STACK, list(list(log=processFiles$log, process=callr::r_bg(
+            func = process_evaluateExamFinalizeRequest,
+            args = list(requestContent, processFiles$res, processFiles$fin, evaluateExamFinalize, prepare_evaluateExamFinalizeResponse),
+            supervise = TRUE
+          ))))
+        })
       }
     }
   }
@@ -469,7 +468,7 @@ source("./source/shared/log.R")
   			preparedExam = list(examFields=examFields, examFiles=list(examHtmlFiles=examHtmlFiles, pdfFiles=examPdfFiles, rdsFile=examRdsFile, examInputFile=examInputFile), sourceFiles=list(exerciseFiles=data$exerciseFiles, additionalPdfFiles=data$additionalPdfFiles))
 
   			cat("Creating exam.\n")
-  			
+
   			with(preparedExam$examFields, {
   			  # create exam html preview with solutions
   			  set.seed(1)
@@ -672,7 +671,16 @@ source("./source/shared/log.R")
   			  }
   
   			  # full outer join of scanData and registeredParticipantData
-  			  scans_reg_fullJoinData = merge(scanData, registeredParticipantData, by="registration", all=TRUE)
+  			  scans_reg_fullJoinData = NULL
+  			  
+  			  if(data$dummyParticipants){
+  			    scans_reg_fullJoinData = scanData
+  			    scans_reg_fullJoinData$registration = registeredParticipantData$registration
+  			    scans_reg_fullJoinData$name = registeredParticipantData$name
+  			    scans_reg_fullJoinData$id = registeredParticipantData$id
+  			  }
+			    else
+			      scans_reg_fullJoinData = merge(scanData, registeredParticipantData, by="registration", all=TRUE)
   
   			  # in case of duplicates, set "XXXXXXX" as registration number and "NA" for name and id for every match following the first one
   			  dups = duplicated(scans_reg_fullJoinData$registration)

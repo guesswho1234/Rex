@@ -115,6 +115,7 @@ ui = htmlTemplate(
   
 # SERVER -----------------------------------------------------------------
 server = function(input, output, session) {
+  #todo: Warning: call dbDisconnect() when finished working with a connection
   # AUTH --------------------------------------------------------------------
   credentials = Myloginserver(
     id = "login",
@@ -493,7 +494,7 @@ server = function(input, output, session) {
                                       fixSequence=input$fixSequence,
                                       examLanguage=input$examLanguage,
                                       examInstitution=input$examInstitution,
-									  examDate=input$examDate,
+                                      examDate=input$examDate,
                                       numberOfBlanks=input$numberOfBlanks,
                                       duplex=input$duplex,
                                       showPoints=input$showPoints,
@@ -533,7 +534,7 @@ server = function(input, output, session) {
         
         # process results
         result = readLines(createExam_res)
-  
+        
         messageType = unlist(result[1])
         message = unlist(result[2])
         
@@ -544,9 +545,9 @@ server = function(input, output, session) {
         }
   
         examCreationResponse(session, messageType, message, length(isolate(examFiles())) > 0)
-		
-		session$sendCustomMessage("changeTabTitle", as.numeric(messageType))
         
+        session$sendCustomMessage("changeTabTitle", as.numeric(messageType))
+
         # wrap up
         finalizeProgress(session)
         createExam_req_content <<- c()
@@ -637,62 +638,77 @@ server = function(input, output, session) {
     
     		  return(file)
     		}))
-    
-    		# write registered participants file
-    		exam$examRegisteredParticipantsnName = unlist(exam$examRegisteredParticipantsnName)[1]
-    
-    		registeredParticipantsFile = unlist(lapply(seq_along(exam$examRegisteredParticipantsnName), function(i){
-    		  file = paste0(dir, "/", exam$examRegisteredParticipantsnName[[i]], ".csv")
-    		  content = gsub("\r\n", "\n", exam$examRegisteredParticipantsnFile[[i]])
-    		  content = gsub(",", ";", content)
-    		  content = read.table(text=content, sep=";", header = TRUE)
-    
-    		  if(all(content$id==content$registration))
-    			content$id = sprintf(paste0("%0", input$evaluationRegLength, "d"), as.numeric(content$id))
-    
-    		  content$registration = sprintf(paste0("%0", input$evaluationRegLength, "d"), as.numeric(content$registration))
-    
-    		  write.csv2(content, file, row.names = FALSE, quote = FALSE)
-    
-    		  return(file)
-    		}))
-    
+    		
     		# write scan files
     		pngFiles = NULL
     		pdfFiles = NULL
     		totalPdfLength = 0
     		totalPngLength = length(exam$examScanPngNames)
-    
+    		
     		if(length(exam$examScanPdfNames) > 0){
     		  exam$examScanPdfNames = as.list(make.unique(unlist(exam$examScanPdfNames), sep="_"))
-    
+    		  
     		  pdfFiles = unlist(lapply(setNames(seq_along(exam$examScanPdfNames), exam$examScanPdfNames), function(i){
-    			file = paste0(dir, "/", exam$examScanPdfNames[[i]], ".pdf")
-    			raw = openssl::base64_decode(exam$examScanPdfFiles[[i]])
-    			writeBin(raw, con = file)
-    
-    			totalPdfLength <<- totalPdfLength + qpdf::pdf_length(file)
-    
-    			return(file)
+    		    file = paste0(dir, "/", exam$examScanPdfNames[[i]], ".pdf")
+    		    raw = openssl::base64_decode(exam$examScanPdfFiles[[i]])
+    		    writeBin(raw, con = file)
+    		    
+    		    totalPdfLength <<- totalPdfLength + qpdf::pdf_length(file)
+    		    
+    		    return(file)
     		  }))
     		}
-    
+    		
     		if(length(exam$examScanPngNames) > 0){
     		  namesToConsider = c(sub("(.*\\/)([^.]+)(\\.[[:alnum:]]+$)", "\\2", convertedPngFiles), unlist(exam$examScanPngNames))
     		  namesToConsider_idx = (length(namesToConsider)-length(exam$examScanPngNames) + 1):length(namesToConsider)
-    
+    		  
     		  exam$examScanPngNames = as.list(make.unique(namesToConsider, sep="_"))[namesToConsider_idx]
     		  pngFiles = unlist(lapply(seq_along(exam$examScanPngNames), function(i){
-    			file = paste0(dir, "/", exam$examScanPngNames[[i]], ".png")
-    			raw = openssl::base64_decode(exam$examScanPngFiles[[i]])
-    			writeBin(raw, con = file)
-    
-    			return(file)
+    		    file = paste0(dir, "/", exam$examScanPngNames[[i]], ".png")
+    		    raw = openssl::base64_decode(exam$examScanPngFiles[[i]])
+    		    writeBin(raw, con = file)
+    		    
+    		    return(file)
     		  }))
     		}
-    
-    		scanFiles = c(pdfFiles, pngFiles)
     		
+    		scanFiles = c(pdfFiles, pngFiles)
+    
+    		# write registered participants file
+    		registeredParticipantsFile = NULL
+    		dummyParticipants = FALSE
+    		
+    		exam$examRegisteredParticipantsnName = unlist(exam$examRegisteredParticipantsnName)[1]
+    		
+    		if(is.null(exam$examRegisteredParticipantsnName)){
+    		  file = paste0(dir, "/", "dummyParticipants.csv")
+    		  content = rep(1:(totalPdfLength + totalPngLength))
+    		  content = sprintf(paste0("%0", input$evaluationRegLength, "d"), as.numeric(content))
+    		  content = data.frame(registration=content,name=content,id=content)
+    		  
+    		  write.csv2(content, file, row.names = FALSE, quote = FALSE)
+    		  
+    		  registeredParticipantsFile = file
+    		  dummyParticipants = TRUE
+    		} else {
+      		registeredParticipantsFile = unlist(lapply(seq_along(exam$examRegisteredParticipantsnName), function(i){
+      		  file = paste0(dir, "/", exam$examRegisteredParticipantsnName[[i]], ".csv")
+      		  content = gsub("\r\n", "\n", exam$examRegisteredParticipantsnFile[[i]])
+      		  content = gsub(",", ";", content)
+      		  content = read.table(text=content, sep=";", header = TRUE)
+      
+      		  if(all(content$id==content$registration))
+      			content$id = sprintf(paste0("%0", input$evaluationRegLength, "d"), as.numeric(content$id))
+      
+      		  content$registration = sprintf(paste0("%0", input$evaluationRegLength, "d"), as.numeric(content$registration))
+      
+      		  write.csv2(content, file, row.names = FALSE, quote = FALSE)
+      
+      		  return(file)
+      		}))
+    		}
+
     		# get mark and mark label input fields
     		markThresholdsInputIds = paste0("markThreshold", 1:length(which(grepl("markThreshold", names(input)))))
     		markLabelsInputIds = paste0("markLabel", 1:length(which(grepl("markLabel", names(input)))))
@@ -707,6 +723,7 @@ server = function(input, output, session) {
     		                                       totalPngLength=totalPngLength,
     		                                       scanFiles=scanFiles,
     		                                       registeredParticipantsFile=registeredParticipantsFile,
+    		                                       dummyParticipants=dummyParticipants,
     		                                       solutionFile=solutionFile,
     		                                       examName=exam$examSolutionsName,
     		                                       rotate=input$rotateScans,
@@ -782,8 +799,8 @@ server = function(input, output, session) {
           }
           
           evaluateExamScansResponse(session, result)
-		  
-		  session$sendCustomMessage("changeTabTitle", as.numeric(messageType))
+          
+          session$sendCustomMessage("changeTabTitle", as.numeric(messageType))
           
           # wrap up
           finalizeProgress(session)
@@ -915,8 +932,8 @@ server = function(input, output, session) {
           }
             
           evaluateExamFinalizeResponse(session, result)
-		  
-		  session$sendCustomMessage("changeTabTitle", as.numeric(messageType))
+          
+          session$sendCustomMessage("changeTabTitle", as.numeric(messageType))
     
           # wrap up
           evaluateExamFinalize_req_content <<- list()
