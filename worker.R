@@ -679,26 +679,27 @@ source("./source/shared/log.R")
   			    scans_reg_fullJoinData$name = registeredParticipantData$name
   			    scans_reg_fullJoinData$id = registeredParticipantData$id
   			  }
-			    else
+			    else{
 			      scans_reg_fullJoinData = merge(scanData, registeredParticipantData, by="registration", all=TRUE)
   
-  			  # in case of duplicates, set "XXXXXXX" as registration number and "NA" for name and id for every match following the first one
-  			  dups = duplicated(scans_reg_fullJoinData$registration)
-  			  scans_reg_fullJoinData$registration[dups] = "XXXXXXX"
-  			  scans_reg_fullJoinData$name[dups] = "NA"
-  			  scans_reg_fullJoinData$id[dups] = "NA"
-  
-  			  # set "XXXXXXX" as registration number for scans which were not matched with any of the registered participants
-  			  scans_reg_fullJoinData$registration[is.na(scans_reg_fullJoinData$name) & is.na(scans_reg_fullJoinData$id)] = "XXXXXXX"
-  
-  			  # set "XXXXXXX" as registration number for scans which show "ERROR" in any field
-  			  scans_reg_fullJoinData$registration[apply(scans_reg_fullJoinData, 1, function(x) any(x=="ERROR"))] = "XXXXXXX"
-  
+    			  # in case of duplicates, set "XXXXXXX" as registration number and "NA" for name and id for every match following the first one
+    			  dups = duplicated(scans_reg_fullJoinData$registration)
+    			  scans_reg_fullJoinData$registration[dups] = "XXXXXXX"
+    			  scans_reg_fullJoinData$name[dups] = "NA"
+    			  scans_reg_fullJoinData$id[dups] = "NA"
+    			  
+    			  # set "XXXXXXX" as registration number for scans which were not matched with any of the registered participants
+    			  scans_reg_fullJoinData$registration[is.na(scans_reg_fullJoinData$name) & is.na(scans_reg_fullJoinData$id)] = "XXXXXXX"
+    			  
+    			  # set "XXXXXXX" as registration number for scans which show "ERROR" in any field
+    			  scans_reg_fullJoinData$registration[apply(scans_reg_fullJoinData, 1, function(x) any(x=="ERROR"))] = "XXXXXXX"
+			    }
+  			  
   			  # pad zeroes to registration numbers and answers
   			  scans_reg_fullJoinData$registration[scans_reg_fullJoinData$registration != "XXXXXXX"] = sprintf(paste0("%0", fields$regLength, "d"), as.numeric(scans_reg_fullJoinData$registration[scans_reg_fullJoinData$registration != "XXXXXXX"]))
   			  scans_reg_fullJoinData[,as.character(1:meta$numExercises)] = apply(scans_reg_fullJoinData[,as.character(1:meta$numExercises)], 2, function(x){
-  				  x[is.na(x)] = 0
-  				  x = sprintf(paste0("%0", data$maxChoices, "d"), as.numeric(x))
+  			    x[is.na(x)] = 0
+  			    x = sprintf(paste0("%0", data$maxChoices, "d"), as.numeric(x))
   			  })
   			  
   			  write.csv2(scans_reg_fullJoinData, file=scans_reg_fullJoin, row.names = FALSE)

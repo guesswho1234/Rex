@@ -115,7 +115,6 @@ ui = htmlTemplate(
   
 # SERVER -----------------------------------------------------------------
 server = function(input, output, session) {
-  #todo: Warning: call dbDisconnect() when finished working with a connection
   # AUTH --------------------------------------------------------------------
   credentials = Myloginserver(
     id = "login",
