@@ -683,7 +683,7 @@ server = function(input, output, session) {
     		if(is.null(exam$examRegisteredParticipantsnName)){
     		  file = paste0(dir, "/", "dummyParticipants.csv")
     		  content = rep(1:(totalPdfLength + totalPngLength))
-    		  content = sprintf(paste0("%0", input$evaluationRegLength, "d"), as.numeric(content))
+    		  content = sprintf(paste0("%0", max(input$evaluationRegLength, 7), "d"), as.numeric(content)) 
     		  content = data.frame(registration=content,name=content,id=content)
     		  
     		  write.csv2(content, file, row.names = FALSE, quote = FALSE)
@@ -698,9 +698,9 @@ server = function(input, output, session) {
       		  content = read.table(text=content, sep=";", header = TRUE)
       
       		  if(all(content$id==content$registration))
-      			content$id = sprintf(paste0("%0", input$evaluationRegLength, "d"), as.numeric(content$id))
+      			content$id = sprintf(paste0("%0", max(input$evaluationRegLength, 7), "d"), as.numeric(content$id))
       
-      		  content$registration = sprintf(paste0("%0", input$evaluationRegLength, "d"), as.numeric(content$registration))
+      		  content$registration = sprintf(paste0("%0", max(input$evaluationRegLength, 7), "d"), as.numeric(content$registration))
       
       		  write.csv2(content, file, row.names = FALSE, quote = FALSE)
       

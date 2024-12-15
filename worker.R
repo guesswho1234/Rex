@@ -696,7 +696,7 @@ source("./source/shared/log.R")
 			    }
   			  
   			  # pad zeroes to registration numbers and answers
-  			  scans_reg_fullJoinData$registration[scans_reg_fullJoinData$registration != "XXXXXXX"] = sprintf(paste0("%0", fields$regLength, "d"), as.numeric(scans_reg_fullJoinData$registration[scans_reg_fullJoinData$registration != "XXXXXXX"]))
+  			  scans_reg_fullJoinData$registration[scans_reg_fullJoinData$registration != "XXXXXXX"] = sprintf(paste0("%0", max(fields$regLength, 5), "d"), as.numeric(scans_reg_fullJoinData$registration[scans_reg_fullJoinData$registration != "XXXXXXX"]))
   			  scans_reg_fullJoinData[,as.character(1:meta$numExercises)] = apply(scans_reg_fullJoinData[,as.character(1:meta$numExercises)], 2, function(x){
   			    x[is.na(x)] = 0
   			    x = sprintf(paste0("%0", data$maxChoices, "d"), as.numeric(x))
@@ -810,9 +810,9 @@ source("./source/shared/log.R")
   	        
   	        # pad zeroes to registration numbers and ids (if same as registrations numbers)
   	        if(all(evaluationData$id==evaluationData$registration))
-  	          evaluationData$id = sprintf(paste0("%0", fields$regLength, "d"), as.numeric(evaluationData$id))
+  	          evaluationData$id = sprintf(paste0("%0", max(fields$regLength, 7), "d"), as.numeric(evaluationData$id))
   	        
-  	        evaluationData$registration = sprintf(paste0("%0", fields$regLength, "d"), as.numeric(evaluationData$registration))
+  	        evaluationData$registration = sprintf(paste0("%0", max(fields$regLength, 7), "d"), as.numeric(evaluationData$registration))
   	        
   	        # add additional exercise columns
   	        exerciseTable = as.data.frame(Reduce(rbind, lapply(evaluationData$exam, \(exam) {
