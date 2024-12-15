@@ -808,12 +808,6 @@ source("./source/shared/log.R")
   	        solutionData = readRDS(files$solution)
   	        evaluationData = read.csv2(files$nops_evaluationCsv)
   	        
-  	        # pad zeroes to registration numbers and ids (if same as registrations numbers)
-  	        if(all(evaluationData$id==evaluationData$registration))
-  	          evaluationData$id = sprintf(paste0("%0", max(fields$regLength, 7), "d"), as.numeric(evaluationData$id))
-  	        
-  	        evaluationData$registration = sprintf(paste0("%0", max(fields$regLength, 7), "d"), as.numeric(evaluationData$registration))
-  	        
   	        # add additional exercise columns
   	        exerciseTable = as.data.frame(Reduce(rbind, lapply(evaluationData$exam, \(exam) {
   	          exerciseNames = Reduce(cbind, lapply(solutionData[[as.character(exam)]], \(exercise) exercise$metainfo$file))

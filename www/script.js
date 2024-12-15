@@ -447,6 +447,12 @@ document.onkeydown = function(evt) {
 	// INSPECT SCAN
 	if( $('#inspectScanButtons').length == 1 ) {
 		switch (evtobj.keyCode) {
+			case 38: // ARROW UP
+				prevInspect();
+				break;
+			case 40: // ARROW DOWN
+				nextInspect();
+				break;
 			case 112: // F1
 				applyInspect();
 				break;
@@ -2894,7 +2900,7 @@ $('body').on('click', '.compareListItem:not(.notAssigned)', function() {
 		
 	const scanFocused = rex.examEvaluation.scans_reg_fullJoinData[parseInt($(this).find('.evalIndex').html())];
 			
-	$('#inspectScan').append('<div id="inspectScanContent"><div id="inspectScanImage"><img src="data:image/png;base64, ' + scanFocused.blob + '"/></div><div id="inspectScanTemplate"><span id="scannedRegistration"><span id="scannedRegistrationText"><span lang="de">Matrikelnummer:</span><span lang="en">Registration Number:</span></span><input id="selectedRegistration" list="selectRegistration"></input><datalist id="selectRegistration"></datalist></span><span id="replacementSheet"><span id="replacementSheetText"><span lang="de">Ersatzbeleg:</span><span lang="en">Replacement sheet:</span></span></span><span id="scannedSheetID"><span id="scannedSheetIDText"><span lang="de">Klausur-ID:</span><span lang="en">Exam ID:</span></span><select id="inputSheetID" autocomplete="on"></select></span><span id="scannedScramblingID"><span id="scannedScramblingIDText"><span lang="de">Variante:</span><span lang="en">Scrambling:</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Sollte im Scan keine Variante angegeben sein, kann der Wert 0 eingegeben werden.</span><span lang="en">If no scrambling is specified in the scan, the value 0 can be entered.</span></span></span></span><input id="inputScramblingID"/></span><span id="scannedTypeID"><span id="scannedTypeIDText"><span lang="de">Belegart:</span><span lang="en">Type:</span></span><input id="inputTypeID"/></span><div id="scannedAnswers"></div></div></div><div id="inspectScanButtons"><button id="cancelInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">ESC</span><span lang="en">ESC</span></span><span class="iconButton"><i class="fa-solid fa-xmark"></i></span><span class="textButton"><span lang="de">Abbrechen</span><span lang="en">Cancel</span></span></button><button id="applyInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">F1</span><span lang="en">F1</span></span><span class="iconButton"><i class="fa-solid fa-check"></i></span><span class="textButton"><span lang="de">Übernehmen</span><span lang="en">Accept</span></span></button><button id="applyInspectNext" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">F2</span><span lang="en">F2</span></span><span class="iconButton"><i class="fa-solid fa-list-check"></i></span><span class="textButton"><span lang="de">Übernehmen & Nächter Scan</span><span lang="en">Accept & Next Scan</span></span></button></div>');
+	$('#inspectScan').append('<div id="inspectScanContent"><div id="inspectScanImage"><img src="data:image/png;base64, ' + scanFocused.blob + '"/></div><div id="inspectScanTemplate"><span id="scannedRegistration"><span id="scannedRegistrationText"><span lang="de">Matrikelnummer:</span><span lang="en">Registration Number:</span></span><input id="selectedRegistration" list="selectRegistration"></input><datalist id="selectRegistration"></datalist></span><span id="replacementSheet"><span id="replacementSheetText"><span lang="de">Ersatzbeleg:</span><span lang="en">Replacement sheet:</span></span></span><span id="scannedSheetID"><span id="scannedSheetIDText"><span lang="de">Klausur-ID:</span><span lang="en">Exam ID:</span></span><select id="inputSheetID" autocomplete="on"></select></span><span id="scannedScramblingID"><span id="scannedScramblingIDText"><span lang="de">Variante:</span><span lang="en">Scrambling:</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Sollte im Scan keine Variante angegeben sein, kann der Wert 0 eingegeben werden.</span><span lang="en">If no scrambling is specified in the scan, the value 0 can be entered.</span></span></span></span><input id="inputScramblingID"/></span><span id="scannedTypeID"><span id="scannedTypeIDText"><span lang="de">Belegart:</span><span lang="en">Type:</span></span><input id="inputTypeID"/></span><div id="scannedAnswers"></div></div></div><div id="inspectScanButtons"><button id="cancelInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">ESC</span><span lang="en">ESC</span></span><span class="iconButton"><i class="fa-solid fa-xmark"></i></span><span class="textButton"><span lang="de">Abbrechen</span><span lang="en">Cancel</span></span></button><button id="prevInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de"><i class="fa-solid fa-arrow-up"></i></span><span lang="en"><i class="fa-solid fa-arrow-up"></i></span></span><span class="iconButton"><i class="fa-solid fa-arrow-up"></i></span><span class="textButton"><span lang="de">Abbrechen & Vorheriger Scan</span><span lang="en">Cancel & Previous Scan</span></span></button><button id="nextInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de"><i class="fa-solid fa-arrow-down"></i></span><span lang="en"><i class="fa-solid fa-arrow-down"></i></span></span><span class="iconButton"><i class="fa-solid fa-arrow-down"></i></span><span class="textButton"><span lang="de">Abbrechen & Nächster Scan</span><span lang="en">Cancel & Next Scan</span></span></button><button id="applyInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">F1</span><span lang="en">F1</span></span><span class="iconButton"><i class="fa-solid fa-check"></i></span><span class="textButton"><span lang="de">Übernehmen</span><span lang="en">Accept</span></span></button><button id="applyInspectNext" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">F2</span><span lang="en">F2</span></span><span class="iconButton"><i class="fa-solid fa-list-check"></i></span><span class="textButton"><span lang="de">Übernehmen & Nächter Scan</span><span lang="en">Accept & Next Scan</span></span></button></div>');
 	
 	// populate input fields
 	let registrations = rex.examEvaluation.scans_reg_fullJoinData.filter(x => x.scan === 'NA').map(x => ({registration:x.registration, name:x.name}));
@@ -3197,14 +3203,25 @@ function resetInspect(){
 	$('#inspectScan').empty();	
 	$('#dismiss_evaluateExamScansResponse').show();
 	$('#proceedEval').show();
+	scanFocused = null;
 }
+
+
+$('body').on('click', '#prevInspect', function() {
+	prevInspect();
+});
+
+$('body').on('click', '#nextInspect', function() {
+	nextInspect();
+});
 
 $('body').on('click', '#applyInspect', function() {
 	applyInspect();
 });
 
 $('body').on('click', '#applyInspectNext', function() {
-	applyInspectNext();
+	applyInspect();
+	nextInspect();
 });
 
 function applyInspectNext(){
@@ -3212,6 +3229,36 @@ function applyInspectNext(){
 	
 	if($('#compareScanRegistrationDataTable .compareListItem.invalid').length !== 0) {
 		$('#compareScanRegistrationDataTable .compareListItem.invalid').first().click();
+	}
+}
+
+function prevInspect(){
+	if($('#compareScanRegistrationDataTable .compareListItem.invalid').length === 0)
+		return;
+	
+	if($('.compareListItem.focus') === 0){
+		$('#compareScanRegistrationDataTable .compareListItem.invalid').first().click();
+	} else{
+		let index = $('.compareListItem.focus').index() - 2;
+		if(index < 0)
+			index = $('#compareScanRegistrationDataTable .compareListItem.invalid').length - 1
+		
+		$('#compareScanRegistrationDataTable .compareListItem.invalid').eq(index).click();
+	}
+}
+
+function nextInspect(){
+	if($('#compareScanRegistrationDataTable .compareListItem.invalid').length === 0)
+		return;
+	
+	if($('.compareListItem.focus') === 0){
+		$('#compareScanRegistrationDataTable .compareListItem.invalid').first().click();
+	} else{
+		let index = $('.compareListItem.focus').index();
+		if(index >= $('#compareScanRegistrationDataTable .compareListItem.invalid').length)
+			index = 0
+		
+		$('#compareScanRegistrationDataTable .compareListItem.invalid').eq(index).click();
 	}
 }
 
