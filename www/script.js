@@ -658,7 +658,7 @@ function app_progress(status){
 	$('#progressBarValue').addClass("value-000");
 }
 
-Shiny.addCustomMessageHandler('updateProgress', function(update) {
+Shiny.addCustomMessageHandler('updateProgress', function(status) {
 	app_update(status);
 });
 
