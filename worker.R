@@ -12,7 +12,7 @@ if(DOCKER_WORKER){
 }
 
 # TRUE MESSAGE VALUE --------------------------------------------------------
-TRUE_MESSAGE_VALUE = TRUE
+TRUE_MESSAGE_VALUE = FALSE
 
 # PACKAGES ----------------------------------------------------------------
 library(exams) #exams_2.4-1
