@@ -43,14 +43,14 @@ getMessageCode = function(message){
   code
 }
 
-myMessage = function(message, class) {
+myMessage = function(message, class, TRUE_MESSAGE_VALUE) {
   type = getMessageType(message)
   
   if(type == 2) {
     if (message$value$message %in% names(errorCodes)) {
       message$value = getErrorCodeMessage(message$value$message)
     } else {
-      message$value = ifelse(!grepl("E\\d{4}", message$value$message), paste0("E1000: ", ""), message$value$message)
+      message$value = ifelse(!TRUE_MESSAGE_VALUE && !grepl("E\\d{4}", message$value$message), paste0("E1000: ", ""), message$value$message)
     }
   }
   
@@ -58,7 +58,7 @@ myMessage = function(message, class) {
     if (message$value %in% names(warningCodes)) {
       message$value = getWarningCodeMessage(message$value)
     } else {
-      message$value = ifelse(!grepl("W\\d{4}", message$value), paste0("W1000: ", ""), message$value)
+      message$value = ifelse(!TRUE_MESSAGE_VALUE && !grepl("W\\d{4}", message$value), paste0("W1000: ", ""), message$value)
     }
   }
   

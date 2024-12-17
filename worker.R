@@ -11,6 +11,9 @@ if(DOCKER_WORKER){
   DOCKER_WORKER = TRUE
 }
 
+# TRUE MESSAGE VALUE --------------------------------------------------------
+TRUE_MESSAGE_VALUE = TRUE
+
 # PACKAGES ----------------------------------------------------------------
 library(exams) #exams_2.4-1
 library(png) #png_0.1-8 
@@ -73,7 +76,7 @@ source("./source/shared/log.R")
           # if no response, consider polling outputs to keep alive
           R_BG_STACK <<- c(R_BG_STACK, list(list(log=processFiles$log, process=callr::r_bg(
             func = process_parseExerciseRequest,
-            args = list(requestContent, processFiles$res, processFiles$fin, parseExercise, prepare_exerciseResponse),
+            args = list(requestContent, processFiles$res, processFiles$fin, parseExercise, prepare_exerciseResponse, TRUE_MESSAGE_VALUE),
             supervise = TRUE
           ))))
         })
@@ -89,7 +92,7 @@ source("./source/shared/log.R")
           # if no response, consider polling outputs to keep alive
           R_BG_STACK <<- c(R_BG_STACK, list(list(log=processFiles$log, process=callr::r_bg(
             func = process_createExamRequest,
-            args = list(requestContent, processFiles$res, processFiles$fin, createExam, prepare_createExamResponse),
+            args = list(requestContent, processFiles$res, processFiles$fin, createExam, prepare_createExamResponse, TRUE_MESSAGE_VALUE),
             supervise = TRUE
           ))))
         })
@@ -104,7 +107,7 @@ source("./source/shared/log.R")
           
           R_BG_STACK <<- c(R_BG_STACK, list(list(log=processFiles$log, process=callr::r_bg(
             func = process_evaluateExamScansRequest,
-            args = list(requestContent, processFiles$res, processFiles$fin, evaluateExamScans, prepare_evaluateExamScansResponse),
+            args = list(requestContent, processFiles$res, processFiles$fin, evaluateExamScans, prepare_evaluateExamScansResponse, TRUE_MESSAGE_VALUE),
             supervise = TRUE
           ))))
         })
@@ -119,7 +122,7 @@ source("./source/shared/log.R")
           
           R_BG_STACK <<- c(R_BG_STACK, list(list(log=processFiles$log, process=callr::r_bg(
             func = process_evaluateExamFinalizeRequest,
-            args = list(requestContent, processFiles$res, processFiles$fin, evaluateExamFinalize, prepare_evaluateExamFinalizeResponse),
+            args = list(requestContent, processFiles$res, processFiles$fin, evaluateExamFinalize, prepare_evaluateExamFinalizeResponse, TRUE_MESSAGE_VALUE),
             supervise = TRUE
           ))))
         })
@@ -137,7 +140,7 @@ source("./source/shared/log.R")
   }
   
 	# PARSE EXERCISES -----------------------------------------------------
-  process_parseExerciseRequest = function(requestContent, res, fin, parseExercise, prepare_exerciseResponse){
+  process_parseExerciseRequest = function(requestContent, res, fin, parseExercise, prepare_exerciseResponse, TRUE_MESSAGE_VALUE){
     source("./source/worker/tryCatch.R")
     source("./source/shared/rToJson.R")
 
@@ -145,14 +148,14 @@ source("./source/shared/log.R")
     
     lapply(seq_along(requestContent$exercises), \(x){
       data = c(list(dir=requestContent$dir), requestContent$exercises[[x]])
-      parsedExercise = parseExercise(data)
-      prepare_exerciseResponse(parsedExercise, res, append=x != 1)
+      parsedExercise = parseExercise(data, TRUE_MESSAGE_VALUE)
+      prepare_exerciseResponse(parsedExercise, res, append=x != 1, TRUE_MESSAGE_VALUE)
     })
     
     file.create(fin)
 	}
 
-  parseExercise = function(data){
+  parseExercise = function(data, TRUE_MESSAGE_VALUE){
 		 out = tryCatch({
 		  warnings = collectWarnings({
   			cat("Preparing parameters.\n")
@@ -244,15 +247,15 @@ source("./source/shared/log.R")
 		  
 		  if(value != "") {
   			key = "Warning"
-  			value = "W1001"
+  			value = paste0("W1001", ifelse(TRUE_MESSAGE_VALUE, paste0(": ", value), ""))
 		  }
 	  
 		  return(list(message=list(key=key, value=value), id=data$id, seed=seed, html=html, exExtra=exExtra, figure=figure))
 		},
 		error = function(e){
 		  if(!grepl("E\\d{4}", e$message))
-			  e$message = "E1001"
-		  
+			  e$message = paste0("E1001", ifelse(TRUE_MESSAGE_VALUE, paste0(": ", e$message), ""))
+
 		  return(list(message=list(key="Error", value=e), id=data$id, seed=NULL, html=NULL))
 		},
 		finally = {
@@ -260,12 +263,12 @@ source("./source/shared/log.R")
 		})
 	}
 
-	prepare_exerciseResponse = function(result, res, append) {
+	prepare_exerciseResponse = function(result, res, append, TRUE_MESSAGE_VALUE) {
 	  with(result, {
 	    messageType = getMessageType(message)
-	    statusMessage = myMessage(message, "exercise")
+	    statusMessage = myMessage(message, "exercise", TRUE_MESSAGE_VALUE)
 	    statusCode = getMessageCode(message)
-	    
+
 	    write(id, file=res, ncolumns=1, sep="\n", append=append)
 	    write(messageType, file=res, ncolumns=1, sep="\n", append=TRUE)
 	    write(statusMessage, file=res, ncolumns=1, sep="\n", append=TRUE)
@@ -340,19 +343,19 @@ source("./source/shared/log.R")
 	  })
 	}
 	# CREATE EXAM ---------------------------------------------------------
-	process_createExamRequest = function(requestContent, res, fin, createExam, prepare_createExamResponse){
+	process_createExamRequest = function(requestContent, res, fin, createExam, prepare_createExamResponse, TRUE_MESSAGE_VALUE){
 	  source("./source/worker/tryCatch.R")
 	  source("./source/shared/rToJson.R")
 	  
 	  cat("Exams to create = 1\n")
 
-	  createdExam = createExam(requestContent)
-	  prepare_createExamResponse(createdExam, res)
+	  createdExam = createExam(requestContent, TRUE_MESSAGE_VALUE)
+	  prepare_createExamResponse(createdExam, res, TRUE_MESSAGE_VALUE)
 
 	  file.create(fin)
 	}
 	
-	createExam = function(data) {
+	createExam = function(data, TRUE_MESSAGE_VALUE) {
 		out = tryCatch({
 		  warnings = collectWarnings({
 		    cat("Preparing parameters.\n")
@@ -517,15 +520,15 @@ source("./source/shared/log.R")
 		  
 		  if(value != "") {
   			key = "Warning"
-  			value = "W1002"
+  			value = paste0("W1002", ifelse(TRUE_MESSAGE_VALUE, paste0(": ", value), ""))
 		  }
 	  
 		  return(list(message=list(key=key, value=value), files=list(sourceFiles=preparedExam$sourceFiles, examFiles=preparedExam$examFiles)))
 		},
 		error = function(e){
 		  if(!grepl("E\\d{4}", e$message))
-			  e$message = "E1002"
-	  
+		    e$message = paste0("E1002", ifelse(TRUE_MESSAGE_VALUE, paste0(": ", e$message), ""))
+		  
 		  return(list(message=list(key="Error", value=e), files=list()))
 		},
 		finally = {
@@ -533,9 +536,9 @@ source("./source/shared/log.R")
 		})
 	}
 
-	prepare_createExamResponse = function(result, res) {
+	prepare_createExamResponse = function(result, res, TRUE_MESSAGE_VALUE) {
 	  messageType = getMessageType(result$message)
-	  message = myMessage(result$message, "modal")
+	  message = myMessage(result$message, "modal", TRUE_MESSAGE_VALUE)
 	  response = unname(unlist(c(messageType, message, result$files, result$examFiles)))
 	  
 	  write(response, file=res, ncolumns=1, sep="\n")
@@ -543,17 +546,17 @@ source("./source/shared/log.R")
 	
 	# EVALUATE EXAM -------------------------------------------------------
     # EVALUATE EXAM SCANS -----------------------------------------------------
-  	process_evaluateExamScansRequest = function(requestContent, res, fin, evaluateExamScans, prepare_evaluateExamScansResponse){
+  	process_evaluateExamScansRequest = function(requestContent, res, fin, evaluateExamScans, prepare_evaluateExamScansResponse, TRUE_MESSAGE_VALUE){
   	  source("./source/worker/tryCatch.R")
   	  source("./source/shared/rToJson.R")
   	  
-  	  evaluatedScans = evaluateExamScans(requestContent)
-  	  prepare_evaluateExamScansResponse(evaluatedScans, res)
+  	  evaluatedScans = evaluateExamScans(requestContent, TRUE_MESSAGE_VALUE)
+  	  prepare_evaluateExamScansResponse(evaluatedScans, res, TRUE_MESSAGE_VALUE)
 
   	  file.create(fin)
   	}
   
-  	evaluateExamScans = function(data){
+  	evaluateExamScans = function(data, TRUE_MESSAGE_VALUE){
   		out = tryCatch({
   		  scans_reg_fullJoin = paste0(data$dir, "/scans_reg_fullJoinData.csv")
   
@@ -711,8 +714,8 @@ source("./source/shared/log.R")
   		  key = "Success"
   		  value = paste(unique(unlist(warnings)), collapse="<br>")
   		  if(value != "") {
-  			key = "Warning"
-  			value = "W1003"
+    			key = "Warning"
+    			value = paste0("W1003", ifelse(TRUE_MESSAGE_VALUE, paste0(": ", value), ""))
   		  }
   
   		  return(list(message=list(key=key, value=value),
@@ -720,8 +723,8 @@ source("./source/shared/log.R")
   		},
   		error = function(e){
   		  if(!grepl("E\\d{4}", e$message))
-  			  e$message = "E1003"
-  
+  		    e$message = paste0("E1003", ifelse(TRUE_MESSAGE_VALUE, paste0(": ", e$message), ""))
+  		  
   		  return(list(message=list(key="Error", value=e), scans_reg_fullJoin=NULL, examName=NULL, files=list(), data=list()))
   		},
   		finally = {
@@ -729,9 +732,9 @@ source("./source/shared/log.R")
   		})
   	}
   	
-  	prepare_evaluateExamScansResponse = function(result, res) {
+  	prepare_evaluateExamScansResponse = function(result, res, TRUE_MESSAGE_VALUE) {
   	  messageType = getMessageType(result$message)
-  	  message = myMessage(result$message, "modal")
+  	  message = myMessage(result$message, "modal", TRUE_MESSAGE_VALUE)
   	  
   	  preparedEvaluationData = lapply(unlist(result$preparedEvaluation, recursive = FALSE) , function(x) paste0(unlist(x), collapse=";"))
   	  
@@ -741,19 +744,19 @@ source("./source/shared/log.R")
   	}
 
     # EVALUATE EXAM FINALIZE --------------------------------------------------
-  	process_evaluateExamFinalizeRequest = function(requestContent, res, fin, evaluateExamFinalize, prepare_evaluateExamFinalizeResponse){
+  	process_evaluateExamFinalizeRequest = function(requestContent, res, fin, evaluateExamFinalize, prepare_evaluateExamFinalizeResponse, TRUE_MESSAGE_VALUE){
   	  source("./source/worker/tryCatch.R")
   	  source("./source/shared/rToJson.R")
   	  
   	  cat("Exams to evaluate = 1\n")
   	  
-  	  evaluatedFinalize = evaluateExamFinalize(requestContent)
-  	  prepare_evaluateExamFinalizeResponse(evaluatedFinalize, res)
+  	  evaluatedFinalize = evaluateExamFinalize(requestContent, TRUE_MESSAGE_VALUE)
+  	  prepare_evaluateExamFinalizeResponse(evaluatedFinalize, res, TRUE_MESSAGE_VALUE)
 
   	  file.create(fin)
   	}
     
-  	evaluateExamFinalize = function(data){
+  	evaluateExamFinalize = function(data, TRUE_MESSAGE_VALUE){
   	  out = tryCatch({
   	    warnings = collectWarnings({
   	      # scanData
@@ -936,7 +939,7 @@ source("./source/shared/log.R")
   	    value = paste(unique(unlist(warnings)), collapse="<br>")
   	    if(value != "") {
   	      key = "Warning"
-  	      value = "W1004"
+  	      value = paste0("W1004", ifelse(TRUE_MESSAGE_VALUE, paste0(": ", value), ""))
   	    }
   	    
   	    return(list(message=list(key=key, value=value),
@@ -944,7 +947,7 @@ source("./source/shared/log.R")
   	  },
   	  error = function(e){
   	    if(!grepl("E\\d{4}", e$message))
-  	      e$message = "E1004"
+  	      e$message = paste0("E1004", ifelse(TRUE_MESSAGE_VALUE, paste0(": ", e$message), ""))
   	    
   	    return(list(message=list(key="Error", value=e), examName=NULL, files=list()))
   	  },
@@ -953,9 +956,9 @@ source("./source/shared/log.R")
   	  })
   	}
   	
-  	prepare_evaluateExamFinalizeResponse = function(result, res) {
+  	prepare_evaluateExamFinalizeResponse = function(result, res, TRUE_MESSAGE_VALUE) {
   	  messageType = getMessageType(result$message)
-  	  message = myMessage(result$message, "modal")
+  	  message = myMessage(result$message, "modal", TRUE_MESSAGE_VALUE)
   	  
   	  preparedEvaluationData = lapply(unlist(result$preparedEvaluation, recursive = FALSE) , function(x) paste0(unlist(x), collapse=";"))
   	  

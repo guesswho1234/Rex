@@ -390,7 +390,7 @@ server = function(input, output, session) {
                                     "solutions",
                                     "solutionNotes",
                                     "solutionNotes_raw"))
-  
+
           error = grepl("E\\d{4}", result$statusCode)
           messageType <<- max(messageType, as.numeric(result$messageType))
   
