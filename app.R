@@ -705,7 +705,7 @@ server = function(input, output, session) {
       		    idRegMatch = TRUE
       		  
       		  content$registration = sapply(strsplit(as.character(content$registration), split=""), function(x){
-      		    x = paste0(x[1:(max(input$evaluationRegLength, length(x)))], collapse="")
+      		    x = paste0(x[1:(min(input$evaluationRegLength, length(x)))], collapse="")
       		    x = sprintf(paste0("%0", max(input$evaluationRegLength, 7), "d"), as.numeric(x))
       		    
       		    return(x)
@@ -713,7 +713,7 @@ server = function(input, output, session) {
       		  
       		  if(idRegMatch)
       		    content$id = content$registration
-      
+      		  
       		  write.csv2(content, file, row.names = FALSE, quote = FALSE)
       
       		  return(file)
