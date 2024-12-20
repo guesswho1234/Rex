@@ -1187,7 +1187,7 @@ function searchExercises() {
 	
 	function filterExercises(fieldsToFilter, filterBy) {
 		fieldsToFilter.filter((content, index) => {			
-			const test = content.toString().includes(filterBy);
+			const test = content.toString().toLowerCase().includes(filterBy.toLowerCase());
 			if(test) matches.add(index);
 		}); 
 	}
@@ -1211,8 +1211,8 @@ function searchExercises() {
 				if( exercise.section === null) {
 					return "";
 				} 
-				
-				return exercise.section.join(',');
+								
+				return exercise.section;
 			})
 			filterExercises(fieldsToFilter, filterBy);
 		}
@@ -1246,7 +1246,7 @@ function searchExercises() {
 					return "";
 				} 
 				
-				return exercise.question.join(',');
+				return exercise.question;
 			})
 			filterExercises(fieldsToFilter, filterBy);
 		}
