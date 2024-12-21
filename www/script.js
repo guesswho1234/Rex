@@ -2841,11 +2841,6 @@ $('#gradingKey').on('change', '.markLabel', function() {
 	setShinyInputValue(id, markLabel);
 });
 
-$('body').on('change', '#inputSheetID', function() {
-	const inputSheetID = getIntegerInput(0, 99999999999, 0, $(this).val());
-	setShinyInputValue("inputSheetID", inputSheetID);
-});
-
 $('body').on('change', '#inputScramblingID', function() {
 	const inputScramblingID = getIntegerInput(0, 99, 0, $(this).val());
 	setShinyInputValue("inputScramblingID", inputScramblingID);
@@ -2926,7 +2921,7 @@ $('body').on('click', '.compareListItem:not(.notAssigned)', function() {
 		$('#inputSheetID').append($('<option></option>').val(p).html(p));
 	});
 	
-	$('#inputSheetID').val(parseInt(scanFocused.sheet));	
+	$('#inputSheetID').val(scanFocused.sheet);
 	$('#inputScramblingID').val(parseInt(scanFocused.scrambling));	
 	$('#inputTypeID').val(parseInt(scanFocused.type));	
 	
@@ -3273,7 +3268,7 @@ function applyInspect(){
 	
 	const registrationUnchanged = $('#selectedRegistration').val() === rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].registration;
 	const replacementUnchanged = ($('#replacementSheet').find("input").prop('checked') ? "1" : "0") === rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].replacement;
-	const inputSheetIDUnchanged = zeroPad($('#inputSheetID').val(), 11) === rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].sheet;
+	const inputSheetIDUnchanged = $('#inputSheetID').val() === rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].sheet;
 	const scramblingIDUnchanged = zeroPad($('#inputScramblingID').val(), 2) === rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].scrambling;
 	const inputTypeIDUnchanged = zeroPad($('#inputTypeID').val(), 3) === rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].type;
 	const answersUnchanged = $('#scannedAnswers .scannedAnswer').map(function (index) {
@@ -3323,7 +3318,7 @@ function applyInspect(){
 	
 	rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].registration = $('#selectedRegistration').val();	
 	rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].replacement = ($('#replacementSheet').find("input").prop('checked') ? "1" : "0");	
-	rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].sheet = zeroPad($('#inputSheetID').val(), 11);	
+	rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].sheet = $('#inputSheetID').val();	
 	rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].scrambling = zeroPad($('#inputScramblingID').val(), 2);	
 	rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].type = zeroPad($('#inputTypeID').val(), 3);	
 	

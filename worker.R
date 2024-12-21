@@ -359,6 +359,9 @@ source("./source/shared/log.R")
 		out = tryCatch({
 		  warnings = collectWarnings({
 		    cat("Preparing parameters.\n")
+		    
+		    if(length(data$examDate) != 1)
+		      stop("E1030")
 
   			if(any(data$seedValueExam < data$seedMin))
   			  stop("E1008")

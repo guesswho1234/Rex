@@ -473,7 +473,7 @@ server = function(input, output, session) {
           return(file)
         })))
       }
-  
+
       # request content
       createExam_req_content <<- list(dir=dir,
                                       edir=edir,
