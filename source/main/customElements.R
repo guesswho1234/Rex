@@ -127,17 +127,17 @@ myFileImport = function(name, sectionClass) {
 	javascriptFunction = paste0(name, "FileDialog(this.files);")
 
 	fileImport = paste0('',
-	'<div id="', idContainer, '">',
+	'<div id="', idContainer, '" class="fileImportContainer">',
 		'<label class="', labelClass, '" for="', idInput, '">',
-			'<div class="', buttonClass, '">',
+			'<div class="fileImportButton ', buttonClass, '">',
 				'<span class="iconButton"><i class="fa-solid fa-upload"></i></span>',
 				'<span class="textButton"><span lang="de">Importieren</span><span lang="en">Import</span></span>',
 			'</div>',
 			'<input type="file" id="', idInput, '" onchange="', javascriptFunction, '" multiple>',
 		'</label>',
-		'<div id="', idFiles, '">',
+		'<div id="', idFiles, '" class="fileImportFiles">',
 			'<div id="', idFileList, '" class="itemList">',
-				'<div id="', idFileListItems, '">',
+				'<div id="', idFileListItems, '" class="listItems">',
 				'</div>',
 			'</div>',
 		'</div>',
@@ -145,6 +145,13 @@ myFileImport = function(name, sectionClass) {
 	)
 	
 	return(HTML(fileImport))
+}
+
+myFileData = function(session, path, name, ext, js_function) {
+  file = paste0(path, name, ".", ext)
+  file = openssl::base64_encode(readBin(file, "raw", n = file.info(file)$size))
+  
+  session$sendCustomMessage(js_function, list(name, ext, file))
 }
 
 myEvaluationCharts = function(chartData, examMaxPoints, validExams, showGradingChart) {
