@@ -35,7 +35,7 @@ Build your Docker infrastructure with the supplied Docker Compose file by runnin
 
 ## Use
 
-By default, use "rex" as both the login and password to authenticate.
+By default, use "rex" as both user and password to authenticate.
 
 ### Standard Workflow
 
