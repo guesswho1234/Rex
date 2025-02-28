@@ -61,12 +61,13 @@ To create exams, navigate to the "EXAM" tab and then to "Create exam." There you
 
 Before creating an exam, make sure that exercises in the exercise tab are marked as examinable.
 
-When clicking the "Create exam" button, the exam will be created. Once this process is finished, a popup will appear, offering you the option to save the exam. When saving the exam, a ZIP archive will be downloaded. This archive will include the following files:
+When clicking the "Create exam" button, the exam will be created. Once this process is finished, a popup will appear, offering you to save the exam. When saving the exam, a ZIP archive will be downloaded. This archive will include the following files:
 - All the exam scramblings as PDF files
 - All the exam scramblings as HTML files, including solutions and solution notes
 - An RDS file to evaluate the exam
 - All of the exercises used in the exam
 - A TXT file "input.txt" containing all the input values used for creating the exam
+- A TXT file "code.txt" containing R code, which can be used to replicate the output without Rex
 
 #### Evaluate Exams
 
@@ -74,7 +75,7 @@ To evaluate exams, navigate to the "EXAM" tab and then to "Evaluate exam." There
 
 Before the evaluation of an exam is possible, the following three files need to be prepared:
 - "Solutions": the supplied RDS file within the ZIP archive when the exam was created
-- "Registered participants": a CSV file containing information about exam participants
+- "Registered participants": a CSV file containing information about exam participants (if this file is not provided, dummy participants will be used in the evaluation process)
 - "Evaluation scans": all the evaluation sheet scans as either PDF files (all pages in the same orientation) or correctly oriented PNG files
 
 When clicking the "Evaluate exam" button, the exam will be evaluated. First, the scans are processed. When this is finished, a popup will appear, allowing you to inspect and manually edit any of the processed scans. After proceeding, the evaluation will be finalized. Once finished, another popup will appear offering the option to save the exam evaluation. When saving the evaluation, a ZIP archive will be downloaded. This archive will include the following files:
@@ -83,7 +84,8 @@ When clicking the "Evaluate exam" button, the exam will be evaluated. First, the
 - The RDS file used to evaluate the exam
 - A TXT file "statistics.txt" containing some basic evaluation statistics
 - A TXT file "input.txt" containing all the input values used for evaluating the exam
-
+- A TXT file "code.txt" containing R code, which can be used to replicate the output without Rex
+  
 ## Contribute
 
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
