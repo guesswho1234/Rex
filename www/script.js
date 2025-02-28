@@ -17,6 +17,7 @@ Shiny.addCustomMessageHandler('debugMessage', function(message) {
 -------------------------------------------------------------- */
 $(document).on('shiny:idle', function(event) {
 	initApp();
+	pong();
 });
 
 function initApp(){
@@ -25,6 +26,7 @@ function initApp(){
 	 
 	rex.exercises = [];
 	rex.examAdditionalPdf = []; 
+	rex.examLogo = null; 
 	rex.examEvaluation = [];
 	rex.examEvaluation.scans = []; 
 	rex.examEvaluation.registeredParticipants = [];
@@ -39,7 +41,7 @@ function initApp(){
 	$('#logout-button').removeClass('shinyjs-hide');
 	
 	dndExercises.init();
-	dndAdditionalPdf.init();
+	dndExamCreation.init();
 	dndExamEvaluation.init();
 	
 	f_tex();
@@ -975,7 +977,7 @@ function getFilesDataTransferItems(dataTransferItems) {
  EXERCISES SETTINGS 
 -------------------------------------------------------------- */
 $("#seedValueExercises").change(function(){
-	const seed = getIntegerInput(1, 999999999999, null, $(this).val());
+	const seed = getIntegerInput(1, 999999999, null, $(this).val());
 	setShinyInputValue("seedValueExercises", seed);
 	$('#s_initialSeed').html(itemSingle(seed, 'yellowLabelValue'));
 		
@@ -1919,9 +1921,7 @@ function loadExerciseFromObject(exerciseID) {
 		// figure
 		field = 'figure';
 		
-		const imgContet = rex.exercises[exerciseID].figure === null ? '' : '<div class="exerciseFigureItem"><span class="exerciseFigureName"><img src="data:image/png;base64, ' + rex.exercises[exerciseID][field][2] + '"/></span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>';
-		
-		content = '<div id="exerciseFigureFiles_list_items">' + imgContet + '</div>';
+		const content = rex.exercises[exerciseID].figure === null ? '' : '<div class="exerciseFigureItem"><span class="exerciseFigureName"><img src="data:image/png;base64, ' + rex.exercises[exerciseID][field][2] + '"/></span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>';
 		
 		setExerciseFieldFromObject(field, content);
 		
@@ -2240,39 +2240,41 @@ $('#exercise_info').on('click', '.removeAnswer', function() {
 
 function exerciseFigureFileDialog(items) {
 	Array.from(items).forEach(file => {	
-		const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
-			
-		if( fileExt == 'png' ) {
-			addExerciseFigureFile(file, fileExt);
-		}
+		addExerciseFigureFile(file);
 	});
 }
 
-function addExerciseFigureFile(file, fileExt) {
+function addExerciseFigureFile(file) {
+	const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
+	
+	if(fileExt != 'png')
+		return;
+	
 	const exerciseID = getID();
+	
+	if(exerciseID === -1 || !rex.exercises[exerciseID].editable)
+		return;
 		
-	if (exerciseID !== -1 && rex.exercises[exerciseID].editable) {
-		let fileReader;
-		let base64;
-		let fileName;
+	let fileReader;
+	let base64;
+	let fileName;
+	
+	fileReader = new FileReader();
+	fileName = file.name.split('.')[0];
+
+	fileReader.onload = function(fileLoadedEvent) {
+		base64 = fileLoadedEvent.target.result.split(',')[1];
+		rex.exercises[exerciseID].figure = [fileName, fileExt, base64];
 		
-		fileReader = new FileReader();
-		fileName = file.name.split('.')[0];
+		$('#exerciseFigureFiles_list_items').empty();
+		$('#exerciseFigureFiles_list_items').append('<div class="exerciseFigureItem"><span class="exerciseFigureName"><img src="data:image/png;base64, ' + base64 + '"/></span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
+		
+		setSimpleExerciseFileContents(exerciseID);
+		loadExerciseFromObject(exerciseID);
+		invalidateAfterEdit(exerciseID);
+	};
 
-		fileReader.onload = function(fileLoadedEvent) {
-			base64 = fileLoadedEvent.target.result;
-			rex.exercises[exerciseID].figure = [fileName, fileExt, base64.split(',')[1]];
-			
-			$('#exerciseFigureFiles_list_items').empty();
-			$('#exerciseFigureFiles_list_items').append('<div class="exerciseFigureItem"><span class="exerciseFigureName"><img src="data:image/png;base64, ' + rex.exercises[getID()].figure[2] + '"/></span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
-			
-			setSimpleExerciseFileContents(exerciseID);
-			loadExerciseFromObject(exerciseID);
-			invalidateAfterEdit(exerciseID);
-		};
-
-		fileReader.readAsDataURL(file);
-	}
+	fileReader.readAsDataURL(file);
 }
 
 function exerciseDownload(exerciseID) {	
@@ -2466,89 +2468,121 @@ $("#examFunctions_list_items .sidebarListItem").click(function(){
 	selectListItem($('.mainSection.active .sidebarListItem.active').index());
 }); 
 
-let dndAdditionalPdf = {
+let dndExamCreation = {
 	hzone: null,
 	dzone: null,
 
 	init : function () {
-		dndAdditionalPdf.hzone = document.querySelector("body");
-		dndAdditionalPdf.dzone = document.getElementById('dnd_additionalPdf');
+		dndExamCreation.hzone = document.querySelector("body");
+		dndExamCreation.dzone = document.getElementById('dnd_examCreation');
 
 		if ( window.File && window.FileReader && window.FileList && window.Blob ) {
 			// hover zone
-			dndAdditionalPdf.hzone.addEventListener('dragenter', function (e) {
+			dndExamCreation.hzone.addEventListener('dragenter', function (e) {
 				e.preventDefault();
 				e.stopPropagation();
 				if($('#disableOverlay').hasClass("active")) return;
 				
 				if( $('#exam').hasClass('active') && $('#createExamTab').hasClass('active')) {
-					dndAdditionalPdf.dzone.classList.add('drag');
+					dndExamCreation.dzone.classList.add('drag');
 				}
 			});
-			dndAdditionalPdf.hzone.addEventListener('dragleave', function (e) {
+			dndExamCreation.hzone.addEventListener('dragleave', function (e) {
 				e.preventDefault();
 				e.stopPropagation();
 			});
-			dndAdditionalPdf.hzone.addEventListener('dragover', function (e) {
+			dndExamCreation.hzone.addEventListener('dragover', function (e) {
 				e.preventDefault();
 				e.stopPropagation();
 			});
 			
 			// drop zone
-			dndAdditionalPdf.dzone.addEventListener('dragleave', function (e) {
+			dndExamCreation.dzone.addEventListener('dragleave', function (e) {
 				e.preventDefault();
 				e.stopPropagation();
-				dndAdditionalPdf.dzone.classList.remove('drag');
+				dndExamCreation.dzone.classList.remove('drag');
 			});
-			dndAdditionalPdf.dzone.addEventListener('drop', async function (e) {
+			dndExamCreation.dzone.addEventListener('drop', async function (e) {
 				e.preventDefault();
 				e.stopPropagation();
-				dndAdditionalPdf.dzone.classList.remove('drag');
+				dndExamCreation.dzone.classList.remove('drag');
 				
 				if($('#disableOverlay').hasClass("active")) return;
 				
-				loadAdditionalPdfDnD(e.dataTransfer.items);
+				loadExamCreation(e.dataTransfer.items);
 			});
 		}
 	},
 };
 
-function loadAdditionalPdfDnD(items) {	
+function loadExamCreation(items) {	
 	getFilesDataTransferItems(items).then(async (files) => {
 		Array.from(files).forEach(file => {	
-			additionalPdf(file);
+			addExamCreationFile(file);
 		});
 	});
 }
 
 function additionalPdfFileDialog(items) {
 	Array.from(items).forEach(file => {	
-		const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
-			
-		if( fileExt == 'pdf') {
-			additionalPdf(file);
-		}
+		addExamCreationFile(file);
 	});
 }
 
-function additionalPdf(file) {
+function examLogoFileDialog(items) {
+	Array.from(items).forEach(file => {	
+		addExamCreationFile(file);
+	});
+}
+
+function addExamCreationFile(file) {
 	const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
 	
-	if ( fileExt == 'pdf') {
-		let fileReader = new FileReader();
-		let base64;
-		fileName = file.name.split('.')[0];
+	let fileReader;
+	let base64;
+	let fileName;
+	
+	switch(fileExt) {
+		case 'pdf':
+			fileReader = new FileReader();
+			fileName = file.name.split('.')[0];
 
-		fileReader.onload = function(fileLoadedEvent) {
-			base64 = fileLoadedEvent.target.result;
-			rex.examAdditionalPdf.push([fileName, base64.split(',')[1]]);
-		};
+			fileReader.onload = function(fileLoadedEvent) {
+				base64 = fileLoadedEvent.target.result.split(',')[1];
+				rex.examAdditionalPdf.push([fileName, fileExt, base64]);
+				
+				$('#additionalPdfFiles_list_items').append('<div class="additionalPdfItem"><span class="additionalPdfName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
+			};
 
-		fileReader.readAsDataURL(file);
-		
-		$('#additionalPdfFiles_list_items').append('<div class="additionalPdfItem"><span class="additionalPdfName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
+			fileReader.readAsDataURL(file);
+			
+			break;
+		case 'png': 
+			if(!$('#examLogoContainer').hasClass("disabled")){
+				fileReader = new FileReader();
+				fileName = file.name.split('.')[0];
+
+				fileReader.onload = function(fileLoadedEvent) {
+					base64 = fileLoadedEvent.target.result.split(',')[1];
+					rex.examLogo = [fileName, fileExt, base64];
+					
+					$('#examLogoFiles_list_items').empty();
+					$('#examLogoFiles_list_items').append('<div class="examLogoItem"><span class="examLogoName"><img src="data:image/png;base64, ' + base64 + '"/></span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
+				};
+				
+				fileReader.readAsDataURL(file);
+			}
+			
+			break;
 	}
 }
+
+Shiny.addCustomMessageHandler('setExamLogo', function(data) {
+	rex.examLogo = data;
+	
+	$('#examLogoFiles_list_items').empty();
+	$('#examLogoFiles_list_items').append('<div class="examLogoItem"><span class="examLogoName"><img src="data:image/png;base64, ' + rex.examLogo[2] + '"/></span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
+});
 
 function removeAdditionalPdf(element) {
 	const additionalPdfID = element.index('.additionalPdfItem');
@@ -2556,8 +2590,18 @@ function removeAdditionalPdf(element) {
 	element.remove();
 }
 
+function removeExamLogoFile(element) {
+	rex.examLogo = null;
+	element.remove();
+}
+
+$('#examLogoFiles_list_items').on('click', '.examLogoItem', function() {
+	if(!$('#examLogoContainer').hasClass("disabled"))
+		removeExamLogoFile($(this));
+});
+
 $('#seedValueExam').change(function(){
-	const seed = getIntegerInput(1, 99999999, 1, $(this).val());
+	const seed = getIntegerInput(1000, 9999, 1, $(this).val());
 	setShinyInputValue("seedValueExam", seed);
 }); 
 
@@ -2566,15 +2610,10 @@ $('#additionalPdfFiles_list_items').on('click', '.additionalPdfItem', function()
 });
 
 $("#numberOfExams").change(function(){
-	const numberOfExams = getIntegerInput(1, null, 1, $(this).val());
+	const numberOfExams = getIntegerInput(1, 999, 1, $(this).val());
 	
 	setShinyInputValue("numberOfExams", numberOfExams);
 	$('#s_numberOfExams').html(itemSingle(numberOfExams, 'yellowLabelValue'));
-}); 
-
-$("#autofillSeed").click(function(){
-	const seed = getIntegerInput(1, 99999999, 1, $('#examDate input').val().replaceAll("-", ""));
-	setShinyInputValue("seedValueExam", seed);
 }); 
 
 $("#fixedPointsExamCreate").change(function(){
@@ -2633,9 +2672,11 @@ async function createExamEvent() {
 	const exerciseTypes = examExercises.map((exercise) => exercise.type);
 	const blocks = examExercises.map((exercise) => exercise.block);
 	const additionalPdfNames = rex.examAdditionalPdf.map(pdf => pdf[0]);
-	const additionalPdfFiles = rex.examAdditionalPdf.map(pdf => pdf[1]);
+	const additionalPdfFiles = rex.examAdditionalPdf.map(pdf => pdf[2]);
+	const examLogoName = rex.examLogo !== null ? rex.examLogo[0] : null;
+	const examLogoFile = rex.examLogo !== null ? rex.examLogo[2] : null;
 	
-	Shiny.onInputChange("createExam", {exerciseNames: exerciseNames, exerciseCodes:exerciseCodes, exerciseExts:exerciseExts, exerciseTypes:exerciseTypes, blocks: blocks, additionalPdfNames: additionalPdfNames, additionalPdfFiles: additionalPdfFiles}, {priority: 'event'});
+	Shiny.onInputChange("createExam", {exerciseNames: exerciseNames, exerciseCodes:exerciseCodes, exerciseExts:exerciseExts, exerciseTypes:exerciseTypes, blocks: blocks, additionalPdfNames: additionalPdfNames, additionalPdfFiles: additionalPdfFiles, examLogoName: examLogoName, examLogoFile: examLogoFile}, {priority: 'event'});
 }
 
 /* --------------------------------------------------------------
@@ -2701,31 +2742,19 @@ function loadExamEvaluation(items) {
 
 function examSolutionsFileDialog(items) {
 	Array.from(items).forEach(file => {	
-		const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
-			
-		if(fileExt == 'rds') {
-			addExamEvaluationFile(file);
-		}
+		addExamEvaluationFile(file);
 	});
 }
 
 function examRegisteredParticipantsFileDialog(items) {
 	Array.from(items).forEach(file => {	
-		const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
-			
-		if(fileExt == 'csv') {
-			addExamEvaluationFile(file);
-		}
+		addExamEvaluationFile(file);
 	});
 }
 
 function examScansFileDialog(items) {
 	Array.from(items).forEach(file => {	
-		const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
-			
-		if(fileExt == 'pdf' || fileExt == 'png') {
-			addExamEvaluationFile(file);
-		}
+		addExamEvaluationFile(file);
 	});
 }
 
@@ -2743,27 +2772,29 @@ function addExamEvaluationFile(file) {
 			fileName = file.name.split('.')[0];
 
 			fileReader.onload = function(fileLoadedEvent) {
-				base64 = fileLoadedEvent.target.result;
-				rex.examEvaluation['scans'].push([fileName, fileExt, base64.split(',')[1]]);
+				base64 = fileLoadedEvent.target.result.split(',')[1];
+				rex.examEvaluation['scans'].push([fileName, fileExt, base64]);
+				
+				$('#examScansFiles_list_items').append('<div class="examScanItem"><span class="examScanName">' + filename + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
 			};
 
 			fileReader.readAsDataURL(file);
 			
-			$('#examScansFiles_list_items').append('<div class="examScanItem"><span class="examScanName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
 			break;
 		case 'rds': 
 			fileReader = new FileReader();
 			fileName = file.name.split('.')[0];
 
 			fileReader.onload = function(fileLoadedEvent) {
-				base64 = fileLoadedEvent.target.result;
-				rex.examEvaluation['solutions'] = [fileName, fileExt, base64.split(',')[1]];
+				base64 = fileLoadedEvent.target.result.split(',')[1];
+				rex.examEvaluation['solutions'] = [fileName, fileExt, base64];
+				
+				$('#examSolutionsFiles_list_items').empty();
+				$('#examSolutionsFiles_list_items').append('<div class="examSolutionsItem"><span class="examSolutionsName">' + filename + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
 			};
 
 			fileReader.readAsDataURL(file);
 			
-			$('#examSolutionsFiles_list_items').empty();
-			$('#examSolutionsFiles_list_items').append('<div class="examSolutionsItem"><span class="examSolutionsName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
 			break;
 		case 'csv':
 			fileReader = new FileReader();
@@ -2772,12 +2803,13 @@ function addExamEvaluationFile(file) {
 			fileReader.onload = function(fileLoadedEvent) {
 				csv = fileLoadedEvent.target.result;
 				rex.examEvaluation['registeredParticipants'] = [fileName, fileExt, csv];
+				
+				$('#examRegisteredParticipantsFiles_list_items').empty();
+				$('#examRegisteredParticipantsFiles_list_items').append('<div class="examRegisteredParticipantsItem"><span class="examRegisteredParticipantsName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
 			};
 
 			fileReader.readAsText(file);
 			
-			$('#examRegisteredParticipantsFiles_list_items').empty();
-			$('#examRegisteredParticipantsFiles_list_items').append('<div class="examRegisteredParticipantsItem"><span class="examRegisteredParticipantsName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
 			break;
 	}
 }

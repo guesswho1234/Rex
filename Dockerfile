@@ -12,13 +12,14 @@ RUN set -eu \
         ;rm -rf /var/lib/apt/lists/* \
         ;
 	
-RUN R -e "install.packages(c('shinyjs', 'shinyWidgets', 'shinycssloaders', 'shinyauthr', 'sodium', 'RSQLite', 'DBI'), dependencies=TRUE)"	
-RUN R -e "install.packages('qpdf', repos='http://cran.us.r-project.org')"					 
+RUN R -e "install.packages(c('shinyjs', 'shinyWidgets', 'shinycssloaders', 'shinyauthr', 'sodium', 'RSQLite', 'DBI'), dependencies=TRUE)"		
+RUN R -e "install.packages('qpdf', repos='http://cran.us.r-project.org')"				 
 RUN rm -rf /tmp/Rtmp*/
 
 COPY ./app.R /rex/
 COPY ./index.html /rex/
 COPY ./app.html /rex/
+# COPY --exclude=*/worker/* ./www /rex/www
 COPY ./www /rex/www
 COPY ./source/main /rex/source/main
 COPY ./source/shared /rex/source/shared

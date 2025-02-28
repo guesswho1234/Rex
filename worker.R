@@ -61,6 +61,8 @@ source("./source/shared/log.R")
     }
 
     if(length(REQUESTS) > 0) {
+      log_(content=paste0("OPEN REQUESTS:", length(REQUESTS)), "WORKER", "WORKER")
+      
       PARSE_EXERCISE_REQUEST = REQUESTS[grepl("parseExercise", REQUESTS)]
       CREATE_EXAM_REQUEST = REQUESTS[grepl("createExam", REQUESTS)]
       EVALUATE_EXAM_SCANS_REQUEST = REQUESTS[grepl("evaluateExamScans", REQUESTS)]
@@ -73,7 +75,7 @@ source("./source/shared/log.R")
           requestContent = readRDS(x)
           processFiles = getProcessFiles(requestContent$dir, "parseExercise")
 
-          # if no response, consider polling outputs to keep alive
+          log_(content="PROCESSING PARSE_EXERCISE_REQUEST", "WORKER", "WORKER")
           R_BG_STACK <<- c(R_BG_STACK, list(list(log=processFiles$log, process=callr::r_bg(
             func = process_parseExerciseRequest,
             args = list(requestContent, processFiles$res, processFiles$fin, parseExercise, prepare_exerciseResponse, TRUE_MESSAGE_VALUE),
@@ -89,10 +91,10 @@ source("./source/shared/log.R")
           requestContent = readRDS(x)
           processFiles = getProcessFiles(requestContent$dir, "createExam")
           
-          # if no response, consider polling outputs to keep alive
+          log_(content="PROCESSING CREATE_EXAM_REQUEST", "WORKER", "WORKER")
           R_BG_STACK <<- c(R_BG_STACK, list(list(log=processFiles$log, process=callr::r_bg(
             func = process_createExamRequest,
-            args = list(requestContent, processFiles$res, processFiles$fin, createExam, prepare_createExamResponse, TRUE_MESSAGE_VALUE),
+            args = list(requestContent, processFiles$res, processFiles$fin, createExam, prepare_createExamResponse, TRUE_MESSAGE_VALUE, PACKAGE_INFO),
             supervise = TRUE
           ))))
         })
@@ -105,9 +107,10 @@ source("./source/shared/log.R")
           requestContent = readRDS(x)
           processFiles = getProcessFiles(requestContent$dir, "evaluateExamScans")
           
+          log_(content="PROCESSING EVALUATE_EXAM_SCANS_REQUEST", "WORKER", "WORKER")
           R_BG_STACK <<- c(R_BG_STACK, list(list(log=processFiles$log, process=callr::r_bg(
             func = process_evaluateExamScansRequest,
-            args = list(requestContent, processFiles$res, processFiles$fin, evaluateExamScans, prepare_evaluateExamScansResponse, TRUE_MESSAGE_VALUE),
+            args = list(requestContent, processFiles$res, processFiles$fin, evaluateExamScans, prepare_evaluateExamScansResponse, TRUE_MESSAGE_VALUE, PACKAGE_INFO),
             supervise = TRUE
           ))))
         })
@@ -118,11 +121,13 @@ source("./source/shared/log.R")
           log_(content="EVALUATE_EXAM_FINALIZE_REQUEST", "WORKER", "WORKER")
           
           requestContent = readRDS(EVALUATE_EXAM_FINALIZE_REQUEST[1])
+          
           processFiles = getProcessFiles(requestContent$preparedEvaluation$fields$dir, "evaluateExamFinalize")
           
+          log_(content="PROCESSING EVALUATE_EXAM_FINALIZE_REQUEST", "WORKER", "WORKER")
           R_BG_STACK <<- c(R_BG_STACK, list(list(log=processFiles$log, process=callr::r_bg(
             func = process_evaluateExamFinalizeRequest,
-            args = list(requestContent, processFiles$res, processFiles$fin, evaluateExamFinalize, prepare_evaluateExamFinalizeResponse, TRUE_MESSAGE_VALUE),
+            args = list(requestContent, processFiles$res, processFiles$fin, evaluateExamFinalize, prepare_evaluateExamFinalizeResponse, TRUE_MESSAGE_VALUE, PACKAGE_INFO),
             supervise = TRUE
           ))))
         })
@@ -343,19 +348,19 @@ source("./source/shared/log.R")
 	  })
 	}
 	# CREATE EXAM ---------------------------------------------------------
-	process_createExamRequest = function(requestContent, res, fin, createExam, prepare_createExamResponse, TRUE_MESSAGE_VALUE){
+	process_createExamRequest = function(requestContent, res, fin, createExam, prepare_createExamResponse, TRUE_MESSAGE_VALUE, PACKAGE_INFO){
 	  source("./source/worker/tryCatch.R")
 	  source("./source/shared/rToJson.R")
 	  
 	  cat("Exams to create = 1\n")
 
-	  createdExam = createExam(requestContent, TRUE_MESSAGE_VALUE)
+	  createdExam = createExam(requestContent, TRUE_MESSAGE_VALUE, PACKAGE_INFO)
 	  prepare_createExamResponse(createdExam, res, TRUE_MESSAGE_VALUE)
 
 	  file.create(fin)
 	}
 	
-	createExam = function(data, TRUE_MESSAGE_VALUE) {
+	createExam = function(data, TRUE_MESSAGE_VALUE, PACKAGE_INFO) {
 		out = tryCatch({
 		  warnings = collectWarnings({
 		    cat("Preparing parameters.\n")
@@ -391,9 +396,9 @@ source("./source/shared/log.R")
   			exercisesPerBlock = data$numberOfExercises / length(uniqueBlocks)
   			exercises = lapply(uniqueBlocks, function(x) data$exerciseFiles[data$blocks==x])
   			
-  			seedList = matrix(1, nrow=data$numberOfExams, ncol=length(data$exerciseFiles))
-  			seedList = seedList * as.numeric(paste0(if(is.na(data$seedValueExam)) NULL else data$seedValueExam, 1:data$numberOfExams))
-
+  			seedList = matrix(1:length(data$exerciseFiles), nrow=data$numberOfExams, ncol=length(data$exerciseFiles), byrow = TRUE)
+  			seedList = seedList + seedList / seedList * as.numeric(if(is.na(data$seedValueExam)) NULL else data$seedValueExam * 1000 + 1:data$numberOfExams) * 100
+  			
   			points = if(!is.na(data$fixedPointsExamCreate)) data$fixedPointsExamCreate else NULL
   			reglength = if(!is.na(data$examRegLength)) data$examRegLength else 7
   			name = paste0(c("exam", data$seedValueExam, ""), collapse="_")
@@ -423,13 +428,14 @@ source("./source/shared/log.R")
   			  points = points,
   			  showpoints = data$showPoints,
   			  seed = seedList,
+  			  encoding = "UTF-8",
   			  reglength = reglength,
   			  header = NULL,
   			  intro = c(data$examIntro), 
   			  replacement = data$replacement,
   			  samepage = data$samepage,
   			  newpage = data$newpage,
-  			  logo = NULL
+  			  logo = data$examLogoFile
   			)
   			
   			# needed for pdf files (not for html files) - somehow exams needs it that way
@@ -446,14 +452,13 @@ source("./source/shared/log.R")
   			
   			# exam input field data
   			examInputFile = paste0(data$dir, "/input.txt")
-  			
-  			examInputTxt = Reduce(c, lapply(names(examFields)[!names(examFields) %in% c("edir", "header", "logo")], \(x){
+  			examInputTxt = Reduce(c, lapply(names(examFields)[!names(examFields) %in% c("edir", "header")], \(x){
   			  values = examFields[[x]] 
   			  
-  			  if(x=="file")  
+  			  if(x == "file")  
   				values = lapply(values, \(y) gsub(paste0(data$edir, "/"), "", y, fixed = TRUE))
   			  
-  			  if(x=="pages")  
+  			  if(x %in% c("pages", "logo"))  
   				values = lapply(values, \(y) gsub(paste0(data$dir, "/"), "", y, fixed = TRUE))
   		 
   			  if(is.matrix(values)){
@@ -466,55 +471,78 @@ source("./source/shared/log.R")
   				), collapse="\n")
   			  }
   			}))
-  
-  			# write
   			writeLines(examInputTxt, examInputFile)
   
-  			# prepared exam data
-  			preparedExam = list(examFields=examFields, examFiles=list(examHtmlFiles=examHtmlFiles, pdfFiles=examPdfFiles, rdsFile=examRdsFile, examInputFile=examInputFile), sourceFiles=list(exerciseFiles=data$exerciseFiles, additionalPdfFiles=data$additionalPdfFiles))
-
   			cat("Creating exam.\n")
-
-  			with(preparedExam$examFields, {
-  			  # create exam html preview with solutions
-  			  set.seed(1)
-  			  exams::exams2html(file = file,
-  								          edir = edir,
-  								          n = n,
-  								          nsamp = nsamp,
-  								          name = name,
-  								          dir = dir,
-  								          seed = seed)
-  	  
-  			  # create exam
-  			  set.seed(1)
-  			  exams::exams2nops(file = file,
-  								          edir = edir,
-  								          n = n,
-  								          nsamp = nsamp,
-  								          name = name,
-  								          dir = dir,
-  								          language = language,
-  								          title = title,
-  								          course = course,
-  								          institution = institution,
-  								          date = date,
-  								          blank = blank,
-  								          duplex = duplex,
-  								          pages = pages,
-  								          points = points,
-  								          showpoints = showpoints,
-  								          seed = seed,
-  								          encoding = "UTF-8",
-  								          reglength = reglength,
-  								          header = header,
-  								          intro = intro,
-  								          replacement = replacement,
-  								          samepage = samepage,
-  								          newpage = newpage,
-  								          logo = NULL)
-  			})
-  	  
+  			
+  			set.seed(1)
+  			param_exams2html = examFields[c("dir", 
+  			                                "file", 
+  			                                "edir", 
+  			                                "n", 
+  			                                "nsamp", 
+  			                                "name", 
+  			                                "seed")]
+  			rlang::exec(exams::exams2html, !!!param_exams2html)
+  			
+  			set.seed(1)
+  			param_exams2nops = examFields[c("dir", 
+  			                                "file", 
+  			                                "edir", 
+  			                                "n", 
+  			                                "nsamp", 
+  			                                "name", 
+  			                                "language", 
+  			                                "title", 
+  			                                "course", 
+  			                                "institution", 
+  			                                "date", 
+  			                                "blank", 
+  			                                "duplex", 
+  			                                "pages", 
+  			                                "points", 
+  			                                "showpoints", 
+  			                                "seed", 
+  			                                "encoding", 
+  			                                "reglength", 
+  			                                "header", 
+  			                                "intro", 
+  			                                "replacement", 
+  			                                "samepage", 
+  			                                "newpage", 
+  			                                "logo")]
+  			rlang::exec(exams::exams2nops, !!!param_exams2nops)
+  			
+  			# exam code file data
+  			examCodeFile = paste0(data$dir, "/code.txt")
+  			
+  			code_exams2html = paste0("exams::exams2html(", paste0(names(param_exams2html), "=%s", collapse=", "), ")") 
+  			code_exams2html = append(code_exams2html, lapply(param_exams2html, function(x) paste0(deparse(x), collapse="")))
+  			code_exams2html = rlang::exec(sprintf, !!!code_exams2html)
+  			code_exams2html = gsub("\\s+", "", code_exams2html)
+  			
+  			code_exams2nops = paste0("exams::exams2nops(", paste0(names(param_exams2nops), "=%s", collapse=", "), ")") 
+  			code_exams2nops = append(code_exams2nops, lapply(param_exams2nops, function(x) paste0(deparse(x), collapse="")))
+  			code_exams2nops = rlang::exec(sprintf, !!!code_exams2nops)
+  			code_exams2nops = gsub("\\s+", "", code_exams2nops)
+  			
+  			code = paste0("# 1.) Set working directory", "\n", 
+  			              "setwd(\".\")", "\n\n",  
+  			              "# 2.) Load packages", "\n", 
+  			              PACKAGE_INFO, "\n\n",
+  			              "# 3.) Run code", "\n",
+  			              code_exams2html, "\n\n",
+  			              code_exams2nops)
+  			code = gsub(gsub("\\", "\\\\", data$dir, fixed=TRUE), ".", code, fixed=TRUE)
+  			
+  			write(code, examCodeFile, append = FALSE)
+  			
+  			# prepared exam data
+  			preparedExam = list(examFields=examFields, 
+  			                    examFiles=list(examHtmlFiles=examHtmlFiles, pdfFiles=examPdfFiles, rdsFile=examRdsFile, examInputFile=examInputFile), 
+  			                    sourceFiles=list(exerciseFiles=data$exerciseFiles, additionalPdfFiles=data$additionalPdfFiles),
+  			                    codeFiles=list(examCodeFile=examCodeFile))
+  			
   		  NULL
 		  })
 		  
@@ -526,7 +554,7 @@ source("./source/shared/log.R")
   			value = paste0("W1002", ifelse(TRUE_MESSAGE_VALUE, paste0(": ", value), ""))
 		  }
 	  
-		  return(list(message=list(key=key, value=value), files=list(sourceFiles=preparedExam$sourceFiles, examFiles=preparedExam$examFiles)))
+		  return(list(message=list(key=key, value=value), files=list(sourceFiles=preparedExam$sourceFiles, examFiles=preparedExam$examFiles, codeFiles=preparedExam$codeFiles)))
 		},
 		error = function(e){
 		  if(!grepl("E\\d{4}", e$message))
@@ -542,24 +570,24 @@ source("./source/shared/log.R")
 	prepare_createExamResponse = function(result, res, TRUE_MESSAGE_VALUE) {
 	  messageType = getMessageType(result$message)
 	  message = myMessage(result$message, "modal", TRUE_MESSAGE_VALUE)
-	  response = unname(unlist(c(messageType, message, result$files, result$examFiles)))
+	  response = unname(unlist(c(messageType, message, result$files)))
 	  
 	  write(response, file=res, ncolumns=1, sep="\n")
 	}
 	
 	# EVALUATE EXAM -------------------------------------------------------
     # EVALUATE EXAM SCANS -----------------------------------------------------
-  	process_evaluateExamScansRequest = function(requestContent, res, fin, evaluateExamScans, prepare_evaluateExamScansResponse, TRUE_MESSAGE_VALUE){
+  	process_evaluateExamScansRequest = function(requestContent, res, fin, evaluateExamScans, prepare_evaluateExamScansResponse, TRUE_MESSAGE_VALUE, PACKAGE_INFO){
   	  source("./source/worker/tryCatch.R")
   	  source("./source/shared/rToJson.R")
   	  
-  	  evaluatedScans = evaluateExamScans(requestContent, TRUE_MESSAGE_VALUE)
+  	  evaluatedScans = evaluateExamScans(requestContent, TRUE_MESSAGE_VALUE, PACKAGE_INFO)
   	  prepare_evaluateExamScansResponse(evaluatedScans, res, TRUE_MESSAGE_VALUE)
 
   	  file.create(fin)
   	}
   
-  	evaluateExamScans = function(data, TRUE_MESSAGE_VALUE){
+  	evaluateExamScans = function(data, TRUE_MESSAGE_VALUE, PACKAGE_INFO){
   		out = tryCatch({
   		  scans_reg_fullJoin = paste0(data$dir, "/scans_reg_fullJoinData.csv")
   
@@ -612,10 +640,12 @@ source("./source/shared/log.R")
   			
   			scanFileZipName = gsub("_+", "_", paste0(examName, "_nops_scan.zip"))
   			scanEvaluation = paste0(data$dir, "/", scanFileZipName)
+  			
+  			examCodeFile = paste0(data$dir, "/code.txt")
   
   			preparedEvaluation = list(meta=list(examIds=examIds, examName=examName, numExercises=numExercises, numChoices=numChoices, totalPdfLength=data$totalPdfLength, totalPngLength=data$totalPngLength, scanFileZipName=scanFileZipName),
   			                          fields=list(dir=data$dir, edirName=data$edirName, cores=data$cores, rotate=data$rotate, points=points, regLength=data$regLength, partial=data$partial, negative=data$negative, rule=data$rule, mark=mark, labels=labels, language=data$language),
-  			                          files=list(solution=data$solutionFile, registeredParticipants=data$registeredParticipantsFile, scans=data$scanFiles, scanEvaluation=scanEvaluation, scans_reg_fullJoin=scans_reg_fullJoin))
+  			                          files=list(solution=data$solutionFile, registeredParticipants=data$registeredParticipantsFile, scans=data$scanFiles, scanEvaluation=scanEvaluation, scans_reg_fullJoin=scans_reg_fullJoin, examCodeFile=examCodeFile))
   			
   			with(preparedEvaluation, {
   			  if(length(files$scans) < 1)
@@ -644,13 +674,15 @@ source("./source/shared/log.R")
   			  cat("Evaluating scans.\n")
   			  cat(paste0("Scans to convert = ", meta$totalPdfLength, "\n"))
   			  cat(paste0("Scans to process = ", meta$totalPdfLength + meta$totalPngLength, "\n"))
-  
-  			  scanData = exams::nops_scan(images=files$scans,
-  							   file=meta$scanFileZipName,
-  							   dir=fields$dir,
-  							   rotate=fields$rotate,
-  							   cores=fields$cores,
-  							   verbose=TRUE)
+  			  
+  			  param_nops_scan = list(images=files$scans,
+  			                         file=meta$scanFileZipName,
+  			                         dir=fields$dir,
+  			                         rotate=fields$rotate,
+  			                         cores=fields$cores,
+  			                         verbose=TRUE)
+  			  
+  			  scanData = rlang::exec(exams::nops_scan, !!!param_nops_scan)
   
   			  dummyFirstRow = paste0(rep(NA,51), collapse=" ")
   			  scanData = read.table(text=c(dummyFirstRow, scanData), sep=" ", fill=TRUE)
@@ -708,7 +740,23 @@ source("./source/shared/log.R")
   			    x = sprintf(paste0("%0", data$maxChoices, "d"), as.numeric(x))
   			  })
   			  
+  			  # exam code file data
+  			  code_nops_scan = paste0("exams::nops_scan(", paste0(names(param_nops_scan), "=%s", collapse=", "), ")") 
+  			  code_nops_scan = append(code_nops_scan, lapply(param_nops_scan, function(x) paste0(deparse(x), collapse="")))
+  			  code_nops_scan = rlang::exec(sprintf, !!!code_nops_scan)
+  			  code_nops_scan = gsub("\\s+", "", code_nops_scan)
+  			  
+  			  code = paste0("# 1.) Set working directory", "\n", 
+  			                "setwd(\".\")", "\n\n",  
+  			                "# 2.) Load packages", "\n", 
+  			                PACKAGE_INFO, "\n\n",
+  			                "# 3.) Run code", "\n",
+  			                code_nops_scan)
+  			  code = gsub(gsub("\\", "\\\\", fields$dir, fixed=TRUE), ".", code, fixed=TRUE)
+  			  
+  			  # write
   			  write.csv2(scans_reg_fullJoinData, file=scans_reg_fullJoin, row.names = FALSE)
+  			  write(code, examCodeFile, append = FALSE)
   			})
   			
   			NULL
@@ -747,19 +795,19 @@ source("./source/shared/log.R")
   	}
 
     # EVALUATE EXAM FINALIZE --------------------------------------------------
-  	process_evaluateExamFinalizeRequest = function(requestContent, res, fin, evaluateExamFinalize, prepare_evaluateExamFinalizeResponse, TRUE_MESSAGE_VALUE){
+  	process_evaluateExamFinalizeRequest = function(requestContent, res, fin, evaluateExamFinalize, prepare_evaluateExamFinalizeResponse, TRUE_MESSAGE_VALUE, PACKAGE_INFO){
   	  source("./source/worker/tryCatch.R")
   	  source("./source/shared/rToJson.R")
-  	  
+
   	  cat("Exams to evaluate = 1\n")
   	  
-  	  evaluatedFinalize = evaluateExamFinalize(requestContent, TRUE_MESSAGE_VALUE)
+  	  evaluatedFinalize = evaluateExamFinalize(requestContent, TRUE_MESSAGE_VALUE, PACKAGE_INFO)
   	  prepare_evaluateExamFinalizeResponse(evaluatedFinalize, res, TRUE_MESSAGE_VALUE)
 
   	  file.create(fin)
   	}
     
-  	evaluateExamFinalize = function(data, TRUE_MESSAGE_VALUE){
+  	evaluateExamFinalize = function(data, TRUE_MESSAGE_VALUE, PACKAGE_INFO){
   	  out = tryCatch({
   	    warnings = collectWarnings({
   	      # scanData
@@ -796,20 +844,20 @@ source("./source/shared/log.R")
   	      
   	      with(data$preparedEvaluation, {
   	        # finalize evaluation
-  	        exams::nops_eval(
-  	          register = files$registeredParticipants,
-  	          solutions = files$solution,
-  	          scans = files$scanEvaluation,
-  	          eval = exams::exams_eval(partial = fields$partial, negative = fields$negative, rule = fields$rule),
-  	          points = fields$points,
-  	          mark = fields$mark,
-  	          labels = fields$labels,
-  	          results = nops_evaluation_fileNamePrefix,
-  	          dir = data$preparedEvaluation$fields$dir,
-  	          file = nops_evaluation_fileNames,
-  	          language = fields$language,
-  	          interactive = FALSE
-  	        )
+  	        param_nops_eval = list(register = files$registeredParticipants,
+  	                               solutions = files$solution,
+  	                               scans = files$scanEvaluation,
+  	                               eval = exams::exams_eval(partial = fields$partial, negative = fields$negative, rule = fields$rule),
+  	                               points = fields$points,
+  	                               mark = fields$mark,
+  	                               labels = fields$labels,
+  	                               results = nops_evaluation_fileNamePrefix,
+  	                               dir = data$preparedEvaluation$fields$dir,
+  	                               file = nops_evaluation_fileNames,
+  	                               language = fields$language,
+  	                               interactive = FALSE)
+  	        
+  	        rlang::exec(exams::nops_eval, !!!param_nops_eval)
   	        
   	        solutionData = readRDS(files$solution)
   	        evaluationData = read.csv2(files$nops_evaluationCsv)
@@ -930,10 +978,21 @@ source("./source/shared/log.R")
   	          ), collapse="\n")
   	        }))
   	        
+  	        # exam code file data
+  	        code_nops_eval = paste0("exams::nops_eval(", paste0(names(param_nops_eval), "=%s", collapse=", "), ")") 
+  	        code_nops_eval = append(code_nops_eval, lapply(param_nops_eval, function(x) paste0(deparse(x), collapse="")))
+  	        code_nops_eval = rlang::exec(sprintf, !!!code_nops_eval)
+  	        code_nops_eval = gsub("\\s+", "", code_nops_eval)
+  	        
+  	        code = paste0("\n", code_nops_eval)
+  	        code = gsub(gsub("\\", "\\\\", data$preparedEvaluation$fields$dir, fixed=TRUE), ".", code, fixed=TRUE)
+  	        
   	        # write
   	        writeLines(examEvalInputTxt, files$nops_evalInputTxt)
   	        writeLines(evaluationStatisticsTxt, files$nops_statisticsTxt)
   	        write.csv2(evaluationData, files$nops_evaluationCsv, row.names = FALSE)
+  	        
+  	        write(code, files$examCodeFile, append = TRUE)
   	      })
   	      
   	      NULL
@@ -970,18 +1029,23 @@ source("./source/shared/log.R")
   	  write(response, file=res, ncolumns=1, sep="\n")
 	  }
 
-
 # PARAMETERS --------------------------------------------------------------
 	# ADDONS ------------------------------------------------------------------
 	addons_path = "./addons/"
 	addons_path_www = "./www/addons/"
-	addons = list.files(addons_path_www, recursive = TRUE) 
+	addons = list.files(addons_path_www, recursive = TRUE)
 	addons = unique(Reduce(c, lapply(addons[grepl("/", addons)], \(x) strsplit(x, split="/")[[1]][1])))
 
 	invisible(lapply(addons, \(addon) {
 	  source(paste0(addons_path_www, addons, "/worker/", addons, "_worker.R"))
 	}))
+	
+  # SESSIONINFO -------------------------------------------------------------
+  PACKAGE_INFO = paste(sapply(sessionInfo()$otherPkgs, function(x) paste0("library(", x$Package, ") # version ", x$Version)), collapse="\n")
+	
 # WORKER ------------------------------------------------------------------
+log_(content="INIT", "WORKER", "WORKER")
+	
 POLL_TIME = 1 / 100 # polling timeout in seconds
 COMPARE_TIME = Sys.time() # time of comparison
 
@@ -997,7 +1061,13 @@ R_BG_STACK = list()
 # periodic check loop for requests
 if(DOCKER_WORKER){
   repeat {
-    checkWorkerRequests()
-    Sys.sleep(POLL_TIME)
+    tryCatch({
+      checkWorkerRequests()
+      Sys.sleep(POLL_TIME)
+    },
+    error = function(e){
+      log_(content=e$message, "WORKER", "WORKER")
+      log_(content=traceback(), "WORKER", "WORKER")
+    })
   }
 }

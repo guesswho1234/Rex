@@ -26,6 +26,8 @@ RUN if [ -f $imagemagic_config ] ; then sed -i 's/<policy domain="coder" rights=
 RUN rm -rf /tmp/Rtmp*/
 
 COPY ./worker.R /rex-worker/
+# COPY --exclude=*/main/* ./www/addons /rex-worker/www/addons
+COPY ./www/addons /rex-worker/www/addons
 COPY ./source/worker /rex-worker/source/worker
 COPY ./source/shared /rex-worker/source/shared
 

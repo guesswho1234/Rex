@@ -66,7 +66,7 @@ if(!DOCKER_WORKER)
   exerciseMin = 1
   exerciseMax = 45
   seedMin = 1
-  seedMax = 999999999999
+  seedMax = 999999999 #xxxxsssee x = random number, s = scrambling id, e = exercise id
   initSeed = 1
   languages = c("en",
                 "de")
@@ -98,13 +98,13 @@ if(!DOCKER_WORKER)
   # ADDONS ------------------------------------------------------------------
   addons_path = "./addons/"
   addons_path_www = "./www/addons/"
-  addons = list.files(addons_path_www, recursive = TRUE) 
+  addons = list.files(addons_path_www, recursive = TRUE)
   addons = unique(Reduce(c, lapply(addons[grepl("/", addons)], \(x) strsplit(x, split="/")[[1]][1])))
 
   invisible(lapply(addons, \(addon) {
     source(paste0(addons_path_www, addons, "/main/", addons, "_main.R"))
   }))
-  
+    
 # LOG ------------------------------------------------------
 log_(content="INIT", append=FALSE)
 
@@ -144,7 +144,7 @@ server = function(input, output, session) {
     dir.create(getDir(session))
     removeRuntimeFiles(session)
 
-    initSeed <<- as.numeric(gsub("-", "", Sys.Date()))
+    initSeed <<- floor(runif(1, min=1000, max=9999))
 
     # LOAD APP ----------------------------------------------------------------
     fluidPage(
@@ -182,7 +182,8 @@ server = function(input, output, session) {
       textInput_examIntro = textAreaInput("examIntro", label = NULL, value = NULL),
       textInput_numberOfBlanks = textInput("numberOfBlanks", label = NULL, value = 5),
       
-      additionalPdfFileImport = myFileImport("additionalPdf", "exam"),
+      additionalPdfFileImport = myFileImport("additionalPdf", "additionalPdf"),
+      examLogoFileImport = myFileImport("examLogo", "examLogo"),
     
       # EXAM EVALUATE
       textInput_fixedPointsExamEvaluate = textInput("fixedPointsExamEvaluate", label = NULL, value = NULL),
@@ -197,9 +198,9 @@ server = function(input, output, session) {
       selectInput_evaluationLanguage = selectInput("evaluationLanguage", label = NULL, choices = languages, selected = "de", multiple = FALSE),
       checkboxInput_rotateScans = checkboxInput("rotateScans", label = NULL, value = TRUE),
       
-      examSolutionsFileImport = myFileImport("examSolutions", "exam"),
-      examRegisteredParticipantsFileImport = myFileImport("examRegisteredParticipants", "exam"),
-      examScansFileImport = myFileImport("examScans", "exam"),
+      examSolutionsFileImport = myFileImport("examSolutions", "examSolutions"),
+      examRegisteredParticipantsFileImport = myFileImport("examRegisteredParticipants", "examRegisteredParticipants"),
+      examScansFileImport = myFileImport("examScans", "examScans"),
       
       # ADDON CONTENT
       addonSidebarListItems = lapply(addons, \(addon) {
@@ -217,7 +218,7 @@ server = function(input, output, session) {
     
     # ADDON SCRIPTS
     lapply(addons, \(addon) {
-      tags$script(src=paste0(addons_path_www, addon, "/main/", addon, "_script.js"))
+      tags$script(src=paste0(addons_path_www, addon, "/main/", addon, "_script.js"), defer=TRUE)
     }),
     
     # ADDON STYLESHEET
@@ -235,6 +236,7 @@ server = function(input, output, session) {
   
   # HEARTBEAT -------------------------------------------------------------
   initialState = TRUE
+  initialStateJS = TRUE
 
   observe({
     invalidateLater(1000 * 5, session)
@@ -246,6 +248,18 @@ server = function(input, output, session) {
   
   observeEvent(input$pong, {
     cat("")
+    
+    if(initialStateJS){
+      # SET DEFAULTS
+      myFileData(session = session, path = "./www/", name = "logo_rex_bw", ext = "png", "setExamLogo")
+      
+      # ADDON DEFAULTS
+      lapply(addons, \(addon) {
+        do.call(paste0(addon, "_defaults"), args=list(session=session))
+      })
+    }
+    
+    initialStateJS <<- FALSE
   })
   
   # USER --------------------------------------------------------------------
@@ -316,6 +330,7 @@ server = function(input, output, session) {
         session$sendCustomMessage("changeTabTitle", 3)
         startWait(session)
         initProrgress(session)
+        log_(content="Parsing exercise.", USERNAME, sessionToken=session$token)
       }
       
       # write exercise file
@@ -440,12 +455,13 @@ server = function(input, output, session) {
         session$sendCustomMessage("changeTabTitle", 3)
         startWait(session)
         initProrgress(session)
+        log_(content="Creating exam.", USERNAME, sessionToken=session$token)
       }
       
       exam = input$createExam
       dir = getDir(session)
       edir = paste0(dir, "/", edirName)
-  
+      
       # write exercise files
       exerciseFiles = c()
       if(length(exam$exerciseNames) > 0) {
@@ -472,6 +488,19 @@ server = function(input, output, session) {
           
           return(file)
         })))
+      }
+      
+      # write exam logo file
+      examLogoFile = c()
+      
+      if(length(exam$examLogoName) == 1) {
+        examLogoFile = unlist(lapply(seq_along(exam$examLogoName), function(i){
+          file = paste0(dir, "/", exam$examLogoName[[i]], ".png")
+          raw = openssl::base64_decode(exam$examLogoFile[[i]])
+          writeBin(raw, con = file)
+          
+          return(file)
+        }))
       }
 
       # request content
@@ -502,7 +531,8 @@ server = function(input, output, session) {
                                       samepage=input$samepage,
                                       newpage=input$newpage,
                                       exerciseFiles=exerciseFiles,
-                                      additionalPdfFiles=additionalPdfFiles)
+                                      additionalPdfFiles=additionalPdfFiles,
+                                      examLogoFile=examLogoFile)
       
       saveRDS(createExam_req_content, createExam_req)
   
@@ -622,6 +652,7 @@ server = function(input, output, session) {
           session$sendCustomMessage("changeTabTitle", 3)
           startWait(session)
           initProrgress(session)
+          log_(content="Evaluating exam scans.", USERNAME, sessionToken=session$token)
         }
         
         exam = input$evaluateExam
@@ -659,10 +690,7 @@ server = function(input, output, session) {
     		}
     		
     		if(length(exam$examScanPngNames) > 0){
-    		  namesToConsider = c(sub("(.*\\/)([^.]+)(\\.[[:alnum:]]+$)", "\\2", convertedPngFiles), unlist(exam$examScanPngNames))
-    		  namesToConsider_idx = (length(namesToConsider)-length(exam$examScanPngNames) + 1):length(namesToConsider)
-    		  
-    		  exam$examScanPngNames = as.list(make.unique(namesToConsider, sep="_"))[namesToConsider_idx]
+    		  exam$examScanPngNames = as.list(make.unique(exam$examScanPngNames, sep="_"))
     		  pngFiles = unlist(lapply(seq_along(exam$examScanPngNames), function(i){
     		    file = paste0(dir, "/", exam$examScanPngNames[[i]], ".png")
     		    raw = openssl::base64_decode(exam$examScanPngFiles[[i]])
@@ -786,7 +814,7 @@ server = function(input, output, session) {
           if(messageType != "2"){
             names(result) = c("messageType", "message", "examIds", "examName", "numExercises", "numChoices", "totalPdfLength", "totalPngLength", "scanFileZipName",
                               "dir", "edirName", "cores", "rotate", "points", "regLength", "partial", "negative", "rule", "mark", "labels", "language",
-                              "solution", "registeredParticipants", "scans", "scanEvaluation", "scans_reg_fullJoin")
+                              "solution", "registeredParticipants", "scans", "scanEvaluation", "scans_reg_fullJoin", "examCodeFile")
             
             result = lapply(setNames(result, names(result)), function(x) strsplit(x, ";")[[1]])
             
@@ -795,7 +823,7 @@ server = function(input, output, session) {
                           message=unlist(message),
                           preparedEvaluation=list(meta=list(examIds=examIds, examName=examName, numExercises=as.numeric(numExercises), numChoices=as.numeric(numChoices), totalPdfLength=as.numeric(totalPdfLength), totalPngLength=as.numeric(totalPngLength), scanFileZipName=scanFileZipName), 
                                                   fields=list(dir=dir, edirName=edirName, cores=as.numeric(cores), rotate=as.logical(rotate), points=switch((length(points)==0)+1,as.numeric(points),NULL), regLength=as.numeric(regLength), partial=as.logical(partial), negative=as.logical(negative), rule=rule, mark=ifelse(mark=="FALSE",FALSE,as.numeric(mark)), labels=labels, language=language),
-                                                  files=list(solution=solution, registeredParticipants=registeredParticipants, scans=scans, scanEvaluation=scanEvaluation, scans_reg_fullJoin=scans_reg_fullJoin)),
+                                                  files=list(solution=solution, registeredParticipants=registeredParticipants, scans=scans, scanEvaluation=scanEvaluation, scans_reg_fullJoin=scans_reg_fullJoin, examCodeFile=examCodeFile)),
                           scans_reg_fullJoinData=read.csv2(file=result$scans_reg_fullJoin, check.names = FALSE, colClasses = "character")
               )
       
@@ -862,6 +890,7 @@ server = function(input, output, session) {
           session$sendCustomMessage("changeTabTitle", 3)
           startWait(session)
           initProrgress(session)
+          log_(content="Evaluating exam.", USERNAME, sessionToken=session$token)
         }
     
         dir = getDir(session)
@@ -913,7 +942,7 @@ server = function(input, output, session) {
           if(messageType != "2"){
             names(result) = c("messageType", "message", "examIds", "examName", "numExercises", "numChoices", "totalPdfLength", "totalPngLength", "scanFileZipName",
                               "dir", "edirName", "cores", "rotate", "points", "regLength", "partial", "negative", "rule", "mark", "labels", "language",
-                              "solution", "registeredParticipants", "scanEvaluation", "scans_reg_fullJoin", "nops_evaluationCsv", "nops_evaluationZip", "nops_evalInputTxt", "nops_statisticsTxt")
+                              "solution", "registeredParticipants", "scanEvaluation", "scans_reg_fullJoin", "examCodeFile", "nops_evaluationCsv", "nops_evaluationZip", "nops_evalInputTxt", "nops_statisticsTxt")
             
             result = lapply(setNames(result, names(result)), function(x) strsplit(x, ";")[[1]])
             
@@ -922,9 +951,7 @@ server = function(input, output, session) {
                           message=unlist(message),
                           preparedEvaluation=list(meta=list(examIds=examIds, examName=examName, numExercises=as.numeric(numExercises), numChoices=as.numeric(numChoices), totalPdfLength=as.numeric(totalPdfLength), totalPngLength=as.numeric(totalPngLength), scanFileZipName=scanFileZipName),
                                                   fields=list(dir=dir, edirName=edirName, cores=as.numeric(cores), rotate=as.logical(rotate), points=switch((length(points)==0)+1,as.numeric(points),NULL), regLength=as.numeric(regLength), partial=as.logical(partial), negative=as.logical(negative), rule=rule, mark=ifelse(mark=="FALSE",FALSE,as.numeric(mark)), labels=labels, language=language),
-                                                  files=list(solution=solution, registeredParticipants=registeredParticipants, scanEvaluation=scanEvaluation, 
-                                                             #scans_reg_fullJoin=scans_reg_fullJoin, # we do not want this in the file export
-                                                             nops_evaluationCsv=nops_evaluationCsv, nops_evaluationZip=nops_evaluationZip, nops_evalInputTxt=nops_evalInputTxt, nops_statisticsTxt=nops_statisticsTxt)),
+                                                  files=list(solution=solution, registeredParticipants=registeredParticipants, scanEvaluation=scanEvaluation, nops_evaluationCsv=nops_evaluationCsv, nops_evaluationZip=nops_evaluationZip, nops_evalInputTxt=nops_evalInputTxt, nops_statisticsTxt=nops_statisticsTxt, examCodeFile=examCodeFile)),
                           evaluationStatistics=readLines(nops_statisticsTxt)
               )
               
