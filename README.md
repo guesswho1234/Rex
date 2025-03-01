@@ -88,7 +88,7 @@ When clicking the "Evaluate exam" button, the exam will be evaluated. First, the
 
 ## Addons
 
-Addons are a way to extend Rex with custom features, such as default values, additional input fields or entirely new functionalities.
+Addons are a way to extend Rex with custom features, such as default values, additional input fields, or entirely new functionalities.
 
 > [!CAUTION]
 > Addons can introduce additional security risks.
