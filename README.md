@@ -85,6 +85,13 @@ When clicking the "Evaluate exam" button, the exam will be evaluated. First, the
 - A TXT file "statistics.txt" containing some basic evaluation statistics
 - A TXT file "input.txt" containing all the input values used for evaluating the exam
 - A TXT file "code.txt" containing R code, which can be used to replicate the output without Rex
+
+## Addons
+
+Addons are a way to extend Rex with custom features, such as default values, additional input fields or entirely new functionalities.
+
+> [!CAUTION]
+> Addons can introduce additional security risks.
   
 ## Contribute
 
