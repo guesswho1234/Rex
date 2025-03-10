@@ -74,7 +74,7 @@ When clicking the "Create exam" button, the exam will be created. Once this proc
 To evaluate exams, navigate to the "EXAM" tab and then to "Evaluate exam." There you will find another form with various options to set.
 
 Before the evaluation of an exam is possible, the following three files need to be prepared:
-- "Solutions": the supplied RDS file within the ZIP archive when the exam was created
+- "Solutions": the RDS file within the ZIP archive, which was supplied when the exam was created
 - "Registered participants": a CSV file containing information about exam participants (if this file is not provided, dummy participants will be used in the evaluation process)
 - "Evaluation scans": all the evaluation sheet scans as either PDF files (all pages in the same orientation) or correctly oriented PNG files
 
