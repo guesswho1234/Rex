@@ -23,7 +23,6 @@ COPY ./app.html /rex/
 COPY ./www /rex/www
 COPY ./source/main /rex/source/main
 COPY ./source/shared /rex/source/shared
-COPY ./permission /rex/permission
 
 EXPOSE 3838
 

@@ -1,4 +1,4 @@
-permissionCodes = read.csv2("permission/permissionCodes.csv")
+permissionCodes = read.csv2("./source/main/permission/permissionCodes.csv")
 
 prime_factors = function(x, i, factors = NULL){
 		if(x < i[1]) factors

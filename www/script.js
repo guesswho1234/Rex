@@ -2775,7 +2775,7 @@ function addExamEvaluationFile(file) {
 				base64 = fileLoadedEvent.target.result.split(',')[1];
 				rex.examEvaluation['scans'].push([fileName, fileExt, base64]);
 				
-				$('#examScansFiles_list_items').append('<div class="examScanItem"><span class="examScanName">' + filename + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
+				$('#examScansFiles_list_items').append('<div class="examScanItem"><span class="examScanName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
 			};
 
 			fileReader.readAsDataURL(file);
@@ -2790,7 +2790,7 @@ function addExamEvaluationFile(file) {
 				rex.examEvaluation['solutions'] = [fileName, fileExt, base64];
 				
 				$('#examSolutionsFiles_list_items').empty();
-				$('#examSolutionsFiles_list_items').append('<div class="examSolutionsItem"><span class="examSolutionsName">' + filename + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
+				$('#examSolutionsFiles_list_items').append('<div class="examSolutionsItem"><span class="examSolutionsName">' + fileName + '.' + fileExt + '</span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
 			};
 
 			fileReader.readAsDataURL(file);
@@ -2873,11 +2873,6 @@ $('#gradingKey').on('change', '.markLabel', function() {
 	setShinyInputValue(id, markLabel);
 });
 
-$('body').on('change', '#inputScramblingID', function() {
-	const inputScramblingID = getIntegerInput(0, 99, 0, $(this).val());
-	setShinyInputValue("inputScramblingID", inputScramblingID);
-});
-
 $('body').on('change', '#inputTypeID', function() {
 	const inputTypeID = getIntegerInput(0, 999, 0, $(this).val());
 	setShinyInputValue("inputTypeID", inputTypeID);
@@ -2927,7 +2922,7 @@ $('body').on('click', '.compareListItem:not(.notAssigned)', function() {
 		
 	const scanFocused = rex.examEvaluation.scans_reg_fullJoinData[parseInt($(this).find('.evalIndex').html())];
 			
-	$('#inspectScan').append('<div id="inspectScanContent"><div id="inspectScanImage"><img src="data:image/png;base64, ' + scanFocused.blob + '"/></div><div id="inspectScanTemplate"><span id="scannedRegistration"><span id="scannedRegistrationText"><span lang="de">Matrikelnummer:</span><span lang="en">Registration Number:</span></span><input id="selectedRegistration" list="selectRegistration"></input><datalist id="selectRegistration"></datalist></span><span id="replacementSheet"><span id="replacementSheetText"><span lang="de">Ersatzbeleg:</span><span lang="en">Replacement sheet:</span></span></span><span id="scannedSheetID"><span id="scannedSheetIDText"><span lang="de">Klausur-ID:</span><span lang="en">Exam ID:</span></span><select id="inputSheetID" autocomplete="on"></select></span><span id="scannedScramblingID"><span id="scannedScramblingIDText"><span lang="de">Variante:</span><span lang="en">Scrambling:</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Sollte im Scan keine Variante angegeben sein, kann der Wert 0 eingegeben werden.</span><span lang="en">If no scrambling is specified in the scan, the value 0 can be entered.</span></span></span></span><input id="inputScramblingID"/></span><span id="scannedTypeID"><span id="scannedTypeIDText"><span lang="de">Belegart:</span><span lang="en">Type:</span></span><input id="inputTypeID"/></span><div id="scannedAnswers"></div></div></div><div id="inspectScanButtons"><button id="cancelInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">ESC</span><span lang="en">ESC</span></span><span class="iconButton"><i class="fa-solid fa-xmark"></i></span><span class="textButton"><span lang="de">Abbrechen</span><span lang="en">Cancel</span></span></button><button id="prevInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de"><i class="fa-solid fa-arrow-up"></i></span><span lang="en"><i class="fa-solid fa-arrow-up"></i></span></span><span class="iconButton"><i class="fa-solid fa-arrow-up"></i></span><span class="textButton"><span lang="de">Abbrechen & Vorheriger Scan</span><span lang="en">Cancel & Previous Scan</span></span></button><button id="nextInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de"><i class="fa-solid fa-arrow-down"></i></span><span lang="en"><i class="fa-solid fa-arrow-down"></i></span></span><span class="iconButton"><i class="fa-solid fa-arrow-down"></i></span><span class="textButton"><span lang="de">Abbrechen & Nächster Scan</span><span lang="en">Cancel & Next Scan</span></span></button><button id="applyInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">F1</span><span lang="en">F1</span></span><span class="iconButton"><i class="fa-solid fa-check"></i></span><span class="textButton"><span lang="de">Übernehmen</span><span lang="en">Accept</span></span></button><button id="applyInspectNext" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">F2</span><span lang="en">F2</span></span><span class="iconButton"><i class="fa-solid fa-list-check"></i></span><span class="textButton"><span lang="de">Übernehmen & Nächter Scan</span><span lang="en">Accept & Next Scan</span></span></button></div>');
+	$('#inspectScan').append('<div id="inspectScanContent"><div id="inspectScanImage"><img src="data:image/png;base64, ' + scanFocused.blob + '"/></div><div id="inspectScanTemplate"><span id="scannedRegistration"><span id="scannedRegistrationText"><span lang="de">Matrikelnummer:</span><span lang="en">Registration Number:</span></span><input id="selectedRegistration" list="selectRegistration"></input><datalist id="selectRegistration"></datalist></span><span id="replacementSheet"><span id="replacementSheetText"><span lang="de">Ersatzbeleg:</span><span lang="en">Replacement sheet:</span></span></span><span id="scannedSheetID"><span id="scannedSheetIDText"><span lang="de">Klausur-ID:</span><span lang="en">Exam ID:</span></span><select id="inputSheetID" autocomplete="on"></select></span><span id="scannedTypeID"><span id="scannedTypeIDText"><span lang="de">Belegart:</span><span lang="en">Type:</span></span><input id="inputTypeID"/></span><div id="scannedAnswers"></div></div></div><div id="inspectScanButtons"><button id="cancelInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">ESC</span><span lang="en">ESC</span></span><span class="iconButton"><i class="fa-solid fa-xmark"></i></span><span class="textButton"><span lang="de">Abbrechen</span><span lang="en">Cancel</span></span></button><button id="prevInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de"><i class="fa-solid fa-arrow-up"></i></span><span lang="en"><i class="fa-solid fa-arrow-up"></i></span></span><span class="iconButton"><i class="fa-solid fa-arrow-up"></i></span><span class="textButton"><span lang="de">Abbrechen & Vorheriger Scan</span><span lang="en">Cancel & Previous Scan</span></span></button><button id="nextInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de"><i class="fa-solid fa-arrow-down"></i></span><span lang="en"><i class="fa-solid fa-arrow-down"></i></span></span><span class="iconButton"><i class="fa-solid fa-arrow-down"></i></span><span class="textButton"><span lang="de">Abbrechen & Nächster Scan</span><span lang="en">Cancel & Next Scan</span></span></button><button id="applyInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">F1</span><span lang="en">F1</span></span><span class="iconButton"><i class="fa-solid fa-check"></i></span><span class="textButton"><span lang="de">Übernehmen</span><span lang="en">Accept</span></span></button><button id="applyInspectNext" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">F2</span><span lang="en">F2</span></span><span class="iconButton"><i class="fa-solid fa-list-check"></i></span><span class="textButton"><span lang="de">Übernehmen & Nächter Scan</span><span lang="en">Accept & Next Scan</span></span></button></div>');
 	
 	// populate input fields
 	let registrations = rex.examEvaluation.scans_reg_fullJoinData.filter(x => x.scan === 'NA').map(x => ({registration:x.registration, name:x.name}));
@@ -2954,7 +2949,6 @@ $('body').on('click', '.compareListItem:not(.notAssigned)', function() {
 	});
 	
 	$('#inputSheetID').val(scanFocused.sheet);
-	$('#inputScramblingID').val(parseInt(scanFocused.scrambling));	
 	$('#inputTypeID').val(parseInt(scanFocused.type));	
 	
 	// add checkboxes for answers
@@ -3163,7 +3157,7 @@ function populateCompareTable() {
 }
 
 function scanInvalid(scan) {
-	return scan.scan !== 'NA' && (scan.registration === d_registration || !rex.examEvaluation['examIds'].includes(scan.sheet) || isNaN(scan.sheet) || isNaN(scan.scrambling) || isNaN(scan.type) || (scan.replacement !== "0" && scan.replacement !== "1"))
+	return scan.scan !== 'NA' && (scan.registration === d_registration || !rex.examEvaluation['examIds'].includes(scan.sheet) || isNaN(scan.sheet) || isNaN(scan.type) || (scan.replacement !== "0" && scan.replacement !== "1"))
 }
 
 function scanNotAssiged(scan) {
@@ -3301,7 +3295,6 @@ function applyInspect(){
 	const registrationUnchanged = $('#selectedRegistration').val() === rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].registration;
 	const replacementUnchanged = ($('#replacementSheet').find("input").prop('checked') ? "1" : "0") === rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].replacement;
 	const inputSheetIDUnchanged = $('#inputSheetID').val() === rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].sheet;
-	const scramblingIDUnchanged = zeroPad($('#inputScramblingID').val(), 2) === rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].scrambling;
 	const inputTypeIDUnchanged = zeroPad($('#inputTypeID').val(), 3) === rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].type;
 	const answersUnchanged = $('#scannedAnswers .scannedAnswer').map(function (index) {
         let exerciseAnswers = $(this).find('input').map(function () {
@@ -3319,7 +3312,7 @@ function applyInspect(){
 		return rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex][index + 1] === exerciseAnswers;
     }).get().every(x => x === true);
 	
-	if(registrationUnchanged && replacementUnchanged && inputSheetIDUnchanged && scramblingIDUnchanged && inputTypeIDUnchanged && answersUnchanged) {
+	if(registrationUnchanged && replacementUnchanged && inputSheetIDUnchanged && inputTypeIDUnchanged && answersUnchanged) {
 		resetInspect();
 		sortCompareListItems();
 		return;
@@ -3351,7 +3344,6 @@ function applyInspect(){
 	rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].registration = $('#selectedRegistration').val();	
 	rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].replacement = ($('#replacementSheet').find("input").prop('checked') ? "1" : "0");	
 	rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].sheet = $('#inputSheetID').val();	
-	rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].scrambling = zeroPad($('#inputScramblingID').val(), 2);	
 	rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].type = zeroPad($('#inputTypeID').val(), 3);	
 	
 	$('#scannedAnswers .scannedAnswer').map(function (index) {
@@ -3408,7 +3400,7 @@ Shiny.addCustomMessageHandler('appendScanRegistrationData', function(jsonData) {
 
 Shiny.addCustomMessageHandler('finalizeScanRegistrationData', function(x) {
 	rex.examEvaluation.scans_reg_fullJoinData = rex.examEvaluation.scans_reg_fullJoinData.map(obj => {
-		return { ...obj, sheet: zeroPad(obj.sheet, 11), scrambling: zeroPad(obj.scrambling, 2), type: zeroPad(obj.type, 3), changeHistory: 0 }
+		return { ...obj, sheet: zeroPad(obj.sheet, 11), scrambling: 0, type: zeroPad(obj.type, 3), changeHistory: 0 }
 	});
 
 	populateCompareTable();
