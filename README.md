@@ -4,6 +4,10 @@ This repository provides an interactive [Shiny](https://shiny.posit.co/) dashboa
 
 Rex is developed by [Sebastian Bachler] and is still a work in progress.
 
+## Demo
+
+Demo access can be requested via e-mail.
+
 ## System Resources
 
 For Rex to operate properly, make sure that the following resources are available on your system:
