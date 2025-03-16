@@ -57,8 +57,6 @@ When managing exercises, the following input fields can be edited:
 - Figure (accepts a single PNG file per exercise)
 - Answers (consisting of the solution, answer text, and a solution note)
 
-On the top right of the Exercises tab, summary information on all exercises that are marked as examinable is shown.
-
 #### Create Exams
 
 To create exams, navigate to the "EXAM" tab and then to "Create exam." There you will find a form with various options to set.
