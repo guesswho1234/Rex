@@ -39,7 +39,9 @@ Build your Docker infrastructure with the supplied Docker Compose file by runnin
 
 ## Use
 
-By default, use "rex" as both user and password to authenticate.
+By default, use "rex" as both user and password to authenticate. 
+
+It is recommended to use Rex in Firefox.
 
 ### Standard Workflow
 
