@@ -664,6 +664,9 @@ source("./source/shared/log.R")
   				  stop("E1018")
   
   			  registeredParticipantData = read.csv2(files$registeredParticipants)
+  			  
+  			  if(nrow(registeredParticipantData) < 1)
+  			    stop("E1031")
   
   			  if(ncol(registeredParticipantData) != 3)
   				  stop("E1015")
@@ -892,6 +895,11 @@ source("./source/shared/log.R")
   	        # pad zeros for answers and solutions
   	        evaluationData[paste("answer", 1:length(solutionData[[1]]), sep=".")] = sprintf(paste0("%0", 5, "d"), unlist(evaluationData[paste("answer", 1:length(solutionData[[1]]), sep=".")]))
   	        evaluationData[paste("solution", 1:length(solutionData[[1]]), sep=".")] = sprintf(paste0("%0", 5, "d"), unlist(evaluationData[paste("solution", 1:length(solutionData[[1]]), sep=".")]))
+  	        
+  	        # set data types of evaluation data
+  	        evaluationData = as.data.frame(evaluationData)
+  	        evaluationData[,grepl("check", names(evaluationData), ignore.case = TRUE)] = apply(evaluationData[,grepl("check", names(evaluationData), ignore.case = TRUE)], 2, as.numeric)
+  	        evaluationData[,grepl("points", names(evaluationData), ignore.case = TRUE)] = apply(evaluationData[,grepl("points", names(evaluationData), ignore.case = TRUE)], 2, as.numeric)
   	        
   	        # exam eval input field data
   	        examEvalFields = list(registeredParticipants = files$registeredParticipants,

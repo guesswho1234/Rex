@@ -1332,6 +1332,16 @@ main > * {
 	border: 2px solid var(---main);
 }
 
+#clickToRotateInfo {
+	color: var(---red_error);
+	position: absolute;
+	z-index: 1;
+	font-family: "Consolas";
+	left: 25%;
+	-webkit-transform: translateX(-37.5%);
+	transform: translateX(-37.5%);
+}
+
 #inspectScanContent {
 	display: flex;
 	width: 100%;
@@ -1341,6 +1351,14 @@ main > * {
 #inspectScanImage,
 #inspectScanTemplate {
 	width: 50%;
+}
+
+#inspectScanImage img.rotate180 {
+	-webkit-transform: rotate(180deg);     /* Chrome and other webkit browsers */
+	-moz-transform: rotate(180deg);        /* FF */
+	-o-transform: rotate(180deg);          /* Opera */
+	-ms-transform: rotate(180deg);         /* IE9 */
+	transform: rotate(180deg);             /* W3C compliant browsers */
 }
 
 #inspectScanTemplate span span > span {
@@ -1612,7 +1630,7 @@ figcaption {
 	display: grid;
 	grid-template-rows: 100px auto;
 	place-content: space-between;
-	height: 140px;
+	height: 110px;
 }
 
 .graphLabels {
@@ -1628,6 +1646,7 @@ figcaption {
 .graph.columnGraph {
 	display: block;
 	overflow-y: hidden;
+	padding-bottom: 15px;
 }
 
 .graphColumnBar {
