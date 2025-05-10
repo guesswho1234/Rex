@@ -1692,7 +1692,7 @@ $('body').on('focus', '[contenteditable]', function() {
 		
 		if ($this.hasClass('authorText')) {
 			content = contenteditable_getPlain(content);
-			content = contentFileNameSanitize(content);
+			content = contentAuthorSanitize(content);
 			
 			rex.exercises[exerciseID].author = content;
 		}
@@ -1782,6 +1782,10 @@ function contentTextSanitize(content){
 
 function contentFileNameSanitize(content){
 	return content.replaceAll(/[^a-z0-9\_\- ]/gi, '');
+}
+
+function contentAuthorSanitize(content){
+	return content.replaceAll(/[^a-z0-9\_\- ,]/gi, '');
 }
 
 function contentSectionSanitize(content){
