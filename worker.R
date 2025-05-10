@@ -176,10 +176,10 @@ source("./source/shared/log.R")
   			exerciseCode = sub("maxChoices=5", "maxChoices=NULL", exerciseCode)
   			
   			# remove image from question when viewing exercises (only relevant for editable exercises)
-  			exerciseCode = sub("rnwTemplate_showFigure=TRUE", "rnwTemplate_showFigure=FALSE", exerciseCode)
+  			exerciseCode = sub("rxxTemplate_showFigure=TRUE", "rxxTemplate_showFigure=FALSE", exerciseCode)
   	  
   			# extract figure to display it in the respective field when viewing a exercise (only relevant for editable exercises)
-  			figure = strsplit(exerciseCode, "rnwTemplate_figure=")[[1]][2]
+  			figure = strsplit(exerciseCode, "rxxTemplate_figure=")[[1]][2]
   			figure = strsplit(figure, splitBy)[[1]][1]
   			
   			figure_split = strsplit(figure,",")[[1]]
@@ -194,24 +194,24 @@ source("./source/shared/log.R")
   			}
   			
   			# extract raw question text
-  			question_raw = strsplit(exerciseCode, "rnwTemplate_question=")[[1]][2]
+  			question_raw = strsplit(exerciseCode, "rxxTemplate_question=")[[1]][2]
   			question_raw = strsplit(question_raw, splitBy)[[1]][1]
   			question_raw = paste0(rev(rev(strsplit(question_raw, "")[[1]][-1])[-1]), collapse="") # trim
   			question_raw = gsub("\\\\", "\\", question_raw, fixed=TRUE)
   			
   			# extract raw choice texts
-  			choices_raw = strsplit(exerciseCode, "rnwTemplate_choices=")[[1]][2]
+  			choices_raw = strsplit(exerciseCode, "rxxTemplate_choices=")[[1]][2]
   			choices_raw = strsplit(choices_raw, splitBy)[[1]][1]
   			choices_raw = strsplit(choices_raw, ",\"")[[1]]
   			choices_raw[1] = paste0(strsplit(choices_raw[1], "")[[1]][-c(1:3)], collapse="")
   			choices_raw[length(choices_raw)] = paste0(rev(rev(strsplit(choices_raw[length(choices_raw)], "")[[1]])[-1]), collapse="") #trim
   			choices_raw = Reduce(c, lapply(choices_raw, \(x) paste0(rev(rev(strsplit(x, "")[[1]])[-c(1)]), collapse=""))) # trim
   			
-  			if(grepl("rnwTemplate_choices", exerciseCode) & length(choices_raw) < 2)
+  			if(grepl("rxxTemplate_choices", exerciseCode) & length(choices_raw) < 2)
   			  stop("E1022")
   			
   			# extract raw solution note texts
-  			solutionNotes_raw = strsplit(exerciseCode, "rnwTemplate_solutionNotes=")[[1]][2]
+  			solutionNotes_raw = strsplit(exerciseCode, "rxxTemplate_solutionNotes=")[[1]][2]
   			solutionNotes_raw = strsplit(solutionNotes_raw, splitBy)[[1]][1]
   			solutionNotes_raw = strsplit(solutionNotes_raw, ",\"")[[1]]
   			solutionNotes_raw[1] = paste0(strsplit(solutionNotes_raw[1], "")[[1]][-c(1:3)], collapse="")
@@ -743,6 +743,9 @@ source("./source/shared/log.R")
   			    x = sprintf(paste0("%0", data$maxChoices, "d"), as.numeric(x))
   			  })
   			  
+  			  # add rotate flag for manual corrections during inspec
+  			  scans_reg_fullJoinData$rotate = 0
+  			  
   			  # exam code file data
   			  code_nops_scan = paste0("exams::nops_scan(", paste0(names(param_nops_scan), "=%s", collapse=", "), ")") 
   			  code_nops_scan = append(code_nops_scan, lapply(param_nops_scan, function(x) paste0(deparse(x), collapse="")))
@@ -813,7 +816,7 @@ source("./source/shared/log.R")
   	evaluateExamFinalize = function(data, TRUE_MESSAGE_VALUE, PACKAGE_INFO){
   	  out = tryCatch({
   	    warnings = collectWarnings({
-  	      # scanData
+  	      # update scandata
   	      cat("Updating scan data.\n")
   	      
   	      scanData = Reduce(c, lapply(data$proceedEvaluation$datenTxt, function(x) paste0(unlist(unname(x)), collapse=" ")))
@@ -825,8 +828,26 @@ source("./source/shared/log.R")
   	      scanDatafile = paste0(data$preparedEvaluation$fields$dir, "/", "Daten.txt")
   	      writeLines(text=scanData, con=scanDatafile)
   	      
-  	      # update *_nops_scan.zip file
   	      zip(data$preparedEvaluation$files$scanEvaluation, scanDatafile, flags='-r9Xj')
+  	      
+  	      # update scan rotation
+  	      cat("Updating scan rotation.\n")
+  	      rotateScans = Reduce(rbind, lapply(data$proceedEvaluation$rotateScans, function(x) setNames(data.frame(x$scan, x$rotate), names(x))))
+  	      rotateScans = rotateScans[rotateScans$rotate==1,,drop=FALSE]
+  	      
+  	      if(nrow(rotateScans) > 0){
+    	      unzip(data$preparedEvaluation$files$scanEvaluation, files=rotateScans$scan, exdir=data$preparedEvaluation$fields$dir)
+    	      
+    	      lapply(rotateScans$scan, function(scan){
+    	        scanFile = paste0(data$preparedEvaluation$fields$dir, "/", scan)
+    	        
+    	        scan = magick::image_read(scanFile)
+    	        scan = magick::image_rotate(scan, 180)
+    	        magick::image_write(scan, scanFile) 
+    	      })
+    	      
+    	      zip(data$preparedEvaluation$files$scanEvaluation, paste0(data$preparedEvaluation$fields$dir, "/", rotateScans$scan), flags='-r9Xj')
+  	      }
   	      
   	      # manage preparedEvaluation data to include in download
   	      cat("Preparing evaluation files.\n")

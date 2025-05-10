@@ -17,11 +17,12 @@ Shiny.addCustomMessageHandler('debugMessage', function(message) {
 -------------------------------------------------------------- */
 $(document).on('shiny:idle', function(event) {
 	initApp();
-	pong();
 });
 
 function initApp(){
 	if( initApp.fired ) return;
+	ping();
+	
 	initApp.fired = true;
 	 
 	rex.exercises = [];
@@ -823,6 +824,8 @@ $('#buttonModeSwitchContainer span').click(function () {
 });
 
 function f_buttonMode() {
+	$('#buttonModeSwitchContainer span').removeClass("active");
+	
 	$('body').removeClass("iconButtonMode");
 	$('body').removeClass("textButtonMode");
 	
@@ -830,8 +833,10 @@ function f_buttonMode() {
 	
 	if (buttonMode === 'iconbuttons') {
 		$('body').addClass("iconButtonMode");
+		$('#iconButtons').addClass("active");
 	} else {
 		$('body').addClass("textButtonMode");
+		$('#textButtons').addClass("active");
 	}
 }
 
@@ -866,6 +871,8 @@ $('#languageSwitchContainer span').click(function () {
 });
 
 function f_langDeEn() {
+	$('#languageSwitchContainer span').removeClass("active");
+	
 	lang = getLanguageCookie();
 	
 	if (lang === 'en') {
@@ -876,6 +883,8 @@ function f_langDeEn() {
 		
 		$('[lang="de"]').hide();
 		$('[lang="en"]').show();
+		
+		$('#enLang').addClass("active");
 	} else {
 		rex.language = 'de';
 		
@@ -884,6 +893,8 @@ function f_langDeEn() {
 		
 		$('[lang="en"]').hide();
 		$('[lang="de"]').show();
+		
+		$('#deLang').addClass("active");
 	}
 }
 
@@ -1468,7 +1479,7 @@ function createExercise(exerciseID, name='exercise',
 	rex.exercises[exerciseID]['figure'] = figure;
 	rex.exercises[exerciseID]['exExtra'] = exExtra;
 	
-	if( file === null) {
+	if(file === null) {
 		setSimpleExerciseFileContents(exerciseID);
 	}
 	
@@ -1939,15 +1950,15 @@ function loadExerciseFromObject(exerciseID) {
 	f_langDeEn();
 }
 
-function setSimpleExerciseFileContents(exerciseID, convertFromComplex=false){
+function setSimpleExerciseFileContents(exerciseID, convertFromComplex=false) {	
 	let fileText = rnwTemplate;
-			
-	fileText = fileText.replace("?rnwTemplate_type", rex.exercises[exerciseID].type);
-	fileText = fileText.replace("?rnwTemplate_author", rex.exercises[exerciseID].author === null ? "" : rex.exercises[exerciseID].author);
-	fileText = fileText.replace("?rnwTemplate_solutions", 'c(' + rex.exercises[exerciseID].solution.map(x=>x?"T":"F").join(',') + ')');	
-	fileText = fileText.replace("?rnwTemplate_points", isNaN(parseInt(rex.exercises[exerciseID].points)) ? 1 : rex.exercises[exerciseID].points);
-	fileText = fileText.replace("?rnwTemplate_section", rex.exercises[exerciseID].section === null ? "" : rex.exercises[exerciseID].section);
-	fileText = fileText.replace("?rnwTemplate_tags", rex.exercises[exerciseID].tags === null ? "" : rex.exercises[exerciseID].tags.join('|'));
+				
+	fileText = fileText.replace("?rxxTemplate_type", rex.exercises[exerciseID].type);
+	fileText = fileText.replace("?rxxTemplate_author", rex.exercises[exerciseID].author === null ? "" : rex.exercises[exerciseID].author);
+	fileText = fileText.replace("?rxxTemplate_solutions", 'c(' + rex.exercises[exerciseID].solution.map(x=>x?"T":"F").join(',') + ')');	
+	fileText = fileText.replace("?rxxTemplate_points", isNaN(parseInt(rex.exercises[exerciseID].points)) ? 1 : rex.exercises[exerciseID].points);
+	fileText = fileText.replace("?rxxTemplate_section", rex.exercises[exerciseID].section === null ? "" : rex.exercises[exerciseID].section);
+	fileText = fileText.replace("?rxxTemplate_tags", rex.exercises[exerciseID].tags === null ? "" : rex.exercises[exerciseID].tags.join('|'));
 	
 	if(convertFromComplex) {
 		function sanitizeComplexFieldValue(content){
@@ -1996,15 +2007,15 @@ function setSimpleExerciseFileContents(exerciseID, convertFromComplex=false){
 		choices = rex.exercises[exerciseID].choices.map(x=> sanitizeComplexFieldValue(x));
 		solutionNotes = rex.exercises[exerciseID].solutionNotes.map(x=> sanitizeComplexFieldValue(x));
 		
-		fileText = fileText.replace("?rnwTemplate_figure", figure === null ? '""' : 'c(' + figure.map(x=>'"' + x + '"').join(',') + ')');
-		fileText = fileText.replace("?rnwTemplate_question", '"' + question + '"');
-		fileText = fileText.replace("?rnwTemplate_choices", 'c(' + choices.map(x=>'"' + x + '"').join(',') + ')');
-		fileText = fileText.replace("?rnwTemplate_solutionNotes", 'c(' + solutionNotes.map(x => '"' + x.replace(/^[01]\. */, '') + '"').join(',') + ')');
+		fileText = fileText.replace("?rxxTemplate_figure", figure === null ? '""' : 'c(' + figure.map(x=>'"' + x + '"').join(',') + ')');
+		fileText = fileText.replace("?rxxTemplate_question", '"' + question + '"');
+		fileText = fileText.replace("?rxxTemplate_choices", 'c(' + choices.map(x=>'"' + x + '"').join(',') + ')');
+		fileText = fileText.replace("?rxxTemplate_solutionNotes", 'c(' + solutionNotes.map(x => '"' + x.replace(/^[01]\. */, '') + '"').join(',') + ')');
 	} else {
-		fileText = fileText.replace("?rnwTemplate_figure", rex.exercises[exerciseID].figure === null ? '""' : 'c(' + rex.exercises[exerciseID].figure.map(x=>'"' + x + '"').join(',') + ')');
-		fileText = fileText.replace("?rnwTemplate_question", '"' + rex.exercises[exerciseID].question_raw.replaceAll('\\', '\\\\') + '"');
-		fileText = fileText.replace("?rnwTemplate_choices", 'c(' + rex.exercises[exerciseID].choices_raw.map(x=>'"' + x.replaceAll('\\', '\\\\') + '"').join(',') + ')');
-		fileText = fileText.replace("?rnwTemplate_solutionNotes", 'c(' + rex.exercises[exerciseID].solutionNotes_raw.map((x, i) => '"' + x.replace(/^[01]\. */, '') + '"').join(',') + ')');
+		fileText = fileText.replace("?rxxTemplate_figure", rex.exercises[exerciseID].figure === null ? '""' : 'c(' + rex.exercises[exerciseID].figure.map(x=>'"' + x + '"').join(',') + ')');
+		fileText = fileText.replace("?rxxTemplate_question", '"' + rex.exercises[exerciseID].question_raw.replaceAll('\\', '\\\\') + '"');
+		fileText = fileText.replace("?rxxTemplate_choices", 'c(' + rex.exercises[exerciseID].choices_raw.map(x=>'"' + x.replaceAll('\\', '\\\\') + '"').join(',') + ')');
+		fileText = fileText.replace("?rxxTemplate_solutionNotes", 'c(' + rex.exercises[exerciseID].solutionNotes_raw.map((x, i) => '"' + x.replace(/^[01]\. */, '') + '"').join(',') + ')');
 	}
 	
 	fileText = fileText.replaceAll("\n", "\r\n");
@@ -2922,9 +2933,13 @@ $('body').on('click', '.compareListItem:not(.notAssigned)', function() {
 			
 	const scanFocused = rex.examEvaluation.scans_reg_fullJoinData[parseInt($(this).find('.evalIndex').html())];
 			
-	$('#inspectScan').append('<div id="inspectScanContent"><span id="clickToRotateInfo"><span lang="de">KLICK, UM 180 GRAD ZU DREHEN</span><span lang="en">CLICK TO RATE 180 DEGREES</span></span><div id="inspectScanImage"><img src="data:image/png;base64, ' + scanFocused.blob + '"/></div><div id="inspectScanTemplate"><span id="scannedRegistration"><span id="scannedRegistrationText"><span lang="de">Matrikelnummer:</span><span lang="en">Registration Number:</span></span><input id="selectedRegistration" list="selectRegistration"></input><datalist id="selectRegistration"></datalist></span><span id="replacementSheet"><span id="replacementSheetText"><span lang="de">Ersatzbeleg:</span><span lang="en">Replacement sheet:</span></span></span><span id="scannedSheetID"><span id="scannedSheetIDText"><span lang="de">Klausur-ID:</span><span lang="en">Exam ID:</span></span><select id="inputSheetID" autocomplete="on"></select></span><span id="scannedTypeID"><span id="scannedTypeIDText"><span lang="de">Belegart:</span><span lang="en">Type:</span></span><input id="inputTypeID"/></span><div id="scannedAnswers"></div></div></div><div id="inspectScanButtons"><button id="cancelInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">ESC</span><span lang="en">ESC</span></span><span class="iconButton"><i class="fa-solid fa-xmark"></i></span><span class="textButton"><span lang="de">Abbrechen</span><span lang="en">Cancel</span></span></button><button id="prevInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de"><i class="fa-solid fa-arrow-up"></i></span><span lang="en"><i class="fa-solid fa-arrow-up"></i></span></span><span class="iconButton"><i class="fa-solid fa-arrow-up"></i></span><span class="textButton"><span lang="de">Vorheriger Scan</span><span lang="en">Previous Scan</span></span></button><button id="nextInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de"><i class="fa-solid fa-arrow-down"></i></span><span lang="en"><i class="fa-solid fa-arrow-down"></i></span></span><span class="iconButton"><i class="fa-solid fa-arrow-down"></i></span><span class="textButton"><span lang="de">Nächster Scan</span><span lang="en">Next Scan</span></span></button><button id="applyInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">F1</span><span lang="en">F1</span></span><span class="iconButton"><i class="fa-solid fa-check"></i></span><span class="textButton"><span lang="de">Übernehmen</span><span lang="en">Accept</span></span></button><button id="applyInspectNext" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">F2</span><span lang="en">F2</span></span><span class="iconButton"><i class="fa-solid fa-list-check"></i></span><span class="textButton"><span lang="de">Übernehmen & Nächter Scan</span><span lang="en">Accept & Next Scan</span></span></button></div>');
+	$('#inspectScan').append('<div id="inspectScanContent"><span id="additionalInspectInfo"><span lang="de">SCROLLEN, UM ZU ZOOMEN</span><span lang="en">SCROLL TO ZOOM</span></span><div id="inspectScanImage"><img src="data:image/png;base64,' + scanFocused.blob + '"/></div><div id="inspectScanTemplate"><span id="rotateScan"><span id="rotateScanText"><span lang="de">Scan drehen:</span><span lang="en" style="display: none;">Rotate scan:</span></span></span><span id="scannedRegistration"><span id="scannedRegistrationText"><span lang="de">Matrikelnummer:</span><span lang="en">Registration Number:</span></span><input id="selectedRegistration" list="selectRegistration"></input><datalist id="selectRegistration"></datalist></span><span id="replacementSheet"><span id="replacementSheetText"><span lang="de">Ersatzbeleg:</span><span lang="en">Replacement sheet:</span></span></span><span id="scannedSheetID"><span id="scannedSheetIDText"><span lang="de">Klausur-ID:</span><span lang="en">Exam ID:</span></span><select id="inputSheetID" autocomplete="on"></select></span><span id="scannedTypeID"><span id="scannedTypeIDText"><span lang="de">Belegart:</span><span lang="en">Type:</span></span><input id="inputTypeID"/></span><div id="scannedAnswers"></div></div></div><div id="inspectScanButtons"><button id="cancelInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">ESC</span><span lang="en">ESC</span></span><span class="iconButton"><i class="fa-solid fa-xmark"></i></span><span class="textButton"><span lang="de">Abbrechen</span><span lang="en">Cancel</span></span></button><button id="prevInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de"><i class="fa-solid fa-arrow-up"></i></span><span lang="en"><i class="fa-solid fa-arrow-up"></i></span></span><span class="iconButton"><i class="fa-solid fa-arrow-up"></i></span><span class="textButton"><span lang="de">Vorheriger Scan</span><span lang="en">Previous Scan</span></span></button><button id="nextInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de"><i class="fa-solid fa-arrow-down"></i></span><span lang="en"><i class="fa-solid fa-arrow-down"></i></span></span><span class="iconButton"><i class="fa-solid fa-arrow-down"></i></span><span class="textButton"><span lang="de">Nächster Scan</span><span lang="en">Next Scan</span></span></button><button id="applyInspect" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">F1</span><span lang="en">F1</span></span><span class="iconButton"><i class="fa-solid fa-check"></i></span><span class="textButton"><span lang="de">Übernehmen</span><span lang="en">Accept</span></span></button><button id="applyInspectNext" class="inspectScanButton" type="button" class="btn btn-default action-button shiny-bound-input"><span class="hotkeyInfo"><span lang="de">F2</span><span lang="en">F2</span></span><span class="iconButton"><i class="fa-solid fa-list-check"></i></span><span class="textButton"><span lang="de">Übernehmen & Nächter Scan</span><span lang="en">Accept & Next Scan</span></span></button></div>');
 	
 	// populate input fields
+	$('#rotateScan').append('<input type="checkbox" onclick="toggleInspectScanImageRotation();"' + (scanFocused.rotate === "1" ? ' checked="checked"' : '') + '>');
+	if(scanFocused.rotate === "1")
+		toggleInspectScanImageRotation();
+	
 	let registrations = rex.examEvaluation.scans_reg_fullJoinData.filter(x => x.scan === 'NA').map(x => ({registration:x.registration, name:x.name}));
 	
 	if(scanFocused.registration !== d_registration) {
@@ -3095,14 +3110,7 @@ function magnifier() {
 					'width': $('#inspectScanImage').width() / 2 + "px",
 					'height': $('#inspectScanImage').width() / 2 + "px"
 				});
-			});
-
-			$(window).on('click', function(e) {
-				if (e.which == 1) {
-					$('#inspectScanImage img').toggleClass('rotate180'); 
-				}
-			});
-				
+			});				
 		}, function() {
 	
 		});
@@ -3113,6 +3121,66 @@ function magnifier() {
 	}
 	
 	return this.init();
+}
+
+function toggleInspectScanImageRotation(){
+	let scanImage = document.querySelector('#inspectScanImage img');
+	
+	rotateScanImage(scanImage.src, 3, function(rotatedBase64Image) {
+		scanImage.src = rotatedBase64Image;
+	}); 
+}
+
+function applyScanImageRotations(){
+	rex.examEvaluation.scans_reg_fullJoinData.forEach( (scan, index) => {
+		if(scan.rotate !== "1")
+			return;
+		
+		rotateScanImage("data:image/png;base64," + scan.blob, 3, function(rotatedBase64Image) {
+			rex.examEvaluation.scans_reg_fullJoinData[index].rotate = "0";
+			rex.examEvaluation.scans_reg_fullJoinData[index].blob = rotatedBase64Image.split("base64,")[1];
+		}); 
+	})
+}
+
+function rotateScanImage(srcBase64, srcOrientation, callback) {
+	let img = new Image();	
+
+	img.onload = function() {
+		let width = img.width,
+		height = img.height,
+		canvas = document.createElement('canvas'),
+		ctx = canvas.getContext("2d");
+			
+		// set proper canvas dimensions before transform & export
+		if (4 < srcOrientation && srcOrientation < 9) {
+			canvas.width = height;
+			canvas.height = width;
+		} else {
+			canvas.width = width;
+			canvas.height = height;
+		}
+		
+		// transform context before drawing image
+		switch (srcOrientation) {
+			case 2: ctx.transform(-1, 0, 0, 1, width, 0); break;
+			case 3: ctx.transform(-1, 0, 0, -1, width, height ); break;
+			case 4: ctx.transform(1, 0, 0, -1, 0, height ); break;
+			case 5: ctx.transform(0, 1, 1, 0, 0, 0); break;
+			case 6: ctx.transform(0, 1, -1, 0, height , 0); break;
+			case 7: ctx.transform(0, -1, -1, 0, height , width); break;
+			case 8: ctx.transform(0, -1, 1, 0, 0, width); break;
+			default: break;
+		}
+
+		// draw image
+		ctx.drawImage(img, 0, 0);
+
+		// export base64
+		callback(canvas.toDataURL());
+	};
+
+	img.src = srcBase64;
 }
 
 function populateCompareTable() {
@@ -3300,8 +3368,9 @@ function applyInspect(){
 	});
 	rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].changeHistory = -1;
 	
+	const rotationUnchanged = ($('#rotateScan input').prop("checked") ? "1" : "0") === rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].rotate;
 	const registrationUnchanged = $('#selectedRegistration').val() === rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].registration;
-	const replacementUnchanged = ($('#replacementSheet').find("input").prop('checked') ? "1" : "0") === rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].replacement;
+	const replacementUnchanged = ($('#replacementSheet input').prop('checked') ? "1" : "0") === rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].replacement;
 	const inputSheetIDUnchanged = $('#inputSheetID').val() === rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].sheet;
 	const inputTypeIDUnchanged = zeroPad($('#inputTypeID').val(), 3) === rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].type;
 	const answersUnchanged = $('#scannedAnswers .scannedAnswer').map(function (index) {
@@ -3320,7 +3389,8 @@ function applyInspect(){
 		return rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex][index + 1] === exerciseAnswers;
     }).get().every(x => x === true);
 	
-	if(registrationUnchanged && replacementUnchanged && inputSheetIDUnchanged && inputTypeIDUnchanged && answersUnchanged) {
+	// early return if nothing changed
+	if(rotationUnchanged && registrationUnchanged && replacementUnchanged && inputSheetIDUnchanged && inputTypeIDUnchanged && answersUnchanged) {
 		resetInspect();
 		sortCompareListItems();
 		return;
@@ -3349,8 +3419,9 @@ function applyInspect(){
 		}
 	}
 	
+	rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].rotate = ($('#rotateScan input').prop("checked") ? "1" : "0");
 	rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].registration = $('#selectedRegistration').val();	
-	rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].replacement = ($('#replacementSheet').find("input").prop('checked') ? "1" : "0");	
+	rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].replacement = ($('#replacementSheet input').prop('checked') ? "1" : "0");	
 	rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].sheet = $('#inputSheetID').val();	
 	rex.examEvaluation.scans_reg_fullJoinData[scanFocusedIndex].type = zeroPad($('#inputTypeID').val(), 3);	
 	
@@ -3416,6 +3487,7 @@ Shiny.addCustomMessageHandler('finalizeScanRegistrationData', function(x) {
 });
 
 Shiny.addCustomMessageHandler('backTocompareScanRegistrationData', function(x) {
+	applyScanImageRotations();
 	populateCompareTable();
 	sortCompareListItems();
 });
@@ -3427,8 +3499,9 @@ Shiny.addCustomMessageHandler('evaluationStatistics', function(jsonData) {
 $('body').on('click', '#proceedEval', function() {	
 	const properties = ['scan', 'sheet', 'scrambling', 'type', 'replacement', 'registration'].concat(new Array(45).fill(1).map( (_, i) => i+1 ));
 	const datenTxt = Object.assign({}, rex.examEvaluation.scans_reg_fullJoinData.filter(x => scanValid(x)).map(x => Object.assign({}, properties.map(y => x[y] === undefined ? "00000" : x[y], {}))));
+	const rotateScans = rex.examEvaluation.scans_reg_fullJoinData.map(x => (({ scan, rotate }) => ({ scan, rotate }))(x))
 	
-	Shiny.onInputChange("proceedEvaluation", {scans_reg_fullJoinData:null, datenTxt:datenTxt}, {priority: 'event'});
+	Shiny.onInputChange("proceedEvaluation", {scans_reg_fullJoinData:null, datenTxt:datenTxt, rotateScans:rotateScans}, {priority: 'event'});
 });
 
 /* --------------------------------------------------------------

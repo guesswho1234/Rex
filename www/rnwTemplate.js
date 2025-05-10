@@ -1,46 +1,46 @@
 var rnwTemplate = `<<echo=FALSE, results=tex>>=
-rnwTemplate_question=?rnwTemplate_question;
-rnwTemplate_choices=?rnwTemplate_choices;
-rnwTemplate_solutions=?rnwTemplate_solutions;
-rnwTemplate_solutionNotes=?rnwTemplate_solutionNotes;
-rnwTemplate_showFigure=TRUE;
-rnwTemplate_figure=?rnwTemplate_figure;
-rnwTemplate_maxChoices=5;
-if(!is.null(rnwTemplate_maxChoices)){
-	limit=min(length(rnwTemplate_choices), rnwTemplate_maxChoices)
-	sel=sample(1:length(rnwTemplate_choices), limit)
-	rnwTemplate_choices=rnwTemplate_choices[sel]
-	rnwTemplate_solutions=rnwTemplate_solutions[sel]
-	rnwTemplate_solutionNotes=rnwTemplate_solutionNotes[sel]
+rxxTemplate_question=?rxxTemplate_question;
+rxxTemplate_choices=?rxxTemplate_choices;
+rxxTemplate_solutions=?rxxTemplate_solutions;
+rxxTemplate_solutionNotes=?rxxTemplate_solutionNotes;
+rxxTemplate_showFigure=TRUE;
+rxxTemplate_figure=?rxxTemplate_figure;
+rxxTemplate_maxChoices=5;
+if(!is.null(rxxTemplate_maxChoices)){
+	limit=min(length(rxxTemplate_choices), rxxTemplate_maxChoices)
+	sel=sample(1:length(rxxTemplate_choices), limit)
+	rxxTemplate_choices=rxxTemplate_choices[sel]
+	rxxTemplate_solutions=rxxTemplate_solutions[sel]
+	rxxTemplate_solutionNotes=rxxTemplate_solutionNotes[sel]
 }
 @
 \\begin{question}
 <<echo=FALSE, results=tex>>=
-cat(rnwTemplate_question)
-if(rnwTemplate_showFigure && length(rnwTemplate_figure) == 3) {
-	rnwTemplate_figureFile = paste0(rnwTemplate_figure[1], ".", rnwTemplate_figure[2])
-	rnwTemplate_figureRaw = openssl::base64_decode(rnwTemplate_figure[3])
-	writeBin(rnwTemplate_figureRaw, con = rnwTemplate_figureFile)
+cat(rxxTemplate_question)
+if(rxxTemplate_showFigure && length(rxxTemplate_figure) == 3) {
+	rxxTemplate_figureFile = paste0(rxxTemplate_figure[1], ".", rxxTemplate_figure[2])
+	rxxTemplate_figureRaw = openssl::base64_decode(rxxTemplate_figure[3])
+	writeBin(rxxTemplate_figureRaw, con = rxxTemplate_figureFile)
 	cat("\\\\\\\\")
-	cat(paste0("\\\\includegraphics\{", rnwTemplate_figureFile, "\}"))
+	cat(paste0("\\\\includegraphics\{", rxxTemplate_figureFile, "\}"))
 } 
 @
 %
 <<echo=FALSE, results=tex>>=
-exams::answerlist(rnwTemplate_choices)
+exams::answerlist(rxxTemplate_choices)
 @
 \\end{question}
 
 \\begin{solution}
 <<echo=FALSE, results=tex>>=
-exams::answerlist(ifelse(rnwTemplate_solutions, "1", "0"), rnwTemplate_solutionNotes)
+exams::answerlist(ifelse(rxxTemplate_solutions, "1", "0"), rxxTemplate_solutionNotes)
 @
 \\end{solution}
 %% META-INFORMATION
 %% \\exextra[editable,numeric]{1}
-%% \\extype{?rnwTemplate_type}
-%% \\exsolution{\\Sexpr{exams::mchoice2string(rnwTemplate_solutions)}}
-%% \\exauthor{?rnwTemplate_author}
-%% \\expoints{?rnwTemplate_points}
-%% \\exsection{?rnwTemplate_section}
-%% \\extags{?rnwTemplate_tags}`
+%% \\extype{?rxxTemplate_type}
+%% \\exsolution{\\Sexpr{exams::mchoice2string(rxxTemplate_solutions)}}
+%% \\exauthor{?rxxTemplate_author}
+%% \\expoints{?rxxTemplate_points}
+%% \\exsection{?rxxTemplate_section}
+%% \\extags{?rxxTemplate_tags}`
