@@ -116,6 +116,7 @@ Addons are a way to extend Rex with custom features, such as default values, add
 
 > [!CAUTION]
 > Addons can introduce additional security risks.
+> **Use at your own risk and follow best security practices.**
   
 ## Contribute
 
