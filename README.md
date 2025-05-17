@@ -77,7 +77,7 @@ When managing exercises, the following input fields can generally be edited:
 - Figure (accepts a single PNG file per exercise)
 - Answers (consisting of the solution, answer text, and a solution note)
 
-Beyond the user interface of Rex, exercises with more complexity (i.e., seed based exercise variations) can also be coded outside of Rex and are accepted as RNW and RMD files. However, these exercises are not editable within Rex. 
+Beyond the user interface of Rex, exercises with more complexity (i.e., seed based exercise variations or exercises with R plots) can also be coded outside of Rex and are accepted as RNW and RMD files. However, these exercises are not editable within Rex. 
 
 #### Create Exams
 
