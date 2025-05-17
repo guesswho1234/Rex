@@ -25,7 +25,12 @@ For Rex to operate properly, make sure that the following resources are availabl
 
 Install all required R packages, including their dependencies (see the "PACKAGES" section in `app.R` and `worker.R`).
 
-Start up via `shiny::runApp(appDir = '<base directory containing app.R>', host = '0.0.0.0', port = 3838)` or, alternatively, via RStudio by opening and running `app.R`.
+Start up via:
+
+```R
+shiny::runApp(appDir = '<base directory containing app.R>', host = '0.0.0.0', port = 3838)
+```
+Alternatively, open and run `app.R` via RStudio.
 
 ### Docker
 
