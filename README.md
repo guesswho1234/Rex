@@ -2,7 +2,7 @@
 
 This repository provides an interactive [Shiny](https://shiny.posit.co/) dashboard for creating and evaluating written single- or multiple-choice exams and building reusable exercise pools. The underlying workhorse is [R/exams](https://www.R-exams.org/), specifically the so-called [NOPS exams](https://www.R-exams.org/tutorials/exams2nops/) functions, which support both randomized single-choice and multiple-choice exercises along with automatic evaluation.
 
-Rex is developed by [Sebastian Bachler] and is still work in progress.
+Rex is developed by [Sebastian Bachler](mailto:sbachler@gmx.at) and is still a work in progress.
 
 ## Demo
 
@@ -29,13 +29,26 @@ Start up via `shiny::runApp(appDir = '<base directory containing app.R>', host =
 
 ### Docker
 
-Build your Docker infrastructure with the supplied Docker Compose file and running `docker-compose -f compose_rex.yaml up`.
+On the host, make teh database file owned by the UID=1001 and GID=1001:
+
+```bash
+chown 1001:1001 /home/rex.sqlite
+chmod 660 /home/rex.sqlite
+```
+
+Build and start the Docker infrastructure using the following command:
+
+```bash
+docker-compose -f compose_rex.yaml up --build
+```
 
 ## Hosting
 
 > [!CAUTION]
-> Do not host this version of Rex with uncontrolled or public access and no additional security measures.
-> Code from user input is parsed and evaluated by the `rex_worker` container.
+> This project uses a hardened Docker setup with non-root users, dropped capabilities, and resource limits.
+> External access is restricted to the frontend only; the background worker has no network access.
+> While these measures reduce risk, always audit images and dependencies before deploying to production.
+> **Use at your own risk and follow best security practices.**
 
 ## Use
 
