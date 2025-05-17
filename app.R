@@ -30,6 +30,7 @@ source("./source/main/filesAndDirectories.R")
 source("./source/main/customElements.R")
 source("./source/shared/rToJson.R")
 source("./source/shared/log.R")
+source("./source/shared/aWrite.R")
 source("./source/main/appStatus.R")
 source("./source/main/database.R")
 source("./source/main/permission.R")
@@ -98,11 +99,13 @@ if(!DOCKER_WORKER)
   # ADDONS ------------------------------------------------------------------
   addons_path = "./addons/"
   addons_path_www = "./www/addons/"
-  addons = list.files(addons_path_www, recursive = TRUE)
-  addons = unique(Reduce(c, lapply(addons[grepl("/", addons)], \(x) strsplit(x, split="/")[[1]][1])))
+  addons = list.files(addons_path_www, recursive = FALSE)
 
   invisible(lapply(addons, \(addon) {
-    source(paste0(addons_path_www, addons, "/main/", addons, "_main.R"))
+    file = paste0(addons_path_www, addon, "/main/", addon, "_main.R")
+    
+    if(file.exists(file))
+      source(file)
   }))
     
 # LOG ------------------------------------------------------
@@ -204,11 +207,22 @@ server = function(input, output, session) {
       
       # ADDON CONTENT
       addonSidebarListItems = lapply(addons, \(addon) {
-        htmlTemplate(filename = paste0(addons_path_www, addon, "/main/", addon, "_sidebarListItem.html"))
+        file = paste0(addons_path_www, addon, "/main/", addon, "_sidebarListItem.html")
+        
+        if(file.exists(file))
+          htmlTemplate(filename=file)
       }),
       
       addonContentTabs = lapply(addons, \(addon) {
-        htmlTemplate(filename = paste0(addons_path_www, addon, "/main/", addon, "_contentTab.html"), init=get(paste0(addon, "_fields")))
+        file = paste0(addons_path_www, addon, "/main/", addon, "_contentTab.html")
+        init = paste0(addon, "_fields")
+        
+        if(file.exists(file)){
+          if(exists(init))
+            htmlTemplate(filename=file, init=get(init))
+          else
+            htmlTemplate(filename=file)
+        }
       })
     ),
     
@@ -218,12 +232,18 @@ server = function(input, output, session) {
     
     # ADDON SCRIPTS
     lapply(addons, \(addon) {
-      tags$script(src=paste0(addons_path_www, addon, "/main/", addon, "_script.js"), defer=TRUE)
+      file = paste0(addons_path_www, addon, "/main/", addon, "_script.js")
+      
+      if(file.exists(file))
+        tags$script(src=file, defer=TRUE)
     }),
     
     # ADDON STYLESHEET
     lapply(addons, \(addon) {
-      tags$link(rel="stylesheet", type="text/css", href=paste0(addons_path_www, addon, "/main/", addon, "_style.css"))
+      file = paste0(addons_path_www, addon, "/main/", addon, "_style.css")
+      
+      if(file.exists(file))
+        tags$link(rel="stylesheet", type="text/css", href=file)
     }),
    )
   })
@@ -255,7 +275,10 @@ server = function(input, output, session) {
       
       # ADDON DEFAULTS
       lapply(addons, \(addon) {
-        do.call(paste0(addon, "_defaults"), args=list(session=session))
+        f = paste0(addon, "_defaults")
+        
+        if(exists(f))
+          do.call(f, args=list(session=session))
       })
     }
     
@@ -347,7 +370,8 @@ server = function(input, output, session) {
   
       if(input$parseExercise$progress == 1) {
         parseExercise_req_content <<- append(list(dir=getDir(session)), list(exercises=parseExercise_req_content))
-        saveRDS(parseExercise_req_content, parseExercise_req)
+        
+        write_atomic(parseExercise_req_content, parseExercise_req)
       }
   
       return(input$parseExercise$progress)
@@ -534,7 +558,7 @@ server = function(input, output, session) {
                                       additionalPdfFiles=additionalPdfFiles,
                                       examLogoFile=examLogoFile)
       
-      saveRDS(createExam_req_content, createExam_req)
+      write_atomic(createExam_req_content, createExam_req)
   
       return(1)
     })
@@ -778,7 +802,7 @@ server = function(input, output, session) {
     		                                       cores=cores,
     		                                       maxChoices=maxChoices)
         
-        saveRDS(evaluateExamScans_req_content, evaluateExamScans_req)
+        write_atomic(evaluateExamScans_req_content, evaluateExamScans_req)
         
         return(1)
       })
@@ -906,7 +930,7 @@ server = function(input, output, session) {
         # request content
         evaluateExamFinalize_req_content <<- c(isolate(examScanEvaluationData()), proceedEvaluation=list(isolate(input$proceedEvaluation)))
     
-        saveRDS(evaluateExamFinalize_req_content, evaluateExamFinalize_req)
+        write_atomic(evaluateExamFinalize_req_content, evaluateExamFinalize_req)
         
         return(1)
       })
@@ -1023,8 +1047,8 @@ server = function(input, output, session) {
     
   # ADDONS ------------------------------------------------------------------
   lapply(addons, \(addon) {
-    get(paste0(addon, "_callModules"))()
-    get(paste0(addon, "_observers"))(input)
+      mget(paste0(addon, "_callModules"), ifnotfound=FALSE)
+      mget(paste0(addon, "_observers"), ifnotfound=FALSE)
   })
 }
 

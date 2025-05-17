@@ -3,6 +3,11 @@ FROM rocker/r-ver:4.2.2
 RUN mkdir /rex-worker
 WORKDIR /rex-worker
 
+# Create non-root user with specified UID/GID
+ARG UID=1001
+ARG GID=1001
+RUN groupadd -g ${GID} rexuser && useradd -m -u ${UID} -g ${GID} -d /rex-worker rexuser
+
 RUN set -eu \
         ;apt-get update  \
         ;apt-get install -y \
@@ -21,15 +26,35 @@ RUN R -e "install.packages('qpdf', repos='http://cran.us.r-project.org')"
 RUN R -e "install.packages('exams', repos='http://R-Forge.R-project.org', type='source')"
 
 ARG imagemagic_config=/etc/ImageMagick-6/policy.xml
-RUN if [ -f $imagemagic_config ] ; then sed -i 's/<policy domain="coder" rights="none" pattern="PDF" \/>/<policy domain="coder" rights="read|write" pattern="PDF" \/>/g' $imagemagic_config ; else echo did not see file $imagemagic_config ; fi
+RUN if [ -f $imagemagic_config ] ; then \
+      sed -i 's/<policy domain="coder" rights="none" pattern="PDF" \/>/<policy domain="coder" rights="read|write" pattern="PDF" \/>/g' \
+      $imagemagic_config ; \
+    else \
+      echo did not see file $imagemagic_config ; \
+    fi
 
 RUN rm -rf /tmp/Rtmp*/
 
 COPY ./worker.R /rex-worker/
-# COPY --exclude=*/main/* ./www/addons /rex-worker/www/addons
-COPY ./www/addons /rex-worker/www/addons
+
+# Copy addons directory excluding all "main" subdirs
+COPY ./www /tmp/www
+RUN find /tmp/www/addons/ -mindepth 2 -maxdepth 2 -type d -name main -exec rm -rf {} + && \
+    mv /tmp/www /rex-worker/www && \
+    rm -rf /tmp/www
+	
 COPY ./source/worker /rex-worker/source/worker
 COPY ./source/shared /rex-worker/source/shared
+
+# Set user-local R library path for non-root installs
+ENV R_LIBS_USER=/rex-worker/Rlibs
+RUN mkdir -p /rex-worker/Rlibs && chown -R rexuser:rexuser /rex-worker/Rlibs
+
+# Change ownership of working directory
+RUN chown -R rexuser:rexuser /rex-worker
+
+# Switch to non-root user
+USER rexuser
 
 CMD Rscript worker.R
 

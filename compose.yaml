@@ -1,9 +1,19 @@
+version: "3.8"
+
 services:
   rex:
     container_name: rex
     build:
       dockerfile: dockerfile
+      args:
+        UID: 1001
+        GID: 1001
       context: https://github.com/guesswho1234/Rex.git#main
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    user: rexuser
     restart: unless-stopped
     ports:
       - "32780:3838"
@@ -16,8 +26,16 @@ services:
     container_name: rex-worker
     build:
       dockerfile: dockerfile_worker
+      args:
+        UID: 1001
+        GID: 1001
       context: https://github.com/guesswho1234/Rex.git#main
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     restart: unless-stopped
+    user: rexuser
     volumes:
       - shared-content:/tmp/
 

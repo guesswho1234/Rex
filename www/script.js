@@ -59,6 +59,8 @@ function initApp(){
 	
 	if( $('#addons .sidebarListItem').length > 0 && $('#addons .contentTab').length > 0 && $('#addons .sidebarListItem').length == $('#addons .contentTab').length) {
 		$('.noAddons').removeClass('noAddons');
+		$('#addons .sidebarListItem').first().addClass("active");
+		$('#addons .contentTab').first().addClass("active");
 	}
 
 	linkElements.forEach(style => $("head").append(style));
@@ -3511,8 +3513,8 @@ $('body').on('click', '#proceedEval', function() {
 /* --------------------------------------------------------------
  ADDON TOOLS
 -------------------------------------------------------------- */
-$("#addons_list_items .sidebarListItem").click(function(){
-	$('#addons_list_items .sidebarListItem').removeClass('active');
+$("#addonTools_list_items .sidebarListItem").click(function(){
+	$('#addonTools_list_items .sidebarListItem').removeClass('active');
 	$(this).addClass('active');
 	
 	selectListItem($('.mainSection.active .sidebarListItem.active').index());

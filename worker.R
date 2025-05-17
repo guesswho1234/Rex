@@ -11,6 +11,11 @@ if(DOCKER_WORKER){
   DOCKER_WORKER = TRUE
 }
 
+# Ensure the user library path exists and is used
+user_lib = Sys.getenv("R_LIBS_USER", unset = file.path(Sys.getenv("HOME"), "Rlibs"))
+if (!dir.exists(user_lib)) dir.create(user_lib, recursive = TRUE, showWarnings = FALSE)
+.libPaths(c(user_lib, .libPaths()))
+
 # TRUE MESSAGE VALUE --------------------------------------------------------
 TRUE_MESSAGE_VALUE = FALSE
 
@@ -27,6 +32,11 @@ library(callr) # callr_3.7.3
 source("./source/shared/log.R")
 
 # FUNCTIONS ---------------------------------------------------------------
+  # SAFE PACKAGE INSTALL
+  safe_install = function(pkg, ...) {
+    install.packages(pkg, lib = user_lib, ...)
+  }
+
   # READ OUTPUT ---------------------------------------------------
   readOutput = function(){
     lapply(R_BG_STACK, function(bg_process){
@@ -148,6 +158,7 @@ source("./source/shared/log.R")
   process_parseExerciseRequest = function(requestContent, res, fin, parseExercise, prepare_exerciseResponse, TRUE_MESSAGE_VALUE){
     source("./source/worker/tryCatch.R")
     source("./source/shared/rToJson.R")
+    source("./source/shared/aWrite.R")
 
     cat(paste0("Exercises to parse = ", length(requestContent$exercises), "\n"))
     
@@ -156,8 +167,9 @@ source("./source/shared/log.R")
       parsedExercise = parseExercise(data, TRUE_MESSAGE_VALUE)
       prepare_exerciseResponse(parsedExercise, res, append=x != 1, TRUE_MESSAGE_VALUE)
     })
-    
-    file.create(fin)
+
+    print(fin)
+    write_atomic(0, fin)
 	}
 
   parseExercise = function(data, TRUE_MESSAGE_VALUE){
@@ -351,13 +363,14 @@ source("./source/shared/log.R")
 	process_createExamRequest = function(requestContent, res, fin, createExam, prepare_createExamResponse, TRUE_MESSAGE_VALUE, PACKAGE_INFO){
 	  source("./source/worker/tryCatch.R")
 	  source("./source/shared/rToJson.R")
+	  source("./source/shared/aWrite.R")
 	  
 	  cat("Exams to create = 1\n")
 
 	  createdExam = createExam(requestContent, TRUE_MESSAGE_VALUE, PACKAGE_INFO)
 	  prepare_createExamResponse(createdExam, res, TRUE_MESSAGE_VALUE)
 
-	  file.create(fin)
+	  write_atomic(0, fin)
 	}
 	
 	createExam = function(data, TRUE_MESSAGE_VALUE, PACKAGE_INFO) {
@@ -580,11 +593,12 @@ source("./source/shared/log.R")
   	process_evaluateExamScansRequest = function(requestContent, res, fin, evaluateExamScans, prepare_evaluateExamScansResponse, TRUE_MESSAGE_VALUE, PACKAGE_INFO){
   	  source("./source/worker/tryCatch.R")
   	  source("./source/shared/rToJson.R")
+  	  source("./source/shared/aWrite.R")
   	  
   	  evaluatedScans = evaluateExamScans(requestContent, TRUE_MESSAGE_VALUE, PACKAGE_INFO)
   	  prepare_evaluateExamScansResponse(evaluatedScans, res, TRUE_MESSAGE_VALUE)
 
-  	  file.create(fin)
+  	  write_atomic(0, fin)
   	}
   
   	evaluateExamScans = function(data, TRUE_MESSAGE_VALUE, PACKAGE_INFO){
@@ -804,13 +818,14 @@ source("./source/shared/log.R")
   	process_evaluateExamFinalizeRequest = function(requestContent, res, fin, evaluateExamFinalize, prepare_evaluateExamFinalizeResponse, TRUE_MESSAGE_VALUE, PACKAGE_INFO){
   	  source("./source/worker/tryCatch.R")
   	  source("./source/shared/rToJson.R")
+  	  source("./source/shared/aWrite.R")
 
   	  cat("Exams to evaluate = 1\n")
   	  
   	  evaluatedFinalize = evaluateExamFinalize(requestContent, TRUE_MESSAGE_VALUE, PACKAGE_INFO)
   	  prepare_evaluateExamFinalizeResponse(evaluatedFinalize, res, TRUE_MESSAGE_VALUE)
 
-  	  file.create(fin)
+  	  write_atomic(0, fin)
   	}
     
   	evaluateExamFinalize = function(data, TRUE_MESSAGE_VALUE, PACKAGE_INFO){
@@ -1062,11 +1077,13 @@ source("./source/shared/log.R")
 	# ADDONS ------------------------------------------------------------------
 	addons_path = "./addons/"
 	addons_path_www = "./www/addons/"
-	addons = list.files(addons_path_www, recursive = TRUE)
-	addons = unique(Reduce(c, lapply(addons[grepl("/", addons)], \(x) strsplit(x, split="/")[[1]][1])))
+	addons = list.files(addons_path_www, recursive = FALSE)
 
 	invisible(lapply(addons, \(addon) {
-	  source(paste0(addons_path_www, addons, "/worker/", addons, "_worker.R"))
+	  file = paste0(addons_path_www, addon, "/worker/", addon, "_worker.R")
+	  
+	  if(file.exists(file))
+	    source(file)
 	}))
 	
   # SESSIONINFO -------------------------------------------------------------
