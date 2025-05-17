@@ -34,7 +34,7 @@ Alternatively, open and run `app.R` via RStudio.
 
 ### Docker
 
-On the host, make teh database file owned by the UID=1001 and GID=1001:
+On the host, make the database file owned by the UID=1001 and GID=1001:
 
 ```bash
 chown 1001:1001 /home/rex.sqlite
