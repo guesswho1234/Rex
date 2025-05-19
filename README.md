@@ -2,11 +2,11 @@
 
 This repository provides an interactive [Shiny](https://shiny.posit.co/) dashboard for creating and evaluating written single- or multiple-choice exams and building reusable exercise pools. The underlying workhorse is [R/exams](https://www.R-exams.org/), specifically the so-called [NOPS exams](https://www.R-exams.org/tutorials/exams2nops/) functions, which support both randomized single-choice and multiple-choice exercises along with automatic evaluation.
 
-Rex is developed by [Sebastian Bachler] and is still work in progress.
+Rex is developed by [Sebastian Bachler](mailto:sbachler@gmx.at). Feel free to reach out if you have any questions.
 
 ## Demo
 
-Demo access and demo files can be requested via e-mail to [sbachler@gmx.at](mailto:sbachler@gmx.at).
+Demo access and demo files can be requested via e-mail.
 
 ## System Resources
 
@@ -25,17 +25,35 @@ For Rex to operate properly, make sure that the following resources are availabl
 
 Install all required R packages, including their dependencies (see the "PACKAGES" section in `app.R` and `worker.R`).
 
-Start up via `shiny::runApp(appDir = '<base directory containing app.R>', host = '0.0.0.0', port = 3838)` or, alternatively, via RStudio by opening and running `app.R`.
+Start up via:
+
+```R
+shiny::runApp(appDir = '<base directory containing app.R>', host = '0.0.0.0', port = 3838)
+```
+Alternatively, open and run `app.R` via RStudio.
 
 ### Docker
 
-Build your Docker infrastructure with the supplied Docker Compose file and running `docker-compose -f compose_rex.yaml up`.
+On the host, make the database file owned by the UID=1001 and GID=1001:
+
+```bash
+chown 1001:1001 /home/rex.sqlite
+chmod 660 /home/rex.sqlite
+```
+
+Build and start the Docker infrastructure using the following command:
+
+```bash
+docker-compose -f compose_rex.yaml up --build
+```
 
 ## Hosting
 
 > [!CAUTION]
-> Do not host this version of Rex with uncontrolled or public access and no additional security measures.
-> Code from user input is parsed and evaluated by the `rex_worker` container.
+> This project uses a hardened Docker setup with non-root users, dropped capabilities, and resource limits.
+> External access is restricted to the frontend only; the background worker has no network access.
+> While these measures reduce risk, always audit images and dependencies before deploying to production.
+> **Use at your own risk and follow best security practices.**
 
 ## Use
 
@@ -59,7 +77,7 @@ When managing exercises, the following input fields can generally be edited:
 - Figure (accepts a single PNG file per exercise)
 - Answers (consisting of the solution, answer text, and a solution note)
 
-Beyond the user interface of Rex, exercises with more complexity (i.e., seed based exercise variations) can also be coded outside of Rex and are accepted as RNW and RMD files. However, these exercises are not editable within Rex. 
+Beyond the user interface of Rex, exercises with more complexity (i.e., seed based exercise variations or exercises with R plots) can also be coded outside of Rex and are accepted as RNW and RMD files. However, these exercises are not editable within Rex. 
 
 #### Create Exams
 
@@ -98,6 +116,7 @@ Addons are a way to extend Rex with custom features, such as default values, add
 
 > [!CAUTION]
 > Addons can introduce additional security risks.
+> **Use at your own risk and follow best security practices.**
   
 ## Contribute
 
