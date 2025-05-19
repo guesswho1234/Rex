@@ -685,7 +685,7 @@ source("./source/shared/log.R")
   			  if(ncol(registeredParticipantData) != 3)
   				  stop("E1015")
   
-  			  if(!all(names(registeredParticipantData)[1:3] == c("registration", "name", "id")))
+  			  if(!all(names(registeredParticipantData) == c("registration", "name", "id")))
   				  stop("E1016")
   
   			  cat("Evaluating scans.\n")

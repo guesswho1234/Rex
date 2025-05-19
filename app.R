@@ -158,7 +158,7 @@ server = function(input, output, session) {
       userProfileButton = myUserProfileButton(),
       userProfileInterface = myUserProfileInterface(),
       userLogoutButton = myUserLogoutButton(),
-    
+
       # EXERCISES
       textInput_seedValueExercises = textInput("seedValueExercises", label = NULL, value = initSeed),
       button_downloadExercises = myDownloadButton(id='downloadExercises', deText="Alle speichern", enText="Save all"),
@@ -275,10 +275,10 @@ server = function(input, output, session) {
       
       # ADDON DEFAULTS
       lapply(addons, \(addon) {
-        f = paste0(addon, "_defaults")
+        f_defaults = paste0(addon, "_defaults")
         
-        if(exists(f))
-          do.call(f, args=list(session=session))
+        if(exists(f_defaults))
+          do.call(f_defaults, args=list(session=session))
       })
     }
     
@@ -300,7 +300,7 @@ server = function(input, output, session) {
 
     changePassword(session, credentials()$info, input$`current-login-password`, input$`new-login-password1`, input$`new-login-password2`)
   })
-  
+    
   # EXPORT SINGLE EXERCISE ------------------------------------------------------
   output$downloadExercise = downloadHandler(
     filename = function() {
@@ -1047,8 +1047,16 @@ server = function(input, output, session) {
     
   # ADDONS ------------------------------------------------------------------
   lapply(addons, \(addon) {
-      mget(paste0(addon, "_callModules"), ifnotfound=FALSE)
-      mget(paste0(addon, "_observers"), ifnotfound=FALSE)
+      lapply(addons, \(addon) {
+        f_callModules = paste0(addon, "_callModules")
+        f_observers = paste0(addon, "_observers")
+        
+        if(exists(f_callModules))
+          do.call(f_callModules, args=list())
+        
+        if(exists(f_observers))
+          do.call(f_observers, args=list(input=input))
+      })
   })
 }
 
