@@ -758,7 +758,7 @@ server = function(input, output, session) {
     		}
     		
     		if(length(exam$examScanPngNames) > 0){
-    		  exam$examScanPngNames = as.list(make.unique(exam$examScanPngNames, sep="_"))
+    		  exam$examScanPngNames = as.list(make.unique(unlist(exam$examScanPngNames), sep="_"))
     		  pngFiles = unlist(lapply(seq_along(exam$examScanPngNames), function(i){
     		    file = paste0(dir, "/", exam$examScanPngNames[[i]], ".png")
     		    raw = openssl::base64_decode(exam$examScanPngFiles[[i]])
