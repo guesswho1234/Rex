@@ -25,3 +25,7 @@ updateProrgress = function(session, increment){
 finalizeProgress = function(session){
   session$sendCustomMessage("progress", 1)
 }
+
+allowKill = function(session, status){
+  session$sendCustomMessage("allowKill", status)	
+}

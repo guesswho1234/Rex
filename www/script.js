@@ -636,7 +636,7 @@ function sidebarMoveDown(parent) {
 }
 
 /* --------------------------------------------------------------
- WAIT / PROGRESS
+ WAIT / PROGRESS / KILL
 -------------------------------------------------------------- */
 Shiny.addCustomMessageHandler('wait', function(status) {
 	app_wait(status);
@@ -677,6 +677,18 @@ function app_update(status){
 	if ( !$('#progressBarValue').hasClass("value-100") ){
 		$('#progressBarValue').removeClass();
 		$('#progressBarValue').addClass("value-" + status);
+	}
+}
+
+Shiny.addCustomMessageHandler('allowKill', function(status) {
+	app_allowKill(status);
+});
+
+function app_allowKill(status){
+	if(status === 1) {
+		$('#killWorkerProcess').addClass("active");
+	} else {
+		$('#killWorkerProcess').removeClass("active");
 	}
 }
 

@@ -45,6 +45,10 @@ myUserProfileInterface = function() {
   return(HTML(content))
 }
 
+myKillWorkerProcessButton = function() {
+  tags$button(id='killWorkerProcess-button', class='btn btn-default action-button shiny-bound-input', type='button', tags$span(HTML('<span lang="de">Abbrechen</span><span lang="en">Cancle</span>')))
+}
+
 myUserProfileButton = function() {
   tags$button(id='profile-button', class='btn btn-default action-button shiny-bound-input', type='button', tags$span(HTML('<span lang="de">Benutzer</span><span lang="en">User</span>')))
 }

@@ -27,9 +27,14 @@ library(xtable) #xtable_1.8-4
 library(openssl) # openssl_2.1.1
 library(magick) # magick_2.7.4
 library(callr) # callr_3.7.3
+library(psychotools) # psychotools_0.7-4
+library(homals) # homals_1.0-11
+library(rmarkdown) # rmarkdown_2.25
+library(knitr) # knitr_1.45
 
 # SOURCE ------------------------------------------------------------------
 source("./source/shared/log.R")
+source("./source/shared/aWrite.R")
 
 # FUNCTIONS ---------------------------------------------------------------
   # SAFE PACKAGE INSTALL
@@ -38,113 +43,197 @@ source("./source/shared/log.R")
   }
 
   # READ OUTPUT ---------------------------------------------------
-  readOutput = function(){
-    lapply(R_BG_STACK, function(bg_process){
-      output = gsub("[\n]+", "\n", paste0(bg_process$process$read_output(), "\n"))
+  readOutput = function(r_bg_stack){
+    if(length(r_bg_stack) == 0)
+      return(r_bg_stack)
+    
+    r_bg_stack = lapply(seq_along(r_bg_stack), function(x){
+      bg_process = r_bg_stack[[x]]
+      
+      output = "\n"
+      
+      if (bg_process$process$is_alive()) {
+        output = gsub("[\n]+", "\n", paste0(bg_process$process$read_output(), "\n"))
+      } else {
+        bg_process$purge = TRUE
+		    log_(content="PROCESS ENDED", "WORKER", "WORKER")
+      }
       
       if(output != "\n") {
         output = gsub("[\n]+", "\n", paste0(output, "\n"))
         cat(output, append = TRUE, file = bg_process$log)
       }
+      
+      return(bg_process)
+    })
+    
+    return(r_bg_stack)
+  }
+
+  # PURGE STACK -------------------------------------------------------------
+  purgeStack = function(r_bg_stack){
+    if(length(r_bg_stack) == 0)
+      return(r_bg_stack)
+    
+    keep = unlist(lapply(r_bg_stack, function(x) is.null(x$purge)))
+    r_bg_stack = r_bg_stack[keep]
+    
+    return(r_bg_stack)
+  }
+
+  # CHECK PROCESS KILL ------------------------------------------------------
+  checkKill = function(r_bg_stack){
+    CHECK_KILL_FILES = list.files(paste0(tempdir(), "/../"), 
+                                  pattern = "kill", 
+                                  recursive = TRUE,
+                                  full.names = TRUE)
+    
+    lapply(CHECK_KILL_FILES, function(x){
+      PIDS = list.files(dirname(x), pattern = "^[0-9]+$")
+      unlink(x)
+      
+      lapply(r_bg_stack, function(bg_process){
+        if(!is.null(bg_process$process) && bg_process$process$is_alive() && bg_process$process$get_pid() %in% PIDS) {
+          log_(content="PROCESS", "WORKER", "WORKER")
+          
+          write_atomic(0, bg_process$fin)
+          bg_process$process$kill()
+        }
+      })
     })
   }
 
   # CHECK WORKER REQUESTS ---------------------------------------------------
-  checkWorkerRequests = function(){
-    readOutput()
+  checkWorkerRequests = function(last_mtime, last_files_seen, r_bg_stack, poll_time = 0.01){
+    req_files = c("parseExercise_req.rds", 
+                  "createExam_req.rds", 
+                  "evaluateExamScans_req.rds", 
+                  "evaluateExamFinalize_req.rds")
     
-    REQ_FILES_PATTERN = paste0(Reduce(c, lapply(REQ_FILES, \(x) paste0("(", x, ")"))), collapse="|")
-    CHECK_REQ_FILES = list.files(paste0(tempdir(), "/../"), 
-                                 pattern = REQ_FILES_PATTERN, 
-                                 recursive = TRUE,
-                                 full.names = TRUE)
-
-    REQUESTS = c()
+    repeat {
+      checkKill(r_bg_stack=r_bg_stack)
+      r_bg_stack = readOutput(r_bg_stack=r_bg_stack)
+      r_bg_stack = purgeStack(r_bg_stack=r_bg_stack)
+      
+      req_files_pattern <- paste0(".*_", "(", paste(req_files, collapse = "|"), ")", "$")
+      check_files = list.files(paste0(tempdir(), "/../"),
+                                   pattern = req_files_pattern,
+                                   recursive = TRUE,
+                                   full.names = TRUE)
+      
+      FILE_MT = sapply(check_files, file.mtime)
+      
+      newer_files = check_files[which(FILE_MT > last_mtime)]
+      same_time_new_files = check_files[which(FILE_MT == last_mtime & !(check_files %in% last_files_seen))]
+      
+      requests = c(newer_files, same_time_new_files)
+      
+      if (length(requests) > 0) {
+        r_bg_stack = processWorkerRequest(requests=requests, r_bg_stack=r_bg_stack)
+        last_mtime = max(FILE_MT[requests])
+        last_files_seen = check_files[FILE_MT == last_mtime]
+      }
+      
+      Sys.sleep(poll_time)
+      
+      if(!DOCKER_WORKER)
+        break
+    }
     
-    if(length(CHECK_REQ_FILES)){
-      COMPARE_TIME_NEW = Sys.time()
-      REQUESTS = CHECK_REQ_FILES[which(sapply(CHECK_REQ_FILES, function(x){
-        file.mtime(x) > COMPARE_TIME
-      }))]
-
-      COMPARE_TIME <<- COMPARE_TIME_NEW
-    }
-
-    if(length(REQUESTS) > 0) {
-      log_(content=paste0("OPEN REQUESTS:", length(REQUESTS)), "WORKER", "WORKER")
-      
-      PARSE_EXERCISE_REQUEST = REQUESTS[grepl("parseExercise", REQUESTS)]
-      CREATE_EXAM_REQUEST = REQUESTS[grepl("createExam", REQUESTS)]
-      EVALUATE_EXAM_SCANS_REQUEST = REQUESTS[grepl("evaluateExamScans", REQUESTS)]
-      EVALUATE_EXAM_FINALIZE_REQUEST = REQUESTS[grepl("evaluateExamFinalize", REQUESTS)]
-      
-      if(length(PARSE_EXERCISE_REQUEST) > 0){
-        lapply(PARSE_EXERCISE_REQUEST, function(x){
-          log_(content="PARSE_EXERCISE_REQUEST", "WORKER", "WORKER")
-          
-          requestContent = readRDS(x)
-          processFiles = getProcessFiles(requestContent$dir, "parseExercise")
-
-          log_(content="PROCESSING PARSE_EXERCISE_REQUEST", "WORKER", "WORKER")
-          R_BG_STACK <<- c(R_BG_STACK, list(list(log=processFiles$log, process=callr::r_bg(
-            func = process_parseExerciseRequest,
-            args = list(requestContent, processFiles$res, processFiles$fin, parseExercise, prepare_exerciseResponse, TRUE_MESSAGE_VALUE),
-            supervise = TRUE
-          ))))
-        })
-      }
-      
-      if(length(CREATE_EXAM_REQUEST) > 0){
-        lapply(CREATE_EXAM_REQUEST, function(x){
-          log_(content="CREATE_EXAM_REQUEST", "WORKER", "WORKER")
-          
-          requestContent = readRDS(x)
-          processFiles = getProcessFiles(requestContent$dir, "createExam")
-          
-          log_(content="PROCESSING CREATE_EXAM_REQUEST", "WORKER", "WORKER")
-          R_BG_STACK <<- c(R_BG_STACK, list(list(log=processFiles$log, process=callr::r_bg(
-            func = process_createExamRequest,
-            args = list(requestContent, processFiles$res, processFiles$fin, createExam, prepare_createExamResponse, TRUE_MESSAGE_VALUE, PACKAGE_INFO),
-            supervise = TRUE
-          ))))
-        })
-      }
-      
-      if(length(EVALUATE_EXAM_SCANS_REQUEST) > 0){
-        lapply(EVALUATE_EXAM_SCANS_REQUEST, function(x){
-          log_(content="EVALUATE_EXAM_SCANS_REQUEST", "WORKER", "WORKER")
-          
-          requestContent = readRDS(x)
-          processFiles = getProcessFiles(requestContent$dir, "evaluateExamScans")
-          
-          log_(content="PROCESSING EVALUATE_EXAM_SCANS_REQUEST", "WORKER", "WORKER")
-          R_BG_STACK <<- c(R_BG_STACK, list(list(log=processFiles$log, process=callr::r_bg(
-            func = process_evaluateExamScansRequest,
-            args = list(requestContent, processFiles$res, processFiles$fin, evaluateExamScans, prepare_evaluateExamScansResponse, TRUE_MESSAGE_VALUE, PACKAGE_INFO),
-            supervise = TRUE
-          ))))
-        })
-      }
-      
-      if(length(EVALUATE_EXAM_FINALIZE_REQUEST) > 0){
-        lapply(EVALUATE_EXAM_FINALIZE_REQUEST, function(x){
-          log_(content="EVALUATE_EXAM_FINALIZE_REQUEST", "WORKER", "WORKER")
-          
-          requestContent = readRDS(EVALUATE_EXAM_FINALIZE_REQUEST[1])
-          
-          processFiles = getProcessFiles(requestContent$preparedEvaluation$fields$dir, "evaluateExamFinalize")
-          
-          log_(content="PROCESSING EVALUATE_EXAM_FINALIZE_REQUEST", "WORKER", "WORKER")
-          R_BG_STACK <<- c(R_BG_STACK, list(list(log=processFiles$log, process=callr::r_bg(
-            func = process_evaluateExamFinalizeRequest,
-            args = list(requestContent, processFiles$res, processFiles$fin, evaluateExamFinalize, prepare_evaluateExamFinalizeResponse, TRUE_MESSAGE_VALUE, PACKAGE_INFO),
-            supervise = TRUE
-          ))))
-        })
-      }
-    }
+    last_mtime <<- last_mtime
+    last_files_seen <<- last_files_seen
+    r_bg_stack <<- r_bg_stack
   }
   
+  # PROCESS WORKER REQUESTS -------------------------------------------------
+  processWorkerRequest = function(requests, r_bg_stack){
+    log_(content=paste0("OPEN requests:", length(requests)), "WORKER", "WORKER")
+    
+    PARSE_EXERCISE_REQUEST = requests[grepl("parseExercise", requests)]
+    CREATE_EXAM_REQUEST = requests[grepl("createExam", requests)]
+    EVALUATE_EXAM_SCANS_REQUEST = requests[grepl("evaluateExamScans", requests)]
+    EVALUATE_EXAM_FINALIZE_REQUEST = requests[grepl("evaluateExamFinalize", requests)]
+    
+    if(length(PARSE_EXERCISE_REQUEST) > 0){
+      r_bg_stack = c(r_bg_stack, lapply(PARSE_EXERCISE_REQUEST, function(x){
+        log_(content="PARSE_EXERCISE_REQUEST", "WORKER", "WORKER")
+        
+        requestContent = readRDS(x)
+        processFiles = getProcessFiles(requestContent$dir, "parseExercise")
+        
+        log_(content="PROCESSING PARSE_EXERCISE_REQUEST", "WORKER", "WORKER")
+        
+        r_bg_process = c(processFiles, list(process=callr::r_bg(
+          func = process_parseExerciseRequest,
+          args = list(requestContent, processFiles$res, processFiles$fin, parseExercise, prepare_exerciseResponse, TRUE_MESSAGE_VALUE),
+          supervise = TRUE
+        )))
+        
+        return(r_bg_process)
+      }))
+    }
+    
+    if(length(CREATE_EXAM_REQUEST) > 0){
+      r_bg_stack = c(r_bg_stack, lapply(CREATE_EXAM_REQUEST, function(x){
+        log_(content="CREATE_EXAM_REQUEST", "WORKER", "WORKER")
+        
+        requestContent = readRDS(x)
+        processFiles = getProcessFiles(requestContent$dir, "createExam")
+        
+        log_(content="PROCESSING CREATE_EXAM_REQUEST", "WORKER", "WORKER")
+        
+        r_bg_process = c(processFiles, list(process=callr::r_bg(
+          func = process_createExamRequest,
+          args = list(requestContent, processFiles$res, processFiles$fin, createExam, prepare_createExamResponse, TRUE_MESSAGE_VALUE, PACKAGE_INFO),
+          supervise = TRUE
+        )))
+        
+        return(r_bg_process)
+      }))
+    }
+    
+    if(length(EVALUATE_EXAM_SCANS_REQUEST) > 0){
+      r_bg_stack = c(r_bg_stack, lapply(EVALUATE_EXAM_SCANS_REQUEST, function(x){
+        log_(content="EVALUATE_EXAM_SCANS_REQUEST", "WORKER", "WORKER")
+        
+        requestContent = readRDS(x)
+        processFiles = getProcessFiles(requestContent$dir, "evaluateExamScans")
+        
+        log_(content="PROCESSING EVALUATE_EXAM_SCANS_REQUEST", "WORKER", "WORKER")
+        
+        r_bg_process = c(processFiles, list(process=callr::r_bg(
+          func = process_evaluateExamScansRequest,
+          args = list(requestContent, processFiles$res, processFiles$fin, evaluateExamScans, prepare_evaluateExamScansResponse, TRUE_MESSAGE_VALUE, PACKAGE_INFO),
+          supervise = TRUE
+        )))
+        
+        return(r_bg_process)
+      }))
+    }
+    
+    if(length(EVALUATE_EXAM_FINALIZE_REQUEST) > 0){
+      r_bg_stack = c(r_bg_stack, lapply(EVALUATE_EXAM_FINALIZE_REQUEST, function(x){
+        log_(content="EVALUATE_EXAM_FINALIZE_REQUEST", "WORKER", "WORKER")
+        
+        requestContent = readRDS(EVALUATE_EXAM_FINALIZE_REQUEST[1])
+        
+        processFiles = getProcessFiles(requestContent$preparedEvaluation$fields$dir, "evaluateExamFinalize")
+        
+        log_(content="PROCESSING EVALUATE_EXAM_FINALIZE_REQUEST", "WORKER", "WORKER")
+        
+        r_bg_process = c(processFiles, list(process=callr::r_bg(
+          func = process_evaluateExamFinalizeRequest,
+          args = list(requestContent, processFiles$res, processFiles$fin, evaluateExamFinalize, prepare_evaluateExamFinalizeResponse, TRUE_MESSAGE_VALUE, PACKAGE_INFO),
+          supervise = TRUE
+        )))
+        
+        return(r_bg_process)
+      }))
+    }
+    
+    return(r_bg_stack)
+  }
+
   # GET FILENAMES ------------------------------------------------------------
   getProcessFiles = function(dir, fname){
     res = paste0(dir, "/", fname, "_res.txt")
@@ -159,6 +248,9 @@ source("./source/shared/log.R")
     source("./source/worker/tryCatch.R")
     source("./source/shared/rToJson.R")
     source("./source/shared/aWrite.R")
+    
+	# file used to match process id when pressing cancel
+    file.create(paste0(requestContent$dir, "/", Sys.getpid()))
 
     cat(paste0("Exercises to parse = ", length(requestContent$exercises), "\n"))
     
@@ -168,9 +260,8 @@ source("./source/shared/log.R")
       prepare_exerciseResponse(parsedExercise, res, append=x != 1, TRUE_MESSAGE_VALUE)
     })
 
-    print(fin)
     write_atomic(0, fin)
-	}
+  }
 
   parseExercise = function(data, TRUE_MESSAGE_VALUE){
 		 out = tryCatch({
@@ -364,6 +455,9 @@ source("./source/shared/log.R")
 	  source("./source/worker/tryCatch.R")
 	  source("./source/shared/rToJson.R")
 	  source("./source/shared/aWrite.R")
+	  
+	  # file used to match process id when pressing cancel
+	  file.create(paste0(requestContent$dir, "/", Sys.getpid()))
 	  
 	  cat("Exams to create = 1\n")
 
@@ -595,6 +689,9 @@ source("./source/shared/log.R")
   	  source("./source/shared/rToJson.R")
   	  source("./source/shared/aWrite.R")
   	  
+	  # file used to match process id when pressing cancel
+  	  file.create(paste0(requestContent$dir, "/", Sys.getpid()))
+  	  
   	  evaluatedScans = evaluateExamScans(requestContent, TRUE_MESSAGE_VALUE, PACKAGE_INFO)
   	  prepare_evaluateExamScansResponse(evaluatedScans, res, TRUE_MESSAGE_VALUE)
 
@@ -819,6 +916,10 @@ source("./source/shared/log.R")
   	  source("./source/worker/tryCatch.R")
   	  source("./source/shared/rToJson.R")
   	  source("./source/shared/aWrite.R")
+  	  source("./source/worker/evaluationStatisticsData.R")
+  	  
+	  # file used to match process id when pressing cancel
+  	  file.create(paste0(requestContent$dir, "/", Sys.getpid()))
 
   	  cat("Exams to evaluate = 1\n")
   	  
@@ -874,11 +975,14 @@ source("./source/shared/log.R")
   	      data$preparedEvaluation$files$nops_evaluationCsv = paste0(data$preparedEvaluation$fields$dir, "/", nops_evaluation_fileNamePrefix, ".csv")
   	      data$preparedEvaluation$files$nops_evaluationZip = paste0(data$preparedEvaluation$fields$dir, "/", nops_evaluation_fileNamePrefix, ".zip")
   	      
-  	      # additional files
+  	      # additional txt files
   	      data$preparedEvaluation$files$nops_evalInputTxt = paste0(data$preparedEvaluation$fields$dir, "/input.txt")
   	      data$preparedEvaluation$files$nops_statisticsTxt = paste0(data$preparedEvaluation$fields$dir, "/statistics.txt")
   	      data$preparedEvaluation$evaluationStatistics = NULL
   	      
+  	      # additional pdf files
+  	      data$preparedEvaluation$files$nops_reportPdf = paste0(data$preparedEvaluation$fields$dir, "/nops_report.pdf")
+  	        	      
   	      cat("Evaluating exam.\n")
   	      
   	      with(data$preparedEvaluation, {
@@ -898,44 +1002,9 @@ source("./source/shared/log.R")
   	        
   	        rlang::exec(exams::nops_eval, !!!param_nops_eval)
   	        
+  	        # read solution and evaluation data
   	        solutionData = readRDS(files$solution)
   	        evaluationData = read.csv2(files$nops_evaluationCsv)
-  	        
-  	        # add additional exercise columns
-  	        exerciseTable = as.data.frame(Reduce(rbind, lapply(evaluationData$exam, \(exam) {
-  	          exerciseNames = Reduce(cbind, lapply(solutionData[[as.character(exam)]], \(exercise) exercise$metainfo$file))
-  	          if(all(grepl(paste0(fields$edirName, "_"), exerciseNames)))
-  	            exerciseNames = sapply(strsplit(exerciseNames, paste0(fields$edirName, "_")), \(name) name[2])
-  	          
-  	          exerciseNames = matrix(exerciseNames, nrow=1)
-  	          
-  	          return(exerciseNames)
-  	        })))
-  	        
-  	        names(exerciseTable) = paste0("exercise.", 1:ncol(exerciseTable))
-  	        
-  	        evaluationData = cbind(evaluationData, exerciseTable)
-  	        
-  	        # add max points column
-  	        examMaxPoints = as.data.frame(Reduce(rbind, lapply(evaluationData$exam, \(exam) {
-  	          examPoints = sum(as.numeric(sapply(solutionData[[as.character(exam)]], \(exercise) exercise$metainfo$points)))
-  	          examPoints = matrix(examPoints, nrow=1)
-  	          
-  	          return(examPoints)
-  	        })))
-  	        
-  	        names(examMaxPoints) = paste0("examMaxPoints")
-  	        
-  	        evaluationData = cbind(evaluationData, examMaxPoints)
-  	        
-  	        # pad zeros for answers and solutions
-  	        evaluationData[paste("answer", 1:length(solutionData[[1]]), sep=".")] = sprintf(paste0("%0", 5, "d"), unlist(evaluationData[paste("answer", 1:length(solutionData[[1]]), sep=".")]))
-  	        evaluationData[paste("solution", 1:length(solutionData[[1]]), sep=".")] = sprintf(paste0("%0", 5, "d"), unlist(evaluationData[paste("solution", 1:length(solutionData[[1]]), sep=".")]))
-  	        
-  	        # set data types of evaluation data
-  	        evaluationData = as.data.frame(evaluationData)
-  	        evaluationData[,grepl("check", names(evaluationData), ignore.case = TRUE)] = apply(evaluationData[,grepl("check", names(evaluationData), ignore.case = TRUE)], 2, as.numeric)
-  	        evaluationData[,grepl("points", names(evaluationData), ignore.case = TRUE)] = apply(evaluationData[,grepl("points", names(evaluationData), ignore.case = TRUE)], 2, as.numeric)
   	        
   	        # exam eval input field data
   	        examEvalFields = list(registeredParticipants = files$registeredParticipants,
@@ -948,7 +1017,7 @@ source("./source/shared/log.R")
   	                              mark = fields$mark,
   	                              labels = fields$labels,
   	                              language = fields$language)
-  	        
+
   	        examEvalInputTxt = Reduce(c, lapply(names(examEvalFields), \(x){
   	          values = examEvalFields[[x]]
   	          
@@ -966,61 +1035,14 @@ source("./source/shared/log.R")
   	          }
   	        }))
   	        
-  	        # statistics
-  	        examMaxPoints = matrix(max(as.numeric(evaluationData$examMaxPoints)), dimnames=list("examMaxPoints", "value"))
-  	        validExams = matrix(nrow(evaluationData), dimnames=list("validExams", "value"))
+  	        # update prepared data
+  	        evaluationData = updateEvaluationData(solutionData, evaluationData, fields$edirName)
   	        
-  	        exerciseNames = unique(unlist(evaluationData[,grepl("exercise.*", names(evaluationData))]))
+  	        # exam eval statistics data
+  	        evaluationStatisticsData = getEvaluationStatisticsData(evaluationData, fields$mark, fields$labels)
   	        
-  	        if(all(grepl(paste0(fields$edirName, "_"), exerciseNames)) )
-  	          exerciseNames = sapply(strsplit(exerciseNames, paste0(fields$edirName, "_")), \(name) name[2])
-  	        
-  	        exercisePoints = Reduce(rbind, lapply(exerciseNames, \(exercise){
-  	          summary(apply(evaluationData, 1, \(participant){
-  	            
-  	            if(!exercise %in% participant)
-  	              return(NULL)
-  	            
-  	            as.numeric(participant[gsub("exercise", "check", names(evaluationData)[participant==exercise])])
-  	          }))
-  	        }))
-  	        
-  	        rownames(exercisePoints) = exerciseNames
-  	        
-  	        totalPoints = t(summary(as.numeric(evaluationData$points)))
-  	        rownames(totalPoints) = "totalPoints"
-  	        
-  	        points = matrix(mean(as.numeric(evaluationData$points))/examMaxPoints)
-  	        colnames(points) = c("mean")
-  	        rownames(points) = "points"
-  	        
-  	        marks = matrix()
-  	        
-  	        if(fields$mark[1] != FALSE) {
-  	          marks = table(factor(evaluationData$mark, fields$labels))
-  	          marks = cbind(marks, marks/sum(marks), rev(cumsum(rev(marks)))/sum(marks))
-  	          colnames(marks) = c("absolute", "relative", "relative cumulative")
-  	          
-  	          points = as.matrix(cbind(points, t(c(0, fields$mark))), nrow=1)
-  	          colnames(points) = c("mean", fields$labels)
-  	          rownames(points) = "points"
-  	        }
-  	        
-  	        evaluationStatistics = list(
-  	          points=points,
-  	          examMaxPoints=examMaxPoints,
-  	          validExams=validExams,
-  	          exercisePoints=exercisePoints,
-  	          totalPoints=totalPoints,
-  	          marks=marks
-  	        )
-  	        
-  	        evaluationStatisticsTxt = Reduce(c, lapply(names(evaluationStatistics), \(x){
-  	          paste0(c(x,
-  	                   paste0(c("name", colnames(evaluationStatistics[[x]])), collapse=";"),
-  	                   paste0(rownames(evaluationStatistics[[x]]), ";", apply(evaluationStatistics[[x]], 1, \(y) paste0(paste0(y, collapse=";"), "\n")), collapse="")
-  	          ), collapse="\n")
-  	        }))
+  	        # set data for statistics shown within the app in the browser
+  	        evaluationStatistics = evaluationStatisticsData$evaluationStatistics
   	        
   	        # exam code file data
   	        code_nops_eval = paste0("exams::nops_eval(", paste0(names(param_nops_eval), "=%s", collapse=", "), ")") 
@@ -1032,10 +1054,18 @@ source("./source/shared/log.R")
   	        code = gsub(gsub("\\", "\\\\", data$preparedEvaluation$fields$dir, fixed=TRUE), ".", code, fixed=TRUE)
   	        
   	        # write
-  	        writeLines(examEvalInputTxt, files$nops_evalInputTxt)
-  	        writeLines(evaluationStatisticsTxt, files$nops_statisticsTxt)
   	        write.csv2(evaluationData, files$nops_evaluationCsv, row.names = FALSE)
+  	        writeLines(examEvalInputTxt, files$nops_evalInputTxt)
   	        
+  	        writeLines(evaluationStatisticsData$evaluationStatisticsTxt, files$nops_statisticsTxt)
+  	        
+  	        if(length(evaluationStatisticsData$params) != 0){
+              rmarkdown::render("./source/worker/nops_report.Rmd",
+                     output_file = files$nops_report,
+                     params = evaluationStatisticsData$params,
+                     envir = new.env(parent = globalenv()))
+  	        }
+            
   	        write(code, files$examCodeFile, append = TRUE)
   	      })
   	      
@@ -1092,28 +1122,16 @@ source("./source/shared/log.R")
 # WORKER ------------------------------------------------------------------
 log_(content="INIT", "WORKER", "WORKER")
 	
-POLL_TIME = 1 / 100 # polling timeout in seconds
-COMPARE_TIME = Sys.time() # time of comparison
-
-# files to monitor for requests
-REQ_FILES = c("parseExercise_req.rds", 
-              "createExam_req.rds", 
-              "evaluateExamScans_req.rds", 
-              "evaluateExamFinalize_req.rds")
-
-# background process stack
-R_BG_STACK = list()
-
-# periodic check loop for requests
+last_mtime = as.POSIXct(0, origin="1970-01-01")
+last_files_seen = character(0)
+r_bg_stack = list()
+	
 if(DOCKER_WORKER){
-  repeat {
-    tryCatch({
-      checkWorkerRequests()
-      Sys.sleep(POLL_TIME)
-    },
-    error = function(e){
-      log_(content=e$message, "WORKER", "WORKER")
-      log_(content=traceback(), "WORKER", "WORKER")
-    })
-  }
+  tryCatch({
+    checkWorkerRequests(last_mtime=last_mtime, last_files_seen=last_files_seen, r_bg_stack=r_bg_stack)
+  },
+  error = function(e){
+    log_(content=e$message, "WORKER", "WORKER")
+    log_(content=traceback(), "WORKER", "WORKER")
+  })
 }

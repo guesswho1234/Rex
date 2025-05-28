@@ -1,0 +1,52 @@
+---
+title: "Exam Report"
+output:
+  pdf_document:
+    fig_caption: yes
+    keep_tex: true
+    latex_engine: pdflatex
+    fig_crop: FALSE
+params:
+  exerciseShortNames: NULL
+  exerciseNames: NULL
+  plots: NULL
+  captions: NULL
+  descriptions: NULL
+  markTable: NULL
+  points: NULL
+  numExercises: NULL
+  examMaxPoints: NULL
+  ir_binary: NULL
+  ir_ok: NULL
+  hm: NULL
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, fig.align = 'center')
+```
+
+```{r first-page-table, echo=FALSE, results='asis'}
+cat("### Table 1: Exercise Overview\n\n")
+
+exercise_table = data.frame(
+  Id = params$exerciseShortNames,
+  Name = params$exerciseNames,
+  stringsAsFactors = FALSE
+)
+
+knitr::kable(
+  exercise_table,
+  format = "pandoc",
+  booktabs = TRUE,
+  align = "ll"
+)
+```
+
+```{r plot-loop, results='asis', echo=FALSE, fig.width=8, fig.height=9, fig.pos='H', dpi=300}
+for (i in seq_along(params$plots)) {
+  cat(sprintf("### Figure %d: %s\n\n", i, params$captions[[i]]))
+
+  invisible(eval(params$plots[[i]]))
+  cat("\n\n", params$descriptions[[i]], "\n\n")
+}
+```

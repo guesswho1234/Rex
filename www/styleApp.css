@@ -126,7 +126,7 @@ main {
 #logout-button {
 	border: 2px solid var(---background);
 	border-radius: 3px;
-	color: white;
+	color: var(---background);
 }
 
 #profile-button {
@@ -203,9 +203,9 @@ main {
 
 #disableOverlay div span {
 	display: flex;
-	background: var(---background);
+	background: var(---transparent);
+    color: var(---gray_passive_fade);
 }
-
 
 #progressBar {
 	display: none;
@@ -214,7 +214,7 @@ main {
 	font-weight: bold;
 	margin: auto;
 	position: relative;
-	top: calc(50vh + 10px);
+	top: calc(50vh - 10px);
 	background: var(---background);
 }
 
@@ -333,9 +333,37 @@ main {
 .value-099 { width: 99%; }
 .value-100 { width: 100%; }
 
+#killWorkerProcess {
+	display: none;
+	position: relative;
+	top: calc(50vh + 15px);
+	background: var(---transparent);
+	z-index: 999;
+	margin: auto;
+}
+
+#killWorkerProcess.active {
+	display: flex;
+}
+
+#killWorkerProcess-button {
+	position: relative;
+	z-index: 999;
+	margin: auto;
+	border: 2px solid var(---background);
+	border-radius: 3px;
+	color: var(---background);
+	background-color: var(---red_error);
+	border-color: var(---red_error);
+}
+
+#killWorkerProcess-button:hover {
+	border: 2px solid var(---background);
+}
+
 #confirmdialogOverlayContentBox {
 	display: block;
-	background: white;
+	background: var(---background);
 	text-align: center;
 }
 
@@ -1818,7 +1846,7 @@ figcaption {
 	z-index: 2;
 	font-weight: bold;
 	place-items: center;
-	background: white;
+	background: var(---background);
 	place-content: center;
 	font-family: Consolas;
 	text-align: center;
@@ -1861,4 +1889,14 @@ figcaption {
 -------------------------------------------------------------- */
 .noAddons {
 	display: none !important;
+}
+
+.addonInfoContainer {
+	display: flex;
+	float: right;
+	place-content: end;
+}
+
+.addonInfo {
+	margin-left: 0.5rem;
 }

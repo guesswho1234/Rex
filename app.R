@@ -158,7 +158,10 @@ server = function(input, output, session) {
       userProfileButton = myUserProfileButton(),
       userProfileInterface = myUserProfileInterface(),
       userLogoutButton = myUserLogoutButton(),
-
+	  
+      # KILL WORKER PROCESS
+      killWorkerProcessButton = myKillWorkerProcessButton(),
+    
       # EXERCISES
       textInput_seedValueExercises = textInput("seedValueExercises", label = NULL, value = initSeed),
       button_downloadExercises = myDownloadButton(id='downloadExercises', deText="Alle speichern", enText="Save all"),
@@ -300,7 +303,12 @@ server = function(input, output, session) {
 
     changePassword(session, credentials()$info, input$`current-login-password`, input$`new-login-password1`, input$`new-login-password2`)
   })
-    
+  
+  # KILL WORKER PROCESS --------------------------------------------------------------------
+  observeEvent(input$`killWorkerProcess-button`, {
+    file.create(paste0(getDir(session), "/kill"))
+  })
+  
   # EXPORT SINGLE EXERCISE ------------------------------------------------------
   output$downloadExercise = downloadHandler(
     filename = function() {
@@ -333,11 +341,20 @@ server = function(input, output, session) {
     parseExercise_res = paste0(getDir(session), "/parseExercise_res.txt")
     parseExercise_fin = paste0(getDir(session), "/parseExercise_fin.txt")
   
-    parseExercise_req_content = list()
-    parseExercise_logHistory = c()
-    parseExerciseProgressData = list(totalExercises = NULL,
-                                previousProgress = 0,
-                                progress = 0)
+    reset_parseExercise = function(init=FALSE){
+      if(!init){
+        allowKill(session, 0)
+        finalizeProgress(session)
+      }
+      
+      parseExercise_req_content <<- list()
+      parseExercise_logHistory <<- c()
+      parseExerciseProgressData <<- list(totalExercises = NULL,
+                                       previousProgress = 0,
+                                       progress = 0)
+    }
+    
+    reset_parseExercise(init=TRUE)
   
     # CALL ---------------------------------------------------------------
     exerciseParsing = eventReactive(input$parseExercise, {
@@ -352,6 +369,7 @@ server = function(input, output, session) {
       if(length(parseExercise_req_content) == 0) {
         session$sendCustomMessage("changeTabTitle", 3)
         startWait(session)
+        allowKill(session, 1)
         initProrgress(session)
         log_(content="Parsing exercise.", USERNAME, sessionToken=session$token)
       }
@@ -371,7 +389,7 @@ server = function(input, output, session) {
       if(input$parseExercise$progress == 1) {
         parseExercise_req_content <<- append(list(dir=getDir(session)), list(exercises=parseExercise_req_content))
         
-        write_atomic(parseExercise_req_content, parseExercise_req)
+        write_atomic(parseExercise_req_content, parseExercise_req, use_uuid=TRUE)
       }
   
       return(input$parseExercise$progress)
@@ -390,14 +408,23 @@ server = function(input, output, session) {
         parseExerciseProgressData <<- monitorProgressExerciseParse(session, logData$out, parseExerciseProgressData)
   
         if(!DOCKER_WORKER)
-          checkWorkerRequests()
+          checkWorkerRequests(last_mtime=last_mtime, last_files_seen=last_files_seen, r_bg_stack=r_bg_stack)
       } else {
         if(!DOCKER_WORKER)
-          readOutput()
+          checkWorkerRequests(last_mtime=last_mtime, last_files_seen=last_files_seen, r_bg_stack=r_bg_stack)
   
         logData = processLogFile(parseExercise_log, parseExercise_logHistory)
         parseExercise_logHistory <<- logData$history
         parseExerciseProgressData <<- monitorProgressExerciseParse(session, logData$out, parseExerciseProgressData)
+        
+        # check if results exist
+        if(!file.exists(parseExercise_res)){
+          reset_parseExercise()
+          log_(content="Parsing exercise cancelled.", USERNAME, sessionToken=session$token)
+          stopWait(session)
+          session$sendCustomMessage("changeTabTitle", "reset")
+          return(0)
+        }
         
         # process results
         result = readLines(parseExercise_res)
@@ -436,15 +463,9 @@ server = function(input, output, session) {
           examParseResponse(session, result, error)
         })
         
-        session$sendCustomMessage("changeTabTitle", as.numeric(messageType))
-        
         # wrap up
-        finalizeProgress(session)
-        parseExercise_req_content <<- list()
-        parseExercise_logHistory <<- c()
-        parseExerciseProgressData <<- list(totalExercises = NULL,
-                                           previousProgress = 0,
-                                           progress = 0)
+        session$sendCustomMessage("changeTabTitle", as.numeric(messageType))
+        reset_parseExercise()
         stopWait(session)
         session$sendCustomMessage("changeTabTitle", "reset")
         log_(content="Exercise parsed.", USERNAME, sessionToken=session$token)
@@ -458,11 +479,20 @@ server = function(input, output, session) {
     createExam_res = paste0(getDir(session), "/createExam_res.txt")
     createExam_fin = paste0(getDir(session), "/createExam_fin.txt")
     
-    createExam_req_content = list()
-    createExam_logHistory = c()
-    createExamProgressData = list(totalExams = NULL,
-                                  previousProgress = 0,
-                                  progress = 0)
+    reset_createExam = function(init=FALSE){
+      if(!init){
+        allowKill(session, 0)
+        finalizeProgress(session)
+      }
+      
+      createExam_req_content <<- list()
+      createExam_logHistory <<- c()
+      createExamProgressData <<- list(totalExams = NULL,
+                                    previousProgress = 0,
+                                    progress = 0)
+    }
+    
+    reset_createExam(init=TRUE)
     
     examFiles = reactiveVal()
 
@@ -478,6 +508,7 @@ server = function(input, output, session) {
       if(length(createExam_req_content) == 0) {
         session$sendCustomMessage("changeTabTitle", 3)
         startWait(session)
+        allowKill(session, 1)
         initProrgress(session)
         log_(content="Creating exam.", USERNAME, sessionToken=session$token)
       }
@@ -558,7 +589,7 @@ server = function(input, output, session) {
                                       additionalPdfFiles=additionalPdfFiles,
                                       examLogoFile=examLogoFile)
       
-      write_atomic(createExam_req_content, createExam_req)
+      write_atomic(createExam_req_content, createExam_req, use_uuid=TRUE)
   
       return(1)
     })
@@ -576,14 +607,23 @@ server = function(input, output, session) {
         createExamProgressData <<- monitorProgressExamCreate(session, logData$out, createExamProgressData)
         
         if(!DOCKER_WORKER)
-          checkWorkerRequests()
+          checkWorkerRequests(last_mtime=last_mtime, last_files_seen=last_files_seen, r_bg_stack=r_bg_stack)
       } else {
         if(!DOCKER_WORKER)
-          readOutput()
+          checkWorkerRequests(last_mtime=last_mtime, last_files_seen=last_files_seen, r_bg_stack=r_bg_stack)
         
         logData = processLogFile(createExam_log, createExam_logHistory)
         createExam_logHistory <<- logData$history
         createExamProgressData <<- monitorProgressExamCreate(session, logData$out, createExamProgressData)
+        
+        # check if results exist
+        if(!file.exists(createExam_res)){
+          reset_createExam()
+          log_(content="Creating exam cancelled.", USERNAME, sessionToken=session$token)
+          stopWait(session)
+          session$sendCustomMessage("changeTabTitle", "reset")
+          return(0)
+        }
         
         # process results
         result = readLines(createExam_res)
@@ -599,15 +639,9 @@ server = function(input, output, session) {
   
         examCreationResponse(session, messageType, message, length(isolate(examFiles())) > 0)
         
-        session$sendCustomMessage("changeTabTitle", as.numeric(messageType))
-
         # wrap up
-        finalizeProgress(session)
-        createExam_req_content <<- c()
-        createExam_logHistory <<- c()
-        createExamProgressData <<- list(totalExams = NULL,
-                                        previousProgress = 0,
-                                        progress = 0)
+        session$sendCustomMessage("changeTabTitle", as.numeric(messageType))
+        reset_createExam()
         log_(content="Exam created.", USERNAME, sessionToken=session$token)
       }
     })
@@ -654,12 +688,21 @@ server = function(input, output, session) {
       evaluateExamScans_res = paste0(getDir(session), "/evaluateExamScans_res.txt")
       evaluateExamScans_fin = paste0(getDir(session), "/evaluateExamScans_fin.txt")
       
-      evaluateExamScans_req_content = list()
-      evaluateExamScans_logHistory = c()
-      evaluateExamScansProgressData = list(totalPdfLength = NULL,
-                                           totalPngLength = NULL,
-                                           previousProgress = 0,
-                                           progress = 0)
+      reset_evaluateExamScans = function(init=FALSE){
+        if(!init){
+          allowKill(session, 0)
+          finalizeProgress(session)
+        }
+        
+        evaluateExamScans_req_content <<- list()
+        evaluateExamScans_logHistory <<- c()
+        evaluateExamScansProgressData <<- list(totalPdfLength = NULL,
+                                               totalPngLength = NULL,
+                                               previousProgress = 0,
+                                               progress = 0)
+      }
+      
+      reset_evaluateExamScans(init=TRUE)
       
       examScanEvaluationData = reactiveVal()
     
@@ -675,6 +718,7 @@ server = function(input, output, session) {
         if(length(evaluateExamScans_req_content) == 0) {
           session$sendCustomMessage("changeTabTitle", 3)
           startWait(session)
+          allowKill(session, 1)
           initProrgress(session)
           log_(content="Evaluating exam scans.", USERNAME, sessionToken=session$token)
         }
@@ -802,7 +846,7 @@ server = function(input, output, session) {
     		                                       cores=cores,
     		                                       maxChoices=maxChoices)
         
-        write_atomic(evaluateExamScans_req_content, evaluateExamScans_req)
+        write_atomic(evaluateExamScans_req_content, evaluateExamScans_req, use_uuid=TRUE)
         
         return(1)
       })
@@ -820,14 +864,23 @@ server = function(input, output, session) {
           evaluateExamScansProgressData <<- monitorProgressExamScanEvaluation(session, logData$out, evaluateExamScansProgressData)
     
           if(!DOCKER_WORKER)
-            checkWorkerRequests()
+            checkWorkerRequests(last_mtime=last_mtime, last_files_seen=last_files_seen, r_bg_stack=r_bg_stack)
         } else {
           if(!DOCKER_WORKER)
-            readOutput()
+            checkWorkerRequests(last_mtime=last_mtime, last_files_seen=last_files_seen, r_bg_stack=r_bg_stack)
     
           logData = processLogFile(evaluateExamScans_log, evaluateExamScans_logHistory)
           evaluateExamScans_logHistory <<- logData$history
           evaluateExamScansProgressData <<- monitorProgressExamScanEvaluation(session, logData$out, evaluateExamScansProgressData)
+          
+          # check if results exist
+          if(!file.exists(evaluateExamScans_res)){
+            reset_evaluateExamScans()
+            log_(content="Evaluating exam scans cancelled.", USERNAME, sessionToken=session$token)
+            stopWait(session)
+            session$sendCustomMessage("changeTabTitle", "reset")
+            return(0)
+          }
           
           # process results
           result = as.list(readLines(evaluateExamScans_res))
@@ -850,7 +903,7 @@ server = function(input, output, session) {
                                                   files=list(solution=solution, registeredParticipants=registeredParticipants, scans=scans, scanEvaluation=scanEvaluation, scans_reg_fullJoin=scans_reg_fullJoin, examCodeFile=examCodeFile)),
                           scans_reg_fullJoinData=read.csv2(file=result$scans_reg_fullJoin, check.names = FALSE, colClasses = "character")
               )
-      
+              
               return(data)
             })
             
@@ -863,17 +916,9 @@ server = function(input, output, session) {
           
           evaluateExamScansResponse(session, result)
           
-          session$sendCustomMessage("changeTabTitle", as.numeric(messageType))
-          
           # wrap up
-          finalizeProgress(session)
-          evaluateExamScans_req_content <<- list()
-          evaluateExamScans_logHistory <<- c()
-          evaluateExamScansProgressData <<- list(totalPdfLength = NULL,
-                                               totalPngLength = NULL,
-                                               previousProgress = 0,
-                                               progress = 0)
-          
+          session$sendCustomMessage("changeTabTitle", as.numeric(messageType))
+          reset_evaluateExamScans()
           log_(content="Exam scans evaluated.", USERNAME, sessionToken=session$token)
         }
       })
@@ -893,11 +938,20 @@ server = function(input, output, session) {
       evaluateExamFinalize_res = paste0(getDir(session), "/evaluateExamFinalize_res.txt")
       evaluateExamFinalize_fin = paste0(getDir(session), "/evaluateExamFinalize_fin.txt")
       
-      evaluateExamFinalize_req_content = list()
-      evaluateExamFinalize_logHistory = c()
-      evaluateExamFinalizeProgressData = list(totalExams = NULL,
-                                              previousProgress = 0,
-                                              progress = 0)
+      reset_eevaluateExamFinalize = function(init=FALSE){
+        if(!init){
+          allowKill(session, 0)
+          finalizeProgress(session)
+        }
+        
+        evaluateExamFinalize_req_content <<- list()
+        evaluateExamFinalize_logHistory <<- c()
+        evaluateExamFinalizeProgressData <<- list(totalExams = NULL,
+                                                previousProgress = 0,
+                                                progress = 0)
+      }
+      
+      reset_eevaluateExamFinalize(init=TRUE)
       
       examFinalizeEvaluationData = reactiveVal()
   
@@ -913,6 +967,7 @@ server = function(input, output, session) {
         if(length(evaluateExamFinalize_req_content) == 0) {
           session$sendCustomMessage("changeTabTitle", 3)
           startWait(session)
+          allowKill(session, 1)
           initProrgress(session)
           log_(content="Evaluating exam.", USERNAME, sessionToken=session$token)
         }
@@ -930,7 +985,7 @@ server = function(input, output, session) {
         # request content
         evaluateExamFinalize_req_content <<- c(isolate(examScanEvaluationData()), proceedEvaluation=list(isolate(input$proceedEvaluation)))
     
-        write_atomic(evaluateExamFinalize_req_content, evaluateExamFinalize_req)
+        write_atomic(evaluateExamFinalize_req_content, evaluateExamFinalize_req, use_uuid=TRUE)
         
         return(1)
       })
@@ -948,14 +1003,23 @@ server = function(input, output, session) {
           evaluateExamFinalizeProgressData <<- monitorProgressExamFinalizeEvaluation(session, logData$out, evaluateExamFinalizeProgressData)
           
           if(!DOCKER_WORKER)
-            checkWorkerRequests()
+            checkWorkerRequests(last_mtime=last_mtime, last_files_seen=last_files_seen, r_bg_stack=r_bg_stack)
         } else {
           if(!DOCKER_WORKER)
-            readOutput()
+            checkWorkerRequests(last_mtime=last_mtime, last_files_seen=last_files_seen, r_bg_stack=r_bg_stack)
           
           logData = processLogFile(evaluateExamFinalize_log, evaluateExamFinalize_logHistory)
           evaluateExamFinalize_logHistory <<- logData$history
           evaluateExamFinalizeProgressData <<- monitorProgressExamFinalizeEvaluation(session, logData$out, evaluateExamFinalizeProgressData)
+          
+          # check if results exist
+          if(!file.exists(evaluateExamFinalize_res)){
+            reset_eevaluateExamFinalize()
+            log_(content="Evaluating exam cancelled.", USERNAME, sessionToken=session$token)
+            stopWait(session)
+            session$sendCustomMessage("changeTabTitle", "reset")
+            return(0)
+          }
           
           # process results
           result = as.list(readLines(evaluateExamFinalize_res))
@@ -966,7 +1030,7 @@ server = function(input, output, session) {
           if(messageType != "2"){
             names(result) = c("messageType", "message", "examIds", "examName", "numExercises", "numChoices", "totalPdfLength", "totalPngLength", "scanFileZipName",
                               "dir", "edirName", "cores", "rotate", "points", "regLength", "partial", "negative", "rule", "mark", "labels", "language",
-                              "solution", "registeredParticipants", "scanEvaluation", "scans_reg_fullJoin", "examCodeFile", "nops_evaluationCsv", "nops_evaluationZip", "nops_evalInputTxt", "nops_statisticsTxt")
+                              "solution", "registeredParticipants", "scanEvaluation", "scans_reg_fullJoin", "examCodeFile", "nops_evaluationCsv", "nops_evaluationZip", "nops_evalInputTxt", "nops_statisticsTxt", "nops_reportPdf")
             
             result = lapply(setNames(result, names(result)), function(x) strsplit(x, ";")[[1]])
             
@@ -975,7 +1039,7 @@ server = function(input, output, session) {
                           message=unlist(message),
                           preparedEvaluation=list(meta=list(examIds=examIds, examName=examName, numExercises=as.numeric(numExercises), numChoices=as.numeric(numChoices), totalPdfLength=as.numeric(totalPdfLength), totalPngLength=as.numeric(totalPngLength), scanFileZipName=scanFileZipName),
                                                   fields=list(dir=dir, edirName=edirName, cores=as.numeric(cores), rotate=as.logical(rotate), points=switch((length(points)==0)+1,as.numeric(points),NULL), regLength=as.numeric(regLength), partial=as.logical(partial), negative=as.logical(negative), rule=rule, mark=ifelse(mark=="FALSE",FALSE,as.numeric(mark)), labels=labels, language=language),
-                                                  files=list(solution=solution, registeredParticipants=registeredParticipants, scanEvaluation=scanEvaluation, nops_evaluationCsv=nops_evaluationCsv, nops_evaluationZip=nops_evaluationZip, nops_evalInputTxt=nops_evalInputTxt, nops_statisticsTxt=nops_statisticsTxt, examCodeFile=examCodeFile)),
+                                                  files=list(solution=solution, registeredParticipants=registeredParticipants, scanEvaluation=scanEvaluation, nops_evaluationCsv=nops_evaluationCsv, nops_evaluationZip=nops_evaluationZip, nops_evalInputTxt=nops_evalInputTxt, nops_statisticsTxt=nops_statisticsTxt, nops_reportPdf=nops_reportPdf, examCodeFile=examCodeFile)),
                           evaluationStatistics=readLines(nops_statisticsTxt)
               )
               
@@ -995,15 +1059,9 @@ server = function(input, output, session) {
             
           evaluateExamFinalizeResponse(session, result)
           
-          session$sendCustomMessage("changeTabTitle", as.numeric(messageType))
-    
           # wrap up
-          evaluateExamFinalize_req_content <<- list()
-          evaluateExamFinalize_logHistory <<- c()
-          evaluateExamFinalizeProgressData <<- list(totalExams = NULL,
-                                                  previousProgress = 0,
-                                                  progress = 0)
-    
+          session$sendCustomMessage("changeTabTitle", as.numeric(messageType))
+          reset_eevaluateExamFinalize()
           log_(content="Exam evaluated.", USERNAME, sessionToken=session$token)
         }
       })
@@ -1013,7 +1071,6 @@ server = function(input, output, session) {
       output$downloadEvaluationFiles = downloadHandler(
         filename = "evaluation.zip",
         content = function(fname) {
-          # zip(zipfile=fname, files=unlist(isolate(examFinalizeEvaluationData()$preparedEvaluation$files), recursive = TRUE), flags='-r9XjFS')
           zip(zipfile=fname, files=unlist(isolate(examFinalizeEvaluationData()$preparedEvaluation$files), recursive = TRUE), flags='-r9Xj')
         },
         contentType = "application/zip"
@@ -1032,6 +1089,7 @@ server = function(input, output, session) {
         unlink(examFinalizeEvaluationData()$preparedEvaluation$files$nops_evaluationZip)
         unlink(examFinalizeEvaluationData()$preparedEvaluation$files$nops_evalInputTxt)
         unlink(examFinalizeEvaluationData()$preparedEvaluation$files$nops_statisticsTxt)
+        unlink(examFinalizeEvaluationData()$preparedEvaluation$files$nops_reportPdf)
         
         result = isolate(examScanEvaluationData())
         
