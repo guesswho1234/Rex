@@ -107,6 +107,7 @@ When clicking the "Evaluate exam" button, the exam will be evaluated. First, the
 - Two CSV files: one containing the registered participants and another (ending with "_nops_eval.csv") containing all the evaluation data ready to distribute to participants
 - The RDS file used to evaluate the exam
 - A TXT file "statistics.txt" containing some basic evaluation statistics
+- A PDF file "nops_report.pdf" containing a statistical report of the evaluation (only provieded for >= 5 valid scans)
 - A TXT file "input.txt" containing all the input values used for evaluating the exam
 - A TXT file "code.txt" containing R code, which can be used to replicate the main output in R and without Rex
 
