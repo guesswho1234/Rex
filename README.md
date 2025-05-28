@@ -100,7 +100,7 @@ To evaluate exams, navigate to the "EXAM" tab and then to "Evaluate exam." There
 Before the evaluation of an exam is possible, the following three files need to be prepared:
 - "Solutions": the RDS file within the ZIP archive, which was supplied when the exam was created
 - "Registered participants": a CSV file containing information about exam participants (optional; if not provided, dummy participants will be used)
-- "Evaluation scans": all the evaluation sheet scans as either PDF files and/or correctly oriented PNG files
+- "Evaluation scans": all the evaluation sheet scans as either PDF files and/or PNG files (preferably all in the same orientation)
 
 When clicking the "Evaluate exam" button, the exam will be evaluated. First, the scans are processed. When this is finished, a popup will appear, allowing you to inspect and manually edit any of the processed scans. After proceeding, the evaluation will be finalized. Once finished, another popup will appear offering the option to save the exam evaluation. When saving the evaluation, a ZIP archive will be downloaded. This archive will include the following files:
 - Two ZIP archives: one (ending with "_nops_scan.zip") containing all the scans converted to PNG files, along with the extracted raw data, and another (ending with "_nops_eval.zip") containing the evaluation documents for each participant
