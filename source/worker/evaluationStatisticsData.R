@@ -109,11 +109,13 @@ getEvaluationStatisticsData = function(evaluationData, mark=FALSE, markLabels=c(
   
   if(nrow(evaluationData) >= 5){
     params = list(
+      validExams = validExams,
       exerciseShortNames = exerciseShortNames,
       exerciseNames = exerciseNames,
       plots = NULL,
       captions = NULL,
       descriptions = NULL,
+      mark = mark,
       markTable = markTable,
       points = evaluationData$points,
       numExercises = numExercises,
@@ -137,28 +139,36 @@ getEvaluationStatisticsData = function(evaluationData, mark=FALSE, markLabels=c(
       params$captions = c(params$captions, "Exam marks plot")
       params$descriptions = c(params$descriptions, "")
       params$plots = c(params$plots, quote({
-        barplot(params$markTable, xlab = "Mark", ylab = "Frequency", main="")
+        plot = barplot(params$markTable, xlab = "Mark", ylab = "Frequency", main="")
+        text(x = plot, y = params$markTable / 2, labels = paste0(round(params$markTable/sum(params$markTable) * 100, 0), "%"))
       }))
     }
     
     # Total points plot
     params$captions = c(params$captions, "Total Points Plot")
-    params$descriptions = c(params$descriptions, "")
+    params$descriptions = c(params$descriptions, "Vertical lines for mean points and mark thresholds (if the exam is marked) are placed at their exact values and may not align with histogram breaks.")
     params$plots = c(params$plots, quote({
-      hist(as.numeric(params$points), xlab = "Points", ylab = "Frequency", main = "", breaks = (0:(params$numExercises + 1) - 0.5) * params$examMaxPoints[1] / params$numExercises)
-      abline(v = (params$numExercises * 0.5 - 0.5) * params$examMaxPoints[1] / params$numExercises, xlim = c(0, params$examMaxPoints[1]), lwd = 3, col = 2)
+      hist(as.numeric(params$points), xlab = "Points", ylab = "Frequency", main = "", axes = F, ylim = c(0, max(table(as.numeric(params$points))) * 1.2), breaks = (0:(params$numExercises + 1) - 0.5) * params$examMaxPoints[1] / params$numExercises)
+      if(params$mark[1] != FALSE)
+        lapply(params$mark, function(x){
+          lines(x = rep(x * params$examMaxPoints[1], 2), y = c(0, max(table(as.numeric(params$points)))), lwd = 3, col = "#ffd380")
+        })
+      lines(x = rep(mean(params$points), 2), y = c(0, max(table(as.numeric(params$points)))), lwd = 3, lty=2, col = "#d35555")
+      axis(2, at = seq(0, 1, 0.2))
+      axis(1)
+      legend("topleft", legend = c("mean points", "mark thresholds"), lwd = 3, lty = c(2, 1), col = c("#d35555", "#ffd380"), bty="n")
     }))
     
     # Partially solved exercises plot
     params$captions = c(params$captions, "Partially Solved Exercise Plot")
-    params$descriptions = c(params$descriptions, "")
+    params$descriptions = c(params$descriptions, "The plot displays statistics for exercises that were at least solved partially.")
     params$plots = c(params$plots, quote({
       barplot(t(prop.table(summary(params$ir_binary), 1)[params$numExercises:1, 2:1]), horiz = TRUE, las = 1, main = "", xlab = "Fraction")
     }))
     
     # Participant exercise plot
     params$captions = c(params$captions, "Participant Exercise Plot")
-    params$descriptions = c(params$descriptions, "")
+    params$descriptions = c(params$descriptions, "Both plots are based on a Rasch-model. The histogram on the top shows participants' abilities. The plot on the bottom shows item difficulties with zero indicating median difficulty.")
     params$plots = c(params$plots, quote({
       psychotools::piplot(psychotools::raschmodel(params$ir_ok), xlab = "Skill", main = "")
     }))
