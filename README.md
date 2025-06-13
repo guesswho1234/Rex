@@ -6,7 +6,7 @@ Rex is developed by [Sebastian Bachler](mailto:sbachler@gmx.at). Feel free to re
 
 ## Demo
 
-Demo access and demo files can be requested via e-mail.
+Full featured access to a hosted version and example files can be requested via e-mail.
 
 ## System Resources
 
