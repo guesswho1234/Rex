@@ -38,6 +38,7 @@ exams::answerlist(ifelse(rxxTemplate_solutions, "1", "0"), rxxTemplate_solutionN
 \\end{solution}
 %% META-INFORMATION
 %% \\exextra[editable,numeric]{1}
+%% \\exextra[rmdExport,numeric]{?rxxTemplate_rmdExport}
 %% \\extype{?rxxTemplate_type}
 %% \\exsolution{\\Sexpr{exams::mchoice2string(rxxTemplate_solutions)}}
 %% \\exauthor{?rxxTemplate_author}

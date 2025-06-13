@@ -87,11 +87,9 @@
 			</li>
 		</ul>
 		<ul id="navSettings" class="nav navbar-nav nav-popout">
-			<li id="texActiveContainer" class="texMode texInputsEscaped">
-				<span id="texButtons" class="texModeSelector"><span lang="de">TeX Modus</span><span lang="en">TeX mode</span><i class="fa-regular fa-circle-dot"></i></span>
-			</li>
 			<li id="hotkeysActiveContainer">
-				<span id="hotkeyButtons" class="hotkeySelector"><span lang="de">Tastenkürzel</span><span lang="en">Hotkeys</span><i class="fa-regular fa-circle-dot"></i></span>
+				<span id="hotkeyButtons" class="hotkeySelector"><span lang="de">Tastenkürzel</span>
+				<span lang="en">Hotkeys</span><i class="fa-regular fa-circle-dot"></i></span>
 			</li>
 			<li id="buttonModeSwitchContainer">
 				<span id="iconButtons" class="buttonModeSelector"><i class="fa-solid fa-icons"></i></span>
@@ -138,12 +136,16 @@
 						<th><span lang="de">Aufgaben</span><span lang="en">Exercises</span></th>
 						<th><span lang="de">Punkte</span><span lang="en">Points</span></th>
 						<th><span lang="de">Bereiche</span><span lang="en">Sections</span></th>
+						<th><span lang="de">Typen</span><span lang="en">Types</span></th>
+						<th><span lang="de">Antwortmöglichkeiten</span><span lang="en">Choices</span></th>
 					</tr>
 					<tr>
 						<td id="s_initialSeed"></td>					
 						<td id="s_numberOfExercises"></td>			
 						<td id="s_totalPoints"></td>		
 						<td id="s_sectionsTable"></td>									
+						<td id="s_typeTable"></td>									
+						<td id="s_choicesTable"></td>									
 					</tr>
 				</table>
 			</div>
@@ -239,21 +241,39 @@
 					<label for="points"><span lang="de">Punkte</span><span lang="en">Points</span></label>
 					<div id="points"></div>
 					
-					<label for="section"><span lang="de">Bereich</span><span lang="en">Section</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Hierarchischer Aufgabenbereich mit <b>/</b> als Trennzeichen.</span><span lang="en">Hierarchical exercise section with <b>/</b> as separator.</span></span></span></label>
+					<label for="section"><span lang="de">Bereich</span><span lang="en">Section</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Hierarchischer Aufgabenbereich mit <code>/</code> als Trennzeichen.</span><span lang="en">Hierarchical exercise section with <code>/</code> as separator.</span></span></span></label>
 					<div id="section"></div>
 					
 					<label for="tags"><span lang="de">Tags</span><span lang="en">Tags</span></label>
 					<div id="tags"></div>
-											
-					<label for="question"><span lang="de">Frage</span><span lang="en">Question</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Das Backslash-Symbol ist nicht erlaubt und wird automatisch entfernt. Doppelte Anführungszeichen werden mit einzelnen Anführungszeichen ersetzt.</span><span lang="en">The backslash symbol is not allowed and will be removed. Double quotes are replaced with single quotes. </span></span></span></label>
-					<div id="question" class="texMode texInputsEscaped"></div>
+					
+					<!-- todo: -->
+					<label for="question"><span lang="de">Frage</span><span lang="en">Question</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de"><code>\</code> sind nicht erlaubt und werden automatisch entfernt. <code>"</code> werden durch <code>'</code> ersetzt.</span><span lang="en"><code>\</code> are not allowed and will be removed. <code>"</code> are replaced with <code>'</code>. </span></span></span></label>
+					<div id="exerciseQuestionTexModeContainer">
+						<label for="exerciseQuestionTexMode">
+							<span lang="de">LaTeX-Umgebungen</span>
+							<span lang="en">LaTeX Environments</span>
+							<span class="myTooltip">
+								<span class="tooltipIcon">
+									<i class="fa-regular fa-circle-question"></i>
+								</span>
+								<span class="tooltipText">
+									<span lang="de">Aktivieren, um vollständige LaTeX-Umgebungen wie <code>\begin{itemize}</code> oder <code>\begin{table}</code> verwenden zu können. Inline-Mathematik wie <code>$x^2$</code> funktioniert immer.</span>
+									<span lang="en">Enable this to use full LaTeX environments such as <code>\begin{itemize}</code> or <code>\begin{table}</code>. Inline math like <code>$x^2$</code> always works.</span>
+								</span>
+							</span>
+						</label>
+						{{ checkboxInput_exerciseQuestionTexMode }}
+					</div>
+					<div id="question" class="texMode texInputsEscaped">
+					</div>
 											
 					<label for="figure"><span lang="de">Grafik</span><span lang="en">Figure</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Bild wird in Originalgröße eingefügt.</span><span lang="en">Image will be inserted in original size.</span></span></span></label>
 					<div id="figure">
 						{{ exerciseFigureFileImport }}
 					</div>
 					
-					<label for="answers"><span lang="de">Antworten</span><span lang="en">Answers</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Jede Antwort besteht aus der Lösung ("Wahr" oder "Falsch"; in Prüfungen nicht sichtbar), dem Antworttext (in Prüfungen sichtbar) und der Lösungsbeschreibung (in Prüfungen nicht sichtbar).</span><span lang="en">Each answer consists of the solution ("True" or "False"; no visible in exams), the answer text (visible in exams), and the solution description (not visible in exams).</span></span></span></label>
+					<label for="answers"><span lang="de">Antworten</span><span lang="en">Answers</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Jede Antwort besteht aus der Lösung (<code>Wahr</code> oder <code>Falsch</code>; in Prüfungen nicht sichtbar), dem Antworttext (in Prüfungen sichtbar) und der Lösungsbeschreibung (in Prüfungen nicht sichtbar).</span><span lang="en">Each answer consists of the solution (<code>True</code> or <code>False</code>; no visible in exams), the answer text (visible in exams), and the solution description (not visible in exams).</span></span></span></label>
 					<div id="answers">
 					</div>
 				</div>	
@@ -287,7 +307,7 @@
 					<h2><span lang="de">Prüfung Erstellen</span><span lang="en">Create exam</span></h2>
 					<div>
 						<div>
-							<label for="examDate"><span lang="de">Prüfungsdatum</span><span lang="en">Exam date</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Format: <b>yyyy-mm-dd</b>.</span><span lang="en">Format: <b>yyyy-mm-dd</b>.</span></span></span></label>
+							<label for="examDate"><span lang="de">Prüfungsdatum</span><span lang="en">Exam date</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Format: <code>yyyy-mm-dd</code>.</span><span lang="en">Format: <code>yyyy-mm-dd</code>.</span></span></span></label>
 							{{ dateInput_examDate }}
 						</div>
 						<div>
@@ -304,7 +324,7 @@
 							{{ textInput_numberOfExercises }}
 						</div>
 						<div>
-							<label for="showPoints"><span lang="de">Reihenfolge der Aufgaben fixieren</span><span lang="en">Fix exercise order</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Die Reihenfolge der Aufgaben, wie unter "Aufgaben" festgelegt, wird für alle Varianten beibehalten.</span><span lang="en">The order of exercises, as set under "Exercises", is maintained for all scramblings.</span></span></span></label>
+							<label for="showPoints"><span lang="de">Reihenfolge der Aufgaben fixieren</span><span lang="en">Fix exercise order</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Die Reihenfolge der Aufgaben wird im Aufgabenbereich festgelegt und für alle Varianten beibehalten.</span><span lang="en">The order of exercises is set in the exercise section and is maintained for all scramblings.</span></span></span></label>
 							{{ checkboxInput_fixSequence }}
 						</div>
 						<div>
@@ -352,8 +372,25 @@
 							<label for="examCourse"><span lang="de">Kurs</span><span lang="en">Course</span></label>
 							{{ textInput_examCourse }}
 						</div>
+						<!-- todo: -->
 						<div class="texMode texInputsEscaped">
 							<label for="examIntro"><span lang="de">Einleitung</span><span lang="en">Intro</span></label>
+							<div id="examIntroTexModeContainer">
+								<label for="examIntroTexMode">
+									<span lang="de">LaTeX-Interpretation</span>
+									<span lang="en">LaTeX Interpretation</span>
+									<span class="myTooltip">
+										<span class="tooltipIcon">
+											<i class="fa-regular fa-circle-question"></i>
+										</span>
+										<span class="tooltipText">
+											<span lang="de">Wenn aktiviert, wird der Text als LaTeX interpretiert. Wenn deaktiviert, wird der gesamte Text als normaler Text dargestellt (LaTeX-Befehle werden nicht ausgeführt).</span>
+											<span lang="en">If enabled, the text is interpreted as LaTeX. If disabled, all text is shown as plain text (LaTeX commands are not executed).</span>
+										</span>
+									</span>
+								</label>
+								{{ checkboxInput_examIntroTexMode }}
+							</div>
 							{{ textInput_examIntro }}
 						</div>
 						<div>
@@ -400,34 +437,34 @@
 						</div>
 						<div>
 							<label for="rule"><span lang="de">Regel für Abzugspunkte</span><span lang="en">Rule for point deductions</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">
-								<b>1/nwrong:</b> Jede falsche Antwort führt zum Abzug desselben Anteils der Gesamtpunkte, sodass eine Frage mit 0 Punkten bewertet wird, sobald alle falschen Antworten angekreuzt wurden. 
+								<code>1/nwrong</code>: Jede falsche Antwort führt zum Abzug desselben Anteils der Gesamtpunkte, sodass eine Frage mit 0 Punkten bewertet wird, sobald alle falschen Antworten angekreuzt wurden. 
 								<br/>
 								<br/>
-								<b>1/(max(nwrong;2):</b> Jede falsche Antwort führt zum Abzug desselben Anteils der Gesamtpunkte, sodass eine Frage mit 0 Punkten bewertet wird, sobald alle falschen Antworten angekreuzt wurden. Sollte es jedoch nur eine falsche Antwort geben, wir der Anteil der Gesamtpunkte auf 50% gedeckelt. 
+								<code>1/(max(nwrong;2)</code>: Jede falsche Antwort führt zum Abzug desselben Anteils der Gesamtpunkte, sodass eine Frage mit 0 Punkten bewertet wird, sobald alle falschen Antworten angekreuzt wurden. Sollte es jedoch nur eine falsche Antwort geben, wir der Anteil der Gesamtpunkte auf 50% gedeckelt. 
 								<br/>
 								<br/>
-								<b>1/ncorrect:</b> Jede falsche Antwort hebt eine richtige Antwort derselben Frage auf.
+								<code>1/ncorrect</code>: Jede falsche Antwort hebt eine richtige Antwort derselben Frage auf.
 								<br/>
 								<br/>
-								<b>1:</b> Jede falsche Antwort führt zu 0 Punkten für die jeweilige Frage.
+								<code>1</code>: Jede falsche Antwort führt zu 0 Punkten für die jeweilige Frage.
 								<br/>
 								<br/>
-								<b>0:</b> Falsche Antworten führen zu keinen Abzugspunkten.
+								<code>0</code>: Falsche Antworten führen zu keinen Abzugspunkten.
 							</span>
 							<span lang="en">
-								<b>1/nwrong:</b> Each incorrect answer results in the same proportion of the total points being deducted, so that 0 points are credited for a question as soon as all incorrect answers have been ticked.
+								<code>1/nwrong</code>: Each incorrect answer results in the same proportion of the total points being deducted, so that 0 points are credited for a question as soon as all incorrect answers have been ticked.
 								<br/>
 								<br/>
-								<b>1/(max(nwrong;2):</b> Each incorrect answer results in the same proportion of the total points being deducted, so that 0 points are credited for a question as soon as all incorrect answers have been ticked. However, if there is only one incorrect answer, the proportion of total points will be capped at 50%.
+								<code>1/(max(nwrong;2)</code>: Each incorrect answer results in the same proportion of the total points being deducted, so that 0 points are credited for a question as soon as all incorrect answers have been ticked. However, if there is only one incorrect answer, the proportion of total points will be capped at 50%.
 								<br/>
 								<br/>
-								<b>1/ncorrect:</b> Each incorrect answer cancels out one correct answer of the same question.
+								<code>1/ncorrect</code>: Each incorrect answer cancels out one correct answer of the same question.
 								<br/>
 								<br/>
-								<b>1:</b> Each incorrect answer results in 0 points for that question.
+								<code>1</code>: Each incorrect answer results in 0 points for that question.
 								<br/>
 								<br/>
-								<b>0:</b> Incorrect answers do not result in any deductions.
+								<code>0</code>: Incorrect answers do not result in any deductions.
 							</span></span></span></label>							
 							{{ selectInput_rule }}
 						</div>
@@ -443,7 +480,7 @@
 							<label for="gradingKey"><span lang="de">Notenschlüssel</span><span lang="en">Grading key</span></label>
 							<table id="gradingKey">
 								<tr>
-									<th><span lang="de">Punkte</span><span lang="en">Points</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Zahlen kleiner als 1 werden als Prozent gewertet. Werte werden nicht gerundet. Schwellenwerte zählen noch zur Note derselben Zeile.</span><span lang="en">Numbers smaller than 1 are evaluated as percent. Values are not rounded. Thresholds count towards the mark of the same row.</span></span></span></th>
+									<th><span lang="de">Punkte</span><span lang="en">Points</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Zahlen kleiner eins werden als Prozent gewertet. Werte werden nicht gerundet. Schwellenwerte zählen noch zur Note derselben Zeile.</span><span lang="en">Numbers smaller than one are evaluated as percent. Values are not rounded. Thresholds count towards the mark of the same row.</span></span></span></th>
 									<th><span lang="de">Note</span><span lang="en">Mark</span></th>
 									<th></th>
 								</tr>
@@ -462,7 +499,7 @@
 							<label><span lang="de">Lösungen</span><span lang="en">Solutions</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Bei der Prüfungserellung gespeicherte RDS-Datei.</span><span lang="en">RDS file saved when creating the exam.</span></span></span></label>
 							{{ examSolutionsFileImport }}
 							
-							<label><span lang="de">Registrierte Teilnehmer</span><span lang="en">Registered participants</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Teilnehmerliste als CSV-Datei mit den Spalten "registration", "name" und "id".</span><span lang="en">Registered participants as CSV file with columns "registration", "name", and "id".</span></span></span></label>
+							<label><span lang="de">Registrierte Teilnehmer</span><span lang="en">Registered participants</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Teilnehmerliste als CSV-Datei mit den Spalten <code>registration</code>, <code>name</code> und <code>id</code>.</span><span lang="en">Registered participants as CSV file with columns <code>registration</code>, <code>name</code>, and <code>id</code>.</span></span></span></label>
 							{{ examRegisteredParticipantsFileImport }}
 							
 							<label><span lang="de">Bewertungs-Scans</span><span lang="en">Evaluation scans</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Scans als PDF- oder PNG-Dateien.</span><span lang="en">Scans as PDF or PNG files.</span></span></span></label>

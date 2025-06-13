@@ -17,7 +17,7 @@ if (!dir.exists(user_lib)) dir.create(user_lib, recursive = TRUE, showWarnings =
 .libPaths(c(user_lib, .libPaths()))
 
 # TRUE MESSAGE VALUE --------------------------------------------------------
-TRUE_MESSAGE_VALUE = FALSE
+TRUE_MESSAGE_VALUE = TRUE
 
 # PACKAGES ----------------------------------------------------------------
 library(exams) #exams_2.4-1
@@ -321,11 +321,15 @@ source("./source/shared/aWrite.R")
   			solutionNotes_raw[length(solutionNotes_raw)] = paste0(rev(rev(strsplit(solutionNotes_raw[length(solutionNotes_raw)], "")[[1]])[-1]), collapse="") #trim
   			solutionNotes_raw = Reduce(c, lapply(solutionNotes_raw, \(x) paste0(rev(rev(strsplit(x, "")[[1]])[-c(1)]), collapse=""))) # trim
   			
-  			seed = if(data$seed == "") NULL else data$seed
-  			
+  			if(is.na(data$seed)){
+  			  stop("E1032")
+  			}	else{
+  			  seed = data$seed  			  
+  			}
+
   			writeLines(text=exerciseCode, con=file)
   			
-  			exExtra = suppressWarnings(exams::extract_extra(readLines(con=file), markup="latex"))
+  			exExtra = suppressWarnings(exams::extract_extra(readLines(con=file)))
   
   			cat("Parsing exercise.\n")
   			
@@ -349,15 +353,20 @@ source("./source/shared/aWrite.R")
   	  
   			NULL
   		  })
-
-		  key = "Success"
+		  
+		  key = "Warning"
 		  value = paste(unique(unlist(warnings)), collapse="<br>")
 		  
-		  if(value != "") {
-  			key = "Warning"
-  			value = paste0("W1001", ifelse(TRUE_MESSAGE_VALUE, paste0(": ", value), ""))
+		  if(value == "")
+		    key = "Success"
+		  
+		  if(grepl("W\\d{4}", value))
+		    value = regmatches(value, regexpr("W\\d{4}", value))
+		  
+		  if(value != "" && !grepl("W\\d{4}", value)) {
+		    value = paste0("W1001", ifelse(TRUE_MESSAGE_VALUE, paste0(": ", value), ""))
 		  }
-	  
+
 		  return(list(message=list(key=key, value=value), id=data$id, seed=seed, html=html, exExtra=exExtra, figure=figure))
 		},
 		error = function(e){
@@ -385,7 +394,7 @@ source("./source/shared/aWrite.R")
 	    if(!is.null(html)) {
 	      author = html$exam1$exercise1$metainfo$author
 	      
-	      exExtra = exExtra[names(exExtra)!= "editable"]
+	      exExtra = exExtra[!names(exExtra) %in% c("editable", "convert", "rmdExport")]
 	      exExtra = Reduce(c, lapply(names(exExtra), \(x){
 	        x = rjs_keyValuePairsToJsonObject(x, rjs_vectorToJsonStringArray(exExtra[[x]]), escapeValues=FALSE)
 	      }))
@@ -408,6 +417,8 @@ source("./source/shared/aWrite.R")
 	      question_raw = paste0(html$exam1$exercise1$question_raw, collapse="")
 	      figure = rjs_vectorToJsonStringArray(unlist(figure))
 	      editable = ifelse(html$exam1$exercise1$metainfo$editable == 1, 1, 0)
+	      convert = ifelse(html$exam1$exercise1$metainfo$convert == 1, 1, 0)
+	      rmdExport = ifelse(html$exam1$exercise1$metainfo$rmdExport == 1, 1, 0)
 	      choices = rjs_vectorToJsonStringArray(html$exam1$exercise1$questionlist)
 	      choices_raw = rjs_vectorToJsonStringArray(html$exam1$exercise1$choices_raw)
 	      solutions = rjs_vectorToJsonArray(tolower(as.character(html$exam1$exercise1$metainfo$solution)))
@@ -425,6 +436,8 @@ source("./source/shared/aWrite.R")
 	      question_raw = NULL
 	      figure = NULL
 	      editable = NULL
+	      convert = NULL
+	      rmdExport = NULL
 	      choices = NULL
 	      choices_raw = NULL
 	      solutions = NULL
@@ -443,6 +456,8 @@ source("./source/shared/aWrite.R")
 	    write(question_raw, file=res, ncolumns=1, sep="\n", append=TRUE)
 	    write(figure, file=res, ncolumns=1, sep="\n", append=TRUE)
 	    write(editable, file=res, ncolumns=1, sep="\n", append=TRUE)
+	    write(convert, file=res, ncolumns=1, sep="\n", append=TRUE)
+	    write(rmdExport, file=res, ncolumns=1, sep="\n", append=TRUE)
 	    write(choices, file=res, ncolumns=1, sep="\n", append=TRUE)
 	    write(choices_raw, file=res, ncolumns=1, sep="\n", append=TRUE)
 	    write(solutions, file=res, ncolumns=1, sep="\n", append=TRUE)
@@ -498,6 +513,9 @@ source("./source/shared/aWrite.R")
   			
   			if(!all(unique(data$exerciseTypes) %in% c("schoice", "mchoice")))
   			  stop("E1020")
+		    
+		    if(length(unique(pmin(data$maxChoices, data$exerciseNumChoices))) > 1)
+		      stop("E1033")
   
   			uniqueBlocks = unique(data$blocks)
   			exercisesPerBlock = data$numberOfExercises / length(uniqueBlocks)
@@ -653,12 +671,17 @@ source("./source/shared/aWrite.R")
   		  NULL
 		  })
 		  
-		  key = "Success"
+		  key = "Warning"
 		  value = paste(unique(unlist(warnings)), collapse="<br>")
 		  
-		  if(value != "") {
-  			key = "Warning"
-  			value = paste0("W1002", ifelse(TRUE_MESSAGE_VALUE, paste0(": ", value), ""))
+		  if(value == "")
+		    key = "Success"
+		  
+		  if(grepl("W\\d{4}", value))
+		    value = regmatches(value, regexpr("W\\d{4}", value))
+		  
+		  if(value != "" && !grepl("W\\d{4}", value)) {
+		    value = paste0("W1002", ifelse(TRUE_MESSAGE_VALUE, paste0(": ", value), ""))
 		  }
 	  
 		  return(list(message=list(key=key, value=value), files=list(sourceFiles=preparedExam$sourceFiles, examFiles=preparedExam$examFiles, codeFiles=preparedExam$codeFiles)))
@@ -797,7 +820,7 @@ source("./source/shared/aWrite.R")
   			                         verbose=TRUE)
   			  
   			  scanData = rlang::exec(exams::nops_scan, !!!param_nops_scan)
-  
+  			  
   			  dummyFirstRow = paste0(rep(NA,51), collapse=" ")
   			  scanData = read.table(text=c(dummyFirstRow, scanData), sep=" ", fill=TRUE)
   			  scanData = scanData[-1,]
@@ -821,7 +844,7 @@ source("./source/shared/aWrite.R")
     				  openssl::base64_encode(blob)
     				}))
   			  }
-  
+  			  
   			  # full outer join of scanData and registeredParticipantData
   			  scans_reg_fullJoinData = NULL
   			  
@@ -849,7 +872,8 @@ source("./source/shared/aWrite.R")
   			  
   			  # pad zeroes to registration numbers and answers
   			  scans_reg_fullJoinData$registration[scans_reg_fullJoinData$registration != "XXXXXXX"] = sprintf(paste0("%0", max(fields$regLength, 5), "d"), as.numeric(scans_reg_fullJoinData$registration[scans_reg_fullJoinData$registration != "XXXXXXX"]))
-  			  scans_reg_fullJoinData[,as.character(1:meta$numExercises)] = apply(scans_reg_fullJoinData[,as.character(1:meta$numExercises)], 2, function(x){
+  			  
+  			  scans_reg_fullJoinData[,as.character(1:meta$numExercises)] = apply(scans_reg_fullJoinData[,as.character(1:meta$numExercises), drop = FALSE], 2, function(x){
   			    x[is.na(x)] = 0
   			    x = sprintf(paste0("%0", data$maxChoices, "d"), as.numeric(x))
   			  })
@@ -878,12 +902,18 @@ source("./source/shared/aWrite.R")
   			
   			NULL
   		  })
-  
-  		  key = "Success"
+  		  
+  		  key = "Warning"
   		  value = paste(unique(unlist(warnings)), collapse="<br>")
-  		  if(value != "") {
-    			key = "Warning"
-    			value = paste0("W1003", ifelse(TRUE_MESSAGE_VALUE, paste0(": ", value), ""))
+  		  
+  		  if(value == "")
+  		    key = "Success"
+  		  
+  		  if(grepl("W\\d{4}", value))
+  		    value = regmatches(value, regexpr("W\\d{4}", value))
+  		  
+  		  if(value != "" && !grepl("W\\d{4}", value)) {
+  		    value = paste0("W1003", ifelse(TRUE_MESSAGE_VALUE, paste0(": ", value), ""))
   		  }
   
   		  return(list(message=list(key=key, value=value),
@@ -1017,7 +1047,7 @@ source("./source/shared/aWrite.R")
   	                              mark = fields$mark,
   	                              labels = fields$labels,
   	                              language = fields$language)
-
+  	        
   	        examEvalInputTxt = Reduce(c, lapply(names(examEvalFields), \(x){
   	          values = examEvalFields[[x]]
   	          
@@ -1060,21 +1090,35 @@ source("./source/shared/aWrite.R")
   	        writeLines(evaluationStatisticsData$evaluationStatisticsTxt, files$nops_statisticsTxt)
   	        
   	        if(length(evaluationStatisticsData$params) != 0){
-              rmarkdown::render("./source/worker/nops_report.Rmd",
-                     output_file = files$nops_report,
-                     params = evaluationStatisticsData$params,
-                     envir = new.env(parent = globalenv()))
+  	          tryCatch({
+  	            rmarkdown::render("./source/worker/nops_report.Rmd",
+  	                              output_file = files$nops_report,
+  	                              params = evaluationStatisticsData$params,
+  	                              envir = new.env(parent = globalenv()))
+  	          }, error = function(e) {
+  	            warning("W1007")
+  	          })
+              
+  	        } else {
+  	          warning("W1008")
   	        }
-            
+  	        
   	        write(code, files$examCodeFile, append = TRUE)
   	      })
   	      
   	      NULL
   	    })
-  	    key = "Success"
+  	    
+  	    key = "Warning"
   	    value = paste(unique(unlist(warnings)), collapse="<br>")
-  	    if(value != "") {
-  	      key = "Warning"
+  	    
+  	    if(value == "")
+  	      key = "Success"
+  	    
+  	    if(grepl("W\\d{4}", value))
+  	      value = regmatches(value, regexpr("W\\d{4}", value))
+  	    
+  	    if(value != "" && !grepl("W\\d{4}", value)) {
   	      value = paste0("W1004", ifelse(TRUE_MESSAGE_VALUE, paste0(": ", value), ""))
   	    }
   	    

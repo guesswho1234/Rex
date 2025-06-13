@@ -172,15 +172,14 @@ myEvaluationCharts = function(chartData, examMaxPoints, validExams, showGradingC
 }
 
 myPointsChart = function(id, values, examMaxPoints, deCaption, enCaption) {
-  names = values[,1]
   values = values[,-1,drop=F]
   meanValue = values[1]
   
-  values_	= values
+  values_ = values
   
   if(length(values) > 1) {
     names(values_) = c(names(values)[1], "", names(values)[-c(1,length(values))])
-    values_ = values_[,as.numeric(values_)>0,drop=FALSE]
+    values_ = values_[,as.numeric(values_) > 0 | names(values_) == "mean",drop=FALSE]
     values_ = values_[,order(as.numeric(values_)),drop=FALSE]
   } else {
     names(values) = ""
@@ -188,11 +187,11 @@ myPointsChart = function(id, values, examMaxPoints, deCaption, enCaption) {
   
 	cssChart = paste0('',
 		'<figure id="', id, '" aria-hidden="true">',
-			paste0('<figcaption><span lang="de">', deCaption, ' (', examMaxPoints, ' erreichbare Punkte):</span><span lang="en">', enCaption, ' (Total points: ', examMaxPoints, ' achievable points):</span></figcaption>'),
+			paste0('<figcaption><span lang="de">', deCaption, ' (', examMaxPoints, ' erreichbare Punkte):</span><span lang="en">', enCaption, ' (', examMaxPoints, ' achievable points):</span></figcaption>'),
 		  '<div class="graph rowGraph" style="grid: repeat(1, auto) max-content / max-content repeat(7, auto);">',
 			'<div class="graphRowBar valueBar fullBar" style="grid-row: 1; width: 100%;"><span class="markValue">', tail(names(values), 1), '</span></div>',
     		paste0(sapply(ncol(values_):1, \(v) paste0('<div class="graphRowBar valueBar ', ifelse(names(values_)[v]=="mean", 'meanValue', ''), '" style="grid-row: 1; width: ', 
-    		                                           as.numeric(values_[,v]) * 100, '%;"><span class="markValue">', ifelse(names(values_)[v]=="mean", paste0('&#x2205; ', round(as.numeric(meanValue) * as.numeric(examMaxPoints),0)), names(values_)[v]), '</span></div>')), collapse=""),
+    		                                           ifelse(as.numeric(values_[,v]) == 1, 'calc(100% - 2px);', paste0(as.numeric(values_[,v]) * 100, '%;')), '"><span class="markValue">', ifelse(names(values_)[v]=="mean", paste0('&#x2205; ', round(as.numeric(meanValue) * as.numeric(examMaxPoints),0)), names(values_)[v]), '</span></div>')), collapse=""),
 			'<div class="graphRowBar valueBar nullBar" style="grid-row: 1; width: 0%;"></div>',
 			'<div class="graphRowBar overlayBar" style="grid-row: 1; width: 100%;"><span class="absoluteValue"></span></div>',
 		  '</div>',

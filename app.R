@@ -36,25 +36,10 @@ source("./source/main/database.R")
 source("./source/main/permission.R")
 source("./source/main/processingResponses.R")
 source("./source/main/progressMonitoring.R")
+source("./source/main/exerciseExport.R")
 
 if(!DOCKER_WORKER)
   source("./worker.R")  
-
-# FUNCTIONS ----------------------------------------------------------------
-  prepareExerciseDownloadFiles = function(session, exercises){
-    dir = getDir(session)
-    
-    exercises$exerciseNames = as.list(make.unique(unlist(exercises$exerciseNames), sep="_"))
-    
-    exerciseFiles = unlist(lapply(setNames(seq_along(exercises$exerciseNames), exercises$exerciseNames), function(i){
-      file = paste0(dir, "/", exercises$exerciseNames[[i]], ".", exercises$exerciseExts[[i]])
-      writeLines(text=gsub("\r\n", "\n", exercises$exerciseCodes[[i]]), con=file)
-  
-      return(file)
-    }))
-    
-    return(list(exerciseFiles=exerciseFiles))
-  }
 
 # PARAMETERS --------------------------------------------------------------
   # REXAMS ------------------------------------------------------------------
@@ -167,6 +152,7 @@ server = function(input, output, session) {
       button_downloadExercises = myDownloadButton(id='downloadExercises', deText="Alle speichern", enText="Save all"),
       button_downloadExercise = myDownloadButton(id='downloadExercise'),
       exerciseFigureFileImport = myFileImport("exerciseFigure", "exerciseFigure"),
+      checkboxInput_exerciseQuestionTexMode = checkboxInput("exerciseQuestionTexMode", label = NULL, value = FALSE),
     
       # EXAM CREATE
       dateInput_examDate = dateInput("examDate", label = NULL, value = NULL, format = "yyyy-mm-dd"),
@@ -186,6 +172,7 @@ server = function(input, output, session) {
       textInput_examTitle = textInput("examTitle", label = NULL, value = NULL),
       textInput_examCourse = textInput("examCourse", label = NULL, value = NULL),
       textInput_examIntro = textAreaInput("examIntro", label = NULL, value = NULL),
+      checkboxInput_examIntroTexMode = checkboxInput("examIntroTexMode", label = NULL, value = FALSE),
       textInput_numberOfBlanks = textInput("numberOfBlanks", label = NULL, value = 5),
       
       additionalPdfFileImport = myFileImport("additionalPdf", "additionalPdf"),
@@ -232,6 +219,7 @@ server = function(input, output, session) {
     # SCRIPTS
     tags$script(src="www/script.js"),
     tags$script(src="www/rnwTemplate.js"),
+    tags$script(src="www/rmdTemplate.js"),
     
     # ADDON SCRIPTS
     lapply(addons, \(addon) {
@@ -315,7 +303,8 @@ server = function(input, output, session) {
       paste0(isolate(input$exerciseToDownload$exerciseName), ".", input$exerciseToDownload$exerciseExt)
     },
     content = function(fname) {
-      writeLines(text=gsub("\r\n", "\n", isolate(input$exerciseToDownload$exerciseCode)), con=fname)
+      code = gsub("\r\n", "\n", isolate(input$exerciseToDownload$exerciseCode))
+      writeLines(text=code, con=fname)
       removeRuntimeFiles(session)
     },
     contentType = paste0("text/", input$exerciseToDownload$exerciseExt),
@@ -429,7 +418,7 @@ server = function(input, output, session) {
         # process results
         result = readLines(parseExercise_res)
         
-        items = 20
+        items = 22
         exercises = floor(length(result) / items)
         
         messageType = c()
@@ -451,6 +440,8 @@ server = function(input, output, session) {
                                     "question_raw",
                                     "figure",
                                     "editable",
+                                    "convert",
+                                    "rmdExport",
                                     "choices",
                                     "choices_raw",
                                     "solutions",
@@ -462,6 +453,8 @@ server = function(input, output, session) {
   
           examParseResponse(session, result, error)
         })
+        
+        session$sendCustomMessage("convertExercises", 1)
         
         # wrap up
         session$sendCustomMessage("changeTabTitle", as.numeric(messageType))
@@ -566,6 +559,7 @@ server = function(input, output, session) {
                                       seedMin=seedMin,
                                       seedMax=seedMax,
                                       exerciseTypes=unlist(exam$exerciseTypes),
+                                      exerciseNumChoices=unlist(exam$exerciseNumChoices),
                                       blocks=unlist(exam$blocks),
                                       seedValueExam=as.numeric(input$seedValueExam),
                                       numberOfExercises=as.numeric(input$numberOfExercises),

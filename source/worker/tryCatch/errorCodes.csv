@@ -7,7 +7,7 @@ E1004;Unknown error.;Unbekannter Fehler.
 E1005;Exercise type is not 'schoice' or 'mchoice'.; Aufgabentyp ist nicht 'schoice' oder 'mchoice'.
 E1006;Exercise needs at least two choices.;Aufgabe benötigt mindestens zwei Antwortmöglichkeiten.
 E1007;Exercise has indentical choices.;Aufgabe hat identische Antwortmöglichkeiten.
-E1008;Seed must at least be one.;Anzahl an Prüfungsaufgaben muss mindestens eins sein.
+E1008;Seed must at least be one.;Seed muss mindestens eins sein.
 E1009;Exam seed must not exceed 99999999.;Prüfungs-Seed darf nicht größer als 99999999 sein.
 E1010;Number of exam tasks must at least be one.;Anzahl an Prüfungsaufgaben muss mindestens eins sein.
 E1011;Number of exam tasks must not exceed 45.;Anzahl an Prüfungsaufgaben darf nicht größer als 45 sein.
@@ -31,3 +31,5 @@ E1028;Invalid grading key.;Ungültiger Notenschlüssel.
 E1029;Invalid grading key.;Ungültiger Notenschlüssel.
 E1030;Invalid exam date.;Ungültiges Prüfugnsdatum.
 E1031;The registration file is empty.;Die Teilnehmerliste ist leer.
+E1032;Seed must be a number.;Seed muss eine Zahl sein.
+E1033;Exercises with less than 5 answers have varying number of answers.;Aufgaben mit weniger als 5 Antwortmöglichkeiten unterscheiden sich in der Anzahl and Antwortmöglichkeiten.

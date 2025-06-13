@@ -4,8 +4,9 @@ output:
   pdf_document:
     fig_caption: yes
     keep_tex: true
-    latex_engine: pdflatex
+    latex_engine: xelatex
     fig_crop: FALSE
+mainfont: "TeX Gyre Heros"
 params:
   validExams: NULL
   exerciseShortNames: NULL
@@ -14,13 +15,16 @@ params:
   captions: NULL
   descriptions: NULL
   mark: NULL
+  markLabels: NULL
   markTable: NULL
   points: NULL
   numExercises: NULL
   examMaxPoints: NULL
+  exercisePoints: NULL
   ir_binary: NULL
   ir_ok: NULL
   hm: NULL
+  rasch_model: NULL
 ---
 
 ```{r setup, include=FALSE}
@@ -45,7 +49,7 @@ knitr::kable(
   align = "ll"
 )
 
-cat("### Table 1: Exercise Overview\n\n")
+cat("### Table 2: Exercise Overview\n\n")
 
 exercise_table = data.frame(
   Id = params$exerciseShortNames,
@@ -61,7 +65,7 @@ knitr::kable(
 )
 ```
 
-```{r plot-loop, results='asis', echo=FALSE, fig.width=8, fig.height=9, fig.pos='H', dpi=300}
+```{r plot-loop, results='asis', echo=FALSE, fig.width=8, fig.height=9, fig.pos='H', dpi=300, family='Helvetica'}
 for (i in seq_along(params$plots)) {
   cat(sprintf("### Figure %d: %s\n\n", i, params$captions[[i]]))
 

@@ -33,9 +33,8 @@ updateEvaluationData = function(solutionData, evaluationData, edirName=""){
   evaluationData[paste("solution", 1:length(solutionData[[1]]), sep=".")] = sprintf(paste0("%0", 5, "d"), unlist(evaluationData[paste("solution", 1:length(solutionData[[1]]), sep=".")]))
   
   # set data types of evaluation data
-  evaluationData = as.data.frame(evaluationData)
-  evaluationData[,grepl("check", names(evaluationData), ignore.case = TRUE)] = apply(evaluationData[,grepl("check", names(evaluationData), ignore.case = TRUE)], 2, as.numeric)
-  evaluationData[,grepl("points", names(evaluationData), ignore.case = TRUE)] = apply(evaluationData[,grepl("points", names(evaluationData), ignore.case = TRUE)], 2, as.numeric)
+  evaluationData[,grepl("check", names(evaluationData), ignore.case = TRUE)] = apply(evaluationData[,grepl("check", names(evaluationData), ignore.case = TRUE), drop = FALSE], 2, as.numeric)
+  evaluationData[,grepl("points", names(evaluationData), ignore.case = TRUE)] = apply(evaluationData[,grepl("points", names(evaluationData), ignore.case = TRUE), drop = FALSE], 2, as.numeric)
   
   return(evaluationData)
 }
@@ -56,14 +55,10 @@ getEvaluationStatisticsData = function(evaluationData, mark=FALSE, markLabels=c(
   # number of exercises
   numExercises = length(exerciseShortNames)
   
-  # item responses
-  ir = matrix(apply(evaluationData[,grepl("check.*", names(evaluationData))], 2, as.numeric), nrow=nrow(evaluationData))
-  colnames(ir) = exerciseShortNames
-  
   # statistics parameters
   examMaxPoints = matrix(max(as.numeric(evaluationData$examMaxPoints)), dimnames=list("examMaxPoints", "value"))
+  
   validExams = matrix(nrow(evaluationData), dimnames=list("validExams", "value"))
-  exercisePoints = t(apply(ir, 2, summary))
   
   totalPoints = t(summary(as.numeric(evaluationData$points)))
   rownames(totalPoints) = "totalPoints"
@@ -72,14 +67,34 @@ getEvaluationStatisticsData = function(evaluationData, mark=FALSE, markLabels=c(
   colnames(points) = c("mean")
   rownames(points) = "points"
   
-  if(length(markLabels) == 0)
-    markLabels = unique(evaluationData$mark)
-  markTable = table(factor(evaluationData$mark, markLabels))
+  # item responses
+  identicalExercises = all(sapply(1:nrow(evaluationData), function(x){
+    all(evaluationData[x,exerciseNameColumns] %in% exerciseNames)
+  }))
   
+  ir = matrix()
+  exercisePoints = matrix()
+  
+  if(identicalExercises){
+    ir = matrix(apply(evaluationData[,grepl("check.*", names(evaluationData)), drop = FALSE], 2, as.numeric), nrow=nrow(evaluationData))
+    colnames(ir) = exerciseNames
+    
+    for(i in 1:nrow(ir)){
+      ir[i,] = ir[i, exerciseNames[match(exerciseNames, evaluationData[i, exerciseNameColumns])]]
+    }
+
+    exercisePoints = t(apply(ir, 2, summary))
+    
+    colnames(ir) = exerciseShortNames
+  }
+
   # basic statistics
+  markTable = table(NULL)
   marks = matrix()
 
-  if(length(markTable) > 0 && mark[1] != FALSE){
+  if(mark[1] != FALSE && (length(mark) + 1) == length(markLabels)){
+    markTable = table(factor(evaluationData$mark, markLabels))
+    
     marks = cbind(markTable, markTable/sum(markTable), rev(cumsum(rev(markTable)))/sum(markTable))
     colnames(marks) = c("absolute", "relative", "relative cumulative")
     
@@ -107,7 +122,7 @@ getEvaluationStatisticsData = function(evaluationData, mark=FALSE, markLabels=c(
   # statistics report
   params = list()
   
-  if(nrow(evaluationData) >= 5){
+  if(nrow(evaluationData) >= 5 && numExercises >= 5){
     params = list(
       validExams = validExams,
       exerciseShortNames = exerciseShortNames,
@@ -116,23 +131,98 @@ getEvaluationStatisticsData = function(evaluationData, mark=FALSE, markLabels=c(
       captions = NULL,
       descriptions = NULL,
       mark = mark,
+      markLabels = markLabels,
       markTable = markTable,
       points = evaluationData$points,
       numExercises = numExercises,
       examMaxPoints = examMaxPoints,
+      exercisePoints = exercisePoints,
       ir_binary = ir,
       ir_ok = NULL,
-      hm = NULL
+      hm = NULL,
+      rasch_model = NULL
     )
     
+    rownames(params$exercisePoints) = exerciseShortNames
+    
     params$ir_binary[] = 0L + (as.numeric(ir) > 0)
-    for(i in 1:nrow(params$ir_binary)){
-      params$ir_binary[i,] = params$ir_binary[i, exerciseShortNames[match(exerciseNames, evaluationData[i, exerciseNameColumns])]]
-    }
     params$ir_binary = psychotools::itemresp(as.data.frame(params$ir_binary), mscale = 0:1)
     params$ir_ok = params$ir_binary[, apply(params$ir_binary, 2, function(x) length(unique(x)) == 2)]
+    
+    tryCatch({
+      params$hm = suppressWarnings(homals::homals(as.data.frame(as.matrix(params$ir_ok)), ndim = if(numExercises <= 5L) numExercises else ceiling(numExercises/3)))   
+    }, error = function(e) {
+      params$hm = NULL
+      warning("W1005")
+    })
+    
+    tryCatch({
+      params$rasch_model = psychotools::raschmodel(params$ir_ok)
+    }, error = function(e) {
+      params$rasch_model = NULL
+      warning("W1006")
+    })
 
-    params$hm = suppressWarnings(homals::homals(as.data.frame(as.matrix(params$ir_ok)), ndim = if(numExercises <= 5L) numExercises else ceiling(numExercises/3)))
+    # Total points plot
+    params$captions = c(params$captions, "Total Points Plot")
+    params$descriptions = c(params$descriptions, "")
+    params$plots = c(params$plots, quote({
+      breaks = seq(0, params$examMaxPoints[1], length.out = params$numExercises)
+      if(params$mark[1] != FALSE){
+        breaks = sort(unique(c(breaks, mean(params$points), params$examMaxPoints[1] * params$mark)))
+      }
+      breaks = c(breaks, Inf)
+      
+      counts_per_bin = vapply(1:(length(breaks) - 1), FUN.VALUE = 1, function(x) {
+        sum(params$points > breaks[x] & params$points <= breaks[x + 1])
+      })
+      yMax = max(counts_per_bin / (length(params$points) * diff(breaks)))
+      
+      plot = hist(as.numeric(params$points), xlab = "Points", ylab = "Fraction", freq = FALSE, main = "", axes = F, ylim = c(0, yMax * 1.2), breaks = breaks[-length(breaks)])
+      if(params$mark[1] != FALSE){
+        thresholds = c(0, params$mark, 1)
+        threshold_midpoints = head(thresholds, -1) + diff(thresholds) / 2
+        x_positions = threshold_midpoints * params$examMaxPoints[1]
+        y_position = yMax / 2
+        
+        lapply(seq_along(params$markLabels), function(x){
+          x_value = c(params$mark, 1)[x]
+          
+          if(x_value != 1){
+            lines(x = rep(c(params$mark, 1)[x] * params$examMaxPoints[1], 2), y = c(0, yMax), lwd = 3, col = "#ffd380")
+          }
+          
+          label = params$markLabels[x]
+          cex = 1
+          
+          # Estimate text size in user coordinates
+          strwidth_ = strwidth(label, cex = cex) * 1.2
+          strheight_ = strheight(label, cex = cex) * 1.5
+          
+          # Draw filled rectangle (box)
+          rect(xleft = x_positions[x] - strwidth_ / 2,
+               xright = x_positions[x] + strwidth_ / 2,
+               ybottom = y_position - strheight_ / 2,
+               ytop = y_position + strheight_ / 2,
+               col = "#ffd380", border = "#555555", lwd = 0.5)
+          
+          # Draw text on top of rectangle
+          text(x = x_positions[x], y = y_position, labels = label, cex = cex)
+        })
+      }
+      lines(x = rep(mean(params$points), 2), y = c(0, yMax), lwd = 3, lty=2, col = "#d35555")
+      axis(2, at = seq(0, yMax, by = round(yMax/8, 2)), labels = seq(0, yMax, by = round(yMax/8, 2)), las=2)
+      axis(1, at = unique(round(c(0, params$examMaxPoints[1] * params$mark, params$examMaxPoints[1]), 2)))
+      legend("topleft", legend = c(paste0("mean points (", round(mean(params$points), 2), ")"), "mark thresholds"), lwd = 3, lty = c(2, 1), col = c("#d35555", "#ffd380"), bty="n")
+    }))
+    
+    # Partially solved exercises plot
+    params$captions = c(params$captions, "Exercise Plot")
+    params$descriptions = c(params$descriptions, "")
+    params$plots = c(params$plots, quote({
+      barplot(t(prop.table(cbind(rev(params$exercisePoints[,4]), 1 - rev(params$exercisePoints[,4])), 1)), horiz = TRUE, las = 1, main = "Average Points", xlab = "Fraction")
+      barplot(t(prop.table(summary(params$ir_binary), 1)[params$numExercises:1, 2:1]), horiz = TRUE, las = 1, main = "Partially Solved", xlab = "Fraction")
+    }))
     
     # Exam marks plot
     if(length(markTable) > 0 && mark[1] != FALSE){
@@ -144,42 +234,24 @@ getEvaluationStatisticsData = function(evaluationData, mark=FALSE, markLabels=c(
       }))
     }
     
-    # Total points plot
-    params$captions = c(params$captions, "Total Points Plot")
-    params$descriptions = c(params$descriptions, "Vertical lines for mean points and mark thresholds (if the exam is marked) are placed at their exact values and may not align with histogram breaks.")
-    params$plots = c(params$plots, quote({
-      hist(as.numeric(params$points), xlab = "Points", ylab = "Frequency", main = "", axes = F, ylim = c(0, max(table(as.numeric(params$points))) * 1.2), breaks = (0:(params$numExercises + 1) - 0.5) * params$examMaxPoints[1] / params$numExercises)
-      if(params$mark[1] != FALSE)
-        lapply(params$mark, function(x){
-          lines(x = rep(x * params$examMaxPoints[1], 2), y = c(0, max(table(as.numeric(params$points)))), lwd = 3, col = "#ffd380")
-        })
-      lines(x = rep(mean(params$points), 2), y = c(0, max(table(as.numeric(params$points)))), lwd = 3, lty=2, col = "#d35555")
-      axis(2, at = seq(0, 1, 0.2))
-      axis(1)
-      legend("topleft", legend = c("mean points", "mark thresholds"), lwd = 3, lty = c(2, 1), col = c("#d35555", "#ffd380"), bty="n")
-    }))
-    
-    # Partially solved exercises plot
-    params$captions = c(params$captions, "Partially Solved Exercise Plot")
-    params$descriptions = c(params$descriptions, "The plot displays statistics for exercises that were at least solved partially.")
-    params$plots = c(params$plots, quote({
-      barplot(t(prop.table(summary(params$ir_binary), 1)[params$numExercises:1, 2:1]), horiz = TRUE, las = 1, main = "", xlab = "Fraction")
-    }))
-    
     # Participant exercise plot
-    params$captions = c(params$captions, "Participant Exercise Plot")
-    params$descriptions = c(params$descriptions, "Both plots are based on a Rasch-model. The histogram on the top shows participants' abilities. The plot on the bottom shows item difficulties with zero indicating median difficulty.")
-    params$plots = c(params$plots, quote({
-      psychotools::piplot(psychotools::raschmodel(params$ir_ok), xlab = "Skill", main = "")
-    }))
+    if(identicalExercises && length(params$rasch_model) > 0){
+      params$captions = c(params$captions, "Participant Exercise Plot")
+      params$descriptions = c(params$descriptions, "Both plots are based on a Rasch-model. The histogram shows participants' abilities. The plot below the histogram shows item difficulties with zero indicating median difficulty.")
+      params$plots = c(params$plots, quote({
+        psychotools::piplot(params$rasch_model, xlab = "Skill", main = "")
+      }))
+    }
     
     # Factor analysis plot
-    params$captions = c(params$captions, "Factor Analysis Plot")
-    params$descriptions = c(params$descriptions, "")
-    params$plots = c(params$plots, quote({
-      plot(params$hm, plot.type = "loadplot", main = "Factor Loadings")
-      barplot(params$hm$eigenvalues, xlab = "Dimension", ylab = "Eigenvalue", main = "Eigenvalues", names.arg = seq_along(params$hm$eigenvalues))
-    }))
+    if(identicalExercises && length(params$hm) > 0){
+      params$captions = c(params$captions, "Factor Analysis Plot")
+      params$descriptions = c(params$descriptions, "")
+      params$plots = c(params$plots, quote({
+        plot(params$hm, plot.type = "loadplot", main = "Factor Loadings")
+        barplot(params$hm$eigenvalues, xlab = "Dimension", ylab = "Eigenvalue", main = "Eigenvalues", names.arg = seq_along(params$hm$eigenvalues))
+      }))
+    }
   }
   
   return(list(evaluationStatistics=evaluationStatistics, 

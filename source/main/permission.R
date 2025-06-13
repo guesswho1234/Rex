@@ -1,10 +1,11 @@
 permissionCodes = read.csv2("./source/main/permission/permissionCodes.csv")
 
 prime_factors = function(x, i, factors = NULL){
-		if(x < i[1]) factors
-		else if(! x %% i[1]) prime_factors(x/i[1], i, c(factors, i[1]))
-		else  prime_factors(x, i[-1], factors)
-    }
+	if(x < i[1]) factors
+	else if(! x %% i[1]) prime_factors(x/i[1], i, c(factors, i[1]))
+	else  prime_factors(x, i[-1], factors)
+}
+
 
 checkPermission = function(code, userPm){
 	permissions = prime_factors(userPm, permissionCodes$require)

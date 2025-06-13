@@ -4,3 +4,7 @@ W1001;Unknown warning.;Unbekannte Warnung.
 W1002;Unknown warning.;Unbekannte Warnung.
 W1003;Unknown warning.;Unbekannte Warnung.
 W1004;Unknown warning.;Unbekannte Warnung.
+W1005;Could not create factor analysis.;Faktor Analyse konnte nicht erstellt werden.
+W1006;Could not create Rasch model.;Rasch-Modell konnte nicht erstellt werden.
+W1007;Could not create statistics report.;Statistik-Bericht konnte nicht erstellt werden.
+W1008;Could not create statistics report.;Statistik-Bericht konnte nicht erstellt werden.

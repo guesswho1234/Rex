@@ -864,6 +864,10 @@ main > * {
 	border-left: 3px solid var(---highlight_values);
 }
 
+.sidebarListItem.editable.texMode {
+	border-left: 3px solid var(---highlight_values2) !important;
+}
+
 .sidebarListItem.filtered {
 	display: none;
 }
@@ -1163,6 +1167,35 @@ main > * {
 	font-weight: bold;
 }
 
+#exerciseQuestionTexModeContainer,
+#examIntroTexModeContainer {
+    display: flex;
+	justify-content: flex-end;
+	flex-wrap: nowrap;
+	flex-direction: row-reverse;
+	float: right;
+	margin-left: 8px;
+	height: 20px;
+}
+
+#exerciseQuestionTexModeContainer label,
+#examIntroTexModeContainer  label {
+    width: fit-content;
+    font-weight: normal;
+}
+
+#exerciseQuestionTexModeContainer .form-group,
+#examIntroTexModeContainer  .form-group {
+    width: fit-content;
+    font-weight: normal;
+    margin: 0;
+}
+
+#exerciseQuestionTexModeContainer .checkbox,
+#examIntroTexModeContainer  .checkbox {
+    margin: 0;
+}
+
 #question img,
 #question table {
 	margin: 1rem;
@@ -1256,6 +1289,14 @@ main > * {
 /* --------------------------------------------------------------
  CREATE EXAMS 
 -------------------------------------------------------------- */
+#exam_create > div > div {
+    width: fit-content;
+}
+
+.texModeContainer{
+    float: right;
+}
+
 #compareScanRegistrationDataTable {
 	margin: 1rem;
 	overflow-y: auto;
