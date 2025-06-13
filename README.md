@@ -73,11 +73,9 @@ When managing exercises, the following input fields can generally be edited:
 - Type
 - Points
 - Section
-- Question (accepts LaTeX code when "TeX mode" is switched on)
+- Question (accepts inline math formulas by deafult and also full LaTeX environments when switched on)
 - Figure (accepts a single PNG file per exercise)
-- Answers (consisting of the solution, answer text, and a solution note)
-
-Beyond the user interface of Rex, exercises with more complexity (i.e., seed based exercise variations or exercises with R plots) can also be coded outside of Rex and are accepted as RNW and RMD files. However, these exercises are not editable within Rex. 
+- Answers (consisting of the true/false solution, answer text, and a solution note)
 
 #### Create Exams
 
@@ -106,8 +104,8 @@ When clicking the "Evaluate exam" button, the exam will be evaluated. First, the
 - Two ZIP archives: one (ending with "_nops_scan.zip") containing all the scans converted to PNG files, along with the extracted raw data, and another (ending with "_nops_eval.zip") containing the evaluation documents for each participant
 - Two CSV files: one containing the registered participants and another (ending with "_nops_eval.csv") containing all the evaluation data ready to distribute to participants
 - The RDS file used to evaluate the exam
+- A PDF file "nops_report.pdf" containing a statistical report of the evaluation
 - A TXT file "statistics.txt" containing some basic evaluation statistics
-- A PDF file "nops_report.pdf" containing a statistical report of the evaluation (only provieded for >= 5 valid scans)
 - A TXT file "input.txt" containing all the input values used for evaluating the exam
 - A TXT file "code.txt" containing R code, which can be used to replicate the main output in R and without Rex
 
