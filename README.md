@@ -73,9 +73,11 @@ When managing exercises, the following input fields can generally be edited:
 - Type
 - Points
 - Section
+- LaTeX Environments (enable / disable)
 - Question (accepts inline math formulas by deafult and also full LaTeX environments when switched on)
 - Figure (accepts a single PNG file per exercise)
-- Answers (consisting of the true/false solution, answer text, and a solution note)
+- Solution Note 
+- Answers (consisting of the true/false solution, answer text, and a answer specific solution note)
 
 #### Create Exams
 
