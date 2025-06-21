@@ -1,6 +1,6 @@
 # Rex: Shiny R/exams Dashboard <img src="https://raw.githubusercontent.com/guesswho1234/Rex/main/www/logo.svg" align="right" alt="Rex logo" width="20%" />
 
-This repository provides an interactive [Shiny](https://shiny.posit.co/) dashboard for creating and evaluating written single- or multiple-choice exams and building reusable exercise pools. The underlying workhorse is [R/exams](https://www.R-exams.org/), specifically the so-called [NOPS exams](https://www.R-exams.org/tutorials/exams2nops/) functions, which support both randomized single-choice and multiple-choice exercises along with automatic evaluation.
+This repository provides an easy to use interactive [Shiny](https://shiny.posit.co/) dashboard for creating and evaluating written single- or multiple-choice exams and building reusable exercise pools. The underlying workhorse is [R/exams](https://www.R-exams.org/), specifically the so-called [NOPS exams](https://www.R-exams.org/tutorials/exams2nops/) functions, which support both randomized single-choice and multiple-choice exercises along with automatic evaluation.
 
 Rex is developed by [Sebastian Bachler](mailto:sbachler@gmx.at). Feel free to reach out if you have any questions.
 
