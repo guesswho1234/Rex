@@ -79,6 +79,8 @@ When managing exercises, the following input fields can generally be edited:
 - Solution Note 
 - Answers (consisting of the true/false solution, answer text, and a answer specific solution note)
 
+Exercises can be imported and exported as either RMD or RNW files.
+
 #### Create Exams
 
 To create exams, navigate to the "EXAM" tab and then to "Create exam." There you will find a form with various options to set.
