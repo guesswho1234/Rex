@@ -625,12 +625,31 @@ main > * {
 	display: flex;
 }
 
-.settings div > * {
-	width: fit-content;
-}
-
 .settings > div div {
 	margin-right: 1rem;
+}
+#seedInputContainer {
+	display: flex;
+}
+
+#seedInputContainer .shiny-input-container {
+	width: fit-content;
+	margin-right: 2px;
+}
+
+#randomExerciseSeed {
+	margin: 0px;
+	margin-left: 0px;
+	height: 34px;
+	padding: 2px;
+	background: var(---background3);
+	border-radius: 3px;
+	border: solid 2px var(---transparent);
+	margin-left: 2px;
+}
+
+#randomExerciseSeed:hover {
+	border: solid 2px var(---main);
 }
 
 /* --------------------------------------------------------------
@@ -1128,6 +1147,7 @@ main > * {
 #exerciseName > span,
 #section span,
 #tags span,
+#solutionNoteGeneral span,
 .solutionNote > span {
 	margin: 5px;
 	padding: 3px;
@@ -1152,6 +1172,7 @@ main > * {
 #exerciseName > span,
 #section span,
 #tags span,
+#solutionNoteGeneral span,
 .solutionNote > span {
 	background: var(---transparent);
 	color: var(---main);
@@ -1167,7 +1188,14 @@ main > * {
 	font-weight: bold;
 }
 
-#exerciseQuestionTexModeContainer,
+#exerciseTexModeContainer {
+	display: grid;
+}
+
+#exerciseTexModeContainer > div {
+	margin: 0px;
+}
+
 #examIntroTexModeContainer {
     display: flex;
 	justify-content: flex-end;
@@ -1178,21 +1206,27 @@ main > * {
 	height: 20px;
 }
 
-#exerciseQuestionTexModeContainer label,
-#examIntroTexModeContainer  label {
+#examIntroTexModeContainer label {
     width: fit-content;
     font-weight: normal;
 }
 
-#exerciseQuestionTexModeContainer .form-group,
-#examIntroTexModeContainer  .form-group {
+#examIntroTexModeContainer .form-group {
     width: fit-content;
     font-weight: normal;
     margin: 0;
 }
 
-#exerciseQuestionTexModeContainer .checkbox,
-#examIntroTexModeContainer  .checkbox {
+#exerciseTexModeContainer .checkbox {
+	margin: 0px;
+	margin-left: 8px;
+}
+
+#exerciseTexModeContainer .checkbox > div {
+	margin: 0px;
+}
+
+#examIntroTexModeContainer .checkbox {
     margin: 0;
 }
 
@@ -1904,30 +1938,20 @@ figcaption {
 /* --------------------------------------------------------------
  TEX MODE
 -------------------------------------------------------------- */
- #texButtons span {
-	border: 2px solid var(---transparent);
-	border-radius: 3px;
-	padding: 2px;
-}
-
-.texInputsEnabled #texButtons span {
-	border: 2px solid var(---highlight_values2) !important;
-	border-radius: 3px;
-	padding: 2px;
-}
-
 .texInputsEnabled #examIntro,
-.texInputsEnabled .questionText[contenteditable="true"] {
+.texInputsEnabled .questionText[contenteditable="true"],
+.texInputsEnabled .solutionNoteGeneralText[contenteditable="true"] {
 	border: 2px solid var(---highlight_values2) !important;
 }
 
-.texInputsEnabled .questionText[contenteditable="true"]:focus {
+.texInputsEnabled .questionText[contenteditable="true"]:focus,
+.texInputsEnabled .solutionNoteGeneralText[contenteditable="true"]:focus {
 	background-color: var(---highlight_values2) !important;
 }
 
-/* --------------------------------------------------------------
+--------------------------------------------------------------
  ADDON TOOLS 
--------------------------------------------------------------- */
+--------------------------------------------------------------
 .noAddons {
 	display: none !important;
 }

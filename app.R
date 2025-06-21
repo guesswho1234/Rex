@@ -152,7 +152,7 @@ server = function(input, output, session) {
       button_downloadExercises = myDownloadButton(id='downloadExercises', deText="Alle speichern", enText="Save all"),
       button_downloadExercise = myDownloadButton(id='downloadExercise'),
       exerciseFigureFileImport = myFileImport("exerciseFigure", "exerciseFigure"),
-      checkboxInput_exerciseQuestionTexMode = checkboxInput("exerciseQuestionTexMode", label = NULL, value = FALSE),
+      checkboxInput_exerciseTexMode = checkboxInput("exerciseTexMode", label = NULL, value = FALSE),
     
       # EXAM CREATE
       dateInput_examDate = dateInput("examDate", label = NULL, value = NULL, format = "yyyy-mm-dd"),
@@ -370,23 +370,24 @@ server = function(input, output, session) {
       
       # request content
       parseExercise_req_content <<- append(parseExercise_req_content, 
-                                           list(list(progress=as.numeric(input$parseExercise$progress),
-                                                     id=as.numeric(input$parseExercise$exerciseID), 
+                                           list(list(id=as.numeric(input$parseExercise$exerciseID),
                                                      file=tail(strsplit(file, split="/")[[1]], 1), 
                                                      seed=as.numeric(input$seedValueExercises))))
-  
-      if(input$parseExercise$progress == 1) {
+      
+      allItemsSubmitted = length(parseExercise_req_content) == input$parseExercise$itemCount
+      
+      if(allItemsSubmitted) {
         parseExercise_req_content <<- append(list(dir=getDir(session)), list(exercises=parseExercise_req_content))
         
         write_atomic(parseExercise_req_content, parseExercise_req, use_uuid=TRUE)
       }
-  
-      return(input$parseExercise$progress)
+
+      return(allItemsSubmitted)
     })
   
     # PROCESSING ---------------------------------------------------------------
     observe({
-      if(exerciseParsing() != 1)
+      if(!exerciseParsing())
         return(0)
       
       if (is.na(file.mtime(parseExercise_fin))) {
@@ -395,7 +396,7 @@ server = function(input, output, session) {
         logData = processLogFile(parseExercise_log, parseExercise_logHistory)
         parseExercise_logHistory <<- logData$history
         parseExerciseProgressData <<- monitorProgressExerciseParse(session, logData$out, parseExerciseProgressData)
-  
+        
         if(!DOCKER_WORKER)
           checkWorkerRequests(last_mtime=last_mtime, last_files_seen=last_files_seen, r_bg_stack=r_bg_stack)
       } else {
@@ -418,7 +419,7 @@ server = function(input, output, session) {
         # process results
         result = readLines(parseExercise_res)
         
-        items = 22
+        items = 24
         exercises = floor(length(result) / items)
         
         messageType = c()
@@ -445,6 +446,8 @@ server = function(input, output, session) {
                                     "choices",
                                     "choices_raw",
                                     "solutions",
+                                    "solutionNoteGeneral",
+                                    "solutionNoteGeneral_raw",
                                     "solutionNotes",
                                     "solutionNotes_raw"))
 
@@ -585,12 +588,12 @@ server = function(input, output, session) {
       
       write_atomic(createExam_req_content, createExam_req, use_uuid=TRUE)
   
-      return(1)
+      return(TRUE)
     })
     
     # PROCESSING ---------------------------------------------------------------
     observe({
-      if(examCreation() != 1)
+      if(!examCreation())
         return(0)
       
       if (is.na(file.mtime(createExam_fin))) {
@@ -842,12 +845,12 @@ server = function(input, output, session) {
         
         write_atomic(evaluateExamScans_req_content, evaluateExamScans_req, use_uuid=TRUE)
         
-        return(1)
+        return(TRUE)
       })
     
       # PROCESSING --------------------------------------------------------------
       observe({
-        if(examScanEvaluation() != 1)
+        if(!examScanEvaluation())
           return(0)
         
         if (is.na(file.mtime(evaluateExamScans_fin))) {
@@ -981,12 +984,12 @@ server = function(input, output, session) {
     
         write_atomic(evaluateExamFinalize_req_content, evaluateExamFinalize_req, use_uuid=TRUE)
         
-        return(1)
+        return(TRUE)
       })
   
       # PROCESSING --------------------------------------------------------------
       observe({
-        if(examFinalizeEvaluation() != 1)
+        if(!examFinalizeEvaluation())
           return(0)
         
         if (is.na(file.mtime(evaluateExamFinalize_fin))) {

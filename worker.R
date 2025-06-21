@@ -140,9 +140,11 @@ source("./source/shared/aWrite.R")
         break
     }
     
-    last_mtime <<- last_mtime
-    last_files_seen <<- last_files_seen
-    r_bg_stack <<- r_bg_stack
+    if(!DOCKER_WORKER){
+      last_mtime <<- last_mtime
+      last_files_seen <<- last_files_seen
+      r_bg_stack <<- r_bg_stack
+    }
   }
   
   # PROCESS WORKER REQUESTS -------------------------------------------------
@@ -166,7 +168,8 @@ source("./source/shared/aWrite.R")
         r_bg_process = c(processFiles, list(process=callr::r_bg(
           func = process_parseExerciseRequest,
           args = list(requestContent, processFiles$res, processFiles$fin, parseExercise, prepare_exerciseResponse, TRUE_MESSAGE_VALUE),
-          supervise = TRUE
+          supervise = TRUE,
+          stderr = "ERROR_PARSE_EXERCISE_REQUEST.txt"
         )))
         
         return(r_bg_process)
@@ -185,7 +188,8 @@ source("./source/shared/aWrite.R")
         r_bg_process = c(processFiles, list(process=callr::r_bg(
           func = process_createExamRequest,
           args = list(requestContent, processFiles$res, processFiles$fin, createExam, prepare_createExamResponse, TRUE_MESSAGE_VALUE, PACKAGE_INFO),
-          supervise = TRUE
+          supervise = TRUE,
+          stderr = "ERROR_CREATE_EXAM_REQUEST.txt"
         )))
         
         return(r_bg_process)
@@ -204,7 +208,8 @@ source("./source/shared/aWrite.R")
         r_bg_process = c(processFiles, list(process=callr::r_bg(
           func = process_evaluateExamScansRequest,
           args = list(requestContent, processFiles$res, processFiles$fin, evaluateExamScans, prepare_evaluateExamScansResponse, TRUE_MESSAGE_VALUE, PACKAGE_INFO),
-          supervise = TRUE
+          supervise = TRUE,
+          stderr = "ERROR_EVALUATE_EXAM_SCANS_REQUEST.txt"
         )))
         
         return(r_bg_process)
@@ -224,7 +229,8 @@ source("./source/shared/aWrite.R")
         r_bg_process = c(processFiles, list(process=callr::r_bg(
           func = process_evaluateExamFinalizeRequest,
           args = list(requestContent, processFiles$res, processFiles$fin, evaluateExamFinalize, prepare_evaluateExamFinalizeResponse, TRUE_MESSAGE_VALUE, PACKAGE_INFO),
-          supervise = TRUE
+          supervise = TRUE,
+          stderr = "ERROR_EVALUATE_EXAM_FINALIZE_REQUEST.txt"
         )))
         
         return(r_bg_process)
@@ -267,60 +273,68 @@ source("./source/shared/aWrite.R")
 		 out = tryCatch({
 		  warnings = collectWarnings({
   			cat("Preparing parameters.\n")
+		    
+		    file = paste0(data$dir, "/", data$file)  
+		    exerciseCode = readChar(file, file.info(file)$size)
+		    
+		    # unify line breaks
+		    exerciseCode = gsub("\r\n", "\n", exerciseCode)
+		    
+	      # show all possible choices when viewing exercises (only relevant for editable exercises)
+	      exerciseCode = sub("rxxTemplate_maxChoices=5", "rxxTemplate_maxChoices=NULL", exerciseCode)
+	      
+	      # remove image from question when viewing exercises (only relevant for editable exercises)
+	      exerciseCode = sub("rxxTemplate_showFigure=TRUE", "rxxTemplate_showFigure=FALSE", exerciseCode)
+	      
+	      # extract figure to display it in the respective field when viewing a exercise (only relevant for editable exercises)
+	      splitBy = ";\n" # originally it is ";\r\n" but "\r\n" is replaced by "\n"
+	      figure = strsplit(exerciseCode, "rxxTemplate_figure=")[[1]][2]
+	      figure = strsplit(figure, splitBy)[[1]][1]
+	      
+	      figure_split = strsplit(figure,",")[[1]]
+	      figure = ""
+	      
+	      if(length(figure_split) == 3) {
+	        figure_name = sub("^[^\"]*\"([^\"]+)\".*", "\\1", figure_split[1])
+	        figure_fileExt = sub("^[^\"]*\"([^\"]+)\".*", "\\1", figure_split[2])
+	        figure_blob = sub("^[^\"]*\"([^\"]+)\".*", "\\1", figure_split[3])
+	        
+	        figure = list(name=figure_name, fileExt=figure_fileExt, blob=figure_blob)
+	      }
+	      
+	      # extract raw question text
+	      question_raw = strsplit(exerciseCode, "rxxTemplate_question=")[[1]][2]
+	      question_raw = strsplit(question_raw, splitBy)[[1]][1]
+	      question_raw = paste0(rev(rev(strsplit(question_raw, "")[[1]][-1])[-1]), collapse="") # trim
+	      question_raw = gsub("\\\\", "\\", question_raw, fixed=TRUE)
+	      
+	      # extract raw solution note text
+	      solutionNoteGeneral_raw = strsplit(exerciseCode, "rxxTemplate_solutionNoteGeneral=")[[1]][2]
+	      solutionNoteGeneral_raw = strsplit(solutionNoteGeneral_raw, splitBy)[[1]][1]
+	      solutionNoteGeneral_raw = paste0(rev(rev(strsplit(solutionNoteGeneral_raw, "")[[1]][-1])[-1]), collapse="") # trim
+	      solutionNoteGeneral_raw = gsub("\\\\", "\\", solutionNoteGeneral_raw, fixed=TRUE)
+	      
+	      # extract raw choice texts
+	      choices_raw = strsplit(exerciseCode, "rxxTemplate_choices=")[[1]][2]
+	      choices_raw = strsplit(choices_raw, splitBy)[[1]][1]
+	      choices_raw = gsub("\n", "", choices_raw)
+	      choices_raw = strsplit(choices_raw, ",\"")[[1]]
+	      choices_raw[1] = paste0(strsplit(choices_raw[1], "")[[1]][-c(1:3)], collapse="")
+	      choices_raw[length(choices_raw)] = paste0(rev(rev(strsplit(choices_raw[length(choices_raw)], "")[[1]])[-1]), collapse="") #trim
+	      choices_raw = Reduce(c, lapply(choices_raw, \(x) paste0(rev(rev(strsplit(x, "")[[1]])[-c(1)]), collapse=""))) # trim
+	      
+	      if(grepl("rxxTemplate_choices", exerciseCode) & length(choices_raw) < 2)
+	        stop("E1022")
+	      
+	      # extract raw solution note texts
+	      solutionNotes_raw = strsplit(exerciseCode, "rxxTemplate_solutionNotes=")[[1]][2]
+	      solutionNotes_raw = strsplit(solutionNotes_raw, splitBy)[[1]][1]
+	      solutionNotes_raw = gsub("\n", "", solutionNotes_raw)
+	      solutionNotes_raw = strsplit(solutionNotes_raw, ",\"")[[1]]
+	      solutionNotes_raw[1] = paste0(strsplit(solutionNotes_raw[1], "")[[1]][-c(1:3)], collapse="")
+	      solutionNotes_raw[length(solutionNotes_raw)] = paste0(rev(rev(strsplit(solutionNotes_raw[length(solutionNotes_raw)], "")[[1]])[-1]), collapse="") #trim
+	      solutionNotes_raw = Reduce(c, lapply(solutionNotes_raw, \(x) paste0(rev(rev(strsplit(x, "")[[1]])[-c(1)]), collapse=""))) # trim
   		  
-  		  file = paste0(data$dir, "/", data$file)  
-  		  exerciseCode = readChar(file, file.info(file)$size)
-  		  
-  			splitBy = ";\n" # originally it is ";\r\n" but "\r\n" is replaced by "\n"
-  			# unify line breaks
-  			exerciseCode = gsub("\r\n", "\n", exerciseCode)
-  			
-  			# show all possible choices when viewing exercises (only relevant for editable exercises)
-  			exerciseCode = sub("maxChoices=5", "maxChoices=NULL", exerciseCode)
-  			
-  			# remove image from question when viewing exercises (only relevant for editable exercises)
-  			exerciseCode = sub("rxxTemplate_showFigure=TRUE", "rxxTemplate_showFigure=FALSE", exerciseCode)
-  	  
-  			# extract figure to display it in the respective field when viewing a exercise (only relevant for editable exercises)
-  			figure = strsplit(exerciseCode, "rxxTemplate_figure=")[[1]][2]
-  			figure = strsplit(figure, splitBy)[[1]][1]
-  			
-  			figure_split = strsplit(figure,",")[[1]]
-  			figure = ""
-  			
-  			if(length(figure_split) == 3) {
-  			  figure_name = sub("^[^\"]*\"([^\"]+)\".*", "\\1", figure_split[1])
-  			  figure_fileExt = sub("^[^\"]*\"([^\"]+)\".*", "\\1", figure_split[2])
-  			  figure_blob = sub("^[^\"]*\"([^\"]+)\".*", "\\1", figure_split[3])
-  			  
-  			  figure = list(name=figure_name, fileExt=figure_fileExt, blob=figure_blob)
-  			}
-  			
-  			# extract raw question text
-  			question_raw = strsplit(exerciseCode, "rxxTemplate_question=")[[1]][2]
-  			question_raw = strsplit(question_raw, splitBy)[[1]][1]
-  			question_raw = paste0(rev(rev(strsplit(question_raw, "")[[1]][-1])[-1]), collapse="") # trim
-  			question_raw = gsub("\\\\", "\\", question_raw, fixed=TRUE)
-  			
-  			# extract raw choice texts
-  			choices_raw = strsplit(exerciseCode, "rxxTemplate_choices=")[[1]][2]
-  			choices_raw = strsplit(choices_raw, splitBy)[[1]][1]
-  			choices_raw = strsplit(choices_raw, ",\"")[[1]]
-  			choices_raw[1] = paste0(strsplit(choices_raw[1], "")[[1]][-c(1:3)], collapse="")
-  			choices_raw[length(choices_raw)] = paste0(rev(rev(strsplit(choices_raw[length(choices_raw)], "")[[1]])[-1]), collapse="") #trim
-  			choices_raw = Reduce(c, lapply(choices_raw, \(x) paste0(rev(rev(strsplit(x, "")[[1]])[-c(1)]), collapse=""))) # trim
-  			
-  			if(grepl("rxxTemplate_choices", exerciseCode) & length(choices_raw) < 2)
-  			  stop("E1022")
-  			
-  			# extract raw solution note texts
-  			solutionNotes_raw = strsplit(exerciseCode, "rxxTemplate_solutionNotes=")[[1]][2]
-  			solutionNotes_raw = strsplit(solutionNotes_raw, splitBy)[[1]][1]
-  			solutionNotes_raw = strsplit(solutionNotes_raw, ",\"")[[1]]
-  			solutionNotes_raw[1] = paste0(strsplit(solutionNotes_raw[1], "")[[1]][-c(1:3)], collapse="")
-  			solutionNotes_raw[length(solutionNotes_raw)] = paste0(rev(rev(strsplit(solutionNotes_raw[length(solutionNotes_raw)], "")[[1]])[-1]), collapse="") #trim
-  			solutionNotes_raw = Reduce(c, lapply(solutionNotes_raw, \(x) paste0(rev(rev(strsplit(x, "")[[1]])[-c(1)]), collapse=""))) # trim
-  			
   			if(is.na(data$seed)){
   			  stop("E1032")
   			}	else{
@@ -336,6 +350,7 @@ source("./source/shared/aWrite.R")
   			html = exams::exams2html(file, dir = data$dir, seed = seed, base64 = TRUE)
   			
   			html$exam1$exercise1$question_raw = question_raw
+  			html$exam1$exercise1$solutionNoteGeneral_raw = solutionNoteGeneral_raw
   			html$exam1$exercise1$choices_raw = choices_raw
   			html$exam1$exercise1$solutionNotes_raw = solutionNotes_raw
   
@@ -350,9 +365,11 @@ source("./source/shared/aWrite.R")
   			if (any(duplicated(html$exam1$exercise1$questionlist))) {
   			  stop("E1007")
   			}
+  			
+  			#todo: add warnings / errors for more length of solutionNotes unequal zero && unequal length of choices
   	  
   			NULL
-  		  })
+		  })
 		  
 		  key = "Warning"
 		  value = paste(unique(unlist(warnings)), collapse="<br>")
@@ -413,17 +430,20 @@ source("./source/shared/aWrite.R")
 	      section = html$exam1$exercise1$metainfo$section
 	      seed = seed
 	      
+	      #todo:
 	      question = paste0(html$exam1$exercise1$question, collapse="")
 	      question_raw = paste0(html$exam1$exercise1$question_raw, collapse="")
 	      figure = rjs_vectorToJsonStringArray(unlist(figure))
 	      editable = ifelse(html$exam1$exercise1$metainfo$editable == 1, 1, 0)
 	      convert = ifelse(html$exam1$exercise1$metainfo$convert == 1, 1, 0)
 	      rmdExport = ifelse(html$exam1$exercise1$metainfo$rmdExport == 1, 1, 0)
-	      choices = rjs_vectorToJsonStringArray(html$exam1$exercise1$questionlist)
-	      choices_raw = rjs_vectorToJsonStringArray(html$exam1$exercise1$choices_raw)
+	      choices = rjs_vectorToJsonStringArray(escapeInlineMathHtml(html$exam1$exercise1$questionlist))
+	      choices_raw = rjs_vectorToJsonStringArray(escapeInlineMathHtml(html$exam1$exercise1$choices_raw))
 	      solutions = rjs_vectorToJsonArray(tolower(as.character(html$exam1$exercise1$metainfo$solution)))
-	      solutionNotes = rjs_vectorToJsonStringArray(as.character(html$exam1$exercise1$solutionlist))
-	      solutionNotes_raw = rjs_vectorToJsonStringArray(html$exam1$exercise1$solutionNotes_raw)
+	      solutionNoteGeneral = paste0(html$exam1$exercise1$solution, collapse="")
+	      solutionNoteGeneral_raw = paste0(html$exam1$exercise1$solutionNoteGeneral_raw, collapse="")
+	      solutionNotes = rjs_vectorToJsonStringArray(escapeInlineMathHtml(as.character(html$exam1$exercise1$solutionlist)))
+	      solutionNotes_raw = rjs_vectorToJsonStringArray(escapeInlineMathHtml(html$exam1$exercise1$solutionNotes_raw))
 	    } else {
 	      author = NULL
 	      exExtra = NULL
@@ -441,6 +461,8 @@ source("./source/shared/aWrite.R")
 	      choices = NULL
 	      choices_raw = NULL
 	      solutions = NULL
+	      solutionNoteGeneral = NULL
+	      solutionNoteGeneral_raw = NULL
 	      solutionNotes = NULL
 	      solutionNotes_raw = NULL
 	    }
@@ -461,6 +483,8 @@ source("./source/shared/aWrite.R")
 	    write(choices, file=res, ncolumns=1, sep="\n", append=TRUE)
 	    write(choices_raw, file=res, ncolumns=1, sep="\n", append=TRUE)
 	    write(solutions, file=res, ncolumns=1, sep="\n", append=TRUE)
+	    write(solutionNoteGeneral, file=res, ncolumns=1, sep="\n", append=TRUE)
+	    write(solutionNoteGeneral_raw, file=res, ncolumns=1, sep="\n", append=TRUE)
 	    write(solutionNotes, file=res, ncolumns=1, sep="\n", append=TRUE)
 	    write(solutionNotes_raw, file=res, ncolumns=1, sep="\n", append=TRUE)
 	  })
@@ -536,31 +560,32 @@ source("./source/shared/aWrite.R")
   			  exercises = unlist(exercises)
   			
   			examFields = list(
-  			  dir = data$dir,
-  			  file = exercises,
-  			  edir = data$edir,
-  			  n = data$numberOfExams,
-  			  nsamp = nsamp,
-  			  name = name,
-  			  language = data$examLanguage,
-  			  title = data$examTitle,
-  			  course = data$examCourse,
-  			  institution = data$examInstitution,
   			  date = data$examDate,
-  			  blank = data$numberOfBlanks,
-  			  duplex = data$duplex,
-  			  pages = data$additionalPdfFiles,
-  			  points = points,
-  			  showpoints = data$showPoints,
+  			  name = name,
   			  seed = seedList,
-  			  encoding = "UTF-8",
+  			  n = data$numberOfExams,
+  			  dir = data$dir,
+  			  edir = data$edir,
+  			  file = exercises,
+  			  nsamp = nsamp,
+  			  fixSequence = data$fixSequence,
+  			  points = points,
   			  reglength = reglength,
-  			  header = NULL,
-  			  intro = c(data$examIntro), 
+  			  showpoints = data$showPoints,
+  			  duplex = data$duplex,
   			  replacement = data$replacement,
   			  samepage = data$samepage,
   			  newpage = data$newpage,
-  			  logo = data$examLogoFile
+  			  language = data$examLanguage,
+  			  institution = data$examInstitution,
+  			  title = data$examTitle,
+  			  course = data$examCourse,
+  			  intro = c(data$examIntro),
+  			  blank = data$numberOfBlanks,
+  			  pages = data$additionalPdfFiles,
+  			  logo = data$examLogoFile,
+  			  encoding = "UTF-8",
+  			  header = NULL
   			)
   			
   			# needed for pdf files (not for html files) - somehow exams needs it that way
@@ -1012,10 +1037,40 @@ source("./source/shared/aWrite.R")
   	      
   	      # additional pdf files
   	      data$preparedEvaluation$files$nops_reportPdf = paste0(data$preparedEvaluation$fields$dir, "/nops_report.pdf")
-  	        	      
+  	      
   	      cat("Evaluating exam.\n")
   	      
   	      with(data$preparedEvaluation, {
+  	        # exam eval input field data
+  	        examEvalFields = list(points = fields$points,
+  	                              reglength = fields$regLength,
+  	                              partial = fields$partial,
+  	                              rule = fields$rule,
+  	                              negative = fields$negative,
+  	                              mark = fields$mark,
+  	                              labels = fields$labels,
+  	                              language = fields$language,
+  	                              solutions = files$solution,
+  	                              registeredParticipants = files$registeredParticipants,
+  	                              scans = files$scanEvaluation)
+  	        
+  	        examEvalInputTxt = Reduce(c, lapply(names(examEvalFields), \(x){
+  	          values = examEvalFields[[x]]
+  	          
+  	          if(x %in% c("registeredParticipants", "solutions", "scans"))
+  	            values = lapply(values, \(y) gsub(paste0(fields$dir, "/"), "", y, fixed = TRUE))
+  	          
+  	          if(is.matrix(values)){
+  	            paste0(c(x,
+  	                     paste0(apply(values, 1, \(y) paste0(paste0(y, collapse=";"), "\n")), collapse="")
+  	            ), collapse="\n")
+  	          } else {
+  	            paste0(c(x,
+  	                     paste0(paste0(unlist(values), "\n"), collapse="")
+  	            ), collapse="\n")
+  	          }
+  	        }))
+  	        
   	        # finalize evaluation
   	        param_nops_eval = list(register = files$registeredParticipants,
   	                               solutions = files$solution,
@@ -1035,36 +1090,7 @@ source("./source/shared/aWrite.R")
   	        # read solution and evaluation data
   	        solutionData = readRDS(files$solution)
   	        evaluationData = read.csv2(files$nops_evaluationCsv)
-  	        
-  	        # exam eval input field data
-  	        examEvalFields = list(registeredParticipants = files$registeredParticipants,
-  	                              solutions = files$solution,
-  	                              scans = files$scanEvaluation,
-  	                              partial = fields$partial,
-  	                              negative = fields$negative,
-  	                              rule = fields$rule,
-  	                              points = fields$points,
-  	                              mark = fields$mark,
-  	                              labels = fields$labels,
-  	                              language = fields$language)
-  	        
-  	        examEvalInputTxt = Reduce(c, lapply(names(examEvalFields), \(x){
-  	          values = examEvalFields[[x]]
-  	          
-  	          if(x %in% c("registeredParticipants", "solutions", "scans"))
-  	            values = lapply(values, \(y) gsub(paste0(fields$dir, "/"), "", y, fixed = TRUE))
-  	          
-  	          if(is.matrix(values)){
-  	            paste0(c(x,
-  	                     paste0(apply(values, 1, \(y) paste0(paste0(y, collapse=";"), "\n")), collapse="")
-  	            ), collapse="\n")
-  	          } else {
-  	            paste0(c(x,
-  	                     paste0(paste0(unlist(values), "\n"), collapse="")
-  	            ), collapse="\n")
-  	          }
-  	        }))
-  	        
+
   	        # update prepared data
   	        evaluationData = updateEvaluationData(solutionData, evaluationData, fields$edirName)
   	        

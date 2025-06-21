@@ -20,6 +20,8 @@ examParseResponse = function(session, exerciseData, error) {
   		session$sendCustomMessage("setExerciseChoices", rjs_keyValuePairsToJsonObject(c("id", "value"), c(id, choices)))
   		session$sendCustomMessage("setExerciseChoicesRaw", rjs_keyValuePairsToJsonObject(c("id", "value"), c(id, choices_raw)))
   		session$sendCustomMessage("setExerciseSolutions", rjs_keyValuePairsToJsonObject(c("id", "value"), c(id, solutions)))
+  		session$sendCustomMessage("setExerciseSolutionNoteGeneral", rjs_keyValuePairsToJsonObject(c("id", "value"), c(id, solutionNoteGeneral)))
+  		session$sendCustomMessage("setExerciseSolutionNoteGeneralRaw", rjs_keyValuePairsToJsonObject(c("id", "value"), c(id, solutionNoteGeneral_raw)))
   		session$sendCustomMessage("setExerciseSolutionNotes", rjs_keyValuePairsToJsonObject(c("id", "value"), c(id, solutionNotes)))
   		session$sendCustomMessage("setExerciseSolutionNotesRaw", rjs_keyValuePairsToJsonObject(c("id", "value"), c(id, solutionNotes_raw)))
 	  }
@@ -57,7 +59,7 @@ evaluateExamScansResponse = function(session, result) {
 		tagList(
 		  tags$div(id="scanStats"),
 		  tags$div(id="inspectScan"),
-		  tags$div(id="compareScanRegistrationDataTable", HTML('<div class="loadingCompareScanRegistrationDataTable"><span lang="de">BITTE WARTEN ...</span><span lang="en">PLEASE WAIT ...</span></div>')),
+		  tags$div(id="compareScanRegistrationDataTable", HTML('<div class="loadingCompareScanRegistrationDataTable"><span lang="de">BITTE WARTEN</span><span lang="en">PLEASE WAIT</span></div>')),
 		),
 	  
 	  footer = tagList(

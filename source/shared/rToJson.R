@@ -14,6 +14,16 @@ escapeSpecialCharacters = function(values){
   return(values)
 }
 
+escapeInlineMathHtml = function(values){
+  values = gsub("[\\]", "\\\\\\\\", values)
+  values = gsub("\"", "\\\\\"", values)
+  values = gsub(":", "\\:", values)
+  values = gsub("\\n", " ", values)
+  values = gsub("\\t", " ", values)
+  return(values)
+}
+
+
 rjs_vectorToJsonStringArray = function(vector){
   x = paste0("\"", vector, "\"")
   x = rjs_vectorToJsonArray(x)

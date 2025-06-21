@@ -65,7 +65,7 @@ knitr::kable(
 )
 ```
 
-```{r plot-loop, results='asis', echo=FALSE, fig.width=8, fig.height=9, fig.pos='H', dpi=300, family='Helvetica'}
+```{r plot-loop, results='asis', echo=FALSE, fig.width=6, fig.height=8, fig.pos='H', dpi=300, family='Helvetica'}
 for (i in seq_along(params$plots)) {
   cat(sprintf("### Figure %d: %s\n\n", i, params$captions[[i]]))
 

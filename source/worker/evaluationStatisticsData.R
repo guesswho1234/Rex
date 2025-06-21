@@ -168,8 +168,11 @@ getEvaluationStatisticsData = function(evaluationData, mark=FALSE, markLabels=c(
     params$descriptions = c(params$descriptions, "")
     params$plots = c(params$plots, quote({
       breaks = seq(0, params$examMaxPoints[1], length.out = params$numExercises)
+      
       if(params$mark[1] != FALSE){
         breaks = sort(unique(c(breaks, mean(params$points), params$examMaxPoints[1] * params$mark)))
+      } else {
+        breaks = (0:(params$numExercises+1) - 0.5) * params$examMaxPoints[1]/params$numExercises
       }
       breaks = c(breaks, Inf)
       
@@ -193,7 +196,7 @@ getEvaluationStatisticsData = function(evaluationData, mark=FALSE, markLabels=c(
           }
           
           label = params$markLabels[x]
-          cex = 1
+          cex = 0.7
           
           # Estimate text size in user coordinates
           strwidth_ = strwidth(label, cex = cex) * 1.2

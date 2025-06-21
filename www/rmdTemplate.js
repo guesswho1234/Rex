@@ -9,6 +9,7 @@ Answerlist
 
 Solution
 ========
+?rxxTemplate_solutionNoteGeneral
 
 Answerlist
 ----------

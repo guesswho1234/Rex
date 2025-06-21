@@ -122,7 +122,16 @@
 				<div>
 					<div>
 						<label for="seedValueExercises"><span lang="de">Seed</span><span lang="en">Seed</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Start-Seed für Zufallswerte. Dieser Wert wird für jede Aufgabe seperat gesetzt.</span><span lang="en">Seed start value for random values. This values is set separately for each exercise.</span></span></span></label>
-						{{ textInput_seedValueExercises }}
+						<div id="seedInputContainer">
+							{{ textInput_seedValueExercises }}
+							<div id="randomExerciseSeed" class="listButton">
+								<span class="hotkeyInfo"><span lang="de">^</span><span lang="en">^</span></span>
+								<div class="list_butttonIcon">
+									<span class="iconButton"><i class="fa-solid fa-shuffle"></i></span>
+									<span class="textButton"><span lang="de">Zufälliger Seed</span><span lang="en">Random Seed</span></span>
+								</div>
+							</div>	
+						</div>	
 					</div>
 				</div>
 			</div>
@@ -132,7 +141,6 @@
 				</h2>
 				<table>
 					<tr>
-						<th><span lang="de">Seed</span><span lang="en">Seed</span></th>
 						<th><span lang="de">Aufgaben</span><span lang="en">Exercises</span></th>
 						<th><span lang="de">Punkte</span><span lang="en">Points</span></th>
 						<th><span lang="de">Bereiche</span><span lang="en">Sections</span></th>
@@ -140,7 +148,6 @@
 						<th><span lang="de">Antwortmöglichkeiten</span><span lang="en">Choices</span></th>
 					</tr>
 					<tr>
-						<td id="s_initialSeed"></td>					
 						<td id="s_numberOfExercises"></td>			
 						<td id="s_totalPoints"></td>		
 						<td id="s_sectionsTable"></td>									
@@ -247,10 +254,8 @@
 					<label for="tags"><span lang="de">Tags</span><span lang="en">Tags</span></label>
 					<div id="tags"></div>
 					
-					<!-- todo: -->
-					<label for="question"><span lang="de">Frage</span><span lang="en">Question</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de"><code>\</code> sind nicht erlaubt und werden automatisch entfernt. <code>"</code> werden durch <code>'</code> ersetzt.</span><span lang="en"><code>\</code> are not allowed and will be removed. <code>"</code> are replaced with <code>'</code>. </span></span></span></label>
-					<div id="exerciseQuestionTexModeContainer">
-						<label for="exerciseQuestionTexMode">
+					<div id="exerciseTexModeContainer">
+						<label for="exerciseTexMode">
 							<span lang="de">LaTeX-Umgebungen</span>
 							<span lang="en">LaTeX Environments</span>
 							<span class="myTooltip">
@@ -258,13 +263,15 @@
 									<i class="fa-regular fa-circle-question"></i>
 								</span>
 								<span class="tooltipText">
-									<span lang="de">Aktivieren, um vollständige LaTeX-Umgebungen wie <code>\begin{itemize}</code> oder <code>\begin{table}</code> verwenden zu können. Inline-Mathematik wie <code>$x^2$</code> funktioniert immer.</span>
-									<span lang="en">Enable this to use full LaTeX environments such as <code>\begin{itemize}</code> or <code>\begin{table}</code>. Inline math like <code>$x^2$</code> always works.</span>
+									<span lang="de">Aktivieren, um vollständige LaTeX-Umgebungen wie <code>\begin{itemize}</code> oder <code>\begin{table}</code> im Frage- und Lösungsnotiz-Text verwenden zu können. Inline-Math wie <code>$x^2$</code> funktioniert immer.</span>
+									<span lang="en">Enable this to use full LaTeX environments such as <code>\begin{itemize}</code> or <code>\begin{table}</code> in the question and solution note text. Inline math like <code>$x^2$</code> always works.</span>
 								</span>
 							</span>
 						</label>
-						{{ checkboxInput_exerciseQuestionTexMode }}
+						{{ checkboxInput_exerciseTexMode }}
 					</div>
+					
+					<label for="question"><span lang="de">Frage</span><span lang="en">Question</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Die Symbole <code>\</code> und <code>"</code> sind nicht erlaubt. Andere Symbole wie <code>%</code> oder <code>&amp;</code> müssen als <code>\%</code> bzw. <code>\&amp;</code> eingegeben werden.</span><span lang="en">The symbols <code>\</code> and <code>"</code> are not allowed. Other symbols such as <code>%</code> or <code>&amp;</code> must be entered as <code>\%</code> and <code>\&amp;</code>.</span></span></span></label>
 					<div id="question" class="texMode texInputsEscaped">
 					</div>
 											
@@ -273,7 +280,11 @@
 						{{ exerciseFigureFileImport }}
 					</div>
 					
-					<label for="answers"><span lang="de">Antworten</span><span lang="en">Answers</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Jede Antwort besteht aus der Lösung (<code>Wahr</code> oder <code>Falsch</code>; in Prüfungen nicht sichtbar), dem Antworttext (in Prüfungen sichtbar) und der Lösungsbeschreibung (in Prüfungen nicht sichtbar).</span><span lang="en">Each answer consists of the solution (<code>True</code> or <code>False</code>; no visible in exams), the answer text (visible in exams), and the solution description (not visible in exams).</span></span></span></label>
+					<label for="solutionNoteGeneral"><span lang="de">Lösungsnotiz</span><span lang="en">Solution Note</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Die Symbole <code>\</code> und <code>"</code> sind nicht erlaubt. Andere Symbole wie <code>%</code> oder <code>&amp;</code> müssen als <code>\%</code> bzw. <code>\&amp;</code> eingegeben werden.</span><span lang="en">The symbols <code>\</code> and <code>"</code> are not allowed. Other symbols such as <code>%</code> or <code>&amp;</code> must be entered as <code>\%</code> and <code>\&amp;</code>.</span></span></span></label>
+					<div id="solutionNoteGeneral" class="texMode texInputsEscaped">
+					</div>
+					
+					<label for="answers"><span lang="de">Antworten</span><span lang="en">Answers</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Die Symbole <code>\</code> und <code>"</code> sind nicht erlaubt. Andere Symbole wie <code>%</code> oder <code>&amp;</code> müssen als <code>\%</code> bzw. <code>\&amp;</code> eingegeben werden.</span><span lang="en">The symbols <code>\</code> and <code>"</code> are not allowed. Other symbols such as <code>%</code> or <code>&amp;</code> must be entered as <code>\%</code> and <code>\&amp;</code>.</span></span></span></label>
 					<div id="answers">
 					</div>
 				</div>	
@@ -315,7 +326,7 @@
 							{{ textInput_seedValueExam }}
 						</div>
 						<div>
-							<label for="numberOfExams"><span lang="de">Anzahl Varianten</span><span lang="en">Number of scramblings</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Je Variante wird ein eigener Seed verwendet.</span><span lang="en">For each scrambling a different seed is used.</span></span></span></label>
+							<label for="numberOfExams"><span lang="de">Anzahl Varianten</span><span lang="en">Number of scramblings</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Je Variante wird der gewählte Seed nochmal angepasst.</span><span lang="en">For each scrambling the selected seed will be adjusted again.</span></span></span></label>
 							{{ textInput_numberOfExams }}
 						</div>
 						<div>
@@ -324,7 +335,7 @@
 							{{ textInput_numberOfExercises }}
 						</div>
 						<div>
-							<label for="showPoints"><span lang="de">Reihenfolge der Aufgaben fixieren</span><span lang="en">Fix exercise order</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Die Reihenfolge der Aufgaben wird im Aufgabenbereich festgelegt und für alle Varianten beibehalten.</span><span lang="en">The order of exercises is set in the exercise section and is maintained for all scramblings.</span></span></span></label>
+							<label for="showPoints"><span lang="de">Reihenfolge der Aufgaben fixieren</span><span lang="en">Fix exercise order</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Die Reihenfolge der Aufgaben wird im Aufgabenbereich festgelegt und für alle Varianten fixiert.</span><span lang="en">The order of exercises is set in the exercise section and maintained for all scramblings.</span></span></span></label>
 							{{ checkboxInput_fixSequence }}
 						</div>
 						<div>
@@ -349,11 +360,11 @@
 						</div>
 						
 						<div>
-							<label for="samepage"><span lang="de">Umbruch bei Antwortmöglichkeiten vermeiden</span><span lang="en">Avoid page breaks within choice lists</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Seitenumbrüche werden wenn möglich nicht innerhalb von Antwortmöglichkeiten gesetzt.</span><span lang="en">If possible, page breaks are not placed within choice lists.</span></span></span></label>
+							<label for="samepage"><span lang="de">Umbruch bei Antwortmöglichkeiten vermeiden</span><span lang="en">Avoid page breaks within choice lists</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Seitenumbrüche werden, wenn möglich, nicht innerhalb von Antwortmöglichkeiten gesetzt.</span><span lang="en">If possible, page breaks are not placed within choice lists.</span></span></span></label>
 							{{ checkboxInput_samepage }}
 						</div>
 						<div>
-							<label for="newpage"><span lang="de">Neue Seite je Aufgabe</span><span lang="en">New page per exercise</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Jede Aufgabe auf einer separaten Seiten platzieren.</span><span lang="en">Place each exercise on a separate page.</span></span></span></label>
+							<label for="newpage"><span lang="de">Neue Seite je Aufgabe</span><span lang="en">New page per exercise</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Jede Aufgabe wird auf einer separaten Seite platziert.</span><span lang="en">Each exercise is placed on a separate page.</span></span></span></label>
 							{{ checkboxInput_newpage }}
 						</div>
 						<div>
@@ -372,9 +383,8 @@
 							<label for="examCourse"><span lang="de">Kurs</span><span lang="en">Course</span></label>
 							{{ textInput_examCourse }}
 						</div>
-						<!-- todo: -->
 						<div class="texMode texInputsEscaped">
-							<label for="examIntro"><span lang="de">Einleitung</span><span lang="en">Intro</span></label>
+							<label for="examIntro"><span lang="de">Einleitung</span><span lang="en">Intro</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Die Symbole <code>\</code> und <code>"</code> sind nicht erlaubt. Andere Symbole wie <code>%</code> oder <code>&amp;</code> müssen als <code>\%</code> bzw. <code>\&amp;</code> eingegeben werden.</span><span lang="en">The symbols <code>\</code> and <code>"</code> are not allowed. Other symbols such as <code>%</code> or <code>&amp;</code> must be entered as <code>\%</code> and <code>\&amp;</code>.</span></span></span></label>
 							<div id="examIntroTexModeContainer">
 								<label for="examIntroTexMode">
 									<span lang="de">LaTeX-Interpretation</span>
@@ -401,7 +411,7 @@
 							<label><span lang="de">Zusatz PDF-Seiten</span><span lang="en">Additional PDF pages</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Werden am Ende der Prüfung angehängt.</span><span lang="en">Are appended to the end of the exam.</span></span></span></label>
 							{{ additionalPdfFileImport }}
 							
-							<label><span lang="de">Logo</span><span lang="en">Logo</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Logo wird auf eine Höhe von 2.51cm skaliert.</span><span lang="en">Logo will be scaled to a height of 2.51cm.</span></span></span></label>
+							<label><span lang="de">Logo</span><span lang="en">Logo</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Logo wird auf eine Höhe von <code>2.51 cm</code> skaliert.</span><span lang="en">Logo will be scaled to a height of <code>2.51 cm</code>.</span></span></span></label>
 							{{ examLogoFileImport }}
 							
 							<div id="dnd_examCreation" class="dnd">
@@ -424,7 +434,7 @@
 					<h2><span lang="de">Prüfung Auswerten</span><span lang="en">Evaluate exam</span></h2>
 					<div>
 						<div>
-							<label for="fixedPointsExamEvaluate"><span lang="de">Fixe Punkte pro Aufgabe</span><span lang="en">Fixed points per exercise</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Überschreibt die in den Aufgaben festgelegten Punkte. Wenn Punkte entsprechend wie sie in der Aufgabe festgelegt sind verwendet werden sollen, muss dieses Feld leer bleiben.</span><span lang="en">Overrides the points set in the tasks. If points are to be used as defined in the task, this field must be left blank.</span></span></span></label>
+							<label for="fixedPointsExamEvaluate"><span lang="de">Fixe Punkte pro Aufgabe</span><span lang="en">Fixed points per exercise</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Pro Aufgabe definierte Punkte überschreiben.</span><span lang="en">Override points defined for each exercise.</span></span></span></label>
 							{{ textInput_fixedPointsExamEvaluate }}
 						</div>
 						<div>
@@ -492,7 +502,7 @@
 							{{ selectInput_evaluationLanguage }}
 						</div>
 						<div>
-							<label for="rotateScans"><span lang="de">Scans drehen</span><span lang="en">Rotate scans</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Dreht alle Scans um 180 Grad.</span><span lang="en">Rotates all scans by 180 degrees.</span></span></span></label>
+							<label for="rotateScans"><span lang="de">Scans drehen</span><span lang="en">Rotate scans</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Dreht alle Scans um <code>180</code> Grad.</span><span lang="en">Rotates all scans by <code>180 degrees</code>.</span></span></span></label>
 							{{ checkboxInput_rotateScans }}
 						</div>
 						<div>

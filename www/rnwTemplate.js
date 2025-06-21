@@ -2,6 +2,7 @@ var rnwTemplate = `<<echo=FALSE, results=tex>>=
 rxxTemplate_question=?rxxTemplate_question;
 rxxTemplate_choices=?rxxTemplate_choices;
 rxxTemplate_solutions=?rxxTemplate_solutions;
+rxxTemplate_solutionNoteGeneral=?rxxTemplate_solutionNoteGeneral;
 rxxTemplate_solutionNotes=?rxxTemplate_solutionNotes;
 rxxTemplate_showFigure=TRUE;
 rxxTemplate_figure=?rxxTemplate_figure;
@@ -32,6 +33,10 @@ exams::answerlist(rxxTemplate_choices)
 \\end{question}
 
 \\begin{solution}
+<<echo=FALSE, results=tex>>=
+cat(rxxTemplate_solutionNoteGeneral)
+@
+%
 <<echo=FALSE, results=tex>>=
 exams::answerlist(ifelse(rxxTemplate_solutions, "1", "0"), rxxTemplate_solutionNotes)
 @

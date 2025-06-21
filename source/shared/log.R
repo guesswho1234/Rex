@@ -1,17 +1,21 @@
-log_ = function(content, user="", sessionToken="", append=TRUE){
+log_ = function(content, user="", sessionToken="", append=TRUE, dir=NULL){
   timestamp = Sys.time()
+  file = "log.txt"
+  file = ifelse(is.null(dir), file, file.path(dir, file))
   
   if(user != "" && sessionToken != "" )
-    write(paste0(timestamp, ": ", user, ": ", sessionToken, ": ", content), "log.txt", append = append) 
+    write(paste0(timestamp, ": ", user, ": ", sessionToken, ": ", content), file, append = append) 
   else  
-    write(paste0(timestamp, ": ", content), "log.txt", append = append) 
+    write(paste0(timestamp, ": ", content), file, append = append) 
 }
 
-debug_ = function(content, user="", sessionToken="", append=TRUE){
+debug_ = function(content, user="", sessionToken="", append=TRUE, dir=NULL){
   timestamp = Sys.time()
+  file = "debug.txt"
+  file = ifelse(is.null(dir), file, file.path(dir, file))
   
   if(user != "" && sessionToken != "" )
-    write(paste0(timestamp, ": ", user, ": ", sessionToken, ": ", content), "debug.txt", append = append) 
+    write(paste0(timestamp, ": ", user, ": ", sessionToken, ": ", content), file, append = append) 
   else  
-    write(paste0(timestamp, ": ", content), "debug.txt", append = append) 
+    write(paste0(timestamp, ": ", content), file, append = append) 
 }

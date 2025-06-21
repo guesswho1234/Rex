@@ -80,27 +80,27 @@ monitorProgressExamCreate = function(session, out, data){
 monitorProgressExamScanEvaluation = function(session, out, data){
 	data = within(data, {
 	  progress = progress + sum(sapply(strsplit(out, split="\n"), function(x){
-		if(length(x) == 0)
-		  return(0)
-		
-		matchTotalPdfLength = "Scans to convert = "
-		
-		if(any(grepl(matchTotalPdfLength, x)) && is.null(totalPdfLength)) 
-		  totalPdfLength <<- as.numeric(gsub(matchTotalPdfLength, "", x[which(grepl(matchTotalPdfLength, x))]))
-		
-		matchTotalPngLength = "Scans to process = "
-		
-		if(any(grepl(matchTotalPngLength, x)) && is.null(totalPngLength)) 
-		  totalPngLength <<- as.numeric(gsub(matchTotalPngLength, "", x[which(grepl(matchTotalPngLength, x))]))
-
-		if(is.null(totalPngLength) || is.null(totalPdfLength))
-		  return(0)
-		
-		converts = sum(grepl("Converting PDF to PNG", x))
-		reads = sum(grepl(".PNG:", x))
-		adds = sum(grepl("adding:", x))
-		
-		(converts + reads + adds) / (totalPdfLength + totalPngLength * 2 + 1) * 100 
+  		if(length(x) == 0)
+  		  return(0)
+  		
+  		matchTotalPdfLength = "Scans to convert = "
+  		
+  		if(any(grepl(matchTotalPdfLength, x)) && is.null(totalPdfLength)) 
+  		  totalPdfLength <<- as.numeric(gsub(matchTotalPdfLength, "", x[which(grepl(matchTotalPdfLength, x))]))
+  		
+  		matchTotalPngLength = "Scans to process = "
+  		
+  		if(any(grepl(matchTotalPngLength, x)) && is.null(totalPngLength)) 
+  		  totalPngLength <<- as.numeric(gsub(matchTotalPngLength, "", x[which(grepl(matchTotalPngLength, x))]))
+  
+  		if(is.null(totalPngLength) || is.null(totalPdfLength))
+  		  return(0)
+  		
+  		converts = sum(grepl("converting pdf to png", x, ignore.case = TRUE))
+  		reads = sum(grepl(".png:", x, ignore.case = TRUE))
+  		adds = sum(grepl("adding:", x, ignore.case = TRUE))
+  		
+  		(converts + reads + adds) / (totalPdfLength + totalPngLength * 2 + 1) * 100 
 	  }), na.rm = TRUE) 
 	  
 	  if(progress - previousProgress > 1) {
