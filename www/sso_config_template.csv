@@ -1,0 +1,8 @@
+key,value
+client_id,<client_id>
+client_secret,<client secret>
+auth_url,<auth_url>
+token_url,<token_url>
+userinfo_url,<userinfo_url>
+redirect_uri,<redirect_uri>
+scope,openid email

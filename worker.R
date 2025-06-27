@@ -17,7 +17,7 @@ if (!dir.exists(user_lib)) dir.create(user_lib, recursive = TRUE, showWarnings =
 .libPaths(c(user_lib, .libPaths()))
 
 # TRUE MESSAGE VALUE --------------------------------------------------------
-TRUE_MESSAGE_VALUE = TRUE
+TRUE_MESSAGE_VALUE = FALSE
 
 # PACKAGES ----------------------------------------------------------------
 library(exams) #exams_2.4-1
@@ -823,16 +823,40 @@ source("./source/shared/aWrite.R")
   				  stop("E1018")
   
   			  registeredParticipantData = read.csv2(files$registeredParticipants)
-  			  
+				    			  
   			  if(nrow(registeredParticipantData) < 1)
   			    stop("E1031")
   
   			  if(ncol(registeredParticipantData) != 3)
   				  stop("E1015")
+				  
+			    if(any(vapply(registeredParticipantData, FUN.VALUE = "a", FUN = class) != c("integer", "character", "character")))
+				    stop("E1034") 
   
   			  if(!all(names(registeredParticipantData) == c("registration", "name", "id")))
   				  stop("E1016")
-  
+  			  
+  			  if(any(duplicated(registeredParticipantData$registration)))
+  			    stop("E1035")
+  			  
+  			  if(any(duplicated(registeredParticipantData$id)))
+  			    stop("E1036")
+  			  
+  			  # Removed and throwing error instead
+  			  # # In case of duplicated registrations, remove rows with duplicates
+  			  # dups = duplicated(registeredParticipantData$registration)
+  			  # registeredParticipantData = registeredParticipantData[-dups,,drop=FALSE]
+  			  # 
+  			  # # In case of duplicated ids, make them unique
+  			  # id_suffixes = ave(seq_along(registeredParticipantData$id), registeredParticipantData$id, FUN = function(i) {
+  			  #   if (length(i) == 1) return("")
+  			  #   paste0("_", seq_along(i))
+  			  # })
+  			  # registeredParticipantData$id = paste0(registeredParticipantData$id, id_suffixes)
+  			  # 
+  			  # # Replace data with potentially fixed data
+  			  # write.csv2(registeredParticipantData, files$registeredParticipants, row.names = FALSE)
+
   			  cat("Evaluating scans.\n")
   			  cat(paste0("Scans to convert = ", meta$totalPdfLength, "\n"))
   			  cat(paste0("Scans to process = ", meta$totalPdfLength + meta$totalPngLength, "\n"))
@@ -882,12 +906,6 @@ source("./source/shared/aWrite.R")
 			    else{
 			      scans_reg_fullJoinData = merge(scanData, registeredParticipantData, by="registration", all=TRUE)
   
-    			  # in case of duplicates, set "XXXXXXX" as registration number and "NA" for name and id for every match following the first one
-    			  dups = duplicated(scans_reg_fullJoinData$registration)
-    			  scans_reg_fullJoinData$registration[dups] = "XXXXXXX"
-    			  scans_reg_fullJoinData$name[dups] = "NA"
-    			  scans_reg_fullJoinData$id[dups] = "NA"
-    			  
     			  # set "XXXXXXX" as registration number for scans which were not matched with any of the registered participants
     			  scans_reg_fullJoinData$registration[is.na(scans_reg_fullJoinData$name) & is.na(scans_reg_fullJoinData$id)] = "XXXXXXX"
     			  

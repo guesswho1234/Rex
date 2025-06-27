@@ -181,7 +181,7 @@ getEvaluationStatisticsData = function(evaluationData, mark=FALSE, markLabels=c(
       })
       yMax = max(counts_per_bin / (length(params$points) * diff(breaks)))
       
-      plot = hist(as.numeric(params$points), xlab = "Points", ylab = "Fraction", freq = FALSE, main = "", axes = F, ylim = c(0, yMax * 1.2), breaks = breaks[-length(breaks)])
+      plot = hist(as.numeric(params$points), xlab = "Points", ylab = "Density", freq = FALSE, main = "", axes = F, ylim = c(0, yMax * 1.2), breaks = breaks[-length(breaks)])
       if(params$mark[1] != FALSE){
         thresholds = c(0, params$mark, 1)
         threshold_midpoints = head(thresholds, -1) + diff(thresholds) / 2
@@ -214,7 +214,7 @@ getEvaluationStatisticsData = function(evaluationData, mark=FALSE, markLabels=c(
         })
       }
       lines(x = rep(mean(params$points), 2), y = c(0, yMax), lwd = 3, lty=2, col = "#d35555")
-      axis(2, at = seq(0, yMax, by = round(yMax/8, 2)), labels = seq(0, yMax, by = round(yMax/8, 2)), las=2)
+      axis(2, at = seq(0, yMax, by = yMax/8), labels = round(seq(0, yMax, by = yMax/8), 3), las=2)
       axis(1, at = unique(round(c(0, params$examMaxPoints[1] * params$mark, params$examMaxPoints[1]), 2)))
       legend("topleft", legend = c(paste0("mean points (", round(mean(params$points), 2), ")"), "mark thresholds"), lwd = 3, lty = c(2, 1), col = c("#d35555", "#ffd380"), bty="n")
     }))

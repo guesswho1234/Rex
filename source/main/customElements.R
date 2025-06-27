@@ -3,14 +3,14 @@ myUserProfileInterface = function() {
      <h2 class="text-center" style="padding-top: 0;">
      	<span lang="de">Benutzerprofil</span><span lang="en">User Profile</span>
      </h2>
-        <div class="form-group shiny-input-container">
+        <div id="userProfile-user-container" class="form-group shiny-input-container">
      	<label class="control-label" id="current-login-user_name-label" for="current-login-user_name">
             <i class="far fa-user" role="presentation" aria-label="user icon"></i>
 			<span lang="de">Benutzername</span><span lang="en">User name</span>
      	</label>
      	<input id="current-login-user_name" type="text" class="form-control shinyjs-resettable shiny-bound-input" value="" disabled>
         </div>
-        <div class="form-group shiny-input-container">
+        <div id="userProfile-password-container" class="form-group shiny-input-container">
 			<label class="control-label" id="current-login-password-label" for="current-login-password">
 				<i class="fas fa-unlock-keyhole" role="presentation" aria-label="unlock-keyhole icon"></i>
 				<span lang="de">Aktuelles Passwort</span><span lang="en">Current password</span>
@@ -31,7 +31,7 @@ myUserProfileInterface = function() {
 		</div>
 		<div style="text-align: center;">
 			<button class="btn btn-default action-button btn-primary shiny-bound-input" id="cancle-change-password-button" style="color: white;" type="button">
-			<span lang="de">Abbrechen</span><span lang="en">Cancle</span>
+			<span lang="de">Zurück</span><span lang="en">Back</span>
 			</button>
 			<button class="btn btn-default action-button btn-primary shiny-bound-input" id="change-password-button" style="color: white;" type="button">
 			<span lang="de">Passwort ändern</span><span lang="en">Change password</span>
@@ -47,6 +47,22 @@ myUserProfileInterface = function() {
 
 myKillWorkerProcessButton = function() {
   tags$button(id='killWorkerProcess-button', class='btn btn-default action-button shiny-bound-input', type='button', tags$span(HTML('<span lang="de">Abbrechen</span><span lang="en">Cancle</span>')))
+}
+
+myLoginInterface = function(id){
+  ns <- NS(id)
+  
+  tagList(
+    shinyauthr::loginUI(
+      id = id,
+      
+      user_title = tags$span(HTML('<span lang="de">Benutzername</span><span lang="en">User name</span>')), 
+      pass_title = tags$span(HTML('<span lang="de">Passwort</span><span lang="en">Password</span>')),  
+      login_title = myButtonStyle('Einloggen,', 'Log in'), 
+      tagList(tags$img(id = "logoLogin", class = "logo", src = "/www/logo.svg"),
+              tags$div(id = ns("sso_title"), "Single sign-on (SSO)"))
+    )
+  )
 }
 
 myUserProfileButton = function() {
@@ -101,7 +117,6 @@ myGradingKeyThresholdItem = function(index, value, disabled){
 myGradingKeyMarkItem = function(index, value){
 	paste0('<td><div class="form-group shiny-input-container"><input id="markLabel', index, '" type="text" value="', value, '" class="markLabel form-control shiny-bound-input shinyjs-resettable" data-shinyjs-resettable-id="markLabel', index, '" data-shinyjs-resettable-type="Text" data-shinyjs-resettable-value=""></div></td>')
 }
-
 
 myGradingkeyItem = function(index, thresholdValue, markValue) {
   firstItem = index == 1

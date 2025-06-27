@@ -207,11 +207,19 @@ function closeUserProfile() {
 	$('#new-login-password2').val("");
 	$('#change-password-error').hide();
 	$('#change-password-error p').text("");
+	$('#userProfile-password-container').hide();
+	$('#change-password-button').hide();
 }
 
-Shiny.addCustomMessageHandler('setCurrentUser', function(user) {
+Shiny.addCustomMessageHandler('setCurrentUser', function(userdata) {
 	closeUserProfile();
-	$('#current-login-user_name').val(user);
+	$('#current-login-user_name').val(userdata.id);
+	
+	if(userdata.edit){
+		$('#userProfile-password-container').show();
+		$('#change-password-button').show();
+	}
+	
 	$('#userProfileInterfaceOverlay').addClass("active");
 });
 
@@ -1127,7 +1135,7 @@ function exerciseConvertAll(){
 			setRnwSimpleExerciseFileContents(exercideId, true);
 			
 			const item = index + 1;		
-			viewExercise(index, forceParse, item, itemCount)
+			viewExercise(index, true, item, itemCount)
 		});	
 	});
 }
@@ -1511,7 +1519,7 @@ function addExerciseToView(exerciseID) {
 function parseExercise(exerciseID, item = 1, itemCount = 1) {	
 	const exerciseCode = rex.exercises[exerciseID].file;
 	const exerciseExt = rex.exercises[exerciseID].ext;
-			
+						
 	Shiny.onInputChange("parseExercise", {exerciseCode: exerciseCode, exerciseExt: exerciseExt, exerciseID: exerciseID, item: item, itemCount: itemCount}, {priority: 'event'});
 }
 
@@ -2029,34 +2037,45 @@ function loadExerciseFromObject(exerciseID) {
 	f_langDeEn();
 }
 
-function sanitizeComplexFieldValue(content, rnwFormat=false){
+function sanitizeComplexFieldValue(content){
 	if( Array.isArray(content) )
 		content = content.join('')
 	
 	content = '<span>' + content + '</span>';
 	content = $(content);
-
+	
 	// add $-symbols to math blocks
 	content.find('math').each(function () {
 		const $math = $(this);
 		const tex = $math.find('annotation[encoding="application/x-tex"]').text();
+		const display = $math.attr('display');
+		
 		if (tex) {
-			$math.replaceWith(`$${tex}$`);
+			// Only wrap in $...$ if it's NOT a block environment like \begin{...}
+			if (!/\\begin\{.*?\}/.test(tex)) {
+				if (display === 'block') {
+					$math.replaceWith(`$$${tex}$$`);
+				} else {
+					$math.replaceWith(`$${tex}$`);
+				}
+			} else {
+				$math.replaceWith(tex); // Leave as-is
+			}
 		}
 	});
-				
+					
 	content.contents().each(function() {
 		if(this.nodeType === Node.COMMENT_NODE) {
 			$(this).remove();
 		}
 	});
-	
+		
 	content = content.get(0);
 	content = contenteditable_getPlain(content);
 	content = content.replaceAll('\\', '\\\\');
-	
+		
 	content = contentSpecialSanitize(content);
-	
+		
 	return content;
 }
 
@@ -2095,10 +2114,10 @@ function setRmdSimpleExerciseFileContents(exerciseID){
 	let figure = rex.exercises[exerciseID].figure === null ? '' : rawFigureBlock.replace("?rxxTemplate_figure", rex.exercises[exerciseID].figure[2]);
 		
 	fileText = fileText.replace("?rxxTemplate_figure", figure);
-	fileText = fileText.replace("?rxxTemplate_question", rex.exercises[exerciseID].question_raw.replaceAll('\\', '\\\\'));
-	fileText = fileText.replace("?rxxTemplate_solutionNoteGeneral", rex.exercises[exerciseID].solutionNoteGeneral_raw.replaceAll('\\', '\\\\'));
-	fileText = fileText.replace("?rxxTemplate_choices", rex.exercises[exerciseID].choices_raw.map(x=>'* ' + x.replaceAll('\\', '\\\\')).join('\n'));
-	fileText = fileText.replace("?rxxTemplate_solutionNotes", rex.exercises[exerciseID].solutionNotes_raw.map((x, i) => '* ' + x.replace(/^[01]\. */, '').replaceAll('\\', '\\\\')).join('\n'));
+	fileText = fileText.replace("?rxxTemplate_question", rex.exercises[exerciseID].question_raw.replace(/\$/g, '$$$$'));
+	fileText = fileText.replace("?rxxTemplate_solutionNoteGeneral", rex.exercises[exerciseID].solutionNoteGeneral_raw.replace(/\$/g, '$$$$'));
+	fileText = fileText.replace("?rxxTemplate_choices", rex.exercises[exerciseID].choices_raw.map(x=>'* ' + x).join('\n'));
+	fileText = fileText.replace("?rxxTemplate_solutionNotes", rex.exercises[exerciseID].solutionNotes_raw.map((x, i) => '* ' + x.replace(/^[01]\. */, '')).join('\n'));
 	
 	fileText = fileText.replaceAll("\n", "\r\n");
 			
@@ -2119,20 +2138,22 @@ function setRnwSimpleExerciseFileContents(exerciseID, convertFromComplex=false){
 		
 	if(convertFromComplex) {		
 		let figure = extractFirstImg(rex.exercises[exerciseID].question);
-		let question = sanitizeComplexFieldValue(rex.exercises[exerciseID].question, true);
-		let solutionNoteGeneral = sanitizeComplexFieldValue(rex.exercises[exerciseID].solutionNoteGeneral, true);
+		let question = sanitizeComplexFieldValue(rex.exercises[exerciseID].question).replace(/\$/g, '$$$$');
+		let solutionNoteGeneral = sanitizeComplexFieldValue(rex.exercises[exerciseID].solutionNoteGeneral).replace(/\$/g, '$$$$');
 		let choices = rex.exercises[exerciseID].choices.map(x=> sanitizeComplexFieldValue(x));
 		let solutionNotes = rex.exercises[exerciseID].solutionNotes.map(x=> sanitizeComplexFieldValue(x));
-						
+				
 		fileText = fileText.replace("?rxxTemplate_figure", figure === null ? '""' : 'c(' + figure.map(x=>'"' + x + '"').join(',') + ')');
 		fileText = fileText.replace("?rxxTemplate_question", '"' + question + '"');
 		fileText = fileText.replace("?rxxTemplate_solutionNoteGeneral", '"' + solutionNoteGeneral + '"');
 		fileText = fileText.replace("?rxxTemplate_choices", 'c(' + choices.map(x=>'"' + x + '"').join(',') + ')');
 		fileText = fileText.replace("?rxxTemplate_solutionNotes", 'c(' + solutionNotes.map(x => '"' + x.replace(/^[01]\. */, '') + '"').join(',') + ')');
+		
+		
 	} else {
 		fileText = fileText.replace("?rxxTemplate_figure", rex.exercises[exerciseID].figure === null ? '""' : 'c(' + rex.exercises[exerciseID].figure.map(x=>'"' + x + '"').join(',') + ')');
-		fileText = fileText.replace("?rxxTemplate_question", '"' + rex.exercises[exerciseID].question_raw.replaceAll('\\', '\\\\') + '"');
-		fileText = fileText.replace("?rxxTemplate_solutionNoteGeneral", '"' + rex.exercises[exerciseID].solutionNoteGeneral_raw.replaceAll('\\', '\\\\') + '"');
+		fileText = fileText.replace("?rxxTemplate_question", '"' + rex.exercises[exerciseID].question_raw.replace(/\$/g, '$$$$').replaceAll('\\', '\\\\') + '"');
+		fileText = fileText.replace("?rxxTemplate_solutionNoteGeneral", '"' + rex.exercises[exerciseID].solutionNoteGeneral_raw.replace(/\$/g, '$$$$').replaceAll('\\', '\\\\') + '"');
 		fileText = fileText.replace("?rxxTemplate_choices", 'c(' + rex.exercises[exerciseID].choices_raw.map(x=>'"' + x.replaceAll('\\', '\\\\') + '"').join(',') + ')');
 		fileText = fileText.replace("?rxxTemplate_solutionNotes", 'c(' + rex.exercises[exerciseID].solutionNotes_raw.map((x, i) => '"' + x.replace(/^[01]\. */, '').replaceAll('\\', '\\\\') + '"').join(',') + ')');
 	}
@@ -2513,19 +2534,19 @@ Shiny.addCustomMessageHandler('setExerciseQuestion', function(jsonData) {
 
 Shiny.addCustomMessageHandler('setExerciseQuestionRaw', function(jsonData) {
 	const data = processExerciseJsonData(jsonData, simpleValue=true)
-	
+		
 	rex.exercises[data.id].question_raw = data.value === null ? '' : data.value;
 });
 
 Shiny.addCustomMessageHandler('setExerciseSolutionNoteGeneral', function(jsonData) {
 	const data = processExerciseJsonData(jsonData, simpleValue=true)
-
+	
 	rex.exercises[data.id].solutionNoteGeneral = data.value === null ? '' : data.value;
 });
 
 Shiny.addCustomMessageHandler('setExerciseSolutionNoteGeneralRaw', function(jsonData) {
 	const data = processExerciseJsonData(jsonData, simpleValue=true)
-			
+				
 	rex.exercises[data.id].solutionNoteGeneral_raw = data.value === null ? '' : data.value;
 });
 
@@ -3478,6 +3499,8 @@ function resetInspect(){
 	$('#dismiss_evaluateExamScansResponse').show();
 	$('#proceedEval').show();
 	scanFocused = null;
+
+	$('.modal-body').scrollTop(0);
 }
 
 

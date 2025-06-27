@@ -17,6 +17,7 @@ library(shinyauthr) # shinyauthr_1.0.0
 library(sodium) # sodium_1.3.1
 library(RSQLite) # RSQLite_2.3.6
 library(DBI) # DBI_1.2.3
+library(httr) # httr_1.4.7
 
 # CONNECTION --------------------------------------------------------------
 options(shiny.host = "0.0.0.0")
@@ -32,7 +33,7 @@ source("./source/shared/rToJson.R")
 source("./source/shared/log.R")
 source("./source/shared/aWrite.R")
 source("./source/main/appStatus.R")
-source("./source/main/database.R")
+source("./source/main/auth.R")
 source("./source/main/permission.R")
 source("./source/main/processingResponses.R")
 source("./source/main/progressMonitoring.R")
@@ -56,31 +57,8 @@ if(!DOCKER_WORKER)
   initSeed = 1
   languages = c("en",
                 "de")
-  # languages = c("en",
-  #               "hr",
-  #               "da",
-  #               "nl",
-  #               "fi",
-  #               "fr",
-  #               "de",
-  #               "hu",
-  #               "it",
-  #               "ja",
-  #               "ko",
-  #               "no",
-  #               "pt",
-  #               "ro",
-  #               "ru",
-  #               "sr",
-  #               "sk",
-  #               "sl",
-  #               "es",
-  #               "tr")
   rules = list("1/nwrong"="false", "1/max(nwrong, 2)"="false2", "1/ncorrect"="true", "1"="all", "0"="none")
 
-  # USER --------------------------------------------------------------------
-  USERNAME = ""
-  
   # ADDONS ------------------------------------------------------------------
   addons_path = "./addons/"
   addons_path_www = "./www/addons/"
@@ -98,16 +76,28 @@ log_(content="INIT", append=FALSE)
 
 # UI -----------------------------------------------------------------
 ui = htmlTemplate(
-  filename = "index.html"
+  filename = "index.html",
+  sso_redirect = tags$head(
+    tags$script(HTML("
+      Shiny.addCustomMessageHandler('redirect', function(url) {
+        window.location = url;
+      });
+    "))
+  ),
+  login = tagList(
+    useShinyjs(),
+    myLoginInterface("login")
+  )
 )
   
 # SERVER -----------------------------------------------------------------
 server = function(input, output, session) {
   # AUTH --------------------------------------------------------------------
-  credentials = Myloginserver(
+  user_data = loginModule(
     id = "login",
     id_col = "id",
     pw_col = "pw",
+    pm_col = "pm",
     table = "user",
     log_out = reactive(logout_init()),
     reload_on_logout = TRUE,
@@ -117,15 +107,14 @@ server = function(input, output, session) {
   # Logout to hide
   logout_init = shinyauthr::logoutServer(
     id = "logout",
-    active = reactive(credentials()$user_auth)
+    active = reactive(user_data()$user_auth)
   )
-
+  
   eventReactive
   output$rexApp = renderUI({
-    req(credentials()$user_auth)
-    USERNAME <<- credentials()$info[1]
- 
-    log_(content="Successful login.", USERNAME, sessionToken=session$token)
+    req(user_data()$user_auth)
+
+    log_(content="Successful login.", user_data()$info$id, sessionToken=session$token)
 
     # STARTUP -------------------------------------------------------------
     unlink(getDir(session), recursive = TRUE)
@@ -242,7 +231,7 @@ server = function(input, output, session) {
   # CLEANUP -------------------------------------------------------------
   onStop(function() {
     unlink(getDir(session), recursive = TRUE)
-    log_(content="Session closed.", USERNAME, sessionToken=session$token)
+    log_(content=paste0("Session ", sessionToken=session$token, " closed."))
   })
   
   # HEARTBEAT -------------------------------------------------------------
@@ -278,18 +267,20 @@ server = function(input, output, session) {
   
   # USER --------------------------------------------------------------------
   observeEvent(input$`profile-button`, {
-    session$sendCustomMessage("setCurrentUser", credentials()$info$id)
+    checkPm = checkPermission("P1000", user_data()$info$pm)
+    session$sendCustomMessage("setCurrentUser", list(id=user_data()$info$id,
+                                                     edit=checkPm$hasPermission))
   })
   
   observeEvent(input$`change-password-button`, {
-    checkPm = checkPermission("P1000", credentials()$info$pm)
+    checkPm = checkPermission("P1000", user_data()$info$pm)
     
     if(!checkPm$hasPermission){
       session$sendCustomMessage("errorUpdateUserProfile", getNoPermissionMessage(checkPm$code, checkPm$response))
       return(NULL)
     }
 
-    changePassword(session, credentials()$info, input$`current-login-password`, input$`new-login-password1`, input$`new-login-password2`)
+    changePassword(session, user_data()$info, input$`current-login-password`, input$`new-login-password1`, input$`new-login-password2`)
   })
   
   # KILL WORKER PROCESS --------------------------------------------------------------------
@@ -347,7 +338,7 @@ server = function(input, output, session) {
   
     # CALL ---------------------------------------------------------------
     exerciseParsing = eventReactive(input$parseExercise, {
-      checkPm = checkPermission("P1001", credentials()$info$pm)
+      checkPm = checkPermission("P1001", user_data()$info$pm)
       
       if(!checkPm$hasPermission){
         session$sendCustomMessage("removeAllExercises", 1)
@@ -360,7 +351,7 @@ server = function(input, output, session) {
         startWait(session)
         allowKill(session, 1)
         initProrgress(session)
-        log_(content="Parsing exercise.", USERNAME, sessionToken=session$token)
+        log_(content="Parsing exercise.", user_data()$info$id, sessionToken=session$token)
       }
       
       # write exercise file
@@ -410,7 +401,7 @@ server = function(input, output, session) {
         # check if results exist
         if(!file.exists(parseExercise_res)){
           reset_parseExercise()
-          log_(content="Parsing exercise cancelled.", USERNAME, sessionToken=session$token)
+          log_(content="Parsing exercise cancelled.", user_data()$info$id, sessionToken=session$token)
           stopWait(session)
           session$sendCustomMessage("changeTabTitle", "reset")
           return(0)
@@ -464,7 +455,7 @@ server = function(input, output, session) {
         reset_parseExercise()
         stopWait(session)
         session$sendCustomMessage("changeTabTitle", "reset")
-        log_(content="Exercise parsed.", USERNAME, sessionToken=session$token)
+        log_(content="Exercise parsed.", user_data()$info$id, sessionToken=session$token)
       }
     })
 
@@ -494,7 +485,7 @@ server = function(input, output, session) {
 
     # CALL ---------------------------------------------------------------
     examCreation = eventReactive(input$createExam, {
-      checkPm = checkPermission("P1002", credentials()$info$pm)
+      checkPm = checkPermission("P1002", user_data()$info$pm)
   
       if(!checkPm$hasPermission){
         session$sendCustomMessage("errorNoPermission", getNoPermissionMessage(checkPm$code, checkPm$response, FALSE))
@@ -506,7 +497,7 @@ server = function(input, output, session) {
         startWait(session)
         allowKill(session, 1)
         initProrgress(session)
-        log_(content="Creating exam.", USERNAME, sessionToken=session$token)
+        log_(content="Creating exam.", user_data()$info$id, sessionToken=session$token)
       }
       
       exam = input$createExam
@@ -616,7 +607,7 @@ server = function(input, output, session) {
         # check if results exist
         if(!file.exists(createExam_res)){
           reset_createExam()
-          log_(content="Creating exam cancelled.", USERNAME, sessionToken=session$token)
+          log_(content="Creating exam cancelled.", user_data()$info$id, sessionToken=session$token)
           stopWait(session)
           session$sendCustomMessage("changeTabTitle", "reset")
           return(0)
@@ -639,7 +630,7 @@ server = function(input, output, session) {
         # wrap up
         session$sendCustomMessage("changeTabTitle", as.numeric(messageType))
         reset_createExam()
-        log_(content="Exam created.", USERNAME, sessionToken=session$token)
+        log_(content="Exam created.", user_data()$info$id, sessionToken=session$token)
       }
     })
   
@@ -705,7 +696,7 @@ server = function(input, output, session) {
     
       # CALL --------------------------------------------------------------------
       examScanEvaluation = eventReactive(input$evaluateExam, {
-        checkPm = checkPermission("P1003", credentials()$info$pm)
+        checkPm = checkPermission("P1003", user_data()$info$pm)
     
         if(!checkPm$hasPermission){
           session$sendCustomMessage("errorNoPermission", getNoPermissionMessage(checkPm$code, checkPm$response, FALSE))
@@ -717,7 +708,7 @@ server = function(input, output, session) {
           startWait(session)
           allowKill(session, 1)
           initProrgress(session)
-          log_(content="Evaluating exam scans.", USERNAME, sessionToken=session$token)
+          log_(content="Evaluating exam scans.", user_data()$info$id, sessionToken=session$token)
         }
         
         exam = input$evaluateExam
@@ -873,7 +864,7 @@ server = function(input, output, session) {
           # check if results exist
           if(!file.exists(evaluateExamScans_res)){
             reset_evaluateExamScans()
-            log_(content="Evaluating exam scans cancelled.", USERNAME, sessionToken=session$token)
+            log_(content="Evaluating exam scans cancelled.", user_data()$info$id, sessionToken=session$token)
             stopWait(session)
             session$sendCustomMessage("changeTabTitle", "reset")
             return(0)
@@ -916,7 +907,7 @@ server = function(input, output, session) {
           # wrap up
           session$sendCustomMessage("changeTabTitle", as.numeric(messageType))
           reset_evaluateExamScans()
-          log_(content="Exam scans evaluated.", USERNAME, sessionToken=session$token)
+          log_(content="Exam scans evaluated.", user_data()$info$id, sessionToken=session$token)
         }
       })
       
@@ -954,7 +945,7 @@ server = function(input, output, session) {
   
       # CALL --------------------------------------------------------------------
       examFinalizeEvaluation = eventReactive(input$proceedEvaluation, {
-        checkPm = checkPermission("P1004", credentials()$info$pm)
+        checkPm = checkPermission("P1004", user_data()$info$pm)
     
         if(!checkPm$hasPermission){
           session$sendCustomMessage("errorNoPermission", getNoPermissionMessage(checkPm$code, checkPm$response, FALSE))
@@ -966,7 +957,7 @@ server = function(input, output, session) {
           startWait(session)
           allowKill(session, 1)
           initProrgress(session)
-          log_(content="Evaluating exam.", USERNAME, sessionToken=session$token)
+          log_(content="Evaluating exam.", user_data()$info$id, sessionToken=session$token)
         }
     
         dir = getDir(session)
@@ -1012,7 +1003,7 @@ server = function(input, output, session) {
           # check if results exist
           if(!file.exists(evaluateExamFinalize_res)){
             reset_eevaluateExamFinalize()
-            log_(content="Evaluating exam cancelled.", USERNAME, sessionToken=session$token)
+            log_(content="Evaluating exam cancelled.", user_data()$info$id, sessionToken=session$token)
             stopWait(session)
             session$sendCustomMessage("changeTabTitle", "reset")
             return(0)
@@ -1059,7 +1050,7 @@ server = function(input, output, session) {
           # wrap up
           session$sendCustomMessage("changeTabTitle", as.numeric(messageType))
           reset_eevaluateExamFinalize()
-          log_(content="Exam evaluated.", USERNAME, sessionToken=session$token)
+          log_(content="Exam evaluated.", user_data()$info$id, sessionToken=session$token)
         }
       })
     

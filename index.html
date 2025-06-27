@@ -16,10 +16,13 @@
 		<meta name="msapplication-TileColor" content="#da532c">
 		<meta name="theme-color" content="#ffffff">	
 		<link rel="stylesheet" href="/www/styleIndex.css" type="text/css">
+		{{ sso_redirect }}
 	</head>
 	<body class="color-theme textButtonMode">
 		{{ textOutput("debug") }}
-		{{ shinyauthr::loginUI(id = "login",  user_title = tags$span(HTML('<span lang="de">Benutzername</span><span lang="en">User name</span>')), pass_title = tags$span(HTML('<span lang="de">Passwort</span><span lang="en">Password</span>')),  login_title = myButtonStyle("Einloggen", "Log in"), tags$img(id = "logoLogin", class="logo", src="/www/logo.svg")) }}
+		<div id="login-container">
+			{{ login }}
+		</div>
 		<div class="fullHLine"></div>
 		{{ htmlOutput("rexApp", inline=TRUE) }}
 		<footer>

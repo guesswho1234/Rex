@@ -17,13 +17,14 @@ RUN set -eu \
         ;rm -rf /var/lib/apt/lists/* \
         ;
 	
-RUN R -e "install.packages(c('shinyjs', 'shinyWidgets', 'shinycssloaders', 'shinyauthr', 'sodium', 'RSQLite', 'DBI'), dependencies=TRUE)"		
+RUN R -e "install.packages(c('shinyjs', 'shinyWidgets', 'shinycssloaders', 'shinyauthr', 'sodium', 'RSQLite', 'DBI', 'httr'), dependencies=TRUE)"		
 RUN R -e "install.packages('qpdf', repos='http://cran.us.r-project.org')"				 
 RUN rm -rf /tmp/Rtmp*/
 
 COPY ./app.R /rex/
 COPY ./index.html /rex/
 COPY ./app.html /rex/
+COPY ./sso_config.csv /rex/
 COPY ./www /tmp/www
 
 # Copy addons directory excluding all "worker" subdirs

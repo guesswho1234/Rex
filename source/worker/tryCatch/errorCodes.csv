@@ -33,3 +33,6 @@ E1030;Invalid exam date.;Ungültiges Prüfugnsdatum.
 E1031;The registration file is empty.;Die Teilnehmerliste ist leer.
 E1032;Seed must be a number.;Seed muss eine Zahl sein.
 E1033;Exercises with less than 5 answers have varying number of answers.;Aufgaben mit weniger als 5 Antwortmöglichkeiten unterscheiden sich in der Anzahl and Antwortmöglichkeiten.
+E1034;One or more columns of the registered participants data are not formatted correctly.;Eine oder mehrere Spalten in den Daten der angemeldeten Teilnehmerinnen und Teilnehmer ist nicht korrekt formatiert.
+E1035;Registered participants data contains duplicated values for the 'registration' column.;Die Daten der angemeldeten Teilnehmerinnen und Teilnehmer beinhalten Duplikate für die Spalte 'registration'.
+E1036;Registered participants data contains duplicated values for the 'id' column.;Die Daten der angemeldeten Teilnehmerinnen und Teilnehmer beinhalten Duplikate für die Spalte 'id'.

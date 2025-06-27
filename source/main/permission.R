@@ -6,7 +6,6 @@ prime_factors = function(x, i, factors = NULL){
 	else  prime_factors(x, i[-1], factors)
 }
 
-
 checkPermission = function(code, userPm){
 	permissions = prime_factors(userPm, permissionCodes$require)
 

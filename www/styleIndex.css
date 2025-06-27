@@ -46,6 +46,13 @@ body {
 	border-color: var(---change_blue);
 	border: 2px solid var(---background);
 	border-radius: 5px;
+	color: var(---background);
+}
+
+#login-button.btn-sso  {
+	background-color: var(---yellow_warning);
+	border-color: var(---yellow_warning);
+	color: var(---main) !important;
 }
 
 #login-button:hover {
