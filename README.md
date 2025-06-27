@@ -83,7 +83,7 @@ Rex supports:
 
 ### 🧩 Manage Exercises
 
-Use the **“EXERCISES”** tab to manage your exercise pool.
+Use the **“EXERCISES”** tab to manage exercises.
 
 Rex supports two types of exercises:
 
