@@ -142,8 +142,8 @@ After evaluation:
 - Manual review/editing of scans is possible
 - Output ZIP includes:
   - Converted scans (`*_nops_scan.zip`)
-  - Evaluation reports (`*_nops_eval.zip`)
-  - Evaluation CSVs
+  - Individual evaluation reports (`*_nops_eval.zip`)
+  - Overall evaluation CSV
   - PDF report and raw statistics
   - `input.txt` and `code.txt`
 
