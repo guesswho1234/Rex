@@ -1,16 +1,20 @@
 # Rex: Shiny R/exams Dashboard <img src="https://raw.githubusercontent.com/guesswho1234/Rex/main/www/logo.svg" align="right" alt="Rex logo" width="20%" />
 
-This repository provides an easy to use interactive [Shiny](https://shiny.posit.co/) dashboard for creating and evaluating written single- or multiple-choice exams and building reusable exercise pools. The underlying workhorse is [R/exams](https://www.R-exams.org/), specifically the so-called [NOPS exams](https://www.R-exams.org/tutorials/exams2nops/) functions, which support both randomized single-choice and multiple-choice exercises along with automatic evaluation.
+**Rex** is an easy-to-use [Shiny](https://shiny.posit.co/) dashboard for creating, managing, and evaluating written exams using [R/exams](https://www.R-exams.org/). It is designed to simplify workflows for educators while supporting complex, randomized exercise formats and fully automated evaluation.
 
 Rex is developed by [Sebastian Bachler](mailto:sbachler@gmx.at).
 
-## Demo
+---
 
-Full featured access to a hosted version and example files can be requested via e-mail.
+## 🎮 Demo
 
-## System Resources
+A hosted version with example files is available on request via email.
 
-For Rex to operate properly, make sure that the following resources are available on your system:
+---
+
+## ⚙️ System Requirements
+
+Ensure the following system dependencies are available:
 
 - `libsodium-dev`
 - `libmagick++-dev`
@@ -19,108 +23,157 @@ For Rex to operate properly, make sure that the following resources are availabl
 - `texlive-full`
 - `pandoc`
 
-## Run
+---
 
-### Local
+## 🚀 Getting Started
 
-Install all required R packages, including their dependencies (see the "PACKAGES" section in `app.R` and `worker.R`).
+### 🔌 Local
 
-Start up via:
+Install required R packages as listed in `app.R` and `worker.R`.
+
+Then launch the app via:
 
 ```R
 shiny::runApp(appDir = '<base directory containing app.R>', host = '0.0.0.0', port = 3838)
 ```
-Alternatively, open and run `app.R` via RStudio.
 
-### Docker
+Alternatively, open and run `app.R` in RStudio.
 
-On the host, make the database file owned by the UID=1001 and GID=1001:
+### 🐳 Docker
+
+Ensure the database file is owned by UID=1001 and GID=1001:
 
 ```bash
 chown 1001:1001 /home/rex.sqlite
 chmod 660 /home/rex.sqlite
 ```
 
-Build and start the Docker infrastructure using the following command:
+Build and run using:
 
 ```bash
 docker-compose -f compose_rex.yaml up --build
 ```
 
-## Hosting
+---
 
-> [!CAUTION]
-> This project uses a hardened Docker setup with non-root users, dropped capabilities, and resource limits.
-> External access is restricted to the frontend only; the background worker has no network access.
-> While these measures reduce risk, always audit images and dependencies before deploying to production.
-> **Use at your own risk and follow best security practices.**
+## 🌐 Hosting & Security
 
-## Use
+> **CAUTION**  
+> Rex uses a hardened Docker setup:
+> - Non-root users with dropped capabilities  
+> - Background worker has no network access  
+> - Resource-limited containers  
+>
+> Always audit third-party dependencies before deployment.  
+> **Use at your own risk and follow security best practices.**
 
-By default, use "rex" as both user and password to authenticate. 
+---
 
-It is recommended to use Rex in Firefox.
+## 🔐 Authentication
 
-### Standard Workflow
+Rex supports:
+- **Basic login** (default user: `rex`, password: `rex`)
+- **Single Sign-On (SSO)** integration (configurable for institutional environments)
 
-#### Manage Exercises
+---
 
-The entire management of exercises takes place in the "EXERCISES" tab of the application.
+## 🧑‍🏫 Usage
 
-When managing exercises, the following input fields can generally be edited:
-- Name
-- Author
-- Type
-- Points
-- Section
-- LaTeX Environments (enable / disable)
-- Question (accepts inline math formulas by deafult and also full LaTeX environments when switched on)
-- Figure (accepts a single PNG file per exercise)
-- Solution Note 
-- Answers (consisting of the true/false solution, answer text, and a answer specific solution note)
+> ✅ **Browser recommendation**: Firefox
 
-Exercises can be imported and exported as either RMD or RNW files.
+### 🧩 Manage Exercises
 
-#### Create Exams
+Use the **“EXERCISES”** tab to manage your exercise pool.
 
-To create exams, navigate to the "EXAM" tab and then to "Create exam." There you will find a form with various options to set.
+Rex supports two types of exercises:
 
-Before creating an exam, make sure that exercises in the exercise tab are marked as examinable.
+#### 1. **Simple Exercises**  
+These are created directly within the app using the UI. Ideal for users without programming experience.
 
-When clicking the "Create exam" button, the exam will be created. Once this process is finished, a popup will appear, offering you to save the exam. When saving the exam, a ZIP archive will be downloaded. This archive will include the following files:
-- All the exam scramblings as PDF files
-- All the exam scramblings as HTML files, including solutions and solution notes
-- An RDS file to evaluate the exam
-- All of the exercises used in the exam
-- A TXT file "input.txt" containing all the input values used for creating the exam
-- A TXT file "code.txt" containing R code, which can be used to replicate the main output in R and without Rex
+- Fully editable in the app
+- Supports inline math and full LaTeX environments
+- Fields include:
+  - Name, Author, Type, Points, Section
+  - Question text and solution note
+  - Answer options with true/false flags and notes
+  - One PNG figure per exercise
+  - Toggle LaTeX environments
+- Can be **exported** to `.RMD` or `.RNW` format and later **re-imported** without losing editability
 
-#### Evaluate Exams
+#### 2. **Advanced (Coded) Exercises**  
+These are authored externally in `.RMD` or `.RNW` files using R features such as:
 
-To evaluate exams, navigate to the "EXAM" tab and then to "Evaluate exam." There you will find another form with various options to set.
+- Dynamic code chunks (e.g. random number generation)
+- Custom LaTeX environments
+- Arbitrary R logic for exercise generation
 
-Before the evaluation of an exam is possible, the following three files need to be prepared:
-- "Solutions": the RDS file within the ZIP archive, which was supplied when the exam was created
-- "Registered participants": a CSV file containing information about exam participants (optional; if not provided, dummy participants will be used)
-- "Evaluation scans": all the evaluation sheet scans as either PDF files and/or PNG files (preferably all in the same orientation)
+These exercises can be **imported** into Rex, but **cannot be edited** directly in the UI.  
+> ⚠️ You may optionally convert advanced exercises to simple ones for editing, but this can lead to **loss of functionality or formatting**.
 
-When clicking the "Evaluate exam" button, the exam will be evaluated. First, the scans are processed. When this is finished, a popup will appear, allowing you to inspect and manually edit any of the processed scans. After proceeding, the evaluation will be finalized. Once finished, another popup will appear offering the option to save the exam evaluation. When saving the evaluation, a ZIP archive will be downloaded. This archive will include the following files:
-- Two ZIP archives: one (ending with "_nops_scan.zip") containing all the scans converted to PNG files, along with the extracted raw data, and another (ending with "_nops_eval.zip") containing the evaluation documents for each participant
-- Two CSV files: one containing the registered participants and another (ending with "_nops_eval.csv") containing all the evaluation data ready to distribute to participants
-- The RDS file used to evaluate the exam
-- A PDF file "nops_report.pdf" containing a statistical report of the evaluation
-- A TXT file "statistics.txt" containing some basic evaluation statistics
-- A TXT file "input.txt" containing all the input values used for evaluating the exam
-- A TXT file "code.txt" containing R code, which can be used to replicate the main output in R and without Rex
+---
 
-## Addons
+### 📝 Create Exams
 
-Addons are a way to extend Rex with custom features, such as default values, additional input fields, or entirely new functionalities.
+Go to **“EXAM” > “Create exam”** to generate an exam.
 
-> [!CAUTION]
-> Addons can introduce additional security risks.
-> **Use at your own risk and follow best security practices.**
-  
-## Contribute
+Steps:
+1. Ensure exercises are marked as *examinable*.
+2. Configure options and click **“Create exam”**.
+3. Download the generated ZIP archive, which includes:
+   - **PDF files** of all exam versions — intended for **printing and distribution** to students
+   - **HTML files** matching the PDF versions — include solutions and are meant for **quality control before the exam**
+   - **RDS file** for later evaluation
+   - All exercises used in the exam
+   - `input.txt` — contains all parameter values used for exam creation
+   - `code.txt` — R code to reproduce the exam outside of Rex
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+---
+
+### 📊 Evaluate Exams
+
+Navigate to **“EXAM” > “Evaluate exam”**.
+
+Required files:
+- **Solutions**: RDS file from exam creation
+- **Participants**: CSV (optional; dummy users will be used if omitted)
+- **Scans**: PDF or PNG of evaluation sheets (same orientation recommended)
+
+After evaluation:
+- Manual review/editing of scans is possible
+- Output ZIP includes:
+  - Converted scans (`*_nops_scan.zip`)
+  - Evaluation reports (`*_nops_eval.zip`)
+  - Evaluation CSVs
+  - PDF report and raw statistics
+  - `input.txt` and `code.txt`
+
+---
+
+## 🧩 Addons
+
+Extend Rex with custom features like:
+- Default values
+- Additional UI fields
+- Entirely new logic modules
+
+> **CAUTION**  
+> Addons may increase attack surface.  
+> **Use at your own risk.**
+
+---
+
+## 🤝 Contribute
+
+Pull requests welcome! For larger changes, open an issue to discuss first.
+
+---
+
+## 🧠 Tech Highlights
+
+- **Accessibility**: UI tailored for users with no programming experience (DE & EN)
+- **Authentication**: Single Sign-On (SSO) support
+- **Secure**: Dockerized with minimized privileges
+- **Exercise Format**: Supports both `.RMD` and `.RNW`
+- **Flexibility**: Full compatibility for more advanced (coded) exercises
+
+---
