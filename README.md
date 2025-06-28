@@ -73,7 +73,7 @@ docker-compose -f compose_rex.yaml up --build
 
 Rex supports:
 - **Basic login** (default user: `rex`, password: `rex`)
-- **Single Sign-On (SSO)** integration (configurable for institutional environments)
+- **Single Sign-On (SSO)** integration for OAuth 2.0 (configurable for institutional environments)
 
 ---
 
@@ -171,7 +171,7 @@ Pull requests welcome! For larger changes, open an issue to discuss first.
 ## 🧠 Tech Highlights
 
 - **Accessibility**: UI tailored for users with no programming experience (DE & EN)
-- **Authentication**: Single Sign-On (SSO) support
+- **Authentication**: Single Sign-On (SSO) support for OAuth 2.0
 - **Secure**: Dockerized with minimized privileges
 - **Exercise Format**: Supports both `.RMD` and `.RNW`
 - **Flexibility**: Full compatibility for more advanced (coded) exercises
