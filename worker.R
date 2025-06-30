@@ -17,7 +17,7 @@ if (!dir.exists(user_lib)) dir.create(user_lib, recursive = TRUE, showWarnings =
 .libPaths(c(user_lib, .libPaths()))
 
 # TRUE MESSAGE VALUE --------------------------------------------------------
-TRUE_MESSAGE_VALUE = FALSE
+TRUE_MESSAGE_VALUE = TRUE
 
 # PACKAGES ----------------------------------------------------------------
 library(exams) #exams_2.4-1
@@ -669,12 +669,12 @@ source("./source/shared/aWrite.R")
   			code_exams2html = paste0("exams::exams2html(", paste0(names(param_exams2html), "=%s", collapse=", "), ")") 
   			code_exams2html = append(code_exams2html, lapply(param_exams2html, function(x) paste0(deparse(x), collapse="")))
   			code_exams2html = rlang::exec(sprintf, !!!code_exams2html)
-  			code_exams2html = gsub("\\s+", "", code_exams2html)
+  			code_exams2html = gsub("\\s+", " ", code_exams2html)
   			
   			code_exams2nops = paste0("exams::exams2nops(", paste0(names(param_exams2nops), "=%s", collapse=", "), ")") 
   			code_exams2nops = append(code_exams2nops, lapply(param_exams2nops, function(x) paste0(deparse(x), collapse="")))
   			code_exams2nops = rlang::exec(sprintf, !!!code_exams2nops)
-  			code_exams2nops = gsub("\\s+", "", code_exams2nops)
+  			code_exams2nops = gsub("\\s+", " ", code_exams2nops)
   			
   			code = paste0("# 1.) Set working directory", "\n", 
   			              "setwd(\".\")", "\n\n",  
@@ -822,7 +822,7 @@ source("./source/shared/aWrite.R")
   			  if(any(as.numeric(mark) < 1) && any(as.numeric(mark) >= 1))
   				  stop("E1018")
   
-  			  registeredParticipantData = read.csv2(files$registeredParticipants)
+  			  registeredParticipantData = read.csv2(files$registeredParticipants, colClasses = c("integer", "character", "character"))
 				    			  
   			  if(nrow(registeredParticipantData) < 1)
   			    stop("E1031")
@@ -928,7 +928,7 @@ source("./source/shared/aWrite.R")
   			  code_nops_scan = paste0("exams::nops_scan(", paste0(names(param_nops_scan), "=%s", collapse=", "), ")") 
   			  code_nops_scan = append(code_nops_scan, lapply(param_nops_scan, function(x) paste0(deparse(x), collapse="")))
   			  code_nops_scan = rlang::exec(sprintf, !!!code_nops_scan)
-  			  code_nops_scan = gsub("\\s+", "", code_nops_scan)
+  			  code_nops_scan = gsub("\\s+", " ", code_nops_scan)
   			  
   			  code = paste0("# 1.) Set working directory", "\n", 
   			                "setwd(\".\")", "\n\n",  
@@ -1122,7 +1122,7 @@ source("./source/shared/aWrite.R")
   	        code_nops_eval = paste0("exams::nops_eval(", paste0(names(param_nops_eval), "=%s", collapse=", "), ")") 
   	        code_nops_eval = append(code_nops_eval, lapply(param_nops_eval, function(x) paste0(deparse(x), collapse="")))
   	        code_nops_eval = rlang::exec(sprintf, !!!code_nops_eval)
-  	        code_nops_eval = gsub("\\s+", "", code_nops_eval)
+  	        code_nops_eval = gsub("\\s+", " ", code_nops_eval)
   	        
   	        code = paste0("\n", code_nops_eval)
   	        code = gsub(gsub("\\", "\\\\", data$preparedEvaluation$fields$dir, fixed=TRUE), ".", code, fixed=TRUE)

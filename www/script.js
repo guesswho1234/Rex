@@ -2580,7 +2580,7 @@ Shiny.addCustomMessageHandler('setExerciseSolutions', function(jsonData) {
 	rex.exercises[data.id].solution = data.value;
 });
 
-Shiny.addCustomMessageHandler('setExerciseSolutionNotes', function(jsonData) {
+Shiny.addCustomMessageHandler('setExerciseSolutionNotes', function(jsonData) {	
 	const data = processExerciseJsonData(jsonData)
 	
 	rex.exercises[data.id].solutionNotes = data.value.map(x=>x.replace(/^[01]\. */, ''));
@@ -3499,8 +3499,9 @@ function resetInspect(){
 	$('#dismiss_evaluateExamScansResponse').show();
 	$('#proceedEval').show();
 	scanFocused = null;
-
-	$('.modal-body').scrollTop(0);
+	
+	// todo: scroll to more useful position on open / close
+	// $('.modal-body').scrollTop(0);
 }
 
 
