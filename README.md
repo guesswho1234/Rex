@@ -2,8 +2,6 @@
 
 **Rex** is an easy-to-use [Shiny](https://shiny.posit.co/) dashboard for creating, managing, and evaluating written exams using [R/exams](https://www.R-exams.org/). It is designed to simplify workflows for educators while supporting complex, randomized exercise formats and fully automated evaluation.
 
-Rex is developed by [Sebastian Bachler](mailto:sbachler@gmx.at).
-
 ---
 
 ## 🎮 Demo
