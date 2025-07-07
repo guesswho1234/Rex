@@ -1,6 +1,6 @@
 # Rex: Shiny R/exams Dashboard <img src="https://raw.githubusercontent.com/guesswho1234/Rex/main/www/logo.svg" align="right" alt="Rex logo" width="20%" />
 
-**Rex** is an easy-to-use [Shiny](https://shiny.posit.co/) dashboard for creating, managing, and evaluating written exams using [R/exams](https://www.R-exams.org/). It is designed to simplify workflows for educators while supporting complex, randomized exercise formats and fully automated evaluation.
+**Rex** is an easy-to-use [Shiny](https://shiny.posit.co/) dashboard for creating, managing, and evaluating written paper exams using [R/exams](https://www.R-exams.org/). It is designed to simplify workflows for educators while supporting complex, randomized exercise formats and fully automated evaluation.
 
 ---
 
