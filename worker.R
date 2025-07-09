@@ -17,7 +17,7 @@ if (!dir.exists(user_lib)) dir.create(user_lib, recursive = TRUE, showWarnings =
 .libPaths(c(user_lib, .libPaths()))
 
 # TRUE MESSAGE VALUE --------------------------------------------------------
-TRUE_MESSAGE_VALUE = TRUE
+TRUE_MESSAGE_VALUE = FALSE
 
 # PACKAGES ----------------------------------------------------------------
 library(exams) #exams_2.4-1
