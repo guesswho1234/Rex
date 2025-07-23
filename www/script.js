@@ -2117,7 +2117,7 @@ function setRmdSimpleExerciseFileContents(exerciseID){
 	fileText = fileText.replace("?rxxTemplate_question", rex.exercises[exerciseID].question_raw.replace(/\$/g, '$$$$'));
 	fileText = fileText.replace("?rxxTemplate_solutionNoteGeneral", rex.exercises[exerciseID].solutionNoteGeneral_raw.replace(/\$/g, '$$$$'));
 	fileText = fileText.replace("?rxxTemplate_choices", rex.exercises[exerciseID].choices_raw.map(x=>'* ' + x).join('\n'));
-	fileText = fileText.replace("?rxxTemplate_solutionNotes", rex.exercises[exerciseID].solutionNotes_raw.map((x, i) => '* ' + x.replace(/^[01]\. */, '')).join('\n'));
+	fileText = fileText.replace("?rxxTemplate_solutionNotes", rex.exercises[exerciseID].solutionNotes_raw.map((x, i) => '* ' + (+rex.exercises[exerciseID].solution[i]) + '. ' + x.replace(/^[01]\. */, '')).join('\n'));
 	
 	fileText = fileText.replaceAll("\n", "\r\n");
 			
@@ -2475,6 +2475,12 @@ $('#exerciseTexMode').change(function() {
 		setRnwSimpleExerciseFileContents(exerciseID);
 		$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').addClass("texMode");
 	}
+	
+	invalidateAfterEdit(exerciseID);
+	setRnwSimpleExerciseFileContents(exerciseID);
+	loadExerciseFromObject(exerciseID);
+	
+	f_langDeEn();
 });
 			
 getID = function() {
