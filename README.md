@@ -6,7 +6,7 @@
 
 ## 🎮 Demo
 
-A hosted version with example files is available on request via email.
+A full featured hosted version is available on request via email.
 
 ---
 
