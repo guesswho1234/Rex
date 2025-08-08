@@ -124,7 +124,7 @@ loginModule = function(id, sodium_hashed = FALSE, id_col, pw_col, pm_col, table,
         
         if (length(row_username) == 1 && password_match) {
           fallback_credentials$user_auth = TRUE
-          fallback_credentials$info = data()[data()[[id_col]] == input$user_name][c(id_col, pm_col)]
+          fallback_credentials$info = data()[data()[[id_col]] == row_username,][c(id_col, pm_col)]
         }
         else {
           shinyjs::toggle(id =  "error", anim = TRUE, time = 1, animType = "fade")
