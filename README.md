@@ -39,8 +39,7 @@ Alternatively, open and run `app.R` in RStudio.
 
 ### 🐳 Docker
 
-If the database file `/home/rex.sqlite` does **not** yet exist on your system, use the `rex.sqlite` file provided in this repository.  
-You can skip this step if the file already exists at `/home/rex.sqlite`.
+If the database file `/home/rex.sqlite` does **not** yet exist on your system, use the `rex.sqlite` file provided in this repository. You can skip this step if the file already exists at `/home/rex.sqlite`.
 
 Download it and place it in your `/home/` directory manually.
 
