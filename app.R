@@ -43,6 +43,12 @@ if(!DOCKER_WORKER)
   source("./worker.R")  
 
 # PARAMETERS --------------------------------------------------------------
+  # VERSION -----------------------------------------------------------------
+  version = tryCatch(
+    readLines("VERSION", warn = FALSE),
+    error = function(e) "dev"
+  )
+
   # REXAMS ------------------------------------------------------------------
   cores = NULL
   if (Sys.info()["sysname"] == "Linux")
@@ -87,11 +93,17 @@ ui = htmlTemplate(
   login = tagList(
     useShinyjs(),
     myLoginInterface("login")
+  ),
+  rexVersion = tags$div(id = "version",
+    tags$span("Version "),
+    tags$span(version)
   )
 )
   
 # SERVER -----------------------------------------------------------------
 server = function(input, output, session) {
+  textInput_seedValueExercises = textInput("seedValueExercises", label = NULL, value = initSeed)
+  
   # AUTH --------------------------------------------------------------------
   user_data = loginModule(
     id = "login",
