@@ -24,6 +24,7 @@ RUN rm -rf /tmp/Rtmp*/
 COPY ./app.R /rex/
 COPY ./index.html /rex/
 COPY ./app.html /rex/
+COPY ./VERSION /rex/
 COPY ./sso_config.csv /rex/
 COPY ./www /tmp/www
 
