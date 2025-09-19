@@ -39,14 +39,31 @@ Alternatively, open and run `app.R` in RStudio.
 
 ### 🐳 Docker
 
-Ensure the database file is owned by UID=1001 and GID=1001:
+#### Initial Setup
+If the database file `/home/rex.sqlite` does **not** yet exist on your system, use the `rex.sqlite` file provided in this repository. You can skip this step if the file already exists at `/home/rex.sqlite`.
+
+Download it and place it in your `/home/` directory manually.
+
+Alternatively, you can download it using `curl` or `wget` (you may need `sudo` to write to `/home`):
 
 ```bash
-chown 1001:1001 /home/rex.sqlite
-chmod 660 /home/rex.sqlite
+# Using curl
+curl -L -o /home/rex.sqlite https://raw.githubusercontent.com/guesswho1234/Rex/main/rex.sqlite
+
+# Or using wget
+wget -O /home/rex.sqlite https://raw.githubusercontent.com/guesswho1234/Rex/main/rex.sqlite
 ```
 
-Build and run using:
+#### Set File Ownership and Permissions
+
+Ensure the database file is owned by UID `1001` and GID `1001`:
+
+```bash
+sudo chown 1001:1001 /home/rex.sqlite
+sudo chmod 660 /home/rex.sqlite
+```
+
+#### Build and Run the Application
 
 ```bash
 docker-compose -f compose_rex.yaml up --build
