@@ -96,7 +96,6 @@ ui = htmlTemplate(
   ), 
   footerCopyright = tags$div(id = "footer-copyright", 
                              tags$span(paste0("© ", format(Sys.Date(), "%Y"), " Sebastian Bachler"))),
-  ,
   footerSource = tags$div(id = "footer-source",
                           tags$span(HTML('<a href="https://github.com/guesswho1234/Rex" target="_blank" rel="noopener noreferrer">Rex</a> source code'))),
   footerVersion = tags$div(id = "footer-version", tags$span("Version "),
