@@ -44,8 +44,8 @@ if(!DOCKER_WORKER)
 
 # PARAMETERS --------------------------------------------------------------
   # VERSION -----------------------------------------------------------------
-  version = tryCatch(
-    readLines("VERSION", warn = FALSE),
+  footer_version = tryCatch(
+    paste(readLines("VERSION", warn = FALSE), collapse="\n"),
     error = function(e) "dev"
   )
 
@@ -93,11 +93,17 @@ ui = htmlTemplate(
   login = tagList(
     useShinyjs(),
     myLoginInterface("login")
-  ),
-  rexVersion = tags$div(id = "version",
-    tags$span("Version "),
-    tags$span(version)
-  )
+  ), 
+  footerCopyright = tags$div(id = "footer-copyright", 
+                             tags$span(paste0("© ", format(Sys.Date(), "%Y"), " Sebastian Bachler"))),
+  footerCredits = tags$div(id = "footer-credits", 
+                           tags$span(HTML('Based on <a href="https://cran.r-project.org/web/packages/exams/index.html" target="_blank" rel="noopener noreferrer">R/exams</a> © 2025 Achim Zeileis'))),
+  footerLicense = tags$div(id = "footer-license",
+                           tags$span(HTML('Licensed under <a href="/www/LICENSE.html" target="_blank" rel="noopener noreferrer">GNU GPL-3</a>'))),
+  footerSource = tags$div(id = "footer-source",
+                          tags$span(HTML('<a href="https://github.com/guesswho1234/Rex" target="_blank" rel="noopener noreferrer">Rex</a> source code'))),
+  footerVersion = tags$div(id = "footer-version", tags$span("Version "),
+                           tags$span(id ="version-number", footer_version))
 )
   
 # SERVER -----------------------------------------------------------------
@@ -125,7 +131,7 @@ server = function(input, output, session) {
   eventReactive
   output$rexApp = renderUI({
     req(user_data()$user_auth)
-
+    
     log_(content="Successful login.", user_data()$info$id, sessionToken=session$token)
 
     # STARTUP -------------------------------------------------------------

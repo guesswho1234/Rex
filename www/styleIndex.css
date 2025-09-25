@@ -63,11 +63,15 @@ body {
  FOOTER 
 -------------------------------------------------------------- */
 footer {
-	display: flex;
+	/* display: flex; */
 	margin: auto;
 }
 
-#copyright {
+#footer-copyright,
+#footer-credits,
+#footer-license,
+#footer-source,
+#footer-version {
 	margin: auto;
 	text-align: center;
 	color: var(---background2);
