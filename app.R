@@ -96,14 +96,15 @@ ui = htmlTemplate(
   ), 
   footerCopyright = tags$div(id = "footer-copyright", 
                              tags$span(paste0("© ", format(Sys.Date(), "%Y"), " Sebastian Bachler"))),
-  footerCredits = tags$div(id = "footer-credits", 
-                           tags$span(HTML('Based on <a href="https://cran.r-project.org/web/packages/exams/index.html" target="_blank" rel="noopener noreferrer">R/exams</a> © 2025 Achim Zeileis'))),
+  ,
   footerSource = tags$div(id = "footer-source",
                           tags$span(HTML('<a href="https://github.com/guesswho1234/Rex" target="_blank" rel="noopener noreferrer">Rex</a> source code'))),
+  footerVersion = tags$div(id = "footer-version", tags$span("Version "),
+                           tags$span(id ="version-number", footer_version)),
   footerLicense = tags$div(id = "footer-license",
                            tags$span(HTML('Licensed under <a href="/www/LICENSE.html" target="_blank" rel="noopener noreferrer">GNU GPL-3</a>'))),
-  footerVersion = tags$div(id = "footer-version", tags$span("Version "),
-                           tags$span(id ="version-number", footer_version))
+  footerCredits = tags$div(id = "footer-credits", 
+                           tags$span(HTML('Based on <a href="https://cran.r-project.org/web/packages/exams/index.html" target="_blank" rel="noopener noreferrer">R/exams</a> © 2025 Achim Zeileis')))
 )
   
 # SERVER -----------------------------------------------------------------
