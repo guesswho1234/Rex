@@ -39,7 +39,9 @@ COPY ./worker.R /rex-worker/
 
 # Copy addons directory excluding all "main" subdirs
 COPY ./www /tmp/www
-RUN find /tmp/www/addons/ -mindepth 2 -maxdepth 2 -type d -name main -exec rm -rf {} + && \
+RUN if [ -d /tmp/www/addons ]; then \
+        find /tmp/www/addons/ -mindepth 2 -maxdepth 2 -type d -name worker -exec rm -rf {} + ; \
+    fi && \
     mv /tmp/www /rex-worker/www && \
     rm -rf /tmp/www
 	
