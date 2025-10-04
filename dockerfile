@@ -30,7 +30,9 @@ COPY ./www /tmp/www
 
 # Copy addons directory excluding all "worker" subdirs
 COPY ./www /tmp/www
-RUN find /tmp/www/addons/ -mindepth 2 -maxdepth 2 -type d -name worker -exec rm -rf {} + && \
+RUN if [ -d /tmp/www/addons ]; then \
+        find /tmp/www/addons/ -mindepth 2 -maxdepth 2 -type d -name worker -exec rm -rf {} + ; \
+    fi && \
     mv /tmp/www /rex/www && \
     rm -rf /tmp/www
 	
