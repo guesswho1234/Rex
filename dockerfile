@@ -25,7 +25,7 @@ COPY ./app.R /rex/
 COPY ./index.html /rex/
 COPY ./app.html /rex/
 COPY ./VERSION /rex/
-COPY ./sso_config.csv /rex/
+# COPY ./sso_config.csv /rex/
 COPY ./www /tmp/www
 
 # Copy addons directory excluding all "worker" subdirs
