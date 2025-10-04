@@ -43,6 +43,7 @@ function initApp(){
 	dndExamCreation.init();
 	dndExamEvaluation.init();
 	
+	f_advancedFeaturesMode();
 	f_hotKeys();
 	f_buttonMode();
 	f_langDeEn();
@@ -349,6 +350,11 @@ function f_tex(id, mode) {
 /* --------------------------------------------------------------
  KEY EVENTS 
 -------------------------------------------------------------- */
+$('#advancedFeaturesModeContainer').click(function () {
+	setAdvancedFeaturesModeCookie(+!getAdvancedFeaturesModeCookie());
+	f_advancedFeaturesMode();
+});
+
 $('#hotkeysActiveContainer').click(function () {
 	setHotkeysCookie(+!getHotkeysCookie());
 	f_hotKeys();
@@ -362,6 +368,18 @@ $('#hotkeysActiveContainer').hover(
   }
 );
 
+function f_advancedFeaturesMode() {
+	if (getAdvancedFeaturesModeCookie()) {
+		$('body').addClass("advancedFeaturesMode");
+		$('#advancedFeaturesModeContainer span').addClass('active');
+		
+		return;
+	} 
+	
+	$('body').removeClass("advancedFeaturesMode");
+	$('#advancedFeaturesModeContainer span').removeClass('active');
+}
+
 function f_hotKeys() {
 	if (getHotkeysCookie()) {
 		$('#hotkeysActiveContainer span').addClass('active');
@@ -371,9 +389,31 @@ function f_hotKeys() {
 	$('#hotkeysActiveContainer span').removeClass('active');
 }
 
+Shiny.addCustomMessageHandler('f_advancedFeaturesMode', function(x) {
+	f_advancedFeaturesMode();
+});
+
 Shiny.addCustomMessageHandler('f_hotKeys', function(x) {
 	f_hotKeys();
 });
+
+function setAdvancedFeaturesModeCookie(advancedFeaturesMode) {
+    document.cookie = 'REX_JS_advancedFeaturesMode=' + advancedFeaturesMode + ';path=/;SameSite=Lax';
+}
+
+function getAdvancedFeaturesModeCookie() {
+    const name = 'REX_JS_advancedFeaturesMode';
+    const ca = document.cookie.split(';');
+	
+    for(let i=0;i < ca.length;i++) {
+        let c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+        if (c.indexOf(name) == 0) {
+			return c.substring(name.length + 1,c.length) === "1";
+		}
+    }
+    return null;
+}
 
 function setHotkeysCookie(hotkeysActive) {
     document.cookie = 'REX_JS_hotkeys=' + hotkeysActive + ';path=/;SameSite=Lax';
@@ -1513,7 +1553,7 @@ function createExercise(exerciseID, name='exercise',
 }
 
 function addExerciseToView(exerciseID) {
-	$('#exercise_list_items').append('<div class="exerciseItem sidebarListItem" data-internalid="' + exerciseID + '"><span class="exerciseSequence"><span class="sequenceButton sequenceUp"><span class="hotkeyInfo"><span lang="de">Y</span><span lang="en">Y</span></span><i class="fa-solid fa-sort-up"></i></span><span class="sequenceButton sequenceDown"><span class="hotkeyInfo"><span lang="de">X</span><span lang="en">X</span></span><i class="fa-solid fa-sort-down"></i></span></span><span class="exerciseName">' + rex.exercises[exerciseID]['name'] + '</span></span><span class="exerciseBlock"><span lang="de">Block:</span><span lang="en">Block:</span><input value="' + rex.exercises[exerciseID]['block'] + '"/></span><span class="exerciseButtons"><span class="exerciseDownload exerciseButton disabled"><span class="hotkeyInfo"><span lang="de">S</span><span lang="en">S</span></span><span class="iconButton"><i class="fa-solid fa-download"></i></span><span class="textButton"><span lang="de">Speichern</span><span lang="en">Save</span></span></span><span class="exerciseConvert exerciseButton disabled"><span class="hotkeyInfo"><span lang="de">C</span><span lang="en">C</span></span><span class="iconButton"><i class="fa-solid fa-screwdriver-wrench"></i></span><span class="textButton"><span lang="de">Konvertieren</span><span lang="en">Convert</span></span></span><span class="exerciseParse exerciseButton disabled"><span class="hotkeyInfo"><span lang="de">R</span><span lang="en">R</span></span><span class="iconButton"><i class="fa-solid fa-rotate"></i></span><span class="textButton"><span lang="de">Berechnen</span><span lang="en">Parse</span></span></span><span class="examExercise exerciseButton disabled"><span class="hotkeyInfo"><span lang="de">E</span><span lang="en">E</span></span><span class="iconButton"><i class="fa-solid fa-star"></i></span><span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span></span><span class="exerciseRemove exerciseButton"><span class="hotkeyInfo"><span lang="de">D</span><span lang="en">D</span></span><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></span></span></div>');
+	$('#exercise_list_items').append('<div class="exerciseItem sidebarListItem" data-internalid="' + exerciseID + '"><span class="exerciseSequence"><span class="sequenceButton sequenceUp"><span class="hotkeyInfo"><span lang="de">Y</span><span lang="en">Y</span></span><i class="fa-solid fa-sort-up"></i></span><span class="sequenceButton sequenceDown"><span class="hotkeyInfo"><span lang="de">X</span><span lang="en">X</span></span><i class="fa-solid fa-sort-down"></i></span></span><span class="exerciseName">' + rex.exercises[exerciseID]['name'] + '</span></span><span class="exerciseBlock advancedFeature"><span lang="de">Block:</span><span lang="en">Block:</span><input value="' + rex.exercises[exerciseID]['block'] + '"/></span><span class="exerciseButtons"><span class="exerciseDownload exerciseButton disabled"><span class="hotkeyInfo"><span lang="de">S</span><span lang="en">S</span></span><span class="iconButton"><i class="fa-solid fa-download"></i></span><span class="textButton"><span lang="de">Speichern</span><span lang="en">Save</span></span></span><span class="exerciseConvert exerciseButton disabled advancedFeature"><span class="hotkeyInfo"><span lang="de">C</span><span lang="en">C</span></span><span class="iconButton"><i class="fa-solid fa-screwdriver-wrench"></i></span><span class="textButton"><span lang="de">Konvertieren</span><span lang="en">Convert</span></span></span><span class="exerciseParse exerciseButton disabled"><span class="hotkeyInfo"><span lang="de">R</span><span lang="en">R</span></span><span class="iconButton"><i class="fa-solid fa-rotate"></i></span><span class="textButton"><span lang="de">Berechnen</span><span lang="en">Parse</span></span></span><span class="examExercise exerciseButton disabled"><span class="hotkeyInfo"><span lang="de">E</span><span lang="en">E</span></span><span class="iconButton"><i class="fa-solid fa-star"></i></span><span class="textButton"><span lang="de">Prüfungsrelevant</span><span lang="en">Examinable</span></span></span><span class="exerciseRemove exerciseButton"><span class="hotkeyInfo"><span lang="de">D</span><span lang="en">D</span></span><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></span></span></div>');
 }
 
 function parseExercise(exerciseID, item = 1, itemCount = 1) {	

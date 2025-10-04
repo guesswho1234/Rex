@@ -87,6 +87,10 @@
 			</li>
 		</ul>
 		<ul id="navSettings" class="nav navbar-nav nav-popout">
+			<li id="advancedFeaturesModeContainer">
+				<span id="advancedFeaturesModeButtons" class="advancedFeaturesModeSelector"><span lang="de">Erweiterte Features</span>
+				<span lang="en">Advanced Features</span><i class="fa-regular fa-circle-dot"></i></span>
+			</li>
 			<li id="hotkeysActiveContainer">
 				<span id="hotkeyButtons" class="hotkeySelector"><span lang="de">Tastenkürzel</span>
 				<span lang="en">Hotkeys</span><i class="fa-regular fa-circle-dot"></i></span>
@@ -115,7 +119,7 @@
 			<span lang="de">Aufgaben</span><span lang="en">Exercises</span>
 		</h1>
 		<div class="sectionHeader">
-			<div class="settings">
+			<div class="settings advancedFeature">
 				<h2>
 					<span lang="de">Einstellungen</span><span lang="en">Settings</span>
 				</h2>
@@ -192,7 +196,7 @@
 									</div>
 									{{ button_downloadExercises }}
 								</label>
-								<div id="exerciseConvertAll" class="listButton">
+								<div id="exerciseConvertAll" class="listButton advancedFeature">
 									<span class="hotkeyInfo"><span lang="de">SHIFT C</span><span lang="en">SHIFT C</span></span>
 									<div class="list_butttonIcon">
 										<span class="iconButton"><i class="fa-solid fa-screwdriver-wrench"></i></span>
@@ -237,8 +241,8 @@
 				<div id="exercise_info" class="content">
 					<h2 id="exerciseName"></h2>
 					
-					<label for="author"><span lang="de">Autor</span><span lang="en">Author</span></label>
-					<div id="author"></div>
+					<label for="author" class="advancedFeature"><span lang="de">Autor</span><span lang="en">Author</span></label>
+					<div id="author" class="advancedFeature"></div>
 					
 					<div id="exExtra"></div>
 													
@@ -248,13 +252,13 @@
 					<label for="points"><span lang="de">Punkte</span><span lang="en">Points</span></label>
 					<div id="points"></div>
 					
-					<label for="section"><span lang="de">Bereich</span><span lang="en">Section</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Hierarchischer Aufgabenbereich mit <code>/</code> als Trennzeichen.</span><span lang="en">Hierarchical exercise section with <code>/</code> as separator.</span></span></span></label>
-					<div id="section"></div>
+					<label for="section" class="advancedFeature"><span lang="de">Bereich</span><span lang="en">Section</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Hierarchischer Aufgabenbereich mit <code>/</code> als Trennzeichen.</span><span lang="en">Hierarchical exercise section with <code>/</code> as separator.</span></span></span></label>
+					<div id="section" class="advancedFeature"></div>
 					
 					<label for="tags"><span lang="de">Tags</span><span lang="en">Tags</span></label>
 					<div id="tags"></div>
 					
-					<div id="exerciseTexModeContainer">
+					<div id="exerciseTexModeContainer" class="advancedFeature">
 						<label for="exerciseTexMode">
 							<span lang="de">LaTeX-Umgebungen</span>
 							<span lang="en">LaTeX Environments</span>
@@ -321,7 +325,7 @@
 							<label for="examDate"><span lang="de">Prüfungsdatum</span><span lang="en">Exam date</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Format: <code>yyyy-mm-dd</code>.</span><span lang="en">Format: <code>yyyy-mm-dd</code>.</span></span></span></label>
 							{{ dateInput_examDate }}
 						</div>
-						<div>
+						<div class="advancedFeature">
 							<label for="seedValueExam"><span lang="de">Seed</span><span lang="en">Seed</span></label>
 							{{ textInput_seedValueExam }}
 						</div>
@@ -385,7 +389,7 @@
 						</div>
 						<div class="texMode texInputsEscaped">
 							<label for="examIntro"><span lang="de">Einleitung</span><span lang="en">Intro</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Die Symbole <code>\</code> und <code>"</code> sind nicht erlaubt. Andere Symbole wie <code>%</code> oder <code>&amp;</code> müssen als <code>\%</code> bzw. <code>\&amp;</code> eingegeben werden.</span><span lang="en">The symbols <code>\</code> and <code>"</code> are not allowed. Other symbols such as <code>%</code> or <code>&amp;</code> must be entered as <code>\%</code> and <code>\&amp;</code>.</span></span></span></label>
-							<div id="examIntroTexModeContainer">
+							<div id="examIntroTexModeContainer" class="advancedFeature">
 								<label for="examIntroTexMode">
 									<span lang="de">LaTeX-Interpretation</span>
 									<span lang="en">LaTeX Interpretation</span>

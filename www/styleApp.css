@@ -409,7 +409,7 @@ nav ul.nav {
   margin-left: -25px;
 }
 
-#navSettings .texModeSelector, 
+#navSettings .advancedFeaturesModeSelector, 
 #navSettings .hotkeySelector, 
 #navSettings .buttonModeSelector, 
 #navSettings .langSelector {
@@ -481,15 +481,15 @@ body.textButtonMode .textButton {
 	display: block !important;
 }
 
-#texActiveContainer i {
+#advancedFeaturesModeContainer i {
 	margin-left: 0.25rem;
 }
 
-#texActiveContainer span i {
+#advancedFeaturesModeContainer span i {
 	color: var(---main);
 }
 
-#texActiveContainer span.active i {
+#advancedFeaturesModeContainer span.active i {
 	color: var(---green_success);
 }
 
@@ -1884,6 +1884,13 @@ figcaption {
 }
 
 /* --------------------------------------------------------------
+ ADVANCED FEATURES MODE
+-------------------------------------------------------------- */
+body:not(.advancedFeaturesMode) .advancedFeature {
+	display: none !important;
+}
+
+/* --------------------------------------------------------------
  HOTKEY MODE
 -------------------------------------------------------------- */
 .exerciseDownload, 
@@ -1896,7 +1903,7 @@ figcaption {
 	position: relative;
 }
 
-#texActiveContainer,
+#advancedFeaturesModeContainer,
 #hotkeysActiveContainer {
 	margin-left: -2px;
 	margin-right: -2px;
