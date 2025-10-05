@@ -22,6 +22,9 @@ services:
         source: /home/rex.sqlite
         target: /rex/rex.sqlite
       - shared-content:/tmp/
+    # mem_limit: 512m        # Max memory
+    # mem_reservation: 256m  # Soft limit
+    # cpus: 0.5              # Max 50% of one CPU core
   rex-worker:
     container_name: rex-worker
     build:
@@ -38,6 +41,9 @@ services:
     user: rexuser
     volumes:
       - shared-content:/tmp/
+    # mem_limit: 512m        # Max memory
+    # mem_reservation: 256m  # Soft limit
+    # cpus: 0.5              # Max 50% of one CPU core
 
 volumes:
   shared-content:
