@@ -6,7 +6,7 @@
 
 ## 🎮 Demo
 
-A full featured hosted version is available on request via email.
+Access to a full featured hosted version is available on request via email.
 
 ---
 
