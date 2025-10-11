@@ -78,8 +78,7 @@ Rex uses a hardened Docker setup:
 - Background worker has no network access  
 - Resource-limited containers  
 
-> ⚠️ Always audit third-party dependencies before deployment.  
-> **Use at your own risk and follow security best practices.**
+> ⚠️ Always audit third-party dependencies before deployment. **Use at your own risk and follow security best practices.**
 
 ---
 
@@ -121,7 +120,8 @@ These are authored externally in `.RMD` or `.RNW` files using R features such as
 - Custom LaTeX environments
 - Arbitrary R logic for exercise generation
 
-These exercises can be **imported** into Rex, but **cannot be edited** directly in the UI.  
+These exercises can be **imported** into Rex, but **cannot be edited** directly in the UI.
+  
 > ⚠️ You may optionally convert advanced exercises to simple ones for editing, but this can lead to **loss of functionality or formatting**.
 
 ---
@@ -170,8 +170,7 @@ Extend Rex with custom features like:
 - Additional UI fields
 - Entirely new logic modules
 
-> ⚠️ Addons may increase attack surface.  
-> **Use at your own risk.**
+> ⚠️ Addons may increase attack surface. **Use at your own risk.**
 
 ---
 
