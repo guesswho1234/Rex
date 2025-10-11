@@ -78,8 +78,7 @@ Rex uses a hardened Docker setup:
 - Background worker has no network access  
 - Resource-limited containers  
 
-> **CAUTION** 
-> Always audit third-party dependencies before deployment.  
+> ⚠️ Always audit third-party dependencies before deployment.  
 > **Use at your own risk and follow security best practices.**
 
 ---
@@ -171,8 +170,7 @@ Extend Rex with custom features like:
 - Additional UI fields
 - Entirely new logic modules
 
-> **CAUTION**  
-> Addons may increase attack surface.  
+> ⚠️ Addons may increase attack surface.  
 > **Use at your own risk.**
 
 ---
