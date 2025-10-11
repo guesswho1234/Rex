@@ -72,13 +72,13 @@ docker-compose -f compose_rex.yaml up --build
 ---
 
 ## 🌐 Hosting & Security
+ 
+Rex uses a hardened Docker setup:
+- Non-root users with dropped capabilities  
+- Background worker has no network access  
+- Resource-limited containers  
 
-> **CAUTION**  
-> Rex uses a hardened Docker setup:
-> - Non-root users with dropped capabilities  
-> - Background worker has no network access  
-> - Resource-limited containers  
->
+> **CAUTION** 
 > Always audit third-party dependencies before deployment.  
 > **Use at your own risk and follow security best practices.**
 
