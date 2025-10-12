@@ -6,7 +6,7 @@
 
 ## 🎮 Demo
 
-A full featured hosted version is available on request via email.
+Access to a full featured hosted version is available on request via email.
 
 ---
 
@@ -72,15 +72,13 @@ docker-compose -f compose_rex.yaml up --build
 ---
 
 ## 🌐 Hosting & Security
+ 
+Rex uses a hardened Docker setup:
+- Non-root users with dropped capabilities  
+- Background worker has no network access  
+- Resource-limited containers  
 
-> **CAUTION**  
-> Rex uses a hardened Docker setup:
-> - Non-root users with dropped capabilities  
-> - Background worker has no network access  
-> - Resource-limited containers  
->
-> Always audit third-party dependencies before deployment.  
-> **Use at your own risk and follow security best practices.**
+> ⚠️ Always audit third-party dependencies before deployment. **Use at your own risk and follow security best practices.**
 
 ---
 
@@ -122,7 +120,8 @@ These are authored externally in `.RMD` or `.RNW` files using R features such as
 - Custom LaTeX environments
 - Arbitrary R logic for exercise generation
 
-These exercises can be **imported** into Rex, but **cannot be edited** directly in the UI.  
+These exercises can be **imported** into Rex, but **cannot be edited** directly in the UI.
+  
 > ⚠️ You may optionally convert advanced exercises to simple ones for editing, but this can lead to **loss of functionality or formatting**.
 
 ---
@@ -171,9 +170,7 @@ Extend Rex with custom features like:
 - Additional UI fields
 - Entirely new logic modules
 
-> **CAUTION**  
-> Addons may increase attack surface.  
-> **Use at your own risk.**
+> ⚠️ Addons may increase attack surface. **Use at your own risk.**
 
 ---
 
