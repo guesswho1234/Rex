@@ -1,15 +1,7 @@
 /* --------------------------------------------------------------
  GENERAL 
 -------------------------------------------------------------- */
-@media all and (max-width: 1000px) {
-	#navMain, 
-	#navHeartbeat {
-		position: fixed;
-		top: 0;
-		height: 50px;
-		margin: 0;
-	}
-	
+@media all and (max-width: 1156px) {	
 	#navMain {
 		left: 0;
 	}
@@ -19,18 +11,12 @@
 	}
 
 	#nav-popout-container {
-		position: absolute;
-		top: 3px;
-		left: calc(50vw - 23.125px);
-		border: 2px solid var(---main);
+		margin-right: 15px !important;
 		display: flex;
-		place-items: center;
 		height: fit-content !important;
 		background: var(---background3);
 		flex-direction: column-reverse;
 		padding: 10px 15px 10px 15px;
-		border-radius: 12px;
-		cursor: move;
 	}
 		
 	#nav-popout-container > ul {
@@ -45,6 +31,8 @@
 	
 	#nav-popout-container.folded {
 		padding: 10px 15px 10px 15px;
+		border: unset;
+		height: 50px !important;
 	}
 	
 	#nav-popout-container.folded > ul:not(#navPopout) {
@@ -67,6 +55,7 @@ nav {
 	position: fixed !important;
 	width: 100%;
 	height: 50px !important;
+	display: flex;
 }
 
 nav .nav.navbar-nav a.disabled {
@@ -74,7 +63,7 @@ nav .nav.navbar-nav a.disabled {
 }
 
 #nav-popout-container {
-	height: inherit;
+	margin-left: auto;
 }
 
 main {
@@ -398,15 +387,22 @@ nav ul.nav {
 }
 
 #navPopout {
+	height: 30px;
 	display: none;
+	margin-left: auto !important;
+}
+
+#navHeartbeat {
+	margin-right: 0 !important;
 }
 
 #navSettings,
 #navUser,
 #navHeartbeat {
-	gap: 25px;
-  float: right;
-  margin-left: -25px;
+	gap: 30px;
+	float: right;
+	margin-left: -15px;
+	margin-right: -15px;
 }
 
 #navSettings .advancedFeaturesModeSelector, 
