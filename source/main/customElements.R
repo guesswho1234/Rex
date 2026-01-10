@@ -118,7 +118,7 @@ myGradingKeyMarkItem = function(index, value){
 	paste0('<td><div class="form-group shiny-input-container"><input id="markLabel', index, '" type="text" value="', value, '" class="markLabel form-control shiny-bound-input shinyjs-resettable" data-shinyjs-resettable-id="markLabel', index, '" data-shinyjs-resettable-type="Text" data-shinyjs-resettable-value=""></div></td>')
 }
 
-myGradingkeyItem = function(index, thresholdValue, markValue) {
+myGradingkeyItem = function(index, thresholdValue = 0, markValue = "") {
   firstItem = index == 1
   removable = index > 2
   

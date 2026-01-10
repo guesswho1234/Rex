@@ -466,7 +466,7 @@ source("./source/shared/aWrite.R")
 	      solutionNotes = NULL
 	      solutionNotes_raw = NULL
 	    }
-
+	    
 	    write(author, file=res, ncolumns=1, sep="\n", append=TRUE)
 	    write(exExtra, file=res, ncolumns=1, sep="\n", append=TRUE)
 	    write(points, file=res, ncolumns=1, sep="\n", append=TRUE)
@@ -774,13 +774,18 @@ source("./source/shared/aWrite.R")
   
   			if(mark) {
   			  mark = data$marks
+  			  mark = mark[!is.na(mark)]
+  			  
   			  labels = data$labels
+  			  labels = labels[labels!=""]
   			  
-  			  if(length(mark) != length(unique(mark)))
+  			  if(length(mark) != length(unique(mark))){
   			    stop("E1028")
+  			  }
   			  
-  			  if(length(labels) != length(unique(labels)))
+  			  if(length(labels) != length(unique(labels))){
   			    stop("E1029")
+  			  }
   
   			  invalidGradingKeyItems = mark == "" | labels == ""
   
