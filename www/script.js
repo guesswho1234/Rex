@@ -1981,10 +1981,10 @@ function loadExerciseFromObject(exerciseID) {
 	// answers
 	field = 'answers';
 	const zip = rex.exercises[exerciseID].solution.map((x, i) => [x, rex.exercises[exerciseID].choices[i], rex.exercises[exerciseID].solutionNotes[i]]);
-	content = '<div id="answerContent">' + zip.map(i => '<p>' + (editable ? '<button type="button" class="removeAnswer btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></button>' : '') + '<span class=\"solution ' + (i[0] + 'Solution ') + (editable ? 'editTrueFalse' : '') + '\">' + getTrueFalseText(i[0]) + '</span><span class="answerText choice"><span class="choiceText highlightField" contenteditable="' + editable + '" spellcheck="false">' + i[1] + '</span></span><span class="answerText solutionNote"><span class="solutionNoteText" contenteditable="' + editable + '" spellcheck="false">' + i[2] + '</span></span></p>').join('') + '</div>';
+	content = '<div id="answerContent">' + zip.map(i => '<p>' + (editable ? '<button type="button" class="removeAnswer btn btn-default action-button shiny-bound-input" ' + (rex.exercises[exerciseID].choices.length <= 2 ? 'disabled' : '') + '><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></button>' : '') + '<span class=\"solution ' + (i[0] + 'Solution ') + (editable ? 'editTrueFalse' : '') + '\">' + getTrueFalseText(i[0]) + '</span><span class="answerText choice"><span class="choiceText highlightField" contenteditable="' + editable + '" spellcheck="false">' + i[1] + '</span></span><span class="answerText solutionNote"><span class="solutionNoteText" contenteditable="' + editable + '" spellcheck="false">' + i[2] + '</span></span></p>').join('') + '</div>';
 
 	if( rex.exercises[exerciseID].editable ) {
-		content = '<button id="addNewAnswer" type="button" class="btn btn-default action-button shiny-bound-input"><span class="iconButton"><i class="fa-solid fa-plus"></i></span><span class="textButton"><span lang="de">Neue Antwortmöglichkeit</span><span lang="en">New Answer</span></span></button>' + content;
+		content = '<button id="addNewAnswer" type="button" class="btn btn-default action-button shiny-bound-input" ' + (rex.exercises[exerciseID].choices.length >= 5 ? 'disabled' : '') + '><span class="iconButton"><i class="fa-solid fa-plus"></i></span><span class="textButton"><span lang="de">Neue Antwortmöglichkeit</span><span lang="en">New Answer</span></span></button>' + content;
 	}
 	
 	setExerciseFieldFromObject(field, content);
@@ -2353,6 +2353,10 @@ $('#exercise_list_items').on('click', '.exerciseItem', function() {
 $('#exercise_info').on('click', '#addNewAnswer', function() {
 	const exerciseID = getID();
 	
+	if(rex.exercises[exerciseID].choices.length >= 5){
+		return;
+	}
+	
 	rex.exercises[exerciseID].solution.push(d_solution);
 	rex.exercises[exerciseID].choices.push(d_choiceText);
 	rex.exercises[exerciseID].choices_raw.push(d_choiceText);
@@ -2369,6 +2373,10 @@ $('#exercise_info').on('click', '#addNewAnswer', function() {
 $('#exercise_info').on('click', '.removeAnswer', function() {
 	const exerciseID = getID();
 	const choicesID = $(this).index('.removeAnswer');
+		
+	if(rex.exercises[exerciseID].choices.length <= 2){
+		return;
+	}
 	
 	if( rex.exercises[exerciseID].choices.length > 0 && rex.exercises[exerciseID].choices_raw.length > 0 ) {
 		rex.exercises[exerciseID].solution.splice(choicesID, 1);		
