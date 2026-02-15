@@ -1883,7 +1883,8 @@ figcaption {
 /* --------------------------------------------------------------
  ADVANCED FEATURES MODE
 -------------------------------------------------------------- */
-body:not(.advancedFeaturesMode) .advancedFeature {
+body:not(.advancedFeaturesMode) #exercise_info.editableExercise .advancedFeature,
+body:not(.advancedFeaturesMode) #exercise_list_items .advancedFeature {
 	display: none !important;
 }
 
