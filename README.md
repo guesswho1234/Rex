@@ -4,13 +4,13 @@
 
 ---
 
-## 🎮 Demo
+## Demo 
 
-Access to a full featured hosted version is available on request via email.
+Access to a hosted demo version is free and available on request via email for testing and evaluation purposes.
 
 ---
 
-## ⚙️ System Requirements
+## System Requirements
 
 Ensure the following system dependencies are available:
 
@@ -23,7 +23,7 @@ Ensure the following system dependencies are available:
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### 🔌 Local
 
@@ -37,7 +37,7 @@ shiny::runApp(appDir = '<base directory containing app.R>', host = '0.0.0.0', po
 
 Alternatively, open and run `app.R` in RStudio.
 
-### 🐳 Docker
+### Docker
 
 #### Initial Setup
 If the database file `/home/rex.sqlite` does **not** yet exist on your system, use the `rex.sqlite` file provided in this repository. You can skip this step if the file already exists at `/home/rex.sqlite`.
@@ -71,7 +71,7 @@ docker-compose -f compose_rex.yaml up --build
 
 ---
 
-## 🌐 Hosting & Security
+## Security
  
 Rex uses a hardened Docker setup:
 - Non-root users with dropped capabilities  
@@ -82,7 +82,7 @@ Rex uses a hardened Docker setup:
 
 ---
 
-## 🔐 Authentication
+## Authentication
 
 Rex supports:
 - **Basic login** (default user: `rex`, password: `rex`)
@@ -90,11 +90,11 @@ Rex supports:
 
 ---
 
-## 🧑‍🏫 Usage
+## Usage
 
-> ✅ **Browser recommendation**: Firefox
+> **Browser recommendation**: Firefox
 
-### 🧩 Manage Exercises
+### Manage Exercises
 
 Use the **“EXERCISES”** tab to manage exercises.
 
@@ -126,7 +126,7 @@ These exercises can be **imported** into Rex, but **cannot be edited** directly 
 
 ---
 
-### 📝 Create Exams
+### Create Exams
 
 Go to **“EXAM” > “Create exam”** to generate an exam.
 
@@ -143,7 +143,7 @@ Steps:
 
 ---
 
-### 📊 Evaluate Exams
+### Evaluate Exams
 
 Navigate to **“EXAM” > “Evaluate exam”**.
 
@@ -163,7 +163,7 @@ After evaluation:
 
 ---
 
-## 🧩 Addons
+## Addons
 
 Extend Rex with custom features like:
 - Default values
@@ -172,20 +172,8 @@ Extend Rex with custom features like:
 
 > ⚠️ Addons may increase attack surface. **Use at your own risk.**
 
----
+## Commercial hosting 
 
-## 🤝 Contribute
-
-Pull requests welcome! For larger changes, open an issue to discuss first.
-
----
-
-## 🧠 Tech Highlights
-
-- **Accessibility**: UI tailored for users with no programming experience (DE & EN)
-- **Authentication**: Single Sign-On (SSO) support for OAuth 2.0
-- **Secure**: Dockerized with minimized privileges
-- **Exercise Format**: Supports both `.RMD` and `.RNW`
-- **Flexibility**: Full compatibility for more advanced (coded) exercises
+Dedicated deployment options and managed instances may be possible on request and can be discussed via email.
 
 ---
