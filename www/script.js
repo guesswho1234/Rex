@@ -478,8 +478,7 @@ document.onkeydown = function(evt) {
 				applyInspect();
 				break;
 			case 113: // F2
-				if (!targetInput && !targetEditable) 
-					applyInspectNext();
+				applyInspectNext();
 				break;
 			case 27: // ESC
 				cancelInspect();
@@ -1414,7 +1413,7 @@ function newSimpleExercise(file = '', block = 1) {
 					   null,                                            // statusCode
 					   true,                                            // editable
 					   false,                                           // convert
-					   true,                                            // rmdExport
+					   false,                                           // rmdExport
 					   "mchoice",                                       // type
 					   block,                                           // block
 					   d_sectionText);                                  // section
@@ -1602,7 +1601,7 @@ function resetOutputFields() {
 		$('label[for="'+ field +'"]').hide();
 	});	
 
-	$('#exerciseTexMode').prop('checked', false);
+	$('#exerciseTexMode').prop('checked', true);
 	$('#exerciseTexModeContainer').hide();
 }
 
