@@ -37,7 +37,7 @@ shiny::runApp(appDir = '<base directory containing app.R>', host = '0.0.0.0', po
 
 Alternatively, open and run `app.R` in RStudio. 
 
-Depending on your OS and installed dependencies, this might not run out of the box. In that case I recommend running the app with docker (see next section).
+> ⚠️ Depending on your OS and installed dependencies, this might not run out of the box. In that case use docker instead (see next section).
 
 ### Docker
 
