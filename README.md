@@ -25,20 +25,6 @@ Ensure the following system dependencies are available:
 
 ## Getting Started
 
-### 🔌 Local
-
-Install required R packages as listed in `app.R` and `worker.R`.
-
-Then launch the app via:
-
-```R
-shiny::runApp(appDir = '<base directory containing app.R>', host = '0.0.0.0', port = 3838)
-```
-
-Alternatively, open and run `app.R` in RStudio. 
-
-> ⚠️ Depending on your OS and installed dependencies, this might not run out of the box. In that case use docker instead (see next section).
-
 ### Docker
 
 #### Initial Setup
@@ -72,6 +58,18 @@ sudo chmod 660 /home/rex.sqlite
 ```bash
 docker-compose -f compose_rex.yaml up --build
 ```
+
+### 🔌 Local (not recommended)
+
+Install required R packages as listed in `app.R` and `worker.R`.
+
+Then launch the app via:
+
+```R
+shiny::runApp(appDir = '<base directory containing app.R>', host = '0.0.0.0', port = 3838)
+``` 
+
+> ⚠️ Depending on your OS and availability of dependencies, the app might be bugged or not run at all. In that case use docker instead (see previous section).
 
 ---
 
