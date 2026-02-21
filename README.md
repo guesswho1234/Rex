@@ -28,11 +28,7 @@ Ensure the following system dependencies are available:
 ### Docker
 
 #### Initial Setup
-If the database file `/home/rex.sqlite` does **not** yet exist on your system, use the `rex.sqlite` file provided in this repository. You can skip this step if the file already exists at `/home/rex.sqlite`.
-
-Download it and place it in your `/home/` directory manually.
-
-Alternatively, you can download it using `curl` or `wget` (you may need `sudo` to write to `/home`):
+Download the database file `rex.sqlite` to your `/home/` directory using `curl` or `wget` (you may need `sudo` to write to `/home`):
 
 ```bash
 # Using curl
@@ -41,8 +37,10 @@ curl -L -o /home/rex.sqlite https://raw.githubusercontent.com/guesswho1234/Rex/m
 
 ```bash
 # Using wget
-wget -O /home/rex.sqlite https://raw.githubusercontent.com/guesswho1234/Rex/main/rex.sqlite
+wget -O
 ```
+
+Alternatively, you can manually download and place it in your `/home/` directory. 
 
 #### Set File Ownership and Permissions
 
