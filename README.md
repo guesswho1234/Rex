@@ -59,7 +59,7 @@ sudo chmod 660 /home/rex.sqlite
 docker-compose -f compose_rex.yaml up --build
 ```
 
-### 🔌 Local (not recommended)
+### Local (not recommended)
 
 Install required R packages as listed in `app.R` and `worker.R`.
 
