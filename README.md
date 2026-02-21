@@ -25,7 +25,7 @@ Ensure the following system dependencies are available:
 
 ## Getting Started
 
-### Docker
+### Docker (recommended)
 
 #### Initial Setup
 Download the database file `rex.sqlite` to your `/home/` directory using `curl` or `wget` (you may need `sudo` to write to `/home`):
