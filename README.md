@@ -51,8 +51,10 @@ Alternatively, you can download it using `curl` or `wget` (you may need `sudo` t
 ```bash
 # Using curl
 curl -L -o /home/rex.sqlite https://raw.githubusercontent.com/guesswho1234/Rex/main/rex.sqlite
+```
 
-# Or using wget
+```bash
+# Using wget
 wget -O /home/rex.sqlite https://raw.githubusercontent.com/guesswho1234/Rex/main/rex.sqlite
 ```
 
