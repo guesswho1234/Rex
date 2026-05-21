@@ -54,7 +54,7 @@ sudo chmod 660 /home/rex.sqlite
 #### Build and Run the Application
 
 ```bash
-docker-compose -f compose_rex.yaml up --build
+docker-compose -f compose.yaml up --build
 ```
 
 ### Local (not recommended)
