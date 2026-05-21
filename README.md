@@ -37,7 +37,7 @@ curl -L -o /home/rex.sqlite https://raw.githubusercontent.com/guesswho1234/Rex/m
 
 ```bash
 # Using wget
-wget -O
+wget -O /home/rex.sqlite https://raw.githubusercontent.com/guesswho1234/Rex/main/rex.sqlite
 ```
 
 Alternatively, you can manually download and place it in your `/home/` directory. 
