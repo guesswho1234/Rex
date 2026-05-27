@@ -50,6 +50,7 @@ COPY ./source/shared /rex-worker/source/shared
 
 # Set user-local R library path for non-root installs
 ENV R_LIBS_USER=/rex-worker/Rlibs
+ENV TRUE_MESSAGE_VALUE=FALSE
 RUN mkdir -p /rex-worker/Rlibs && chown -R rexuser:rexuser /rex-worker/Rlibs
 
 # Change ownership of working directory

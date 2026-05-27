@@ -2,10 +2,10 @@ updateEvaluationData = function(solutionData, evaluationData, edirName=""){
   # add additional exercise columns
   exerciseTable = as.data.frame(Reduce(rbind, lapply(evaluationData$exam, \(exam) {
     exerciseNames = Reduce(cbind, lapply(solutionData[[as.character(exam)]], \(exercise) exercise$metainfo$file))
-    if(edirName != "" && all(grepl(paste0(edirName, "_"), exerciseNames)))
+
+    if(edirName != "" && all(grepl(paste0(edirName, "_"), exerciseNames))){
       exerciseNames = sapply(strsplit(exerciseNames, paste0(edirName, "_")), \(name) name[2])
-    else
-      exerciseNames = sapply(strsplit(exerciseNames, "_"), \(name) tail(name,1))
+    }
     
     exerciseNames = matrix(exerciseNames, nrow=1)
     
