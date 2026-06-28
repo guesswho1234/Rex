@@ -295,15 +295,15 @@ server = function(input, output, session) {
       })
 
       # SET DEFAULT USER OPTIONS
-      langOption = checkOption("O1000", user_data()$info$op)
-      hotKeyOption = checkOption("O1001", user_data()$info$op)
-      buttonModeOption = checkOption("O1002", user_data()$info$op)
-      advancedFeaturesModeOption = checkOption("O1003", user_data()$info$op)
+      langOption = checkOption("language", user_data()$info$op)
+      hotKeyOption = checkOption("hotkeys", user_data()$info$op)
+      buttonModeOption = checkOption("buttons", user_data()$info$op)
+      advancedFeaturesModeOption = checkOption("advanced", user_data()$info$op)
 
-      session$sendCustomMessage("f_langDeEn", langOption$response) 
-      session$sendCustomMessage("f_hotKeys", hotKeyOption$response)
-      session$sendCustomMessage("f_buttonMode", buttonModeOption$response)
-      session$sendCustomMessage("f_advancedFeaturesMode", advancedFeaturesModeOption$response)
+      if(langOption$hasOption) session$sendCustomMessage("f_langDeEn", langOption$response) 
+      if(hotKeyOption$hasOption) session$sendCustomMessage("f_hotKeys", hotKeyOption$response)
+      if(buttonModeOption$hasOption) session$sendCustomMessage("f_buttonMode", buttonModeOption$response)
+      if(advancedFeaturesModeOption$hasOption) session$sendCustomMessage("f_advancedFeaturesMode", advancedFeaturesModeOption$response)
     }
     
     initialStateJS <<- FALSE

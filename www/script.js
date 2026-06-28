@@ -415,11 +415,7 @@
   function f_advancedFeaturesMode(value = null) {
     // Set by value
     if (value !== null){
-      switch(value){
-        case 0: setAdvancedFeaturesMode(0); break;
-        case 1: setAdvancedFeaturesMode(1); break;
-        default: setAdvancedFeaturesMode(0);
-      }
+      setAdvancedFeaturesMode(value);
       
       return;
     }
@@ -479,11 +475,7 @@
   function f_hotKeys(value = null) {
     // Set by value
     if (value !== null){
-      switch(value){
-        case 0: setHotKeys(0); break;
-        case 1: setHotKeys(1); break;
-        default: setHotKeys(0);
-      }
+      setHotKeys(value);
       
       return;
     }
@@ -921,11 +913,7 @@
   function f_buttonMode(value = null) {
     // Set by value
     if (value !== null){
-      switch(value){
-        case 0: setButtonMode("textButtons"); break;
-        case 1: setButtonMode("iconButtons"); break;
-        default: setButtonMode("textButtons");
-      }
+      setButtonMode(value);
       
       return;
     }
@@ -1002,11 +990,7 @@
   function f_langDeEn(value = null){ 
     // Set by value
     if (value !== null){
-      switch(value){
-        case 0: setLanguage("de"); break;
-        case 1: setLanguage("en"); break;
-        default: setLanguage("de");
-      }
+      setLanguage(value)
 
       return;
     }

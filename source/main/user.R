@@ -1,5 +1,4 @@
 permissionCodes = read.csv2("./source/main/user/permissionCodes.csv")
-optionCodes = read.csv2("./source/main/user/optionCodes.csv")
 
 prime_factors = function(x, i, factors = NULL){
 	if(x < i[1]) factors
@@ -7,13 +6,18 @@ prime_factors = function(x, i, factors = NULL){
 	else  prime_factors(x, i[-1], factors)
 }
 
-checkOption = function(code, userOp){
-  options = prime_factors(userOp, optionCodes$require)
+checkOption = function(option, userOp){
+  userOp = gsub('"', '', userOp, fixed = TRUE)
+  userOp = strsplit(userOp, split="[{,}]")[[1]]
+  userOp = userOp[userOp != ""]
+  userOp = strsplit(userOp, ":")
+  userOp = Reduce(rbind, userOp)
+  userOp = setNames(as.list(userOp[,2]), userOp[,1])
 
-  if(code %in% optionCodes$code[optionCodes$require %in% options])
-    return(list(hasOption=TRUE, code=code, response=optionCodes[optionCodes$code == code, "value"]))
+  if(option %in% names(userOp))
+    return(list(hasOption=TRUE, coption=option, response=userOp[[option]]))
 
-  return(list(hasOption=FALSE, code=code, response=0))
+  return(list(hasOption=FALSE, option=option, response=0))
 }
 
 checkPermission = function(code, userPm){
