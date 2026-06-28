@@ -880,7 +880,7 @@ main > * {
 	border-left: 3px solid var(---highlight_values);
 }
 
-.sidebarListItem.editable.texMode {
+.sidebarListItem.editable.texModeOn {
 	border-left: 3px solid var(---highlight_values2) !important;
 }
 
@@ -1324,10 +1324,6 @@ main > * {
     width: fit-content;
 }
 
-.texModeContainer{
-    float: right;
-}
-
 #compareScanRegistrationDataTable {
 	margin: 1rem;
 	overflow-y: auto;
@@ -1458,6 +1454,10 @@ main > * {
 #inspectScanImage,
 #inspectScanTemplate {
 	width: 50%;
+}
+
+#selectedRegistration {
+  width: calc(100% - 10px);
 }
 
 #inspectScanImage img.rotate180 {
@@ -1941,17 +1941,20 @@ body:not(.advancedFeaturesMode) #exercise_list_items .advancedFeature {
 }
 
 /* --------------------------------------------------------------
- TEX MODE
+ TEX ESCAPE AND TEX MODE
 -------------------------------------------------------------- */
-.texInputsEnabled #examIntro,
-.texInputsEnabled .questionText[contenteditable="true"],
-.texInputsEnabled .solutionNoteGeneralText[contenteditable="true"] {
-	border: 2px solid var(---highlight_values2) !important;
+.escapeTexOff #examIntro,
+.escapeTexOff .questionText[contenteditable="true"],
+.escapeTexOff .solutionNoteGeneralText[contenteditable="true"],
+.escapeTexOff .choiceText[contenteditable="true"],
+.escapeTexOff .solutionNoteText[contenteditable="true"] {
+	border: 2px solid var(---highlight_values3) !important;
 }
 
-.texInputsEnabled .questionText[contenteditable="true"]:focus,
-.texInputsEnabled .solutionNoteGeneralText[contenteditable="true"]:focus {
-	background-color: var(---highlight_values2) !important;
+.escapeTexOff.texModeOn #examIntro,
+.escapeTexOff.texModeOn .questionText[contenteditable="true"],
+.escapeTexOff.texModeOn .solutionNoteGeneralText[contenteditable="true"] {
+  border-style: dashed !important;
 }
 
 /*--------------------------------------------------------------

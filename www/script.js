@@ -1,1505 +1,1633 @@
-/**
-* Script
-*
-*/
+  /**
+  * Script
+  *
+  */
 
-/* --------------------------------------------------------------
- DEBUG 
--------------------------------------------------------------- */
-Shiny.addCustomMessageHandler('debugMessage', function(message) {
-	console.log("DEBUG MESSAGE:\n");
-	console.log(message);
-	console.log("\n\n");
-});
+  /* --------------------------------------------------------------
+   DEBUG 
+  -------------------------------------------------------------- */
+  Shiny.addCustomMessageHandler('debugMessage', function(message) {
+    console.log("DEBUG MESSAGE:\n");
+    console.log(message);
+    console.log("\n\n");
+  });
 
-/* --------------------------------------------------------------
- APP INIT
--------------------------------------------------------------- */
-$(document).on('shiny:idle', function(event) {
-	initApp();
-});
+  /* --------------------------------------------------------------
+   APP INIT
+  -------------------------------------------------------------- */
+  $(document).on('shiny:idle', function(event) {
+    initApp();
+  });
 
-function initApp(){
-	if( initApp.fired ) return;
-	ping();
-	
-	initApp.fired = true;
-	 
-	rex.exercises = [];
-	rex.examAdditionalPdf = []; 
-	rex.examLogo = null; 
-	rex.examEvaluation = [];
-	rex.examEvaluation.scans = []; 
-	rex.examEvaluation.registeredParticipants = [];
-	rex.examEvaluation.solutions = [];
-	rex.examEvaluation.examIds = [];
-	rex.examEvaluation.changeHistory = null;
-	rex.examEvaluation.scans_reg_fullJoinData = [];
-	rex.examEvaluation.statistics = [];
-	
-	$('#logout-button').removeClass('shinyjs-hide');
-	
-	dndExercises.init();
-	dndExamCreation.init();
-	dndExamEvaluation.init();
-	
-	f_advancedFeaturesMode();
-	f_hotKeys();
-	f_buttonMode();
-	f_langDeEn();
-	resetOutputFields();
-	
-	$('#copyright small').append('<div id="additionalCopyright"><div>Based on <a href="https://cran.r-project.org/web/packages/exams/index.html" target="_blank" rel="noopener noreferrer">R/exams</a> © ' + new Date().getFullYear() + ' Achim Zeileis</div><div>Licensed under <a href="LICENSE.html" target="_blank" rel="noopener noreferrer">GNU GPL-3</a></div><div><a href="https://github.com/guesswho1234/Rex" target="_blank" rel="noopener noreferrer">Rex</a> source code</div></div>');
-	
-	const linkElements = ['<link rel="stylesheet" href="/www/styleApp.css" type="text/css">',
-	'<link rel="stylesheet" href="/www/fontawesome/css/fontawesome.min.css" type="text/css">',
-	'<link rel="stylesheet" href="/www/fontawesome/css/all.min.css" type="text/css">'];	
-	
-	if( $('#addons .sidebarListItem').length > 0 && $('#addons .contentTab').length > 0 && $('#addons .sidebarListItem').length == $('#addons .contentTab').length) {
-		$('.noAddons').removeClass('noAddons');
-		$('#addons .sidebarListItem').first().addClass("active");
-		$('#addons .contentTab').first().addClass("active");
-	}
-
-	linkElements.forEach(style => $("head").append(style));
-	
-	$('#heart span').css('background', 'var(---heartRed)');
-	$('#heart span').css('-webkit-background-clip', 'text');
-}
-
-/* --------------------------------------------------------------
-WINDOW SIZE
--------------------------------------------------------------- */
-window.addEventListener('resize', function(event) {
-    if ($(window).width() < 1000) {
-		setButtonModeCookie("iconbuttons")
-		f_buttonMode()
-	}
-	else {
-
-	}
-}, true);
-
-/* --------------------------------------------------------------
-SHINY INPUT VALUE SETTER
--------------------------------------------------------------- */
-function setShinyInputValue(field, value){
-	$('#' + field).val(value);
-	Shiny.onInputChange(field, $('#' + field).val());
-}
-
-/* --------------------------------------------------------------
-LOCAL STORAGE
--------------------------------------------------------------- */
-if (localStorage.getItem("rexExercises") !== null) {
-	confirmDialog('Es befinden sich Aufgaben im Zwischenspeicher. Sollen diese geladen werden?', 'There are exercises in the cache. Should these be loaded?', 'Ja', 'Yes', '<i class="fa-solid fa-check"></i>', 'Nein', 'No', '<i class="fa-solid fa-xmark"></i>',
-	function(remove) {
-		if(!remove) {
-			localStorage.removeItem("rexExercises");
-			return;
-		}
-				
-		rex.exercises = [];
-		$('#exercise_list_items').empty();
-		JSON.parse(localStorage.getItem("rexExercises")).forEach(exercise => rex.exercises.push(exercise));
-		
-		const itemCount = rex.exercises.length;
-		
-		for (let i = 0; i < rex.exercises.length; i++) {
-			exercises = exercises + 1;
-			addExerciseToView(i);
-			
-			const item = i + 1;
-			viewExercise(i, forceParse=true, item, itemCount);
-		}
-	});
-}
-
-/* --------------------------------------------------------------
- TAB TITLE 
--------------------------------------------------------------- */
-const defaultTitle = 'Rex';
-let focusStatus = 1;
-let titleStatus = -1;
-
-window.addEventListener("blur", function() { 
-	focusStatus = 0;
-	changeTitle(titleStatus);
-});
-
-window.addEventListener("focus", function(){ 
-	focusStatus = 1;
-	document.title = defaultTitle;
-});
-
-Shiny.addCustomMessageHandler('changeTabTitle', function(status) {
-	changeTitle(status);
-});
-
-function changeTitle(status) {
-	titleStatus = status;
-	
-	if ( focusStatus !== 0 && status !== -1)
-		return;
-	
-	switch(status) {
-		// default
-		case -1: 
-			document.title = defaultTitle;
-			break;
-		// gray
-		case 4: 
-			document.title = '🔘 ' + defaultTitle;
-			break;
-		// blue
-		case 3: 
-			document.title = '🔵 ' + defaultTitle;
-			break;
-		// red
-		case 2: 
-			document.title = '🔴 ' + defaultTitle;
-			break;
-		// yellow
-		case 1: 
-			document.title = '🟡 ' + defaultTitle;
-			break;
-		// green
-		case 0: 
-			document.title = '🟢 ' + defaultTitle;
-			break;
-	}
-}
-
-
-/* --------------------------------------------------------------
- RSHINY CONNECTION 
--------------------------------------------------------------- */
-let connected = false;
-$(document).on('shiny:disconnected', function(event) {
-   connected = false;
-   $('#heart span').addClass('dead');
-   changeTitle(4);
-   confirmDialog('Die Verbindung zu Rex wurde unterbrochen.', 'Connection to Rex was lost.', 'OK', 'OK', '<i class="fa-solid fa-check"></i>', '', '', '',
-	function(remove) {
-		if(!remove)
-			return;
-		
-		if(typeof exerciseID !== 'undefined' ){
-			setRnwSimpleExerciseFileContents(exerciseID, true);
-			viewExercise(exerciseID, true);
-		}
-	});	
-}).on('shiny:connected', function(event) {
-   connected = true;
-});
-
-/* --------------------------------------------------------------
- USER PROFILE 
--------------------------------------------------------------- */
-$('body').on('click', '#cancle-change-password-button', function() {
-	closeUserProfile();
-});
-
-function closeUserProfile() {
-	$('#userProfileInterfaceOverlay').removeClass("active");
-	$('#current-login-user_name').val("");
-	$('#current-login-password').val("");
-	$('#new-login-password1').val("");
-	$('#new-login-password2').val("");
-	$('#change-password-error').hide();
-	$('#change-password-error p').text("");
-	$('#userProfile-password-container').hide();
-	$('#change-password-button').hide();
-}
-
-Shiny.addCustomMessageHandler('setCurrentUser', function(userdata) {
-	closeUserProfile();
-	$('#current-login-user_name').val(userdata.id);
-	
-	if(userdata.edit){
-		$('#userProfile-password-container').show();
-		$('#change-password-button').show();
-	}
-	
-	$('#userProfileInterfaceOverlay').addClass("active");
-});
-
-Shiny.addCustomMessageHandler('errorUpdateUserProfile', function(errorMessage) {
-	$('#change-password-error p').html(errorMessage);
-	f_langDeEn();
-	
-	shinyjs.show({id:"change-password-error", anim:true, time:1, animType:"fade"});
-	setTimeout(function() {
-      shinyjs.hide({id:"change-password-error", time:1, anim:true, animType:"fade"})
-    }, 5000);
-});
-
-Shiny.addCustomMessageHandler('closeUserProfile', function(user) {
-	closeUserProfile();
-});
-
-Shiny.addCustomMessageHandler('errorNoPermission', function(errorMessage) {
-	confirmDialog(errorMessage.code + ': ' + errorMessage.de, errorMessage.code + ': ' + errorMessage.en, 'OK', 'OK', '<i class="fa-solid fa-check"></i>', '', '', '',
-	function(remove) {
-		if(!remove)
-			return;
-	});
-});
-
-/* --------------------------------------------------------------
- COLORS 
--------------------------------------------------------------- */
-const myColors = Array.from(document.styleSheets)
-.filter(
-sheet =>
-  sheet.href === null || sheet.href.startsWith(window.location.origin)
-)
-.reduce(
-(acc, sheet) =>
-  (acc = [
-	...acc,
-	...Array.from(sheet.cssRules).reduce(
-	  (def, rule) =>
-		(def =
-		  rule.selectorText === ".color-theme" ? [
-				...def,
-				...Array.from(rule.style).filter(name =>
-				  name.startsWith("--")
-				)
-			  ] : def),
-	  []
-	)
-  ]),
-[]
-);
-
-/* --------------------------------------------------------------
- SCROLL TOP 
--------------------------------------------------------------- */
-$('#logoApp').on('click', function() {
-	scrollTop();
-});
-
-function scrollTop(){
-	window.scrollTo(0, 0);
-}
-
-/* --------------------------------------------------------------
- HEARTBEAT 
--------------------------------------------------------------- */
-Shiny.addCustomMessageHandler('heartbeat', function(heartbeat) {
-	ping();
-});
-
-function ping(){
-	$('#heart').addClass("ping");
-
-	setTimeout(pong, 300); 
-}
-
-function pong(){
-	$('#heart').removeClass("ping");
-	Shiny.onInputChange("pong", "heartbeat", {priority: 'event'});
-}
-
-$('body').on('click', '#heart.ping', function(e) {
-	changeHeartColor();
-});
-
-function changeHeartColor() {
-	let colorId = getHeartColorCookie();
-	colorId = colorId === null ? 0 : 1 - parseInt(colorId);
-	
-	$('#heart span').css('background', 'var(' + myColors[colorId] + ')');
-	$('#heart span').css('-webkit-background-clip', 'text');
-	setHeartColorCookie(colorId);
-}
-
-function setHeartColorCookie(colorId) {
-    document.cookie = 'REX_JS_heartColor=' + colorId + ';path=/;SameSite=Lax';
-}
-
-function getHeartColorCookie() {
-    const name = 'REX_JS_heartColor';
-    const ca = document.cookie.split(';');
-	
-    for(let i=0;i < ca.length;i++) {
-        let c = ca[i];
-        while (c.charAt(0)==' ') c = c.substring(1,c.length);
-        if (c.indexOf(name) == 0) {
-			return c.substring(name.length + 1,c.length);
-		}
+  function initApp(){
+    if( initApp.fired ) return;
+    ping();
+    
+    initApp.fired = true;
+     
+    rex.exercises = [];
+    rex.examAdditionalPdf = []; 
+    rex.examLogo = null; 
+    rex.examEvaluation = [];
+    rex.examEvaluation.scans = []; 
+    rex.examEvaluation.registeredParticipants = [];
+    rex.examEvaluation.solutions = [];
+    rex.examEvaluation.examIds = [];
+    rex.examEvaluation.changeHistory = null;
+    rex.examEvaluation.scans_reg_fullJoinData = [];
+    rex.examEvaluation.statistics = [];
+    
+    $('#logout-button').removeClass('shinyjs-hide');
+    
+    dndExercises.init();
+    dndExamCreation.init();
+    dndExamEvaluation.init();
+    
+    f_advancedFeaturesMode();
+    f_hotKeys();
+    f_buttonMode();
+    f_langDeEn();
+    resetOutputFields();
+    
+    $('#copyright small').append('<div id="additionalCopyright"><div>Based on <a href="https://cran.r-project.org/web/packages/exams/index.html" target="_blank" rel="noopener noreferrer">R/exams</a> © ' + new Date().getFullYear() + ' Achim Zeileis</div><div>Licensed under <a href="LICENSE.html" target="_blank" rel="noopener noreferrer">GNU GPL-3</a></div><div><a href="https://github.com/guesswho1234/Rex" target="_blank" rel="noopener noreferrer">Rex</a> source code</div></div>');
+    
+    const linkElements = ['<link rel="stylesheet" href="/www/styleApp.css" type="text/css">',
+    '<link rel="stylesheet" href="/www/fontawesome/css/fontawesome.min.css" type="text/css">',
+    '<link rel="stylesheet" href="/www/fontawesome/css/all.min.css" type="text/css">'];	
+    
+    if( $('#addons .sidebarListItem').length > 0 && $('#addons .contentTab').length > 0 && $('#addons .sidebarListItem').length == $('#addons .contentTab').length) {
+      $('.noAddons').removeClass('noAddons');
+      $('#addons .sidebarListItem').first().addClass("active");
+      $('#addons .contentTab').first().addClass("active");
     }
-	
-    return null;
-}
 
-/* --------------------------------------------------------------
- LATEX
--------------------------------------------------------------- */
-function f_tex(id, mode) {
-	if (mode){
-		$('#' + id + ' .texMode').removeClass('texInputsEscaped');
-		$('#' + id + ' .texMode').addClass('texInputsEnabled');
-	} else{            
-		$('#' + id + ' .texMode').removeClass('texInputsEnabled');
-		$('#' + id + ' .texMode').addClass('texInputsEscaped');
-	}
-}
-
-/* --------------------------------------------------------------
- KEY EVENTS 
--------------------------------------------------------------- */
-$('#advancedFeaturesModeContainer').click(function () {
-	setAdvancedFeaturesModeCookie(+!getAdvancedFeaturesModeCookie());
-	f_advancedFeaturesMode();
-});
-
-$('#hotkeysActiveContainer').click(function () {
-	setHotkeysCookie(+!getHotkeysCookie());
-	f_hotKeys();
-});
-
-$('#hotkeysActiveContainer').hover(
-  function() {
-    $('.hotkeyInfo').addClass('reveal');
-  }, function() {
-    $('.hotkeyInfo').removeClass('reveal');
+    linkElements.forEach(style => $("head").append(style));
+    
+    $('#heart span').css('background', 'var(---heartRed)');
+    $('#heart span').css('-webkit-background-clip', 'text');
   }
-);
 
-function f_advancedFeaturesMode() {
-	if (getAdvancedFeaturesModeCookie()) {
-		$('body').addClass("advancedFeaturesMode");
-		$('#advancedFeaturesModeContainer span').addClass('active');
-		
-		return;
-	} 
-	
-	$('body').removeClass("advancedFeaturesMode");
-	$('#advancedFeaturesModeContainer span').removeClass('active');
-}
+  /* --------------------------------------------------------------
+  SESSION INFO
+  -------------------------------------------------------------- */
+  Shiny.addCustomMessageHandler('f_setSessionId', function(value) {
+    console.log("sessionId " + value)
+    document.getElementById('heart').dataset.sessionId = value;
+  });
 
-function f_hotKeys() {
-	if (getHotkeysCookie()) {
-		$('#hotkeysActiveContainer span').addClass('active');
-		return;
-	} 
-	
-	$('#hotkeysActiveContainer span').removeClass('active');
-}
+  Shiny.addCustomMessageHandler('f_setSessionTmpDir', function(value) {
+    console.log("sessionTmpDir " + value);
+    document.getElementById('heart').dataset.sessionTmpDir = value;
+  });
 
-Shiny.addCustomMessageHandler('f_advancedFeaturesMode', function(x) {
-	f_advancedFeaturesMode();
-});
-
-Shiny.addCustomMessageHandler('f_hotKeys', function(x) {
-	f_hotKeys();
-});
-
-function setAdvancedFeaturesModeCookie(advancedFeaturesMode) {
-    document.cookie = 'REX_JS_advancedFeaturesMode=' + advancedFeaturesMode + ';path=/;SameSite=Lax';
-}
-
-function getAdvancedFeaturesModeCookie() {
-    const name = 'REX_JS_advancedFeaturesMode';
-    const ca = document.cookie.split(';');
-	
-    for(let i=0;i < ca.length;i++) {
-        let c = ca[i];
-        while (c.charAt(0)==' ') c = c.substring(1,c.length);
-        if (c.indexOf(name) == 0) {
-			return c.substring(name.length + 1,c.length) === "1";
-		}
+  /* --------------------------------------------------------------
+  WINDOW SIZE
+  -------------------------------------------------------------- */
+  window.addEventListener('resize', function(event) {
+      if ($(window).width() < 1000) {
+      setButtonModeCookie("iconbuttons")
+      f_buttonMode()
     }
-    return null;
-}
+    else {
 
-function setHotkeysCookie(hotkeysActive) {
-    document.cookie = 'REX_JS_hotkeys=' + hotkeysActive + ';path=/;SameSite=Lax';
-}
-
-function getHotkeysCookie() {
-    const name = 'REX_JS_hotkeys';
-    const ca = document.cookie.split(';');
-	
-    for(let i=0;i < ca.length;i++) {
-        let c = ca[i];
-        while (c.charAt(0)==' ') c = c.substring(1,c.length);
-        if (c.indexOf(name) == 0) {
-			return c.substring(name.length + 1,c.length) === "1";
-		}
     }
-    return null;
-}
+  }, true);
 
-document.onkeyup = function(evt) {
-	if($('#disableOverlay').hasClass("active")) return;
-	if(!getHotkeysCookie()) return;
-	
-	const evtobj = window.event? event : evt;
-	
-	if( $('#exercises').hasClass('active') ) {
-		const targetEditable = $(evtobj.target).attr('contenteditable');
+  /* --------------------------------------------------------------
+  SHINY INPUT VALUE SETTER
+  -------------------------------------------------------------- */
+  function setShinyInputValue(field, value){
+    $('#' + field).val(value);
+    Shiny.onInputChange(field, $('#' + field).val());
+  }
 
-		if (evtobj.shiftKey && evtobj.keyCode == 70 && !targetEditable) {
-			const searchField = $('#searchExercises').find('input');
-			const searchValLength = searchField.val().length;
-			
-			searchField.focus();
-			searchField[0].setSelectionRange(searchValLength, searchValLength);
-		}
-	}
-};
-
-document.onkeydown = function(evt) {
-	if(!getHotkeysCookie()) return;
-	
-	const evtobj = window.event? event : evt;
-	const targetInput = $(evtobj.target).is('input') || $(evtobj.target).is('textarea');
-	const targetEditable = $(evtobj.target).attr('contenteditable');
-	
-	// SCROLL TOP
-	if (!targetInput && !targetEditable) {
-		if (evtobj.keyCode == 84) // t
-			scrollTop();
-	}
-	
-	// INSPECT SCAN
-	if( $('#inspectScanButtons').length == 1 ) {
-		switch (evtobj.keyCode) {
-			case 38: // ARROW UP
-				prevInspect();
-				break;
-			case 40: // ARROW DOWN
-				nextInspect();
-				break;
-			case 112: // F1
-				applyInspect();
-				break;
-			case 113: // F2
-				applyInspectNext();
-				break;
-			case 27: // ESC
-				cancelInspect();
-				break;
-		}
-	} 
-	
-	// USER PROFILE
-	if( $('#userProfileInterfaceOverlay').hasClass("active") ) {
-		switch (evtobj.keyCode) {
-			case 13: // enter
-				$('#change-password-button').click();
-				break;
-			case 27: // ESC
-				closeUserProfile();
-				break;
-		}
-	} 
-	
-	// CONFIRM DIALOG
-	if( $('#confirmdialogOverlay').hasClass('active') ) {
-		switch (evtobj.keyCode) {
-			case 13: // enter
-				$('#confirmdialogYes').click();
-				break;
-			case 27: // ESC
-				if( $('#confirmdialogNo:hidden').length == 1 )
-					$('#confirmdialogYes').click();
-				else
-					$('#confirmdialogNo').click();
-				break;
-		}
-	} 
-			
-	if($('#disableOverlay').hasClass("active")) return;
-		
-	// EXERCISES	
-	if( $('#exercises').hasClass('active') && !$('#confirmdialogOverlay').hasClass('active') ) {	
-		if ($(evtobj.target).is('input') && evtobj.keyCode == 13) { // enter
-			$(evtobj.target).change();
-			$(evtobj.target).blur();
-		}
-	
-		if (evtobj.keyCode == 27) { // ESC
-			$(evtobj.target).blur();
-		
-			if(!targetEditable) {
-				$('#searchExercises input').val("");
-			
-				searchExercises();
-			}
-		}
-		
-		const itemsExist = $('.exerciseItem').length > 0;
-			
-		if (!targetInput && !targetEditable) {
-			if(itemsExist){
-				const exerciseID = $('.exerciseItem.active:not(.filtered)').closest('.exerciseItem:not(.filtered)').index('.exerciseItem');
-				let updateView = false;
-				
-				if (evtobj.shiftKey) {
-					switch (evtobj.keyCode) {
-						case 69: // shift+e
-							examExerciseAll();
-							break;
-						case 68: // shift+d
-							exerciseRemoveAllDialog();
-							break;
-						case 83: // shift+s
-							exerciseDownloadAll();
-							$("#downloadExercises")[0].click();
-							break;
-						case 82: // shift+r 
-							exerciseParseAll(true);
-							break;
-						case 67: // shift+c 
-							exerciseConvertAll();
-							break;
-					}
-				} 
-							
-				if(!evtobj.shiftKey && !evtobj.ctrlKey) {
-					switch (evtobj.keyCode) {
-						case 69: // e
-							if ($('.exerciseItem.active:not(.filtered)').length > 0 && !$('.exerciseItem.active:not(.filtered) .examExercise').hasClass('disabled')) {
-								$('.exerciseItem.active:not(.filtered)').closest('.exerciseItem:not(.filtered)').toggleClass('exam');	
-								setExamExercise($('.exerciseItem.active:not(.filtered)').closest('.exerciseItem:not(.filtered)').index('.exerciseItem:not(.filtered)'), $('.exerciseItem.active:not(.filtered)').closest('.exerciseItem:not(.filtered)').hasClass('exam'));
-							}
-							break;
-						case 38: // ARROW UP
-							evtobj.preventDefault();
-							sidebarMoveUp($('.mainSection.active'));
-							updateView = true;
-							break;
-						case 40: // ARROW DOWN
-							evtobj.preventDefault();
-							sidebarMoveDown($('.mainSection.active'));
-							updateView = true;
-							break;
-						case 68: // d
-							removeExercise(exerciseID);
-							break;
-						case 82: // r 
-							viewExercise(exerciseID, true);
-							break;
-						case 83: // s 
-							if( !$('.exerciseItem.active:not(.filtered) .exerciseDownload').hasClass('disabled') ) {
-								exerciseDownload(exerciseID);
-								$("#downloadExercise")[0].click();
-							}
-							break;
-						case 89: // y 
-							sequenceUp();
-							break;	
-						case 88: // x 
-							sequenceDown();
-							break;	
-						case 67: // c 
-							if( !$('.exerciseItem.active:not(.filtered) .exerciseConvert').hasClass('disabled') )
-								exerciseConvert(exerciseID);
-							break;	
-						case 160: // ^
-							setRandomSeed();
-							break;	
-					}
-				}
-				
-				if (updateView && $('.exerciseItem.active:not(.filtered)').length > 0) {
-					viewExercise($('.exerciseItem.active:not(.filtered)').first().index('.exerciseItem'));
-				}
-			} 
-			
-			switch (evtobj.keyCode) {
-				case 65: // a 
-					newSimpleExercise();
-					break;	
-				case 81: // q 
-					$('#file-upload_exercises').click();
-					break;	
-			}
-		}
-	}
-};
-
-function sidebarMoveUp(parent) {
-	if (parent.find('.sidebarListItem.active:not(.filtered)').length == 0) {
-		parent.find('.sidebarListItem:not(.filtered)').first().addClass('active');
-	} else {
-		const itemId = parent.find('.sidebarListItem.active:not(.filtered)').index('#' + parent.attr('id') + ' .sidebarListItem:not(.filtered)');
-		parent.find('.sidebarListItem.active:not(.filtered)').removeClass('active');
-		
-		if (itemId == 0) {
-			parent.find('.sidebarListItem:not(.filtered)').eq(parent.find('.sidebarListItem:not(.filtered)').length - 1).addClass('active');
-		} else {
-			parent.find('.sidebarListItem:not(.filtered)').eq(itemId - 1).addClass('active');
-		}
-	}
-}
-
-function sidebarMoveDown(parent) {
-	if (parent.find('.sidebarListItem.active:not(.filtered)').length == 0) {
-		parent.find('.sidebarListItem:not(.filtered)').first().addClass('active');
-	} else {
-		const itemId = parent.find('.sidebarListItem.active:not(.filtered)').index('#' + parent.attr('id') + ' .sidebarListItem:not(.filtered)');
-		parent.find('.sidebarListItem.active:not(.filtered)').removeClass('active');
-		
-		if (itemId + 1 == parent.find('.sidebarListItem:not(.filtered)').length) {
-			parent.find('.sidebarListItem:not(.filtered)').eq(0).addClass('active');
-		} else {
-			parent.find('.sidebarListItem:not(.filtered)').eq(itemId + 1).addClass('active');
-		}
-	}
-}
-
-/* --------------------------------------------------------------
- WAIT / PROGRESS / KILL
--------------------------------------------------------------- */
-Shiny.addCustomMessageHandler('wait', function(status) {
-	app_wait(status);
-});
-
-function app_wait(status){
-	if(status === 0) {
-		$('#disableOverlay').addClass("active");
-		$('nav .nav.navbar-nav li').addClass("disabled");
-		$('#logoutContainer').addClass("disabled");
-	} else {
-		$('#disableOverlay').removeClass("active");
-		$('nav .nav.navbar-nav li').removeClass("disabled");
-		$('#logoutContainer').removeClass("disabled");
-	}
-}
-
-Shiny.addCustomMessageHandler('progress', function(status) {
-	app_progress(status);
-});
-
-function app_progress(status){
-	if(status === 0) {
-		$('#progressBar').addClass("active");
-	} else {
-		$('#progressBar').removeClass("active");
-	}
-	
-	$('#progressBarValue').removeClass();
-	$('#progressBarValue').addClass("value-000");
-}
-
-Shiny.addCustomMessageHandler('updateProgress', function(status) {
-	app_update(status);
-});
-
-function app_update(status){
-	if ( !$('#progressBarValue').hasClass("value-100") ){
-		$('#progressBarValue').removeClass();
-		$('#progressBarValue').addClass("value-" + status);
-	}
-}
-
-Shiny.addCustomMessageHandler('allowKill', function(status) {
-	app_allowKill(status);
-});
-
-function app_allowKill(status){
-	if(status === 1) {
-		$('#killWorkerProcess').addClass("active");
-	} else {
-		$('#killWorkerProcess').removeClass("active");
-	}
-}
-
-/* --------------------------------------------------------------
- CONFIRM  
--------------------------------------------------------------- */
-function confirmDialog(deMessage, enMessage, deButtonYes, enButtonYes, iconButtonYes, deButtonNo, enButtonNo, iconButtonNo, callback, ...args) {
-	$('#confirmdialogOverlayContent span[lang="de"]').html(deMessage);
-	$('#confirmdialogOverlayContent span[lang="en"]').html(enMessage);
-	
-	if( deButtonYes !== '' && enButtonYes !== '' && iconButtonYes !== '' ) {
-		$('#confirmdialogYes .textButton span[lang="de"]').html(deButtonYes);
-		$('#confirmdialogYes .textButton span[lang="en"]').html(enButtonYes);
-		$('#confirmdialogYes .iconButton').html(iconButtonYes);
-		$('#confirmdialogYes').show();
-	} else {
-		$('#confirmdialogYes').hide();
-	}
-
-	if( deButtonNo !== '' && enButtonNo !== '' && iconButtonNo !== '' ) {
-		$('#confirmdialogNo .textButton span[lang="de"]').html(deButtonNo);
-		$('#confirmdialogNo .textButton span[lang="en"]').html(enButtonNo);
-		$('#confirmdialogNo .iconButton').html(iconButtonNo);
-		$('#confirmdialogNo').show();
-	} else {
-		$('#confirmdialogNo').hide();
-	}
-		
-	$('#confirmdialogOverlay').addClass("active");
-	$('nav .nav.navbar-nav li').addClass("disabled");
-	$('#logoutContainer').addClass("disabled");
-	
-	$('#confirmdialogYes').one('click', function() {
-        $('#confirmdialogOverlay').removeClass("active");
-		$('nav .nav.navbar-nav li').removeClass("disabled");
-		$('#logoutContainer').removeClass("disabled");
-		
-		$('#confirmdialogNo').off();
-		
-        callback(true, ...args);
+  /* --------------------------------------------------------------
+  LOCAL STORAGE
+  -------------------------------------------------------------- */
+  if (localStorage.getItem("rexExercises") !== null) {
+    confirmDialog('Es befinden sich Aufgaben im Zwischenspeicher. Sollen diese geladen werden?', 'There are exercises in the cache. Should these be loaded?', 'Ja', 'Yes', '<i class="fa-solid fa-check"></i>', 'Nein', 'No', '<i class="fa-solid fa-xmark"></i>',
+    function(remove) {
+      if(!remove) {
+        localStorage.removeItem("rexExercises");
+        return;
+      }
+          
+      rex.exercises = [];
+      $('#exercise_list_items').empty();
+      JSON.parse(localStorage.getItem("rexExercises")).forEach(exercise => rex.exercises.push(exercise));
+      
+      const itemCount = rex.exercises.length;
+      
+      for (let i = 0; i < rex.exercises.length; i++) {
+        exercises = exercises + 1;
+        addExerciseToView(i);
+        
+        const item = i + 1;
+        viewExercise(i, forceParse=true, item, itemCount);
+      }
     });
-	
-    $('#confirmdialogNo').one('click', function() {
-        $('#confirmdialogOverlay').removeClass("active");
-		$('nav .nav.navbar-nav li').removeClass("disabled");
-		$('#logoutContainer').removeClass("disabled");
-		
-		$('#confirmdialogYes').off();
-				
-        callback(false, ...args);
+  }
+
+  /* --------------------------------------------------------------
+   TAB TITLE 
+  -------------------------------------------------------------- */
+  const defaultTitle = 'Rex';
+  let focusStatus = 1;
+  let titleStatus = -1;
+
+  window.addEventListener("blur", function() { 
+    focusStatus = 0;
+    changeTitle(titleStatus);
+  });
+
+  window.addEventListener("focus", function(){ 
+    focusStatus = 1;
+    document.title = defaultTitle;
+  });
+
+  Shiny.addCustomMessageHandler('changeTabTitle', function(status) {
+    changeTitle(status);
+  });
+
+  function changeTitle(status) {
+    titleStatus = status;
+    
+    if ( focusStatus !== 0 && status !== -1)
+      return;
+    
+    switch(status) {
+      // default
+      case -1: 
+        document.title = defaultTitle;
+        break;
+      // gray
+      case 4: 
+        document.title = '🔘 ' + defaultTitle;
+        break;
+      // blue
+      case 3: 
+        document.title = '🔵 ' + defaultTitle;
+        break;
+      // red
+      case 2: 
+        document.title = '🔴 ' + defaultTitle;
+        break;
+      // yellow
+      case 1: 
+        document.title = '🟡 ' + defaultTitle;
+        break;
+      // green
+      case 0: 
+        document.title = '🟢 ' + defaultTitle;
+        break;
+    }
+  }
+
+
+  /* --------------------------------------------------------------
+   RSHINY CONNECTION 
+  -------------------------------------------------------------- */
+  let connected = false;
+  $(document).on('shiny:disconnected', function(event) {
+     connected = false;
+     $('#heart span').addClass('dead');
+     changeTitle(4);
+     confirmDialog('Die Verbindung zu Rex wurde unterbrochen.', 'Connection to Rex was lost.', 'OK', 'OK', '<i class="fa-solid fa-check"></i>', '', '', '',
+    function(remove) {
+      if(!remove)
+        return;
+      
+      if(typeof exerciseID !== 'undefined' ){
+        setRnwSimpleExerciseFileContents(exerciseID, true);
+        viewExercise(exerciseID, true);
+      }
+    });	
+  }).on('shiny:connected', function(event) {
+     connected = true;
+  });
+
+  /* --------------------------------------------------------------
+   USER PROFILE 
+  -------------------------------------------------------------- */
+  $('body').on('click', '#cancle-change-password-button', function() {
+    closeUserProfile();
+  });
+
+  function closeUserProfile() {
+    $('#userProfileInterfaceOverlay').removeClass("active");
+    $('#current-login-user_name').val("");
+    $('#current-login-password').val("");
+    $('#new-login-password1').val("");
+    $('#new-login-password2').val("");
+    $('#change-password-error').hide();
+    $('#change-password-error p').text("");
+    $('#userProfile-password-container').hide();
+    $('#change-password-button').hide();
+  }
+
+  Shiny.addCustomMessageHandler('setCurrentUser', function(userdata) {
+    closeUserProfile();
+    $('#current-login-user_name').val(userdata.id);
+    
+    if(userdata.edit){
+      $('#userProfile-password-container').show();
+      $('#change-password-button').show();
+    }
+    
+    $('#userProfileInterfaceOverlay').addClass("active");
+  });
+
+  Shiny.addCustomMessageHandler('errorUpdateUserProfile', function(errorMessage) {
+    $('#change-password-error p').html(errorMessage);
+    f_langDeEn();
+    
+    shinyjs.show({id:"change-password-error", anim:true, time:1, animType:"fade"});
+    setTimeout(function() {
+        shinyjs.hide({id:"change-password-error", time:1, anim:true, animType:"fade"})
+      }, 5000);
+  });
+
+  Shiny.addCustomMessageHandler('closeUserProfile', function(user) {
+    closeUserProfile();
+  });
+
+  Shiny.addCustomMessageHandler('errorNoPermission', function(errorMessage) {
+    confirmDialog(errorMessage.code + ': ' + errorMessage.de, errorMessage.code + ': ' + errorMessage.en, 'OK', 'OK', '<i class="fa-solid fa-check"></i>', '', '', '',
+    function(remove) {
+      if(!remove)
+        return;
     });
-	
-	return;
-}
+  });
 
-/* --------------------------------------------------------------
- NAV 
--------------------------------------------------------------- */
-$('#exercisesNav').parent().click(function () {	
-	if( $(this).parent().hasClass('disabled') ) return;
-	
-	$('.mainSection').removeClass('active');
-	$('#exercises').addClass('active');
-});
+  /* --------------------------------------------------------------
+   COLORS 
+  -------------------------------------------------------------- */
+  const myColors = Array.from(document.styleSheets)
+  .filter(
+  sheet =>
+    sheet.href === null || sheet.href.startsWith(window.location.origin)
+  )
+  .reduce(
+  (acc, sheet) =>
+    (acc = [
+    ...acc,
+    ...Array.from(sheet.cssRules).reduce(
+      (def, rule) =>
+      (def =
+        rule.selectorText === ".color-theme" ? [
+          ...def,
+          ...Array.from(rule.style).filter(name =>
+            name.startsWith("--")
+          )
+          ] : def),
+      []
+    )
+    ]),
+  []
+  );
 
-$('#examNav').parent().click(function () {	
-	if( $(this).parent().hasClass('disabled') ) return;
-	
-	$('.mainSection').removeClass('active');
-	$('#exam').addClass('active');
-});
+  /* --------------------------------------------------------------
+   SCROLL TOP 
+  -------------------------------------------------------------- */
+  $('#logoApp').on('click', function() {
+    scrollTop();
+  });
 
-$('#addonsNav').parent().click(function () {	
-	if( $(this).parent().hasClass('disabled') ) return;
-	
-	$('.mainSection').removeClass('active');
-	$('#addons').addClass('active');
-});
+  function scrollTop(){
+    window.scrollTo(0, 0);
+  }
 
-function selectListItem(index) {	
-	$('.mainSection.active .contentTab').removeClass('active');
-	$('.mainSection.active .contentTab').eq(index).addClass('active');
-}
+  /* --------------------------------------------------------------
+   HEARTBEAT 
+  -------------------------------------------------------------- */
+  Shiny.addCustomMessageHandler('heartbeat', function(heartbeat) {
+    ping();
+  });
 
-$('#navPopout').click(function () {	
-	if( !$('#nav-popout-container').hasClass("drag")){
-		if( $('#nav-popout-container').hasClass("folded") )
-			$('#nav-popout-container').removeClass("folded");
-		else
-			$('#nav-popout-container').addClass("folded");
-	}
-});
+  function ping(){
+    $('#heart').addClass("ping");
 
-/* --------------------------------------------------------------
- BUTTON MODE 
--------------------------------------------------------------- */
-$('#buttonModeSwitchContainer span').click(function () {
-	setButtonModeCookie($(this).attr('id').toLowerCase());
-	f_buttonMode();
-	f_langDeEn();
-});
+    setTimeout(pong, 300); 
+  }
 
-function f_buttonMode() {
-	$('#buttonModeSwitchContainer span').removeClass("active");
-	
-	$('body').removeClass("iconButtonMode");
-	$('body').removeClass("textButtonMode");
-	
-	buttonMode = getButtonModeCookie();
-	
-	if (buttonMode === 'iconbuttons') {
-		$('body').addClass("iconButtonMode");
-		$('#iconButtons').addClass("active");
-	} else {
-		$('body').addClass("textButtonMode");
-		$('#textButtons').addClass("active");
-	}
-}
+  function pong(){
+    $('#heart').removeClass("ping");
+    Shiny.onInputChange("pong", "heartbeat", {priority: 'event'});
+  }
 
-Shiny.addCustomMessageHandler('f_buttonMode', function(x) {
-	f_buttonMode();
-});
+  $('body').on('click', '#heart', function(e) {
+    sessionId = this.dataset.sessionId;
+    sessionTmpDir = this.dataset.sessionTmpDir;
 
-function setButtonModeCookie(buttonMode) {
-    document.cookie = 'REX_JS_buttonMode=' + buttonMode + ';path=/;SameSite=Lax';
-}
+    console.log(sessionId);
+    console.log(sessionTmpDir);
 
-function getButtonModeCookie() {
-    const name = 'REX_JS_buttonMode';
-    const ca = document.cookie.split(';');
-	
-    for(let i=0;i < ca.length;i++) {
-        let c = ca[i];
-        while (c.charAt(0)==' ') c = c.substring(1,c.length);
-        if (c.indexOf(name) == 0) {
-			return c.substring(name.length + 1,c.length);
-		}
+    navigator.clipboard.writeText(sessionId + "," + sessionTmpDir).then(
+      () => {
+        changeHeartColor();
+      },
+      () => {
+        /* clipboard write failed */
+      },
+    );
+  });
+
+  function changeHeartColor() {
+    let colorId = getHeartColorCookie();
+    colorId = colorId === null ? 0 : 1 - parseInt(colorId);
+    
+    $('#heart span').css('background', 'var(' + myColors[colorId] + ')');
+    $('#heart span').css('-webkit-background-clip', 'text');
+    setHeartColorCookie(colorId);
+  }
+
+  function setHeartColorCookie(colorId) {
+      document.cookie = 'REX_JS_heartColor=' + colorId + ';path=/;SameSite=Lax';
+  }
+
+  function getHeartColorCookie() {
+      const name = 'REX_JS_heartColor';
+      const ca = document.cookie.split(';');
+    
+      for(let i=0;i < ca.length;i++) {
+          let c = ca[i];
+          while (c.charAt(0)==' ') c = c.substring(1,c.length);
+          if (c.indexOf(name) == 0) {
+        return c.substring(name.length + 1,c.length);
+      }
+      }
+    
+      return null;
+  }
+
+  /* --------------------------------------------------------------
+   LATEX
+  -------------------------------------------------------------- */
+  function f_texModeOn(id, mode) {
+    if (mode){
+      $('#' + id + ' .tex').addClass('texModeOn');
+    } else{            
+      $('#' + id + ' .tex').removeClass('texModeOn');
     }
-    return null;
-}
+  }
 
-/* --------------------------------------------------------------
- LANGUAGE 
--------------------------------------------------------------- */
-$('#languageSwitchContainer span').click(function () {
-	setLanguageCookie($(this).text().toLowerCase());
-	f_langDeEn();
-});
 
-function f_langDeEn() {
-	$('#languageSwitchContainer span').removeClass("active");
-	
-	lang = getLanguageCookie();
-	
-	if (lang === 'en') {
-		rex.language = 'en';
-		
-		$('html').attr('lang', 'en');
-		$('html').attr('xml:lang', 'en');
-		
-		$('[lang="de"]').hide();
-		$('[lang="en"]').show();
-		
-		$('#enLang').addClass("active");
-	} else {
-		rex.language = 'de';
-		
-		$('html').attr('lang', 'de');
-		$('html').attr('xml:lang', 'de');
-		
-		$('[lang="en"]').hide();
-		$('[lang="de"]').show();
-		
-		$('#deLang').addClass("active");
-	}
-}
-
-Shiny.addCustomMessageHandler('f_langDeEn', function(x) {
-	f_langDeEn();
-});
-
-function setLanguageCookie(lang) {
-    document.cookie = 'REX_JS_lang=' + lang + ';path=/;SameSite=Lax';
-}
-
-function getLanguageCookie() {
-    const name = 'REX_JS_lang';
-    const ca = document.cookie.split(';');
-    for(let i=0;i < ca.length;i++) {
-        let c = ca[i];
-        while (c.charAt(0)==' ') c = c.substring(1,c.length);
-        if (c.indexOf(name) == 0) {
-			return c.substring(name.length + 1,c.length);
-		}
+  function f_escapeTexOff(id, mode) {
+    if (mode){
+      $('#' + id + ' .tex').addClass('escapeTexOff');
+    } else{            
+      $('#' + id + ' .tex').removeClass('escapeTexOff');
     }
-    return null;
-}
+  }
 
-const languages = {en:["Englisch", "English"],
-				   hr:["Kroatisch", "Croatian"],
-				   da:["Dänisch", "Danisch"],
-				   nl:["Niederländisch ", "Dutch"],
-				   fi:["Finnisch", "Finnish"],
-				   fr:["Französisch", "French"],
-				   de:["Deutsch", "German"],
-				   hu:["Ungarisch", "Hungarian"],
-				   it:["Italienisch", "Italian"],
-				   ja:["Japanisch", "Japanese"],
-				   ko:["Koreanisch", "Korean"],
-				   no:["Norwegisch", "Norwegian"],
-				   pt:["Portugisisch", "Portuguese"],
-				   ro:["Rumänisch", "Romanian"],
-				   ru:["Russisch", "Russian"],
-				   sr:["Serbisch", "Serbian"],
-				   sk:["Slowakisch", "Slovak"],
-				   sl:["Slowenisch", "Slovenian"],
-				   es:["Spansich", "Spanish"],
-				   tr:["Türkisch", "Turkish"]}		   
+  /* --------------------------------------------------------------
+   KEY EVENTS 
+  -------------------------------------------------------------- */
+  $('#advancedFeaturesModeContainer').click(function () {
+    setAdvancedFeaturesModeCookie(+!getAdvancedFeaturesModeCookie());
+    f_advancedFeaturesMode();
+  });
 
-/* --------------------------------------------------------------
- DATA 
--------------------------------------------------------------- */
-let rex = new Object();
-let exercises = -1;
+  function setAdvancedFeaturesMode(value){
+    if(value !== null){
+      setAdvancedFeaturesModeCookie(value); 
+    } else {
+      value = +getAdvancedFeaturesModeCookie();
+    }
 
-function getFilesDataTransferItems(dataTransferItems) {
-	function traverseFileTreePromise(item, path = "", files) {
-		return new Promise(resolve => {
-			if (item.isFile) {
-				item.file(file => {
-				file.filepath = path || "" + file.name;
-				files.push(file);
-				resolve(file);
-				});
-			} else if (item.isDirectory) {
-				const dirReader = item.createReader();
-				dirReader.readEntries(entries => {
-					let entriesPromises = [];
-					for (let entr of entries) {
-						entriesPromises.push(
-							traverseFileTreePromise(entr, path || ""  + item.name + "/", files)
-						);
-					}
-					resolve(Promise.all(entriesPromises));
-				});
-			}
-		});
-	}
+    if (value) {
+      $('body').addClass("advancedFeaturesMode");
+      $('#advancedFeaturesModeContainer span').addClass('active');//	if (mode){
+      f_escapeTexOff("exercise_info", true);
+      
+      return;
+    } 
 
-	let files = [];
-	return new Promise((resolve, reject) => {
-		let entriesPromises = [];
-		for (let item of dataTransferItems) {
-			entriesPromises.push(
-				traverseFileTreePromise(item.webkitGetAsEntry(), null, files)
-			);
-		}
-		Promise.all(entriesPromises).then(entries => {
-			resolve(files);
-		});
-	});
-}
+    $('body').removeClass("advancedFeaturesMode");
+    $('#advancedFeaturesModeContainer span').removeClass('active');
+    f_escapeTexOff("exercise_info", false);
+  }
 
-/* --------------------------------------------------------------
- EXERCISES SETTINGS 
--------------------------------------------------------------- */
-$("#seedValueExercises").change(function(){
-	const seed = getIntegerInput(1, 999999999, null, $(this).val());
-	setSeed(seed);
-}); 
+  Shiny.addCustomMessageHandler('f_advancedFeaturesMode', function(value) {
+    f_advancedFeaturesMode(value);
+  });
 
-$("#randomExerciseSeed").click(function(){
-	setRandomSeed();
-})
+  function f_advancedFeaturesMode(value = null) {
+    // Set by value
+    if (value !== null){
+      switch(value){
+        case 0: setAdvancedFeaturesMode(0); break;
+        case 1: setAdvancedFeaturesMode(1); break;
+        default: setAdvancedFeaturesMode(0);
+      }
+      
+      return;
+    }
 
-function setRandomSeed(){
-	setSeed(Math.floor(Math.random() * 9999));
-}
+    // Set by cookie
+    value = +getAdvancedFeaturesModeCookie()
+    setAdvancedFeaturesMode(value);
+  }
 
-function setSeed(seed=1){
-	setShinyInputValue("seedValueExercises", seed);
-		
-	if(rex.exercises.length > 0) viewExercise(getID());
-}
+  function setAdvancedFeaturesModeCookie(advancedFeaturesMode) {
+      document.cookie = 'REX_JS_advancedFeaturesMode=' + advancedFeaturesMode + ';path=/;SameSite=Lax';
+  }
 
-/* --------------------------------------------------------------
- EXERCISES SUMMARY 
--------------------------------------------------------------- */
-function examExercisesSummary() {	
-	if($('.exerciseItem.exam').length == 0) { 
-		$('#s_numberOfExercises').html("");
-		$('#s_totalPoints').html("");
-		$('#s_sectionsTable').html("");
-		$('#s_typeTable').html("");
-		$('#s_choicesTable').html("");
-		
-		return;
-	}
-	
-	let numberOfExamExercisesCounter = 0;
-	let totalPoints = 0;
-	let sections = [];
-	let types = [];
-	let choices = [];
-		
-	rex.exercises.forEach((item, index) => {
-		if(item.exam) {
-			numberOfExamExercisesCounter++;
-			totalPoints += Number(item.points);
-			if (item.section !== null) sections.push(item.section);
-			if (item.type !== null) types.push(item.type);
-			if (item.choices !== null) choices.push(item.choices.length);
-		}
-	})
-	
-	$('#s_numberOfExercises').html(itemSingle(numberOfExamExercisesCounter, 'yellowLabelValue'));
-	$('#s_totalPoints').html(itemSingle(totalPoints, 'yellowLabelValue'));
-	$('#s_sectionsTable').html(itemTable(sections));
-	$('#s_typeTable').html(itemTable(types));
-	$('#s_choicesTable').html(itemTable(choices));
-}
+  function getAdvancedFeaturesModeCookie() {
+      const name = 'REX_JS_advancedFeaturesMode';
+      const ca = document.cookie.split(';');
+    
+      for(let i=0;i < ca.length;i++) {
+          let c = ca[i];
+          while (c.charAt(0)==' ') c = c.substring(1,c.length);
+          if (c.indexOf(name) == 0) {
+            return c.substring(name.length + 1,c.length) === "1";
+          }
+      }
+      return null;
+  }
 
-function itemSingle(item, className) {
-	return '<span class="myLabelContainer"><span class="myLabel"><span class="myLabelSingle ' + className + '">' + item + '</span></span></span>';
-}
+  $('#hotkeysActiveContainer').click(function () {
+    setHotkeysCookie(+!getHotkeysCookie());
+    f_hotKeys();
+  });
 
-function itemTable(arr) {
-	let counts = {};
-	for (let i of arr) {
-		counts[i] = counts[i] ? counts[i] + 1 : 1;
-	}
-	
-	let out = "";
-	
-	out = Object.entries(counts).map(entry => {
-		const [key, value] = entry;
-		return '<span class="myLabel"><span class="label_key yellowLabelKey">' + key + '</span><span class="label_value yellowLabelValue">' + value + '</span></span>';
-	}).join('');
-	
-	return '<span class="myLabelContainer">' + out + '</span>';
-}
+  $('#hotkeysActiveContainer').hover(
+    function() {
+      $('.hotkeyInfo').addClass('reveal');
+    }, function() {
+      $('.hotkeyInfo').removeClass('reveal');
+    }
+  );
 
-/* --------------------------------------------------------------
- EXERCISES LIST
--------------------------------------------------------------- */
-function examExerciseAll(){
-	const examExerciseAllButton = $('#examExerciseAll');
-	
-	$('.exerciseItem').each(function (index) {
-		if( $('.exerciseItem').eq(index).hasClass('filtered')) {
-			return;
-		}
-		
-		$(this).removeClass('exam');
-		rex.exercises[index].exam = false;
-				
-		if (!$(this).find('.examExercise').hasClass('disabled') && !examExerciseAllButton.hasClass('allAdded')) {	
-			$(this).addClass('exam');
-			rex.exercises[index].exam = true;
-		}
-	});
-	
-	examExerciseAllButton.toggleClass('allAdded');
-	examExercisesSummary();
-}
+  function setHotKeys(value){
+    if(value !== null){
+      setHotkeysCookie(value); 
+    } else {
+      value = +getHotkeysCookie();  
+    }
 
-function exerciseRemoveAllDialog(){
-	confirmDialog('Alle Aufgaben löschen?', 'Delete all exercises?', 'Ja', 'Yes', '<i class="fa-solid fa-check"></i>', 'Nein', 'No', '<i class="fa-solid fa-xmark"></i>',
-	function(remove) {
-		if(!remove)
-			return;
-		
-		exerciseRemoveAll();
-	});
-}
+    if (value) {
+      $('#hotkeysActiveContainer span').addClass('active');
 
-function exerciseRemoveAll(){
-	const removeIndices = $('.exerciseItem:not(.filtered)').map(function() {
-	return $(this).index();
-	}).get();
-	
-	for (let i = removeIndices.length -1; i >= 0; i--) {
-		rex.exercises.splice(removeIndices[i], 1);
-		exercises = exercises - 1;
-	}
-	
-	$('.exerciseItem:not(.filtered)').remove();
+      return;
+    } 
+    
+    $('#hotkeysActiveContainer span').removeClass('active');
+  }
 
-	resetOutputFields();
-	examExercisesSummary();
-}
+  function f_hotKeys(value = null) {
+    // Set by value
+    if (value !== null){
+      switch(value){
+        case 0: setHotKeys(0); break;
+        case 1: setHotKeys(1); break;
+        default: setHotKeys(0);
+      }
+      
+      return;
+    }
 
-Shiny.addCustomMessageHandler('removeAllExercises', function(x) {
-	exerciseRemoveAll();
-});
+    // Set by cookie
+    value = +getHotkeysCookie();
+    setHotKeys(value);
+  }
 
-function exerciseParseAll(forceParse = false){	
-	const exercisesToParse = rex.exercises.filter((t, index) => ! $('.exerciseItem:nth-child(' + (index + 1) + ')').hasClass('filtered') );
-	const itemCount = exercisesToParse.length;	
+  Shiny.addCustomMessageHandler('f_hotKeys', function(value) {
+    f_hotKeys(value);
+  });
 
-	exercisesToParse.forEach((t, index) => {
-		const item = index + 1;		
-		viewExercise(index, forceParse, item, itemCount)
-	});	
-}
+  function setHotkeysCookie(hotkeysActive) {
+      document.cookie = 'REX_JS_hotkeys=' + hotkeysActive + ';path=/;SameSite=Lax';
+  }
 
-function exerciseConvertAll(){
-	confirmDialog('Beim Konvertieren in bearbeitbare Aufgaben wird jeweils nur der aktuell geladene Text übernommen.<br/>Alle weiteren Details gehen verloren.<br/><br/>Möchten Sie wirklich alle Aufgabe konvertieren?', 'When converting to editable exercises, only the currently loaded texts are transferred.<br/>All other details are lost.<br/><br/>Do you really want to convert all the exercises?', 'Ja', 'Yes', '<i class="fa-solid fa-check"></i>', 'Nein', 'No', '<i class="fa-solid fa-xmark"></i>',
-	function(remove) {
-		if(!remove)
-			return;
-				
-		const exercisesToConvert = rex.exercises
-			.map((exercise, index) => ! ($('.exerciseItem:nth-child(' + (index + 1) + ')').hasClass('filtered') || exercise.editable || $('.exerciseItem:nth-child(' + (index + 1) + ') .exerciseConvert').hasClass('disabled')) ? index : -1 )
-			.filter(index => index !== -1);
-		const itemCount = exercisesToConvert.length;			
+  function getHotkeysCookie() {
+      const name = 'REX_JS_hotkeys';
+      const ca = document.cookie.split(';');
+    
+      for(let i=0;i < ca.length;i++) {
+          let c = ca[i];
+          while (c.charAt(0)==' ') c = c.substring(1,c.length);
+          if (c.indexOf(name) == 0) {
+            return c.substring(name.length + 1,c.length) === "1";
+          }
+      }
+      return null;
+  }
 
-		exercisesToConvert.forEach((exercideId, index) => {
-			setRnwSimpleExerciseFileContents(exercideId, true);
-			
-			const item = index + 1;		
-			viewExercise(index, true, item, itemCount)
-		});	
-	});
-}
+  document.onkeyup = function(evt) {
+    if($('#disableOverlay').hasClass("active")) return;
+    if(!getHotkeysCookie()) return;
+    
+    const evtobj = window.event? event : evt;
+    
+    if( $('#exercises').hasClass('active') ) {
+      const targetEditable = $(evtobj.target).attr('contenteditable');
 
-function exerciseDownloadAll() {	
-	const filteredTasks = rex.exercises.filter((x, index) => {
-		return !$('.exerciseItem:nth-child(' + (index + 1) + ')').hasClass('filtered') && !$('.exerciseItem:nth-child(' + (index + 1) + ') .exerciseDownload').hasClass('disabled')
-	});
-	
-	const exerciseNames = filteredTasks.map(exercise => exercise.name);
-	const exerciseCodes = filteredTasks.map((exercise, index) => exercise.file)
-	const exerciseExts = filteredTasks.map(exercise => exercise.ext)
-	
-	Shiny.onInputChange("exercisesToDownload", {exerciseNames:exerciseNames, exerciseCodes: exerciseCodes, exerciseExts: exerciseExts}, {priority: 'event'});	
-}
+      if (evtobj.shiftKey && evtobj.keyCode == 70 && !targetEditable) {
+        const searchField = $('#searchExercises').find('input');
+        const searchValLength = searchField.val().length;
+        
+        searchField.focus();
+        searchField[0].setSelectionRange(searchValLength, searchValLength);
+      }
+    }
+  };
 
-$('#exerciseDownloadAll').click(function () {
-	exerciseDownloadAll();
-	$("#downloadExercises")[0].click();
-});
+  document.onkeydown = function(evt) {
+    if(!getHotkeysCookie()) return;
+    
+    const evtobj = window.event? event : evt;
+    const targetInput = $(evtobj.target).is('input') || $(evtobj.target).is('textarea');
+    const targetEditable = $(evtobj.target).attr('contenteditable');
+    
+    // SCROLL TOP
+    if (!targetInput && !targetEditable) {
+      if (evtobj.keyCode == 84) // t
+        scrollTop();
+    }
+    
+    // INSPECT SCAN
+    if( $('#inspectScanButtons').length == 1 ) {
+      switch (evtobj.keyCode) {
+        case 38: // ARROW UP
+          prevInspect();
+          break;
+        case 40: // ARROW DOWN
+          nextInspect();
+          break;
+        case 112: // F1
+          applyInspect();
+          break;
+        case 113: // F2
+          applyInspectNext();
+          break;
+        case 27: // ESC
+          cancelInspect();
+          break;
+      }
+    } 
+    
+    // USER PROFILE
+    if( $('#userProfileInterfaceOverlay').hasClass("active") ) {
+      switch (evtobj.keyCode) {
+        case 13: // enter
+          $('#change-password-button').click();
+          break;
+        case 27: // ESC
+          closeUserProfile();
+          break;
+      }
+    } 
+    
+    // CONFIRM DIALOG
+    if( $('#confirmdialogOverlay').hasClass('active') ) {
+      switch (evtobj.keyCode) {
+        case 13: // enter
+          $('#confirmdialogYes').click();
+          break;
+        case 27: // ESC
+          if( $('#confirmdialogNo:hidden').length == 1 )
+            $('#confirmdialogYes').click();
+          else
+            $('#confirmdialogNo').click();
+          break;
+      }
+    } 
+        
+    if($('#disableOverlay').hasClass("active")) return;
+      
+    // EXERCISES	
+    if( $('#exercises').hasClass('active') && !$('#confirmdialogOverlay').hasClass('active') ) {	
+      if ($(evtobj.target).is('input') && evtobj.keyCode == 13) { // enter
+        $(evtobj.target).change();
+        $(evtobj.target).blur();
+      }
+    
+      if (evtobj.keyCode == 27) { // ESC
+        $(evtobj.target).blur();
+      
+        if(!targetEditable) {
+          $('#searchExercises input').val("");
+        
+          searchExercises();
+        }
+      }
+      
+      const itemsExist = $('.exerciseItem').length > 0;
+        
+      if (!targetInput && !targetEditable) {
+        if(itemsExist){
+          const exerciseID = $('.exerciseItem.active:not(.filtered)').closest('.exerciseItem:not(.filtered)').index('.exerciseItem');
+          let updateView = false;
+          
+          if (evtobj.shiftKey) {
+            switch (evtobj.keyCode) {
+              case 69: // shift+e
+                examExerciseAll();
+                break;
+              case 68: // shift+d
+                exerciseRemoveAllDialog();
+                break;
+              case 83: // shift+s
+                exerciseDownloadAll();
+                $("#downloadExercises")[0].click();
+                break;
+              case 82: // shift+r 
+                exerciseParseAll(true);
+                break;
+              case 67: // shift+c 
+                exerciseConvertAll();
+                break;
+            }
+          } 
+                
+          if(!evtobj.shiftKey && !evtobj.ctrlKey) {
+            switch (evtobj.keyCode) {
+              case 69: // e
+                if ($('.exerciseItem.active:not(.filtered)').length > 0 && !$('.exerciseItem.active:not(.filtered) .examExercise').hasClass('disabled')) {
+                  $('.exerciseItem.active:not(.filtered)').closest('.exerciseItem:not(.filtered)').toggleClass('exam');	
+                  setExamExercise($('.exerciseItem.active:not(.filtered)').closest('.exerciseItem:not(.filtered)').index('.exerciseItem:not(.filtered)'), $('.exerciseItem.active:not(.filtered)').closest('.exerciseItem:not(.filtered)').hasClass('exam'));
+                }
+                break;
+              case 38: // ARROW UP
+                evtobj.preventDefault();
+                sidebarMoveUp($('.mainSection.active'));
+                updateView = true;
+                break;
+              case 40: // ARROW DOWN
+                evtobj.preventDefault();
+                sidebarMoveDown($('.mainSection.active'));
+                updateView = true;
+                break;
+              case 68: // d
+                removeExercise(exerciseID);
+                break;
+              case 82: // r 
+                viewExercise(exerciseID, true);
+                break;
+              case 83: // s 
+                if( !$('.exerciseItem.active:not(.filtered) .exerciseDownload').hasClass('disabled') ) {
+                  exerciseDownload(exerciseID);
+                  $("#downloadExercise")[0].click();
+                }
+                break;
+              case 89: // y 
+                sequenceUp();
+                break;	
+              case 88: // x 
+                sequenceDown();
+                break;	
+              case 67: // c 
+                if( !$('.exerciseItem.active:not(.filtered) .exerciseConvert').hasClass('disabled') )
+                  exerciseConvert(exerciseID);
+                break;	
+              case 160: // ^
+                setRandomSeed();
+                break;	
+            }
+          }
+          
+          if (updateView && $('.exerciseItem.active:not(.filtered)').length > 0) {
+            viewExercise($('.exerciseItem.active:not(.filtered)').first().index('.exerciseItem'));
+          }
+        } 
+        
+        switch (evtobj.keyCode) {
+          case 65: // a 
+            newSimpleExercise();
+            break;	
+          case 81: // q 
+            $('#file-upload_exercises').click();
+            break;	
+        }
+      }
+    }
+  };
 
-$('#exerciseConvertAll').click(function () {
-	exerciseConvertAll();
-});
+  function sidebarMoveUp(parent) {
+    if (parent.find('.sidebarListItem.active:not(.filtered)').length == 0) {
+      parent.find('.sidebarListItem:not(.filtered)').first().addClass('active');
+    } else {
+      const itemId = parent.find('.sidebarListItem.active:not(.filtered)').index('#' + parent.attr('id') + ' .sidebarListItem:not(.filtered)');
+      parent.find('.sidebarListItem.active:not(.filtered)').removeClass('active');
+      
+      if (itemId == 0) {
+        parent.find('.sidebarListItem:not(.filtered)').eq(parent.find('.sidebarListItem:not(.filtered)').length - 1).addClass('active');
+      } else {
+        parent.find('.sidebarListItem:not(.filtered)').eq(itemId - 1).addClass('active');
+      }
+    }
+  }
 
-$('#newExercise').click(function () {
-	newSimpleExercise();
-});
+  function sidebarMoveDown(parent) {
+    if (parent.find('.sidebarListItem.active:not(.filtered)').length == 0) {
+      parent.find('.sidebarListItem:not(.filtered)').first().addClass('active');
+    } else {
+      const itemId = parent.find('.sidebarListItem.active:not(.filtered)').index('#' + parent.attr('id') + ' .sidebarListItem:not(.filtered)');
+      parent.find('.sidebarListItem.active:not(.filtered)').removeClass('active');
+      
+      if (itemId + 1 == parent.find('.sidebarListItem:not(.filtered)').length) {
+        parent.find('.sidebarListItem:not(.filtered)').eq(0).addClass('active');
+      } else {
+        parent.find('.sidebarListItem:not(.filtered)').eq(itemId + 1).addClass('active');
+      }
+    }
+  }
 
-$('#examExerciseAll').click(function () {
-	examExerciseAll();
-});
+  /* --------------------------------------------------------------
+   WAIT / PROGRESS / KILL
+  -------------------------------------------------------------- */
+  Shiny.addCustomMessageHandler('wait', function(status) {
+    app_wait(status);
+  });
 
-$('#exerciseRemoveAll').click(function () {
-	exerciseRemoveAllDialog();	
-});
+  function app_wait(status){
+    if(status === 0) {
+      $('#disableOverlay').addClass("active");
+      $('nav .nav.navbar-nav li').addClass("disabled");
+      $('#logoutContainer').addClass("disabled");
+    } else {
+      $('#disableOverlay').removeClass("active");
+      $('nav .nav.navbar-nav li').removeClass("disabled");
+      $('#logoutContainer').removeClass("disabled");
+    }
+  }
 
-$('#exerciseParseAll').click(function () {
-	exerciseParseAll(true);
-});
+  Shiny.addCustomMessageHandler('progress', function(status) {
+    app_progress(status);
+  });
 
-$('#searchExercises input').change(function () {
-	searchExercises();
-});
+  function app_progress(status){
+    if(status === 0) {
+      $('#progressBar').addClass("active");
+    } else {
+      $('#progressBar').removeClass("active");
+    }
+    
+    $('#progressBarValue').removeClass();
+    $('#progressBarValue').addClass("value-000");
+  }
 
-function searchExercises() {
-	$this = $('#searchExercises input');
-	
-	// no exercises 
-	if($('.exerciseItem').length <= 0) {
-		return;
-	}
-	
-	// no search input
-	if($('#searchExercises input').val() == 0) {
-		$('.exerciseItem').removeClass("filtered");
-		
-		resetOutputFields();
-		$('.exerciseItem.active').removeClass('active');
-		
-		if($('.exerciseItem:not(.filtered)').length > 0) {
-			$('.exerciseItem:not(.filtered)').first().addClass('active');
-			viewExercise($('.exerciseItem.active:not(.filtered)').first().index('.exerciseItem'));
-		}
-		
-		return;
-	}
-	
-	const userInput = $this.val().split(";");
+  Shiny.addCustomMessageHandler('updateProgress', function(status) {
+    app_update(status);
+  });
 
-	let matches = new Set();
-	
-	function filterExercises(fieldsToFilter, filterBy) {
-		fieldsToFilter.filter((content, index) => {			
-			const test = content.toString().toLowerCase().includes(filterBy.toLowerCase());
-			if(test) matches.add(index);
-		}); 
-	}
-	
-	userInput.map(input => {
-		const filterBy = input.split(":")[1];
-		
-		if (input.includes("name:")) {
-			const fieldsToFilter = rex.exercises.map(exercise => {
-				if( exercise.name === null) {
-					return "";
-				} 
-				
-				return exercise.name;
-			})
-			filterExercises(fieldsToFilter, filterBy);
-		}
-								
-		if (input.includes("section:")) {
-			const fieldsToFilter = rex.exercises.map(exercise => {
-				if( exercise.section === null) {
-					return "";
-				} 
-								
-				return exercise.section;
-			})
-			filterExercises(fieldsToFilter, filterBy);
-		}
-	
-		
-		if (input.includes("points:")) {
-			const fieldsToFilter = rex.exercises.map(exercise => {
-				if( exercise.points === null) {
-					return "";
-				} 
-				
-				return exercise.points;
-			})
-			filterExercises(fieldsToFilter, filterBy);
-		}
-		
-		if (input.includes("type:")) {
-			const fieldsToFilter = rex.exercises.map(exercise => {
-				if( exercise.type === null) {
-					return "";
-				} 
-				
-				return exercise.type;
-			})
-			filterExercises(fieldsToFilter, filterBy);
-		}
-		
-		if (input.includes("question:")) {
-			const fieldsToFilter = rex.exercises.map(exercise => {
-				if( exercise.question === null) {
-					return "";
-				} 
-				
-				return exercise.question;
-			})
-			filterExercises(fieldsToFilter, filterBy);
-		}
-				
-		if (!input.includes(":")) {
-			const fieldsToFilter = rex.exercises.map(exercise => {
-				if( exercise.name === null) {
-					return "";
-				} 
-				
-				return exercise.name;
-			})
-			filterExercises(fieldsToFilter, input);
-		}
-	});  
-	
-	matches = Array.from(matches);
-	
-	$('.exerciseItem').removeClass("filtered");
-	
-	$('.exerciseItem').each(function (index) {
-		if( matches.every(m => m !== index) ){
-			$('.exerciseItem:nth-child(' + (index + 1) + ')').addClass('filtered');
-		}
-	});
-	
-	resetOutputFields();
-	$('.exerciseItem.active').removeClass('active');
-	
-	if($('.exerciseItem:not(.filtered)').length > 0) {
-		$('.exerciseItem:not(.filtered)').first().addClass('active');
-		viewExercise($('.exerciseItem.active:not(.filtered)').first().index('.exerciseItem'));
-	}
-}
+  function app_update(status){
+    if ( !$('#progressBarValue').hasClass("value-100") ){
+      $('#progressBarValue').removeClass();
+      $('#progressBarValue').addClass("value-" + status);
+    }
+  }
 
-/* --------------------------------------------------------------
- EXERCISES 
--------------------------------------------------------------- */
-let dndExercises = {
-	hzone: null,
-	dzone: null,
+  Shiny.addCustomMessageHandler('allowKill', function(status) {
+    app_allowKill(status);
+  });
 
-	init : function () {
-		dndExercises.hzone = document.querySelector("body");
-		dndExercises.dzone = document.getElementById('dnd_exercises');
+  function app_allowKill(status){
+    if(status === 1) {
+      $('#killWorkerProcess').addClass("active");
+    } else {
+      $('#killWorkerProcess').removeClass("active");
+    }
+  }
 
-		if ( window.File && window.FileReader && window.FileList && window.Blob) {
-			// hover zone
-			dndExercises.hzone.addEventListener('dragenter', function (e) {
-				e.preventDefault();
-				e.stopPropagation();
-				
-				if($('#disableOverlay').hasClass("active")) return;
-				
-				if( $('#exercises').hasClass('active') ) {
-					dndExercises.dzone.classList.add('drag');
-					
-					setTimeout(function() {
-					   dndExercises.dzone.classList.remove('drag');
-				   }, 5000);
-				}
-			});
-			dndExercises.hzone.addEventListener('dragleave', function (e) {
-				e.preventDefault();
-				e.stopPropagation();
-			});
-			dndExercises.hzone.addEventListener('dragover', function (e) {
-				e.preventDefault();
-				e.stopPropagation();
-			});
-			
-			// drop zone
-			dndExercises.dzone.addEventListener('dragleave', function (e) {
-				e.preventDefault();
-				e.stopPropagation();
-				dndExercises.dzone.classList.remove('drag');
-			});
-			dndExercises.dzone.addEventListener('drop', async function (e) {
-				e.preventDefault();
-				e.stopPropagation();
-				dndExercises.dzone.classList.remove('drag');
-				
-				if($('#disableOverlay').hasClass("active")) return;
-				
-				loadExercisesDnD(e.dataTransfer.items);
-			});
-		}
-	},
-};
+  /* --------------------------------------------------------------
+   CONFIRM  
+  -------------------------------------------------------------- */
+  function confirmDialog(deMessage, enMessage, deButtonYes, enButtonYes, iconButtonYes, deButtonNo, enButtonNo, iconButtonNo, callback, ...args) {
+    $('#confirmdialogOverlayContent span[lang="de"]').html(deMessage);
+    $('#confirmdialogOverlayContent span[lang="en"]').html(enMessage);
+    
+    if( deButtonYes !== '' && enButtonYes !== '' && iconButtonYes !== '' ) {
+      $('#confirmdialogYes .textButton span[lang="de"]').html(deButtonYes);
+      $('#confirmdialogYes .textButton span[lang="en"]').html(enButtonYes);
+      $('#confirmdialogYes .iconButton').html(iconButtonYes);
+      $('#confirmdialogYes').show();
+    } else {
+      $('#confirmdialogYes').hide();
+    }
 
-function loadExercisesDnD(items) {	
-	getFilesDataTransferItems(items).then((files) => {
-		const fileArray = Array.from(files);
-		const itemCount = fileArray.length;
-		
-		fileArray.forEach((fileItem, index) => {
-			const item = (index + 1);
-		loadExercise(fileItem, 1, item, itemCount);
-		});
-	});
-}
+    if( deButtonNo !== '' && enButtonNo !== '' && iconButtonNo !== '' ) {
+      $('#confirmdialogNo .textButton span[lang="de"]').html(deButtonNo);
+      $('#confirmdialogNo .textButton span[lang="en"]').html(enButtonNo);
+      $('#confirmdialogNo .iconButton').html(iconButtonNo);
+      $('#confirmdialogNo').show();
+    } else {
+      $('#confirmdialogNo').hide();
+    }
+      
+    $('#confirmdialogOverlay').addClass("active");
+    $('nav .nav.navbar-nav li').addClass("disabled");
+    $('#logoutContainer').addClass("disabled");
+    
+    $('#confirmdialogYes').one('click', function() {
+          $('#confirmdialogOverlay').removeClass("active");
+      $('nav .nav.navbar-nav li').removeClass("disabled");
+      $('#logoutContainer').removeClass("disabled");
+      
+      $('#confirmdialogNo').off();
+      
+          callback(true, ...args);
+      });
+    
+      $('#confirmdialogNo').one('click', function() {
+          $('#confirmdialogOverlay').removeClass("active");
+      $('nav .nav.navbar-nav li').removeClass("disabled");
+      $('#logoutContainer').removeClass("disabled");
+      
+      $('#confirmdialogYes').off();
+          
+          callback(false, ...args);
+      });
+    
+    return;
+  }
 
-function exercisesFileDialog(files) {	
-	const fileArray = Array.from(files);
-    const itemCount = fileArray.length;
+  /* --------------------------------------------------------------
+   NAV 
+  -------------------------------------------------------------- */
+  $('#exercisesNav').parent().click(function () {	
+    if( $(this).parent().hasClass('disabled') ) return;
+    
+    $('.mainSection').removeClass('active');
+    $('#exercises').addClass('active');
+  });
 
-	fileArray.forEach((fileItem, index) => {	
-		const item = (index + 1);
-		loadExercise(fileItem, 1, item, itemCount);
-	});
-}
+  $('#examNav').parent().click(function () {	
+    if( $(this).parent().hasClass('disabled') ) return;
+    
+    $('.mainSection').removeClass('active');
+    $('#exam').addClass('active');
+  });
 
-function loadExercise(file, block = 1, item = 1, itemCount = 1) {
-	const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
-	
-	switch(fileExt) {
-		case 'rnw':
-		case 'rmd':
-			newComplexExercise(file, fileExt, block, item, itemCount);
-			break;
-		case 'png':
-			addExerciseFigureFile(file, fileExt);
-			break;
-	}
-}
+  $('#addonsNav').parent().click(function () {	
+    if( $(this).parent().hasClass('disabled') ) return;
+    
+    $('.mainSection').removeClass('active');
+    $('#addons').addClass('active');
+  });
 
-const d_exerciseName = 'Name';
-const d_questionText = 'Text';
-const d_choiceText = 'Text';
-const d_sectionText = '';
-const d_solution = false;
-const d_solutionNoteGeneralText = '';
-const d_solutionNoteText = '';
+  function selectListItem(index) {	
+    $('.mainSection.active .contentTab').removeClass('active');
+    $('.mainSection.active .contentTab').eq(index).addClass('active');
+  }
 
-function newSimpleExercise(file = '', block = 1) {
-	const exerciseID = exercises + 1
-		addExercise();
-		createExercise(exerciseID, 										// exerciseID
-					   d_exerciseName, 									// name
-					   null,                                            // file
-					   "rnw",                                           // ext
-					   d_questionText,                                  // question
-					   [d_choiceText + '1', d_choiceText + '2'],        // choices
-					   [d_solution, d_solution],                        // solution
-					   d_solutionNoteGeneralText,                       // solutionNoteGeneral
-					   [d_solutionNoteText, d_solutionNoteText],        // solutionNotes
-					   null,                                            // statusMessage
-					   null,                                            // statusCode
-					   true,                                            // editable
-					   false,                                           // convert
-					   false,                                           // rmdExport
-					   "mchoice",                                       // type
-					   block,                                           // block
-					   d_sectionText);                                  // section
-		viewExercise(exerciseID);
-}
+  $('#navPopout').click(function () {	
+    if( !$('#nav-popout-container').hasClass("drag")){
+      if( $('#nav-popout-container').hasClass("folded") )
+        $('#nav-popout-container').removeClass("folded");
+      else
+        $('#nav-popout-container').addClass("folded");
+    }
+  });
 
-async function newComplexExercise(file, ext, block = 1, item = 1, itemCount = 1) {
-	const fileText = await file.text();
-	const exerciseID = exercises + 1
-	
-	addExercise();
-	
-	createExercise(exerciseID, 					// exerciseID
-                   file.name.split('.')[0],     // name
-                   fileText,                    // file
-                   ext,                         // ext
-                   '',                          // question
-                   [],                          // choices
-                   [],                          // solution
-                   null,                        // solutionNoteGeneral
-                   [],                          // solutionNotes
-                   null,                        // statusMessage
-                   null,                        // statusCode
-                   false,                       // editable
-                   false,                       // convert
-                   false,                       // rmdExport
-                   null,                        // type
-                   block);                      // block
-	                                            // section
-	viewExercise(exerciseID, false, item, itemCount);
-}
+  /* --------------------------------------------------------------
+   BUTTON MODE 
+  -------------------------------------------------------------- */
+  $('#buttonModeSwitchContainer span').click(function () {
+    setButtonModeCookie($(this).attr('id').toLowerCase());
+    f_buttonMode();
+    f_langDeEn();
+  });
 
-function createExercise(exerciseID, name='exercise', 
-							file=null,
-							ext="rnw",
-						    question='',
-						    choices=[],
-							solution=[],
-							solutionNoteGeneral='',
-							solutionNotes=[],
-							statusMessage=null,
-							statusCode=null,
-							editable=false,
-							convert=false,
-							rmdExport=false,
-							type=null,
-							block=1,
-							section=null,
-							seed=null, 
-						    exam=false, 
-							points=1,
-							tags=null,
-							author=null,
-							figure=null,
-							exExtra=null){
-	rex.exercises[exerciseID] = {}; // make sure that its an object and not an associative array
-	rex.exercises[exerciseID]['file'] = file;
-	rex.exercises[exerciseID]['ext'] = ext;
-	rex.exercises[exerciseID]['name'] = name;
-	rex.exercises[exerciseID]['seed'] = seed;
-	rex.exercises[exerciseID]['exam'] = exam;
-	rex.exercises[exerciseID]['question'] = question;
-	rex.exercises[exerciseID]['question_raw'] = question;
-	rex.exercises[exerciseID]['choices'] = choices;
-	rex.exercises[exerciseID]['choices_raw'] = choices;
-	rex.exercises[exerciseID]['solution'] = solution;
-	rex.exercises[exerciseID]['solutionNoteGeneral'] = solutionNoteGeneral;
-	rex.exercises[exerciseID]['solutionNoteGeneral_raw'] = solutionNoteGeneral;
-	rex.exercises[exerciseID]['solutionNotes'] = solutionNotes;
-	rex.exercises[exerciseID]['solutionNotes_raw'] = solutionNotes;
-	rex.exercises[exerciseID]['points'] = points;
-	rex.exercises[exerciseID]['tags'] = tags;
-	rex.exercises[exerciseID]['type'] = type;
-	rex.exercises[exerciseID]['statusMessage'] = statusMessage;	
-	rex.exercises[exerciseID]['statusCode'] = statusCode;	
-	rex.exercises[exerciseID]['editable'] = editable;
-	rex.exercises[exerciseID]['convert'] = convert;
-	rex.exercises[exerciseID]['rmdExport'] = rmdExport;
-	rex.exercises[exerciseID]['block'] = block;
-	rex.exercises[exerciseID]['section'] = section;
-	rex.exercises[exerciseID]['author'] = author;
-	rex.exercises[exerciseID]['figure'] = figure;
-	rex.exercises[exerciseID]['exExtra'] = exExtra;
-	
-	if(file === null) {
-		setRnwSimpleExerciseFileContents(exerciseID);
+  function setButtonMode(value){
+    if(value !== null){
+      setButtonModeCookie(value); 
+    } else {
+      value = getButtonModeCookie();
+    }
+
+    $('#buttonModeSwitchContainer span').removeClass("active");
+
+    $('body').removeClass("iconButtonMode");
+    $('body').removeClass("textButtonMode");
+
+    if (value === 'iconbuttons') {
+      $('body').addClass("iconButtonMode");
+      $('#iconButtons').addClass("active");
+
+      return;
+    } 
+
+    $('body').addClass("textButtonMode");
+    $('#textButtons').addClass("active");
+  }
+
+  Shiny.addCustomMessageHandler('f_buttonMode', function(value) {
+    f_buttonMode(value);
+  });
+
+  function f_buttonMode(value = null) {
+    // Set by value
+    if (value !== null){
+      switch(value){
+        case 0: setButtonMode("textButtons"); break;
+        case 1: setButtonMode("iconButtons"); break;
+        default: setButtonMode("textButtons");
+      }
+      
+      return;
+    }
+
+    // Set by cookie
+    buttonMode = getButtonModeCookie();
+    setButtonMode(buttonMode);
+  }
+
+  function setButtonModeCookie(buttonMode) {
+      document.cookie = 'REX_JS_buttonMode=' + buttonMode + ';path=/;SameSite=Lax';
+  }
+
+  function getButtonModeCookie() {
+      const name = 'REX_JS_buttonMode';
+      const ca = document.cookie.split(';');
+    
+      for(let i=0;i < ca.length;i++) {
+          let c = ca[i];
+          while (c.charAt(0)==' ') c = c.substring(1,c.length);
+          if (c.indexOf(name) == 0) {
+        return c.substring(name.length + 1,c.length);
+      }
+      }
+      return null;
+  }
+
+  /* --------------------------------------------------------------
+   LANGUAGE 
+  -------------------------------------------------------------- */
+  $('#languageSwitchContainer span').click(function () {
+    setLanguageCookie($(this).text().toLowerCase());
+    f_langDeEn();
+  });
+
+  function setLanguage(value){
+    if(value !== null){
+      setLanguageCookie(value); 
+    } else {
+      value = getLanguageCookie();
+    }
+
+    $('#languageSwitchContainer span').removeClass("active");
+
+    if (value === 'en') {
+      rex.language = 'en';
+      
+      $('html').attr('lang', 'en');
+      $('html').attr('xml:lang', 'en');
+      
+      $('[lang="de"]').hide();
+      $('[lang="en"]').show();
+      
+      $('#enLang').addClass("active");
+
+      return;
+    } 
+
+    rex.language = 'de';
+    
+    $('html').attr('lang', 'de');
+    $('html').attr('xml:lang', 'de');
+    
+    $('[lang="en"]').hide();
+    $('[lang="de"]').show();
+    
+    $('#deLang').addClass("active");
+  }
+
+  Shiny.addCustomMessageHandler('f_langDeEn', function(value) {
+    f_langDeEn(value);
+  });
+
+  function f_langDeEn(value = null){ 
+    // Set by value
+    if (value !== null){
+      switch(value){
+        case 0: setLanguage("de"); break;
+        case 1: setLanguage("en"); break;
+        default: setLanguage("de");
+      }
+
+      return;
+    }
+
+    // Set by cookie	
+    lang = getLanguageCookie();
+    setLanguage(lang);
+  }
+
+  function setLanguageCookie(lang) {
+      document.cookie = 'REX_JS_lang=' + lang + ';path=/;SameSite=Lax';
+  }
+
+  function getLanguageCookie() {
+      const name = 'REX_JS_lang';
+      const ca = document.cookie.split(';');
+      for(let i=0;i < ca.length;i++) {
+          let c = ca[i];
+          while (c.charAt(0)==' ') c = c.substring(1,c.length);
+          if (c.indexOf(name) == 0) {
+        return c.substring(name.length + 1,c.length);
+      }
+      }
+      return null;
+  }
+
+  const languages = {en:["Englisch", "English"],
+             hr:["Kroatisch", "Croatian"],
+             da:["Dänisch", "Danisch"],
+             nl:["Niederländisch ", "Dutch"],
+             fi:["Finnisch", "Finnish"],
+             fr:["Französisch", "French"],
+             de:["Deutsch", "German"],
+             hu:["Ungarisch", "Hungarian"],
+             it:["Italienisch", "Italian"],
+             ja:["Japanisch", "Japanese"],
+             ko:["Koreanisch", "Korean"],
+             no:["Norwegisch", "Norwegian"],
+             pt:["Portugisisch", "Portuguese"],
+             ro:["Rumänisch", "Romanian"],
+             ru:["Russisch", "Russian"],
+             sr:["Serbisch", "Serbian"],
+             sk:["Slowakisch", "Slovak"],
+             sl:["Slowenisch", "Slovenian"],
+             es:["Spansich", "Spanish"],
+             tr:["Türkisch", "Turkish"]}		   
+
+  /* --------------------------------------------------------------
+   DATA 
+  -------------------------------------------------------------- */
+  let rex = new Object();
+  let exercises = -1;
+
+  function getFilesDataTransferItems(dataTransferItems) {
+    function traverseFileTreePromise(item, path = "", files) {
+      return new Promise(resolve => {
+        if (item.isFile) {
+          item.file(file => {
+          file.filepath = path || "" + file.name;
+          files.push(file);
+          resolve(file);
+          });
+        } else if (item.isDirectory) {
+          const dirReader = item.createReader();
+          dirReader.readEntries(entries => {
+            let entriesPromises = [];
+            for (let entr of entries) {
+              entriesPromises.push(
+                traverseFileTreePromise(entr, path || ""  + item.name + "/", files)
+              );
+            }
+            resolve(Promise.all(entriesPromises));
+          });
+        }
+      });
+    }
+
+    let files = [];
+    return new Promise((resolve, reject) => {
+      let entriesPromises = [];
+      for (let item of dataTransferItems) {
+        entriesPromises.push(
+          traverseFileTreePromise(item.webkitGetAsEntry(), null, files)
+        );
+      }
+      Promise.all(entriesPromises).then(entries => {
+        resolve(files);
+      });
+    });
+  }
+
+  /* --------------------------------------------------------------
+   EXERCISES SETTINGS 
+  -------------------------------------------------------------- */
+  $("#seedValueExercises").change(function(){
+    const seed = getIntegerInput(1, 999999999, null, $(this).val());
+    setSeed(seed);
+  }); 
+
+  $("#randomExerciseSeed").click(function(){
+    setRandomSeed();
+  })
+
+  function setRandomSeed(){
+    setSeed(Math.floor(Math.random() * 9999));
+  }
+
+  function setSeed(seed=1){
+    setShinyInputValue("seedValueExercises", seed);
+      
+    if(rex.exercises.length > 0) viewExercise(getID());
+  }
+
+  /* --------------------------------------------------------------
+   EXERCISES SUMMARY 
+  -------------------------------------------------------------- */
+  function examExercisesSummary() {	
+    if($('.exerciseItem.exam').length == 0) { 
+      $('#s_numberOfExercises').html("");
+      $('#s_totalPoints').html("");
+      $('#s_sectionsTable').html("");
+      $('#s_typeTable').html("");
+      $('#s_choicesTable').html("");
+      
+      return;
+    }
+    
+    let numberOfExamExercisesCounter = 0;
+    let totalPoints = 0;
+    let sections = [];
+    let types = [];
+    let choices = [];
+      
+    rex.exercises.forEach((item, index) => {
+      if(item.exam) {
+        numberOfExamExercisesCounter++;
+        totalPoints += Number(item.points);
+        if (item.section !== null) sections.push(item.section);
+        if (item.type !== null) types.push(item.type);
+        if (item.choices !== null) choices.push(item.choices.length);
+      }
+    })
+    
+    $('#s_numberOfExercises').html(itemSingle(numberOfExamExercisesCounter, 'yellowLabelValue'));
+    $('#s_totalPoints').html(itemSingle(totalPoints, 'yellowLabelValue'));
+    $('#s_sectionsTable').html(itemTable(sections));
+    $('#s_typeTable').html(itemTable(types));
+    $('#s_choicesTable').html(itemTable(choices));
+  }
+
+  function itemSingle(item, className) {
+    return '<span class="myLabelContainer"><span class="myLabel"><span class="myLabelSingle ' + className + '">' + item + '</span></span></span>';
+  }
+
+  function itemTable(arr) {
+    let counts = {};
+    for (let i of arr) {
+      counts[i] = counts[i] ? counts[i] + 1 : 1;
+    }
+    
+    let out = "";
+    
+    out = Object.entries(counts).map(entry => {
+      const [key, value] = entry;
+      return '<span class="myLabel"><span class="label_key yellowLabelKey">' + key + '</span><span class="label_value yellowLabelValue">' + value + '</span></span>';
+    }).join('');
+    
+    return '<span class="myLabelContainer">' + out + '</span>';
+  }
+
+  /* --------------------------------------------------------------
+   EXERCISES LIST
+  -------------------------------------------------------------- */
+  function examExerciseAll(){
+    const examExerciseAllButton = $('#examExerciseAll');
+    
+    $('.exerciseItem').each(function (index) {
+      if( $('.exerciseItem').eq(index).hasClass('filtered')) {
+        return;
+      }
+      
+      $(this).removeClass('exam');
+      rex.exercises[index].exam = false;
+          
+      if (!$(this).find('.examExercise').hasClass('disabled') && !examExerciseAllButton.hasClass('allAdded')) {	
+        $(this).addClass('exam');
+        rex.exercises[index].exam = true;
+      }
+    });
+    
+    examExerciseAllButton.toggleClass('allAdded');
+    examExercisesSummary();
+  }
+
+  function exerciseRemoveAllDialog(){
+    confirmDialog('Alle Aufgaben löschen?', 'Delete all exercises?', 'Ja', 'Yes', '<i class="fa-solid fa-check"></i>', 'Nein', 'No', '<i class="fa-solid fa-xmark"></i>',
+    function(remove) {
+      if(!remove)
+        return;
+      
+      exerciseRemoveAll();
+    });
+  }
+
+  function exerciseRemoveAll(){
+    const removeIndices = $('.exerciseItem:not(.filtered)').map(function() {
+    return $(this).index();
+    }).get();
+    
+    for (let i = removeIndices.length -1; i >= 0; i--) {
+      rex.exercises.splice(removeIndices[i], 1);
+      exercises = exercises - 1;
+    }
+    
+    $('.exerciseItem:not(.filtered)').remove();
+
+    resetOutputFields();
+    examExercisesSummary();
+  }
+
+  Shiny.addCustomMessageHandler('removeAllExercises', function(x) {
+    exerciseRemoveAll();
+  });
+
+  function exerciseParseAll(forceParse = false){	
+    const exercisesToParse = rex.exercises.filter((t, index) => ! $('.exerciseItem:nth-child(' + (index + 1) + ')').hasClass('filtered') );
+    const itemCount = exercisesToParse.length;	
+
+    exercisesToParse.forEach((t, index) => {
+      const item = index + 1;		
+      viewExercise(index, forceParse, item, itemCount)
+    });	
+  }
+
+  function exerciseConvertAll(){
+    confirmDialog('Beim Konvertieren in bearbeitbare Aufgaben wird jeweils nur der aktuell sichtbare Text übernommen.<br/>Alle weiteren Details sowie sämtliche programmierte Logik und Randomisierungen gehen verloren.<br/><br/>Möchten Sie wirklich alle Aufgabe konvertieren?', 'When converting to editable exercises, only the currently loaded text is transferred.<br/>All other details as well as coded logic and randomisations are lost.<br/><br/>Do you really want to convert all the exercises?', 'Ja', 'Yes', '<i class="fa-solid fa-check"></i>', 'Nein', 'No', '<i class="fa-solid fa-xmark"></i>',
+    function(remove) {
+      if(!remove)
+        return;
+          
+      const exercisesToConvert = rex.exercises
+        .map((exercise, index) => ! ($('.exerciseItem:nth-child(' + (index + 1) + ')').hasClass('filtered') || exercise.editable || $('.exerciseItem:nth-child(' + (index + 1) + ') .exerciseConvert').hasClass('disabled')) ? index : -1 )
+        .filter(index => index !== -1);
+      const itemCount = exercisesToConvert.length;			
+
+      exercisesToConvert.forEach((exercideId, index) => {
+        setRnwSimpleExerciseFileContents(exercideId, true);
+        
+        const item = index + 1;		
+        viewExercise(index, true, item, itemCount)
+      });	
+    });
+  }
+
+  function exerciseDownloadAll() {	
+    const filteredTasks = rex.exercises.filter((x, index) => {
+      return !$('.exerciseItem:nth-child(' + (index + 1) + ')').hasClass('filtered') && !$('.exerciseItem:nth-child(' + (index + 1) + ') .exerciseDownload').hasClass('disabled')
+    });
+    
+    const exerciseNames = filteredTasks.map(exercise => exercise.name);
+    const exerciseCodes = filteredTasks.map((exercise, index) => exercise.file)
+    const exerciseExts = filteredTasks.map(exercise => exercise.ext)
+    
+    Shiny.onInputChange("exercisesToDownload", {exerciseNames:exerciseNames, exerciseCodes: exerciseCodes, exerciseExts: exerciseExts}, {priority: 'event'});	
+  }
+
+  $('#exerciseDownloadAll').click(function () {
+    exerciseDownloadAll();
+    $("#downloadExercises")[0].click();
+  });
+
+  $('#exerciseConvertAll').click(function () {
+    exerciseConvertAll();
+  });
+
+  $('#newExercise').click(function () {
+    newSimpleExercise();
+  });
+
+  $('#examExerciseAll').click(function () {
+    examExerciseAll();
+  });
+
+  $('#exerciseRemoveAll').click(function () {
+    exerciseRemoveAllDialog();	
+  });
+
+  $('#exerciseParseAll').click(function () {
+    exerciseParseAll(true);
+  });
+
+  $('#searchExercises input').change(function () {
+    searchExercises();
+  });
+
+  function searchExercises() {
+    $this = $('#searchExercises input');
+    
+    // no exercises 
+    if($('.exerciseItem').length <= 0) {
+      return;
+    }
+    
+    // no search input
+    if($('#searchExercises input').val() == 0) {
+      $('.exerciseItem').removeClass("filtered");
+      
+      resetOutputFields();
+      $('.exerciseItem.active').removeClass('active');
+      
+      if($('.exerciseItem:not(.filtered)').length > 0) {
+        $('.exerciseItem:not(.filtered)').first().addClass('active');
+        viewExercise($('.exerciseItem.active:not(.filtered)').first().index('.exerciseItem'));
+      }
+      
+      return;
+    }
+    
+    const userInput = $this.val().split(";");
+
+    let matches = new Set();
+    
+    function filterExercises(fieldsToFilter, filterBy) {
+      fieldsToFilter.filter((content, index) => {			
+        const test = content.toString().toLowerCase().includes(filterBy.toLowerCase());
+        if(test) matches.add(index);
+      }); 
+    }
+    
+    userInput.map(input => {
+      const filterBy = input.split(":")[1];
+      
+      if (input.includes("name:")) {
+        const fieldsToFilter = rex.exercises.map(exercise => {
+          if( exercise.name === null) {
+            return "";
+          } 
+          
+          return exercise.name;
+        })
+        filterExercises(fieldsToFilter, filterBy);
+      }
+                  
+      if (input.includes("section:")) {
+        const fieldsToFilter = rex.exercises.map(exercise => {
+          if( exercise.section === null) {
+            return "";
+          } 
+                  
+          return exercise.section;
+        })
+        filterExercises(fieldsToFilter, filterBy);
+      }
+    
+      
+      if (input.includes("points:")) {
+        const fieldsToFilter = rex.exercises.map(exercise => {
+          if( exercise.points === null) {
+            return "";
+          } 
+          
+          return exercise.points;
+        })
+        filterExercises(fieldsToFilter, filterBy);
+      }
+      
+      if (input.includes("type:")) {
+        const fieldsToFilter = rex.exercises.map(exercise => {
+          if( exercise.type === null) {
+            return "";
+          } 
+          
+          return exercise.type;
+        })
+        filterExercises(fieldsToFilter, filterBy);
+      }
+      
+      if (input.includes("question:")) {
+        const fieldsToFilter = rex.exercises.map(exercise => {
+          if( exercise.question === null) {
+            return "";
+          } 
+          
+          return exercise.question;
+        })
+        filterExercises(fieldsToFilter, filterBy);
+      }
+          
+      if (!input.includes(":")) {
+        const fieldsToFilter = rex.exercises.map(exercise => {
+          if( exercise.name === null) {
+            return "";
+          } 
+          
+          return exercise.name;
+        })
+        filterExercises(fieldsToFilter, input);
+      }
+    });  
+    
+    matches = Array.from(matches);
+    
+    $('.exerciseItem').removeClass("filtered");
+    
+    $('.exerciseItem').each(function (index) {
+      if( matches.every(m => m !== index) ){
+        $('.exerciseItem:nth-child(' + (index + 1) + ')').addClass('filtered');
+      }
+    });
+    
+    resetOutputFields();
+    $('.exerciseItem.active').removeClass('active');
+    
+    if($('.exerciseItem:not(.filtered)').length > 0) {
+      $('.exerciseItem:not(.filtered)').first().addClass('active');
+      viewExercise($('.exerciseItem.active:not(.filtered)').first().index('.exerciseItem'));
+    }
+  }
+
+  /* --------------------------------------------------------------
+   EXERCISES 
+  -------------------------------------------------------------- */
+  let dndExercises = {
+    hzone: null,
+    dzone: null,
+
+    init : function () {
+      dndExercises.hzone = document.querySelector("body");
+      dndExercises.dzone = document.getElementById('dnd_exercises');
+
+      if ( window.File && window.FileReader && window.FileList && window.Blob) {
+        // hover zone
+        dndExercises.hzone.addEventListener('dragenter', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          if($('#disableOverlay').hasClass("active")) return;
+          
+          if( $('#exercises').hasClass('active') ) {
+            dndExercises.dzone.classList.add('drag');
+            
+            setTimeout(function() {
+               dndExercises.dzone.classList.remove('drag');
+             }, 5000);
+          }
+        });
+        dndExercises.hzone.addEventListener('dragleave', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        });
+        dndExercises.hzone.addEventListener('dragover', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        });
+        
+        // drop zone
+        dndExercises.dzone.addEventListener('dragleave', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          dndExercises.dzone.classList.remove('drag');
+        });
+        dndExercises.dzone.addEventListener('drop', async function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          dndExercises.dzone.classList.remove('drag');
+          
+          if($('#disableOverlay').hasClass("active")) return;
+          
+          loadExercisesDnD(e.dataTransfer.items);
+        });
+      }
+    },
+  };
+
+  function loadExercisesDnD(items) {	
+    getFilesDataTransferItems(items).then((files) => {
+      const fileArray = Array.from(files);
+      const itemCount = fileArray.length;
+      
+      fileArray.forEach((fileItem, index) => {
+        const item = (index + 1);
+      loadExercise(fileItem, 1, item, itemCount);
+      });
+    });
+  }
+
+  function exercisesFileDialog(files) {	
+    const fileArray = Array.from(files);
+      const itemCount = fileArray.length;
+
+    fileArray.forEach((fileItem, index) => {	
+      const item = (index + 1);
+      loadExercise(fileItem, 1, item, itemCount);
+    });
+  }
+
+  function loadExercise(file, block = 1, item = 1, itemCount = 1) {
+    const fileExt = file.name.slice((file.name.lastIndexOf('.') - 1 >>> 0) + 2).toLowerCase();
+    
+    switch(fileExt) {
+      case 'rnw':
+      case 'rmd':
+        newComplexExercise(file, fileExt, block, item, itemCount);
+        break;
+      case 'png':
+        addExerciseFigureFile(file, fileExt);
+        break;
+    }
+  }
+
+  const d_exerciseName = 'Name';
+  const d_questionText = 'Text';
+  const d_choiceText = 'Text';
+  const d_sectionText = '';
+  const d_solution = false;
+  const d_solutionNoteGeneralText = '';
+  const d_solutionNoteText = '';
+
+  function newSimpleExercise(file = '', block = 1) {
+    const exerciseID = exercises + 1
+      addExercise();
+      createExercise(exerciseID, 										            // exerciseID
+               d_exerciseName, 									                // name
+               null,                                            // file
+               "rmd",                                           // ext
+               d_questionText,                                  // question
+               [d_choiceText + '1', d_choiceText + '2'],        // choices
+               [d_solution, d_solution],                        // solution
+               d_solutionNoteGeneralText,                       // solutionNoteGeneral
+               [d_solutionNoteText, d_solutionNoteText],        // solutionNotes
+               null,                                            // statusMessage
+               null,                                            // statusCode
+               true,                                            // editable
+               false,                                           // convert
+               true,                                            // rmdExport
+               "mchoice",                                       // type
+               block,                                           // block
+               d_sectionText);                                  // section
+      viewExercise(exerciseID);
+  }
+
+  async function newComplexExercise(file, ext, block = 1, item = 1, itemCount = 1) {
+    const fileText = await file.text();
+    const exerciseID = exercises + 1
+    
+    addExercise();
+    
+    createExercise(exerciseID, 					          // exerciseID
+                     file.name.split('.')[0],     // name
+                     fileText,                    // file
+                     ext,                         // ext
+                     '',                          // question
+                     [],                          // choices
+                     [],                          // solution
+                     null,                        // solutionNoteGeneral
+                     [],                          // solutionNotes
+                     null,                        // statusMessage
+                     null,                        // statusCode
+                     false,                       // editable
+                     false,                       // convert
+                     false,                       // rmdExport
+                     null,                        // type
+                     block);                      // block
+                                                  // section
+    viewExercise(exerciseID, false, item, itemCount);
+  }
+
+  function createExercise(exerciseID, name='exercise', 
+                file=null,
+                ext="rmd",
+                question='',
+                choices=[],
+                solution=[],
+                solutionNoteGeneral='',
+                solutionNotes=[],
+                statusMessage=null,
+                statusCode=null,
+                editable=false,
+                convert=false,
+                rmdExport=true,
+                type=null,
+                block=1,
+                section=null,
+                seed=null, 
+                exam=false, 
+                points=1,
+                tags=null,
+                author=null,
+                figure=null,
+                exExtra=null){
+    rex.exercises[exerciseID] = {}; // make sure that its an object and not an associative array
+    rex.exercises[exerciseID]['file'] = file;
+    rex.exercises[exerciseID]['ext'] = ext;
+    rex.exercises[exerciseID]['name'] = name;
+    rex.exercises[exerciseID]['seed'] = seed;
+    rex.exercises[exerciseID]['exam'] = exam;
+    rex.exercises[exerciseID]['question'] = question;
+    rex.exercises[exerciseID]['question_raw'] = question;
+    rex.exercises[exerciseID]['choices'] = choices;
+    rex.exercises[exerciseID]['choices_raw'] = choices;
+    rex.exercises[exerciseID]['solution'] = solution;
+    rex.exercises[exerciseID]['solutionNoteGeneral'] = solutionNoteGeneral;
+    rex.exercises[exerciseID]['solutionNoteGeneral_raw'] = solutionNoteGeneral;
+    rex.exercises[exerciseID]['solutionNotes'] = solutionNotes;
+    rex.exercises[exerciseID]['solutionNotes_raw'] = solutionNotes;
+    rex.exercises[exerciseID]['points'] = points;
+    rex.exercises[exerciseID]['tags'] = tags;
+    rex.exercises[exerciseID]['type'] = type;
+    rex.exercises[exerciseID]['statusMessage'] = statusMessage;	
+    rex.exercises[exerciseID]['statusCode'] = statusCode;	
+    rex.exercises[exerciseID]['editable'] = editable;
+    rex.exercises[exerciseID]['convert'] = convert;
+    rex.exercises[exerciseID]['rmdExport'] = rmdExport;
+    rex.exercises[exerciseID]['block'] = block;
+    rex.exercises[exerciseID]['section'] = section;
+    rex.exercises[exerciseID]['author'] = author;
+    rex.exercises[exerciseID]['figure'] = figure;
+    rex.exercises[exerciseID]['exExtra'] = exExtra;
+    
+    if(file === null) {
+      setRnwSimpleExerciseFileContents(exerciseID); 
 	}
 	
 	addExerciseToView(exerciseID);
@@ -1512,7 +1640,7 @@ function addExerciseToView(exerciseID) {
 function parseExercise(exerciseID, item = 1, itemCount = 1) {	
 	const exerciseCode = rex.exercises[exerciseID].file;
 	const exerciseExt = rex.exercises[exerciseID].ext;
-						
+
 	Shiny.onInputChange("parseExercise", {exerciseCode: exerciseCode, exerciseExt: exerciseExt, exerciseID: exerciseID, item: item, itemCount: itemCount}, {priority: 'event'});
 }
 
@@ -1563,7 +1691,7 @@ function viewExercise(exerciseID, forceParse = false, item = 1, itemCount = 1) {
 	}
 		
 	f_langDeEn();
-	f_tex("exercise_info", !rex.exercises[exerciseID].rmdExport);
+	f_texModeOn("exercise_info", !rex.exercises[exerciseID].rmdExport);
 }
 
 function exerciseShouldbeParsed(exerciseID){
@@ -1617,7 +1745,8 @@ $('#exercise_info').on('click', '.editType', function(e) {
 	rex.exercises[exerciseID].type = newValue;
 	$(this).html(getTypeText(newValue));
 	
-	setRnwSimpleExerciseFileContents(exerciseID);	
+	setRnwSimpleExerciseFileContents(exerciseID); 
+	
 	examExercisesSummary();
 	f_langDeEn();
 });
@@ -1634,7 +1763,8 @@ $('#exercise_info').on('click', '.editTrueFalse', function(e) {
 	rex.exercises[exerciseID].solution[$(this).index('.solution')] = newValue;
 	$(this).html(getTrueFalseText(newValue));
 	
-	setRnwSimpleExerciseFileContents(exerciseID);	
+	setRnwSimpleExerciseFileContents(exerciseID); 
+	
 	examExercisesSummary();
 	f_langDeEn();
 });
@@ -1701,7 +1831,7 @@ $('body').on('focus', '[contenteditable]', function() {
     $this.data('before', $this.html());
 }).on('blur', '[contenteditable]', function() {
     const $this = $(this);
-	const exerciseID = getID();	
+	  const exerciseID = getID();	
 	
     if ($this.data('before') !== $this.html()) {
 		invalidateAfterEdit(exerciseID);
@@ -1731,7 +1861,12 @@ $('body').on('focus', '[contenteditable]', function() {
 		
 		if ($this.hasClass('questionText')) {
 			content = contenteditable_getSpecial(content);
-			content = contentSpecialSanitize(content);
+
+      if(document.body.classList.contains("advancedFeaturesMode")){
+        content = contentSpecialSanitize(content);
+      } else {
+        content = contentTexSanitize(content);
+      }
 			
 			rex.exercises[exerciseID].question = content;
 			rex.exercises[exerciseID].question_raw = content;
@@ -1739,7 +1874,12 @@ $('body').on('focus', '[contenteditable]', function() {
 		
 		if ($this.hasClass('solutionNoteGeneralText')) {
 			content = contenteditable_getSpecial(content);
-			content = contentSpecialSanitize(content);
+
+      if(document.body.classList.contains("advancedFeaturesMode")){
+        content = contentSpecialSanitize(content);
+      } else {
+        content = contentTexSanitize(content);
+      }
 
 			rex.exercises[exerciseID].solutionNoteGeneral = content;
 			rex.exercises[exerciseID].solutionNoteGeneral_raw = content;
@@ -1747,7 +1887,12 @@ $('body').on('focus', '[contenteditable]', function() {
 		
 		if ($this.hasClass('choiceText')) {
 			content = contenteditable_getPlain(content);
-			content = contentSpecialSanitize(content);
+
+      if(document.body.classList.contains("advancedFeaturesMode")){
+        content = contentSpecialSanitize(content);
+      } else {
+        content = contentTexSanitize(content);
+      }
 
 			rex.exercises[exerciseID].choices[$this.index('.choiceText')] = content;
 			rex.exercises[exerciseID].choices_raw[$this.index('.choiceText')] = content;
@@ -1755,8 +1900,13 @@ $('body').on('focus', '[contenteditable]', function() {
 		
 		if ($this.hasClass('solutionNoteText')) {
 			content = contenteditable_getPlain(content);
-			content = contentSpecialSanitize(content);
-			
+
+      if(document.body.classList.contains("advancedFeaturesMode")){
+        content = contentSpecialSanitize(content);
+      } else {
+        content = contentTexSanitize(content);
+      }
+
 			rex.exercises[exerciseID].solutionNotes[$this.index('.solutionNoteText')] = content;
 			rex.exercises[exerciseID].solutionNotes_raw[$this.index('.solutionNoteText')] = content;
 		}
@@ -1776,8 +1926,10 @@ $('body').on('focus', '[contenteditable]', function() {
 
 		$this.html(content);
 		
-		setRnwSimpleExerciseFileContents(exerciseID);	
+  	setRnwSimpleExerciseFileContents(exerciseID); 
+	
 		examExercisesSummary();
+
     } else {
 		if(rex.exercises[exerciseID].statusCode === "S000") {
 			if ($this.hasClass('questionText'))
@@ -1800,6 +1952,7 @@ function contenteditable_getPlain(content) {
 	content = content.replaceAll('\\\\', '');
 	content = content.replaceAll('&nbsp;', ' ');
 	content = content.replaceAll('\n', ' ');
+	content = content.replaceAll(/["\u2018\u2019\u201C\u201D]/g, "'")  //‘ ’ “ ” -> '
 		
 	return content;
 }
@@ -1815,6 +1968,7 @@ function contenteditable_getSpecial(content) {
 		content = content.replaceAll('</br>', '\\\\');
 		content = content.replaceAll('&nbsp;', ' ');
 		content = content.replaceAll('\n', ' ');
+	  content = content.replaceAll(/["\u2018\u2019\u201C\u201D]/g, "'")  //‘ ’ “ ” -> '
 	}
 	
 	return content;
@@ -1838,22 +1992,34 @@ function contentSectionSanitize(content){
 
 function contentSpecialSanitize(content){		
 	content = content.replaceAll(/[^\<,\.\-#\+`ß\|~\\\}\]\[\{@\!"§\$%&/\(\)\=\?´\*'\:;\>\^a-z0-9_ \u00c4\u00e4\u00d6\u00f6\u00dc\u00fc\u00df]/gi, '');
-	content = content.replaceAll(/amp;/g, '');
+	content = content.replaceAll(/["\u2018\u2019\u201C\u201D]/g, "'")  //‘ ’ “ ” -> '
+	content = content.replaceAll(/&amp;/g, '&');
+	content = content.replaceAll(/&lt;/g, '<');
+	content = content.replaceAll(/&gt;/g, '>');
+	content = content.replaceAll(/&#39;/g, '\'');
 
 	return content;
 }
 
 function contentTexSanitize(content){		
-	content = content.replaceAll(/[^\<,\.\-#\+`ß\|~\\\}\]\[\{@\!"§\$%&/\(\)\=\?´\*'\:;\>\^a-z0-9_ \u00c4\u00e4\u00d6\u00f6\u00dc\u00fc\u00df]/gi, '');
+  content = contentSpecialSanitize(content);
+	
+	content = content.replaceAll('\\\\', '\x00DOUBLE_BACKSLASH\x00');
 	content = content.replaceAll(/[\\]/g, '');
+	content = content.replaceAll('\x00DOUBLE_BACKSLASH\x00', '\\\\ ');
+	
 	content = content.replaceAll(/(\\)($)/g, '');
-	content = content.replaceAll('"', "'");
 	content = content.replaceAll('\\~{}', '~');
 	content = content.replaceAll(/[{}]/g, '\\$&');
 	content = content.replaceAll(/[~]/g, '\\~{}');
 	content = content.replaceAll(/[$%&#\^_]/g, '\\$&');
 
 	return content;
+}
+
+function normalizeQuotes(s) {
+  return s
+    .replace(/["\u2018\u2019\u201C\u201D]/g, "'")  //‘ ’ “ ” -> '
 }
 
 function filterNodes(element, allow) {
@@ -1886,12 +2052,13 @@ function loadExerciseFromObject(exerciseID) {
 	resetOutputFields();
 	
 	const editable = rex.exercises[exerciseID].editable; 
-	const texMode = !rex.exercises[exerciseID].rmdExport; 
+	const texModeOn = !rex.exercises[exerciseID].rmdExport; 
+  const escapeTexOff = document.body.classList.contains("advancedFeaturesMode");
 	let field = '';
 	let content ='';
 	
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').removeClass("editable");
-	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').removeClass("texMode");
+	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').removeClass("texModeOn");
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseDownload').removeClass("disabled");
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseConvert').addClass("disabled");
 	$('.exerciseItem:nth-child(' + (exerciseID + 1) + ') .exerciseParse').removeClass("disabled");
@@ -1935,7 +2102,8 @@ function loadExerciseFromObject(exerciseID) {
 	setExerciseFieldFromObject(field, content, visible = !editable);
 	
 	// question
-	$('#exerciseTexMode').prop('checked', texMode);	
+	$('#exerciseTexMode').prop('checked', texModeOn);	
+
 	if(editable){
 		$('#exerciseTexModeContainer').show();	
 	} 
@@ -1980,7 +2148,7 @@ function loadExerciseFromObject(exerciseID) {
 	// answers
 	field = 'answers';
 	const zip = rex.exercises[exerciseID].solution.map((x, i) => [x, rex.exercises[exerciseID].choices[i], rex.exercises[exerciseID].solutionNotes[i]]);
-	content = '<div id="answerContent">' + zip.map(i => '<p>' + (editable ? '<button type="button" class="removeAnswer btn btn-default action-button shiny-bound-input" ' + (rex.exercises[exerciseID].choices.length <= 2 ? 'disabled' : '') + '><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></button>' : '') + '<span class=\"solution ' + (i[0] + 'Solution ') + (editable ? 'editTrueFalse' : '') + '\">' + getTrueFalseText(i[0]) + '</span><span class="answerText choice"><span class="choiceText highlightField" contenteditable="' + editable + '" spellcheck="false">' + i[1] + '</span></span><span class="answerText solutionNote"><span class="solutionNoteText" contenteditable="' + editable + '" spellcheck="false">' + i[2] + '</span></span></p>').join('') + '</div>';
+	content = '<div id="answerContent">' + zip.map(i => '<p>' + (editable ? '<button type="button" class="removeAnswer btn btn-default action-button shiny-bound-input" ' + (rex.exercises[exerciseID].choices.length <= 2 ? 'disabled' : '') + '><span class="iconButton"><i class="fa-solid fa-trash"></i></span><span class="textButton"><span lang="de">Entfernen</span><span lang="en">Remove</span></span></button>' : '') + '<span class=\"solution ' + (i[0] + 'Solution ') + (editable ? 'editTrueFalse' : '') + '\">' + getTrueFalseText(i[0]) + '</span><span class="answerText choice tex' + (escapeTexOff ? ' escapeTexOff' : '') + '"><span class="choiceText highlightField" contenteditable="' + editable + '" spellcheck="false">' + i[1] + '</span></span><span class="answerText solutionNote tex ' + (escapeTexOff ? ' escapeTexOff' : '') + '"><span class="solutionNoteText" contenteditable="' + editable + '" spellcheck="false">' + i[2] + '</span></span></p>').join('') + '</div>';
 
 	if( rex.exercises[exerciseID].editable ) {
 		content = '<button id="addNewAnswer" type="button" class="btn btn-default action-button shiny-bound-input" ' + (rex.exercises[exerciseID].choices.length >= 5 ? 'disabled' : '') + '><span class="iconButton"><i class="fa-solid fa-plus"></i></span><span class="textButton"><span lang="de">Neue Antwortmöglichkeit</span><span lang="en">New Answer</span></span></button>' + content;
@@ -2015,8 +2183,8 @@ function loadExerciseFromObject(exerciseID) {
 		$('#exercise_info').addClass("editableExercise");
 		
 		// highlight as editable with latex code
-		if(texMode){
-			$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').addClass("texMode");
+		if(texModeOn){
+			$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').addClass("texModeOn");
 		}
 		
 	} else {
@@ -2030,12 +2198,20 @@ function loadExerciseFromObject(exerciseID) {
 	f_langDeEn();
 }
 
-function sanitizeComplexFieldValue(content){
+function sanitizeComplexFieldValue(content, multiline = false){
 	if( Array.isArray(content) )
 		content = content.join('')
 	
 	content = '<span>' + content + '</span>';
 	content = $(content);
+
+  // half backslashes for math (not sure where they are coming from exactly, maybe math scopes are parsed differently and some escapes i make end up being redundant)
+  content.find('.math').each(function () {
+    const el = $(this);
+  
+    // Use .text() to avoid messing with HTML inside; then write back.
+    el.text(el.text().replace(/\\\\/g, '\\'));
+  });
 	
 	// add $-symbols to math blocks
 	content.find('math').each(function () {
@@ -2054,21 +2230,27 @@ function sanitizeComplexFieldValue(content){
 			} else {
 				$math.replaceWith(tex); // Leave as-is
 			}
-		}
-	});
-					
+    }
+  });
+
 	content.contents().each(function() {
 		if(this.nodeType === Node.COMMENT_NODE) {
 			$(this).remove();
 		}
 	});
-		
+
 	content = content.get(0);
-	content = contenteditable_getPlain(content);
-	content = content.replaceAll('\\', '\\\\');
+
+  if(multiline){
+	  content = contenteditable_getSpecial(content);
+    content = content.replace(/\$/g, '$$$$');
+  } else {
+	  content = contenteditable_getPlain(content);
+	  content = content.replaceAll('\\', '\\\\');
+  }
 		
-	content = contentSpecialSanitize(content);
-		
+  content = contentSpecialSanitize(content);
+
 	return content;
 }
 
@@ -2107,10 +2289,10 @@ function setRmdSimpleExerciseFileContents(exerciseID){
 	let figure = rex.exercises[exerciseID].figure === null ? '' : rawFigureBlock.replace("?rxxTemplate_figure", rex.exercises[exerciseID].figure[2]);
 		
 	fileText = fileText.replace("?rxxTemplate_figure", figure);
-	fileText = fileText.replace("?rxxTemplate_question", rex.exercises[exerciseID].question_raw.replace(/\$/g, '$$$$'));
-	fileText = fileText.replace("?rxxTemplate_solutionNoteGeneral", rex.exercises[exerciseID].solutionNoteGeneral_raw.replace(/\$/g, '$$$$'));
-	fileText = fileText.replace("?rxxTemplate_choices", rex.exercises[exerciseID].choices_raw.map(x=>'* ' + x).join('\n'));
-	fileText = fileText.replace("?rxxTemplate_solutionNotes", rex.exercises[exerciseID].solutionNotes_raw.map((x, i) => '* ' + (+rex.exercises[exerciseID].solution[i]) + '. ' + x.replace(/^[01]\. */, '')).join('\n'));
+	fileText = fileText.replace("?rxxTemplate_question", rex.exercises[exerciseID].question_raw.replace(/\$/g, '$$$$')).replaceAll('\\', '\\\\');
+	fileText = fileText.replace("?rxxTemplate_solutionNoteGeneral", rex.exercises[exerciseID].solutionNoteGeneral_raw.replace(/\$/g, '$$$$')).replaceAll('\\', '\\\\');
+	fileText = fileText.replace("?rxxTemplate_choices", rex.exercises[exerciseID].choices_raw.map(x=>'* ' + x.replaceAll('\\', '\\\\')).join('\n'));
+	fileText = fileText.replace("?rxxTemplate_solutionNotes", rex.exercises[exerciseID].solutionNotes_raw.map((x, i) => '* ' + (+rex.exercises[exerciseID].solution[i]) + '. ' + x.replace(/^[01]\. */, '').replaceAll('\\', '\\\\')).join('\n'));
 	
 	fileText = fileText.replaceAll("\n", "\r\n");
 			
@@ -2131,8 +2313,8 @@ function setRnwSimpleExerciseFileContents(exerciseID, convertFromComplex=false){
 		
 	if(convertFromComplex) {		
 		let figure = extractFirstImg(rex.exercises[exerciseID].question);
-		let question = sanitizeComplexFieldValue(rex.exercises[exerciseID].question).replace(/\$/g, '$$$$');
-		let solutionNoteGeneral = sanitizeComplexFieldValue(rex.exercises[exerciseID].solutionNoteGeneral).replace(/\$/g, '$$$$');
+		let question = sanitizeComplexFieldValue(rex.exercises[exerciseID].question, true); 
+		let solutionNoteGeneral = sanitizeComplexFieldValue(rex.exercises[exerciseID].solutionNoteGeneral, true); 
 		let choices = rex.exercises[exerciseID].choices.map(x=> sanitizeComplexFieldValue(x));
 		let solutionNotes = rex.exercises[exerciseID].solutionNotes.map(x=> sanitizeComplexFieldValue(x));
 				
@@ -2141,8 +2323,6 @@ function setRnwSimpleExerciseFileContents(exerciseID, convertFromComplex=false){
 		fileText = fileText.replace("?rxxTemplate_solutionNoteGeneral", '"' + solutionNoteGeneral + '"');
 		fileText = fileText.replace("?rxxTemplate_choices", 'c(' + choices.map(x=>'"' + x + '"').join(',') + ')');
 		fileText = fileText.replace("?rxxTemplate_solutionNotes", 'c(' + solutionNotes.map(x => '"' + x.replace(/^[01]\. */, '') + '"').join(',') + ')');
-		
-		
 	} else {
 		fileText = fileText.replace("?rxxTemplate_figure", rex.exercises[exerciseID].figure === null ? '""' : 'c(' + rex.exercises[exerciseID].figure.map(x=>'"' + x + '"').join(',') + ')');
 		fileText = fileText.replace("?rxxTemplate_question", '"' + rex.exercises[exerciseID].question_raw.replace(/\$/g, '$$$$').replaceAll('\\', '\\\\') + '"');
@@ -2363,7 +2543,8 @@ $('#exercise_info').on('click', '#addNewAnswer', function() {
 	rex.exercises[exerciseID].solutionNotes_raw.push(d_solutionNoteText);
 	
 	invalidateAfterEdit(exerciseID);
-	setRnwSimpleExerciseFileContents(exerciseID);
+	setRnwSimpleExerciseFileContents(exerciseID); 
+
 	loadExerciseFromObject(exerciseID);
 	
 	f_langDeEn();
@@ -2386,7 +2567,8 @@ $('#exercise_info').on('click', '.removeAnswer', function() {
 	} 
 	
 	invalidateAfterEdit(exerciseID);
-	setRnwSimpleExerciseFileContents(exerciseID);
+	setRnwSimpleExerciseFileContents(exerciseID); 
+
 	loadExerciseFromObject(exerciseID);
 });
 
@@ -2421,7 +2603,8 @@ function addExerciseFigureFile(file) {
 		$('#exerciseFigureFiles_list_items').empty();
 		$('#exerciseFigureFiles_list_items').append('<div class="exerciseFigureItem"><span class="exerciseFigureName"><img src="data:image/png;base64, ' + base64 + '"/></span><span class="removeText"><i class="fa-solid fa-xmark"></i></span></div>');
 		
-		setRnwSimpleExerciseFileContents(exerciseID);
+		setRnwSimpleExerciseFileContents(exerciseID); 
+
 		loadExerciseFromObject(exerciseID);
 		invalidateAfterEdit(exerciseID);
 	};
@@ -2454,7 +2637,7 @@ function removeExerciseFigure(element) {
 	rex.exercises[exerciseID].figure = null;
 	element.remove();
 	
-	setRnwSimpleExerciseFileContents(exerciseID);
+	setRnwSimpleExerciseFileContents(exerciseID); 
 	loadExerciseFromObject(exerciseID);
 	invalidateAfterEdit(exerciseID);
 }
@@ -2467,18 +2650,19 @@ $('#exerciseTexMode').change(function() {
 	const exerciseID = getID();
 	
 	rex.exercises[exerciseID].rmdExport = !$(this).is(":checked");
-	f_tex("exercise_info", !rex.exercises[exerciseID].rmdExport); 
+	f_texModeOn("exercise_info", !rex.exercises[exerciseID].rmdExport); 
 	
 	if(rex.exercises[exerciseID].rmdExport){
 		setRmdSimpleExerciseFileContents(exerciseID);
-		$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').removeClass("texMode");
+		$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').removeClass("texModeOn");
 	} else{
 		setRnwSimpleExerciseFileContents(exerciseID);
-		$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').addClass("texMode");
+		$('.exerciseItem:nth-child(' + (exerciseID + 1) + ')').addClass("texModeOn");
 	}
 	
 	invalidateAfterEdit(exerciseID);
-	setRnwSimpleExerciseFileContents(exerciseID);
+	setRnwSimpleExerciseFileContents(exerciseID); 
+
 	loadExerciseFromObject(exerciseID);
 	
 	f_langDeEn();
@@ -2535,13 +2719,13 @@ Shiny.addCustomMessageHandler('setExerciseType', function(jsonData) {
 
 Shiny.addCustomMessageHandler('setExerciseQuestion', function(jsonData) {
 	const data = processExerciseJsonData(jsonData, simpleValue=true)
-	
+
 	rex.exercises[data.id].question = data.value === null ? '' : data.value;
 });
 
 Shiny.addCustomMessageHandler('setExerciseQuestionRaw', function(jsonData) {
 	const data = processExerciseJsonData(jsonData, simpleValue=true)
-		
+
 	rex.exercises[data.id].question_raw = data.value === null ? '' : data.value;
 });
 
@@ -2652,7 +2836,7 @@ Shiny.addCustomMessageHandler('convertExercises', function(jsonData) {
 			.filter(index => index !== -1);
 	const itemCount = exercisesToConvert.length;	
 	
-	exercisesToConvert.forEach((exerciseID, index)  => {	
+	exercisesToConvert.forEach((exerciseID, index) => {	
 		setRnwSimpleExerciseFileContents(exerciseID, true);
 		
 		const item = index + 1;
@@ -2870,7 +3054,8 @@ $("#examIntro").change(function(){
 }); 
 
 $('#examIntroTexMode').change(function() {
-	f_tex("exam_create", $(this).is(":checked")); 
+	f_escapeTexOff("exam_create", $(this).is(":checked")); 
+	f_texModeOn("exam_create", $(this).is(":checked")); 
 });
 
 $("#createExamEvent").click(function(){
@@ -3506,11 +3691,7 @@ function resetInspect(){
 	$('#dismiss_evaluateExamScansResponse').show();
 	$('#proceedEval').show();
 	scanFocused = null;
-	
-	// todo: scroll to more useful position on open / close
-	// $('.modal-body').scrollTop(0);
 }
-
 
 $('body').on('click', '#prevInspect', function() {
 	prevInspect();

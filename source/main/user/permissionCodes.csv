@@ -1,0 +1,6 @@
+code;require;info;en;de
+P1000;2;change password;No permission to change the password.;Keine Erlaubnis das Passwort zu aendern.
+P1001;3;parse exercises;No permission to parse exercises.;Keine Erlaubnis Aufgaben zu berechnen.
+P1002;5;create exams;No permission to create exams.;Keine Erlaubnis Pruefungen zu erstellen.
+P1003;7;evaluate exams;No permission to evaluate exams.;Keine Erlaubnis Pruefungen auszuwerten.
+P1004;7;evaluate exams;No permission to evaluate exams.;Keine Erlaubnis Pruefungen auszuwerten.

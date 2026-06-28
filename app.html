@@ -107,7 +107,7 @@
 	</div>
 	<ul id="navHeartbeat" class="nav navbar-nav">
 		<li id="heartbeatContainer">
-			<div id="heart">
+			<div id="heart" data-session-id="" data-tmp-dir="">
 				<span>&#10084;</span>
 			</div>
 		</li>
@@ -275,8 +275,8 @@
 						{{ checkboxInput_exerciseTexMode }}
 					</div>
 					
-					<label for="question"><span lang="de">Frage</span><span lang="en">Question</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Die Symbole <code>\</code> und <code>"</code> sind nicht erlaubt. Andere Symbole wie <code>%</code> oder <code>&amp;</code> müssen als <code>\%</code> bzw. <code>\&amp;</code> eingegeben werden.</span><span lang="en">The symbols <code>\</code> and <code>"</code> are not allowed. Other symbols such as <code>%</code> or <code>&amp;</code> must be entered as <code>\%</code> and <code>\&amp;</code>.</span></span></span></label>
-					<div id="question" class="texMode texInputsEscaped">
+					<label for="question"><span lang="de">Frage</span><span lang="en">Question</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Die Symbole <code>\</code> und <code>"</code> sind nicht erlaubt, wenn sie als alleinstehende Zeichen verwendet werden. Andere Symbole wie <code>%</code> oder <code>&amp;</code> müssen als <code>\%</code> bzw. <code>\&amp;</code> eingegeben werden.</span><span lang="en">The symbols <code>\</code> and <code>"</code> are not allowed when used as single characters. Other symbols such as <code>%</code> or <code>&amp;</code> must be entered as <code>\%</code> and <code>\&amp;</code>.</span></span></span></label>
+					<div id="question" class="tex">
 					</div>
 											
 					<label for="figure"><span lang="de">Grafik</span><span lang="en">Figure</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Bild wird in Originalgröße eingefügt.</span><span lang="en">Image will be inserted in original size.</span></span></span></label>
@@ -284,11 +284,11 @@
 						{{ exerciseFigureFileImport }}
 					</div>
 					
-					<label for="solutionNoteGeneral"><span lang="de">Lösungsnotiz</span><span lang="en">Solution Note</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Die Symbole <code>\</code> und <code>"</code> sind nicht erlaubt. Andere Symbole wie <code>%</code> oder <code>&amp;</code> müssen als <code>\%</code> bzw. <code>\&amp;</code> eingegeben werden.</span><span lang="en">The symbols <code>\</code> and <code>"</code> are not allowed. Other symbols such as <code>%</code> or <code>&amp;</code> must be entered as <code>\%</code> and <code>\&amp;</code>.</span></span></span></label>
-					<div id="solutionNoteGeneral" class="texMode texInputsEscaped">
+					<label for="solutionNoteGeneral"><span lang="de">Lösungsnotiz</span><span lang="en">Solution Note</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Die Symbole <code>\</code> und <code>"</code> sind nicht erlaubt, wenn sie als alleinstehende Zeichen verwendet werden. Andere Symbole wie <code>%</code> oder <code>&amp;</code> müssen als <code>\%</code> bzw. <code>\&amp;</code> eingegeben werden.</span><span lang="en">The symbols <code>\</code> and <code>"</code> are not allowed when used as single characters. Other symbols such as <code>%</code> or <code>&amp;</code> must be entered as <code>\%</code> and <code>\&amp;</code>.</span></span></span></label>
+					<div id="solutionNoteGeneral" class="tex">
 					</div>
 					
-					<label for="answers"><span lang="de">Antworten</span><span lang="en">Answers</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Die Symbole <code>\</code> und <code>"</code> sind nicht erlaubt. Andere Symbole wie <code>%</code> oder <code>&amp;</code> müssen als <code>\%</code> bzw. <code>\&amp;</code> eingegeben werden.</span><span lang="en">The symbols <code>\</code> and <code>"</code> are not allowed. Other symbols such as <code>%</code> or <code>&amp;</code> must be entered as <code>\%</code> and <code>\&amp;</code>.</span></span></span></label>
+					<label for="answers"><span lang="de">Antworten</span><span lang="en">Answers</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Die Symbole <code>\</code> und <code>"</code> sind nicht erlaubt, wenn sie als alleinstehende Zeichen verwendet werden. Andere Symbole wie <code>%</code> oder <code>&amp;</code> müssen als <code>\%</code> bzw. <code>\&amp;</code> eingegeben werden.</span><span lang="en">The symbols <code>\</code> and <code>"</code> are not allowed when used as single characters. Other symbols such as <code>%</code> or <code>&amp;</code> must be entered as <code>\%</code> and <code>\&amp;</code>.</span></span></span></label>
 					<div id="answers">
 					</div>
 				</div>	
@@ -387,8 +387,8 @@
 							<label for="examCourse"><span lang="de">Kurs</span><span lang="en">Course</span></label>
 							{{ textInput_examCourse }}
 						</div>
-						<div class="texMode texInputsEscaped">
-							<label for="examIntro"><span lang="de">Einleitung</span><span lang="en">Intro</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Die Symbole <code>\</code> und <code>"</code> sind nicht erlaubt. Andere Symbole wie <code>%</code> oder <code>&amp;</code> müssen als <code>\%</code> bzw. <code>\&amp;</code> eingegeben werden.</span><span lang="en">The symbols <code>\</code> and <code>"</code> are not allowed. Other symbols such as <code>%</code> or <code>&amp;</code> must be entered as <code>\%</code> and <code>\&amp;</code>.</span></span></span></label>
+						<div class="tex">
+							<label for="examIntro"><span lang="de">Einleitung</span><span lang="en">Intro</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Die Symbole <code>\</code> und <code>"</code> sind nicht erlaubt, wenn sie als alleinstehende Zeichen verwendet werden. Andere Symbole wie <code>%</code> oder <code>&amp;</code> müssen als <code>\%</code> bzw. <code>\&amp;</code> eingegeben werden.</span><span lang="en">The symbols <code>\</code> and <code>"</code> are not allowed when used as single characters. Other symbols such as <code>%</code> or <code>&amp;</code> must be entered as <code>\%</code> and <code>\&amp;</code>.</span></span></span></label>
 							<div id="examIntroTexModeContainer" class="advancedFeature">
 								<label for="examIntroTexMode">
 									<span lang="de">LaTeX-Interpretation</span>
@@ -513,7 +513,7 @@
 							<label><span lang="de">Lösungen</span><span lang="en">Solutions</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Bei der Prüfungserellung gespeicherte RDS-Datei.</span><span lang="en">RDS file saved when creating the exam.</span></span></span></label>
 							{{ examSolutionsFileImport }}
 							
-							<label><span lang="de">Registrierte Teilnehmer</span><span lang="en">Registered participants</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Teilnehmerliste als CSV-Datei mit den Spalten <code>registration</code>, <code>name</code> und <code>id</code>.</span><span lang="en">Registered participants as CSV file with columns <code>registration</code>, <code>name</code>, and <code>id</code>.</span></span></span></label>
+              <label><span lang="de">Registrierte Teilnehmer</span><span lang="en">Registered participants</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Teilnehmerliste als CSV-Datei mit den Spalten <code>registration</code>, <code>name</code> und <code>id</code>. Als Trennzeichen <code>;</code> oder <code>,</code>verwenden. Leere Zeilen am Ende der Datei entfernen.</span><span lang="en">Registered participants as CSV file with columns <code>registration</code>, <code>name</code>, and <code>id</code>. Use <code>;</code> or <code>,</code> as separator. Remove empty lines at the end of the file.</span></span></span></label>
 							{{ examRegisteredParticipantsFileImport }}
 							
 							<label><span lang="de">Bewertungs-Scans</span><span lang="en">Evaluation scans</span><span class="myTooltip"><span class="tooltipIcon"><i class="fa-regular fa-circle-question"></i></span><span class="tooltipText"><span lang="de">Scans als PDF- oder PNG-Dateien.</span><span lang="en">Scans as PDF or PNG files.</span></span></span></label>

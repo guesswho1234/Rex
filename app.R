@@ -5,8 +5,14 @@ rm(list = ls())
 cat("\f")
 gc()
 
+# DEV AUTORELOAD ------------------------------------------------------------------
+options(shiny.autoreload = TRUE)
+
 # DOCKER_WORKER ------------------------------------------------------------------
-DOCKER_WORKER = !file.exists("./worker.R")
+DOCKER_WORKER = !file.exists("./worker.R") || as.logical(Sys.getenv("DOCKER", unset = "FALSE"))
+
+# MAX_CORES ------------------------------------------------------------------
+MAX_CORES = as.numeric(Sys.getenv("MAX_CORES", unset = 1))
 
 # PACKAGES ----------------------------------------------------------------
 library(shiny) # shiny_1.8.0
@@ -34,7 +40,7 @@ source("./source/shared/log.R")
 source("./source/shared/aWrite.R")
 source("./source/main/appStatus.R")
 source("./source/main/auth.R")
-source("./source/main/permission.R")
+source("./source/main/user.R")
 source("./source/main/processingResponses.R")
 source("./source/main/progressMonitoring.R")
 source("./source/main/exerciseExport.R")
@@ -53,6 +59,8 @@ if(!DOCKER_WORKER)
   cores = NULL
   if (Sys.info()["sysname"] == "Linux")
     cores = parallel::detectCores()
+  
+  cores = min(cores, MAX_CORES)
 
   edirName = "exercises"
   maxChoices = 5
@@ -79,6 +87,8 @@ if(!DOCKER_WORKER)
     
 # LOG ------------------------------------------------------
 log_(content="INIT", append=FALSE)
+log_(content=paste0("DOCKER_WORKER: ", DOCKER_WORKER))
+log_(content=paste0("MAX_CORES: ", MAX_CORES))
 
 # UI -----------------------------------------------------------------
 ui = htmlTemplate(
@@ -116,6 +126,7 @@ server = function(input, output, session) {
     id_col = "id",
     pw_col = "pw",
     pm_col = "pm",
+    op_col = "op",
     table = "user",
     log_out = reactive(logout_init()),
     reload_on_logout = TRUE,
@@ -268,6 +279,10 @@ server = function(input, output, session) {
     cat("")
     
     if(initialStateJS){
+      # SET SESSION INFO
+      session$sendCustomMessage("f_setSessionId", session$token) 
+      session$sendCustomMessage("f_setSessionTmpDir", getDir(session))
+
       # SET DEFAULTS
       myFileData(session = session, path = "./www/", name = "logo_rex_bw", ext = "png", "setExamLogo")
       
@@ -278,6 +293,17 @@ server = function(input, output, session) {
         if(exists(f_defaults))
           do.call(f_defaults, args=list(session=session))
       })
+
+      # SET DEFAULT USER OPTIONS
+      langOption = checkOption("O1000", user_data()$info$op)
+      hotKeyOption = checkOption("O1001", user_data()$info$op)
+      buttonModeOption = checkOption("O1002", user_data()$info$op)
+      advancedFeaturesModeOption = checkOption("O1003", user_data()$info$op)
+
+      session$sendCustomMessage("f_langDeEn", langOption$response) 
+      session$sendCustomMessage("f_hotKeys", hotKeyOption$response)
+      session$sendCustomMessage("f_buttonMode", buttonModeOption$response)
+      session$sendCustomMessage("f_advancedFeaturesMode", advancedFeaturesModeOption$response)
     }
     
     initialStateJS <<- FALSE
@@ -296,7 +322,7 @@ server = function(input, output, session) {
     if(!checkPm$hasPermission){
       session$sendCustomMessage("errorUpdateUserProfile", getNoPermissionMessage(checkPm$code, checkPm$response))
       return(NULL)
-    }
+}
 
     changePassword(session, user_data()$info, input$`current-login-password`, input$`new-login-password1`, input$`new-login-password2`)
   })
@@ -798,8 +824,16 @@ server = function(input, output, session) {
       		registeredParticipantsFile = unlist(lapply(seq_along(exam$examRegisteredParticipantsnName), function(i){
       		  file = paste0(dir, "/", exam$examRegisteredParticipantsnName[[i]], ".csv")
       		  content = gsub("\r\n", "\n", exam$examRegisteredParticipantsnFile[[i]])
-      		  content = gsub(",", ";", content)
-      		  content = read.table(text=content, sep=";", header = TRUE)
+      		  
+      		  content_separator = if (grepl(";", content)) ";" else if (grepl("\t", content)) "\t" else ","
+      		  
+      		  content = gsub(content_separator, ";", content)
+      		  content = read.table(text=content, 
+      		                       sep=";",
+      		                       quote = "\"",
+                                 header = TRUE,
+                                 stringsAsFactors = FALSE,
+                                 blank.lines.skip = TRUE)
       
       		  idRegMatch = FALSE
       		  

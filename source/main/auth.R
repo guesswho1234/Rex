@@ -9,7 +9,7 @@ discon = function(){
 	dbDisconnect(con())
 }
 
-loginModule = function(id, sodium_hashed = FALSE, id_col, pw_col, pm_col, table, log_out = shiny::reactiveVal(), reload_on_logout = FALSE) {
+loginModule = function(id, sodium_hashed = FALSE, id_col, pw_col, pm_col, op_col, table, log_out = shiny::reactiveVal(), reload_on_logout = FALSE) {
   shiny::moduleServer(id, function(input, output, session) {
     ns = session$ns
 
@@ -87,7 +87,8 @@ loginModule = function(id, sodium_hashed = FALSE, id_col, pw_col, pm_col, table,
             
             # fields needed inside the app
             user_data$info$id = user_data$info$email # set id to whatever should be isplayed in the user profile
-            user_data$info$pm = 105 # default permission code
+            user_data$info$pm = 0 # default permission value
+            user_data$info$op = 0 # default option value
           }
         }
       }
@@ -102,6 +103,7 @@ loginModule = function(id, sodium_hashed = FALSE, id_col, pw_col, pm_col, table,
                                   table = DBI::dbQuoteIdentifier(DBI::ANSI(), table))
       
       data = reactive(DBI::dbGetQuery(con(), query))
+   
       discon()
       
       fallback_credentials = reactiveValues(user_auth = FALSE, info = NULL)
@@ -118,13 +120,13 @@ loginModule = function(id, sodium_hashed = FALSE, id_col, pw_col, pm_col, table,
           else {
             password_match = identical(row_password, input$password)
           }
-        }else {
+        } else {
           password_match = FALSE
         }
         
         if (length(row_username) == 1 && password_match) {
           fallback_credentials$user_auth = TRUE
-          fallback_credentials$info = data()[data()[[id_col]] == row_username,][c(id_col, pm_col)]
+          fallback_credentials$info = data()[data()[[id_col]] == row_username,][c(id_col, pm_col, op_col)]
         }
         else {
           shinyjs::toggle(id =  "error", anim = TRUE, time = 1, animType = "fade")

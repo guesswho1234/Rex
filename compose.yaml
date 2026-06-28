@@ -9,6 +9,9 @@ services:
         UID: 1001
         GID: 1001
       context: https://github.com/guesswho1234/Rex.git#main
+    environment:
+      - DOCKER=TRUE 
+      - MAX_CORES=4 
     security_opt:
       - no-new-privileges:true
     cap_drop:
@@ -33,6 +36,9 @@ services:
         UID: 1001
         GID: 1001
       context: https://github.com/guesswho1234/Rex.git#main
+    environment:
+      - DOCKER=TRUE      
+      - TRUE_MESSAGE_VALUE=FALSE        
     environment:
       - TRUE_MESSAGE_VALUE=FALSE  
     security_opt:

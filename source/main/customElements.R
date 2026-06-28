@@ -58,7 +58,7 @@ myLoginInterface = function(id){
       
       user_title = tags$span(HTML('<span lang="de">Benutzername</span><span lang="en">User name</span>')), 
       pass_title = tags$span(HTML('<span lang="de">Passwort</span><span lang="en">Password</span>')),  
-      login_title = myButtonStyle('Einloggen,', 'Log in'), 
+      login_title = myButtonStyle('Einloggen', 'Log in'), 
       tagList(tags$img(id = "logoLogin", class = "logo", src = "/www/logo.svg"),
               tags$div(id = ns("sso_title"), "Single sign-on (SSO)"))
     )

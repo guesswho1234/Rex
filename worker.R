@@ -1,7 +1,7 @@
 # developed in r version 4.2.2
 
 # DOCKER_WORKER ------------------------------------------------------------------
-DOCKER_WORKER = !file.exists("./app.R")
+DOCKER_WORKER = !file.exists("./app.R") || as.logical(Sys.getenv("DOCKER", unset = "FALSE"))
 
 # STARTUP -----------------------------------------------------------------
 if(DOCKER_WORKER){
@@ -17,7 +17,7 @@ if (!dir.exists(user_lib)) dir.create(user_lib, recursive = TRUE, showWarnings =
 .libPaths(c(user_lib, .libPaths()))
 
 # TRUE MESSAGE VALUE --------------------------------------------------------
-TRUE_MESSAGE_VALUE = FALSE
+TRUE_MESSAGE_VALUE = as.logical(Sys.getenv("TRUE_MESSAGE_VALUE", unset = "TRUE"))
 
 # PACKAGES ----------------------------------------------------------------
 library(exams) #exams_2.4-1
@@ -366,8 +366,6 @@ source("./source/shared/aWrite.R")
   			  stop("E1007")
   			}
   			
-  			#todo: add warnings / errors for more length of solutionNotes unequal zero && unequal length of choices
-  	  
   			NULL
 		  })
 		  
@@ -430,7 +428,6 @@ source("./source/shared/aWrite.R")
 	      section = html$exam1$exercise1$metainfo$section
 	      seed = seed
 	      
-	      #todo:
 	      question = paste0(html$exam1$exercise1$question, collapse="")
 	      question_raw = paste0(html$exam1$exercise1$question_raw, collapse="")
 	      figure = rjs_vectorToJsonStringArray(unlist(figure))
@@ -807,9 +804,30 @@ source("./source/shared/aWrite.R")
   			
   			examCodeFile = paste0(data$dir, "/code.txt")
   
-  			preparedEvaluation = list(meta=list(examIds=examIds, examName=examName, numExercises=numExercises, numChoices=numChoices, totalPdfLength=data$totalPdfLength, totalPngLength=data$totalPngLength, scanFileZipName=scanFileZipName),
-  			                          fields=list(dir=data$dir, edirName=data$edirName, cores=data$cores, rotate=data$rotate, points=points, regLength=data$regLength, partial=data$partial, negative=data$negative, rule=data$rule, mark=mark, labels=labels, language=data$language),
-  			                          files=list(solution=data$solutionFile, registeredParticipants=data$registeredParticipantsFile, scans=data$scanFiles, scanEvaluation=scanEvaluation, scans_reg_fullJoin=scans_reg_fullJoin, examCodeFile=examCodeFile))
+  			preparedEvaluation = list(meta=list(examIds=examIds, 
+                                            examName=examName, 
+                                            numExercises=numExercises, 
+                                            numChoices=numChoices, 
+                                            totalPdfLength=data$totalPdfLength, 
+                                            totalPngLength=data$totalPngLength, 
+                                            scanFileZipName=scanFileZipName),
+  			                          fields=list(dir=data$dir, 
+                                              edirName=data$edirName, 
+                                              cores=data$cores, 
+                                              rotate=data$rotate, 
+                                              points=points, 
+                                              regLength=data$regLength, 
+                                              partial=data$partial, 
+                                              negative=data$negative, 
+                                              rule=data$rule, 
+                                              mark=mark, 
+                                              labels=labels, 
+                                              language=data$language),
+  			                          files=list(solution=data$solutionFile, 
+                                             registeredParticipants=data$registeredParticipantsFile, 
+                                             scans=data$scanFiles, scanEvaluation=scanEvaluation, 
+                                             scans_reg_fullJoin=scans_reg_fullJoin, 
+                                             examCodeFile=examCodeFile))
   			
   			with(preparedEvaluation, {
   			  if(length(files$scans) < 1)
@@ -826,9 +844,13 @@ source("./source/shared/aWrite.R")
   
   			  if(any(as.numeric(mark) < 1) && any(as.numeric(mark) >= 1))
   				  stop("E1018")
-  
-  			  registeredParticipantData = read.csv2(files$registeredParticipants, colClasses = c("integer", "character", "character"))
-				    			  
+
+          registeredParticipantData = read.csv2(files$registeredParticipants,
+                                                header = TRUE,
+                                                stringsAsFactors = FALSE,
+                                                colClasses = c("integer", "character", "character"),
+                                                blank.lines.skip = TRUE)
+
   			  if(nrow(registeredParticipantData) < 1)
   			    stop("E1031")
   
@@ -909,6 +931,10 @@ source("./source/shared/aWrite.R")
   			    scans_reg_fullJoinData$id = registeredParticipantData$id
   			  }
 			    else{
+            # set "XXXXXXX" as registration number when it was assigned to multiple scans
+            registration_is_duplicated = duplicated(scanData$registration) | duplicated(scanData$registration, fromLast = TRUE)
+            scanData$registration[registration_is_duplicated] = "XXXXXXX"
+
 			      scans_reg_fullJoinData = merge(scanData, registeredParticipantData, by="registration", all=TRUE)
   
     			  # set "XXXXXXX" as registration number for scans which were not matched with any of the registered participants
@@ -1109,7 +1135,7 @@ source("./source/shared/aWrite.R")
   	                               interactive = FALSE)
   	        
   	        rlang::exec(exams::nops_eval, !!!param_nops_eval)
-  	        
+
   	        # read solution and evaluation data
   	        solutionData = readRDS(files$solution)
   	        evaluationData = read.csv2(files$nops_evaluationCsv)
@@ -1176,7 +1202,7 @@ source("./source/shared/aWrite.R")
   	  },
   	  error = function(e){
   	    if(!grepl("E\\d{4}", e$message))
-  	      e$message = paste0("E1004", ifelse(TRUE_MESSAGE_VALUE, paste0(": ", e$message), ""))
+  	      e$message = paste0("E1004", ifelse(TRUE_MESSAGE_VALUE, paste0(": ", e$message), "")) 
   	    
   	    return(list(message=list(key="Error", value=e), examName=NULL, files=list()))
   	  },
@@ -1214,6 +1240,8 @@ source("./source/shared/aWrite.R")
 	
 # WORKER ------------------------------------------------------------------
 log_(content="INIT", "WORKER", "WORKER")
+log_(content=paste0("DOCKER_WORKER: ", DOCKER_WORKER))
+log_(content=paste0("TRUE_MESSAGE_VALUE: ", TRUE_MESSAGE_VALUE))
 	
 last_mtime = as.POSIXct(0, origin="1970-01-01")
 last_files_seen = character(0)
