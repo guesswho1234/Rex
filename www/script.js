@@ -1946,10 +1946,10 @@ function contenteditable_getSpecial(content) {
 		content = content.textContent;
 	} else {
 		content = filterNodes(content, {br: []}).innerHTML;
-		content = content.replaceAll('<br>', '\\\\');
-		content = content.replaceAll('<br />', '\\\\');
-		content = content.replaceAll('<br/>', '\\\\');
-		content = content.replaceAll('</br>', '\\\\');
+		content = content.replaceAll('<br>', '\\\\\\\\');
+		content = content.replaceAll('<br />', '\\\\\\\\');
+		content = content.replaceAll('<br/>', '\\\\\\\\');
+		content = content.replaceAll('</br>', '\\\\\\\\');
 		content = content.replaceAll('&nbsp;', ' ');
 		content = content.replaceAll('\n', ' ');
 	  content = content.replaceAll(/["\u2018\u2019\u201C\u201D]/g, "'")  //‘ ’ “ ” -> '
@@ -2004,6 +2004,23 @@ function contentTexSanitize(content){
 function normalizeQuotes(s) {
   return s
     .replace(/["\u2018\u2019\u201C\u201D]/g, "'")  //‘ ’ “ ” -> '
+}
+
+function contentMarkdownSanitize(content) {
+  // Step 1: Half all backslashes 
+  content = content.replaceAll(/\\\\/g, '\\');
+  content = content.replaceAll(/\\\\/g, '\\');
+  
+  // Step 2: substitute for markdown equivalents for lines breaks and special symbols
+  content = content.replaceAll(/\\([$%&#\^_])/g, '\\$1');
+  content = content.replaceAll('<', '&lt;');
+  content = content.replaceAll('>', '&gt;');
+  content = content.replaceAll('\\\\', '<br>');
+  
+  // Step 3: strip loose backslshes
+  content = content.replaceAll(/\\(?!\\|[&%$#])/g, '');
+  
+  return content;
 }
 
 function filterNodes(element, allow) {
@@ -2279,7 +2296,7 @@ function setRmdSimpleExerciseFileContents(exerciseID){
 	fileText = fileText.replace("?rxxTemplate_solutionNotes", rex.exercises[exerciseID].solutionNotes_raw.map((x, i) => '* ' + (+rex.exercises[exerciseID].solution[i]) + '. ' + x.replace(/^[01]\. */, '').replaceAll('\\', '\\\\')).join('\n'));
 	
 	fileText = fileText.replaceAll("\n", "\r\n");
-			
+
 	rex.exercises[exerciseID].file = fileText;
 	rex.exercises[exerciseID].ext = "rmd";
 } 
@@ -2301,7 +2318,7 @@ function setRnwSimpleExerciseFileContents(exerciseID, convertFromComplex=false){
 		let solutionNoteGeneral = sanitizeComplexFieldValue(rex.exercises[exerciseID].solutionNoteGeneral, true); 
 		let choices = rex.exercises[exerciseID].choices.map(x=> sanitizeComplexFieldValue(x));
 		let solutionNotes = rex.exercises[exerciseID].solutionNotes.map(x=> sanitizeComplexFieldValue(x));
-				
+    
 		fileText = fileText.replace("?rxxTemplate_figure", figure === null ? '""' : 'c(' + figure.map(x=>'"' + x + '"').join(',') + ')');
 		fileText = fileText.replace("?rxxTemplate_question", '"' + question + '"');
 		fileText = fileText.replace("?rxxTemplate_solutionNoteGeneral", '"' + solutionNoteGeneral + '"');
@@ -3051,7 +3068,7 @@ async function createExamEvent() {
 	
 	const examExercises = rex.exercises.filter((exercise) => exercise.exam & exercise.file !== null);
 	const exerciseNames = examExercises.map((exercise) => exercise.name);
-	const exerciseCodes = examExercises.map((exercise) => exercise.file);
+  const exerciseCodes = examExercises.map((exercise) => exercise.ext === "rmd" ? contentMarkdownSanitize(exercise.file) : exercise.file); 
 	const exerciseExts = examExercises.map((exercise) => exercise.ext);
 	const exerciseTypes = examExercises.map((exercise) => exercise.type);
 	const exerciseNumChoices = examExercises.map((exercise) => exercise.solution.length);
