@@ -843,7 +843,7 @@ main > * {
 
 #exerciseListNav .listButton.asc .desc,
 #exerciseListNav .listButton.desc .asc {
-  display: none;
+  display: none !important;
 }
 
 #exerciseListSearch {

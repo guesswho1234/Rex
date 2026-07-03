@@ -1321,7 +1321,7 @@
 
   $('#exerciseSortAll').click(function () {
     const desc = document.getElementById('exerciseSortAll').dataset.desc === 'true';
-    exerciseSortAll(!desc);
+    exerciseSortAll(desc);
   });
 
   $('#searchExercises input').change(function () {
