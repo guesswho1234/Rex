@@ -2011,14 +2011,10 @@ function contentMarkdownSanitize(content) {
   content = content.replaceAll(/\\\\/g, '\\');
   content = content.replaceAll(/\\\\/g, '\\');
   
-  // Step 2: substitute for markdown equivalents for lines breaks and special symbols
-  content = content.replaceAll(/\\([$%&#\^_])/g, '\\$1');
+  // Step 2: substitute for markdown equivalents for lines breaks
   content = content.replaceAll('<', '&lt;');
   content = content.replaceAll('>', '&gt;');
   content = content.replaceAll('\\\\', '<br>');
-  
-  // Step 3: strip loose backslshes
-  content = content.replaceAll(/\\(?!\\|[&%$#])/g, '');
   
   return content;
 }
