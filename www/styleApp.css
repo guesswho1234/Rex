@@ -837,7 +837,7 @@ main > * {
 	border: 2px solid var(---main);
 }
 
-#exerciseListNav ,
+#exerciseListNav {
   background: var(---background3);
 }
 
