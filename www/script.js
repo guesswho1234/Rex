@@ -631,6 +631,12 @@
               case 67: // shift+c 
                 exerciseConvertAll();
                 break;
+              case 89: // shift+y 
+                exerciseSortAll();
+                break;
+              case 88: // shift+x 
+                exerciseSortAll(true);
+                break;
             }
           } 
                 
@@ -1164,6 +1170,37 @@
   /* --------------------------------------------------------------
    EXERCISES LIST
   -------------------------------------------------------------- */
+  function exerciseSortAll(desc = false) {
+  	// Create an array of indices sorted by the exercise names
+  	const sortedIndices = rex.exercises
+  		.map((exercise, index) => index)
+  		.sort((aIndex, bIndex) => {
+  			const comparison = rex.exercises[aIndex].name.localeCompare(rex.exercises[bIndex].name);
+  			return desc ? -comparison : comparison;
+  		});
+  	
+  	// Reorder the exercises array
+  	rex.exercises = sortedIndices.map(index => rex.exercises[index]);
+  	
+  	// Reorder the DOM elements in the same way
+  	const $exerciseList = $('#exercise_list_items');
+  	const $items = $exerciseList.find('.exerciseItem');
+  	
+  	sortedIndices.forEach(oldIndex => {
+  		$exerciseList.append($items.eq(oldIndex));
+  	});
+
+    if(desc){
+      document.getElementById('exerciseSortAll').dataset.desc = !desc;
+      document.getElementById('exerciseSortAll').classList.add('asc');
+      document.getElementById('exerciseSortAll').classList.remove('desc');
+    } else {
+      document.getElementById('exerciseSortAll').dataset.desc = !desc;
+      document.getElementById('exerciseSortAll').classList.add('desc')
+      document.getElementById('exerciseSortAll').classList.remove('asc')
+    }
+  }
+
   function examExerciseAll(){
     const examExerciseAllButton = $('#examExerciseAll');
     
@@ -1280,6 +1317,11 @@
 
   $('#exerciseParseAll').click(function () {
     exerciseParseAll(true);
+  });
+
+  $('#exerciseSortAll').click(function () {
+    const desc = document.getElementById('exerciseSortAll').dataset.desc === 'true';
+    exerciseSortAll(!desc);
   });
 
   $('#searchExercises input').change(function () {
@@ -2471,7 +2513,6 @@ function sequenceDown(index = null, exercise = null) {
 		$(exercise).insertAfter($('#exercise_list_items').find('.exerciseItem').eq(index + 1));
 	}
 }
-
 
 $('#exercise_list_items').on('change', '.exerciseBlock input', function(e) {
 	e.preventDefault();

@@ -837,8 +837,13 @@ main > * {
 	border: 2px solid var(---main);
 }
 
-#exerciseListNav {
-	background: var(---background3);
+#exerciseListNav ,
+  background: var(---background3);
+}
+
+#exerciseListNav .listButton.asc .desc,
+#exerciseListNav .listButton.desc .asc {
+  display: none;
 }
 
 #exerciseListSearch {
