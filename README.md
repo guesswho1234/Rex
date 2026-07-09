@@ -10,20 +10,8 @@ Access to a hosted demo version is free and available on request via email for t
 
 ---
 
-## System Requirements
-
-Ensure the following system dependencies are available:
-
-- `libsodium-dev`
-- `libmagick++-dev`
-- `libpoppler-cpp-dev`
-- `ghostscript`
-- `texlive-full`
-- `pandoc`
-
----
-
-## Getting Started
+## Running Rex yourself
+The following instructions assume a Linux environment. For Windows and macOS users, the setup is largely the same, but some steps, particularly regarding the `rex.sqlite` database file location and Docker Compose startup, may need minor adjustments based on your OS.
 
 ### Docker (recommended)
 
@@ -58,6 +46,15 @@ docker-compose -f compose.yaml up --build
 ```
 
 ### Local (not recommended)
+
+Ensure the following system dependencies are available:
+
+- `libsodium-dev`
+- `libmagick++-dev`
+- `libpoppler-cpp-dev`
+- `ghostscript`
+- `texlive-full`
+- `pandoc`
 
 Install required R packages as listed in `app.R` and `worker.R`.
 
